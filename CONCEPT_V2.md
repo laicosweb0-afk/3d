@@ -1,7 +1,7 @@
 # MONDIAL SERVICE — ANALISI CRITICA & CONCEPT V2
 
-**Stato: in attesa di approvazione.**
-Questo documento risponde alla missione del [Creative Master Brief](./CREATIVE_MASTER_BRIEF.md): analisi critica prima, concept migliorato poi. Nessuna riga di codice viene scritta prima dell'approvazione di questo documento.
+**Stato: APPROVATO dal cliente il 2026-07-19.** L'architettura tecnica è in [`TECH_ARCHITECTURE.md`](./TECH_ARCHITECTURE.md).
+Questo documento risponde alla missione del [Creative Master Brief](./CREATIVE_MASTER_BRIEF.md): analisi critica prima, concept migliorato poi.
 
 > **Aggiornamento 2026-07-19** — Ricevuti i 16 riferimenti visivi (Apple, loftthirtyone, logo, foto reali, concept prima/dopo). L'analisi completa è in [`ART_DIRECTION.md`](./ART_DIRECTION.md); gli aggiornamenti recepiti qui sono contrassegnati con **[AD]**.
 
