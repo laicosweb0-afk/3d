@@ -93,7 +93,7 @@ La Hero è bianca e tipografica: pesa nulla. Quindi **la Hero è il loader**: ap
 |---|---|---|
 | Lista ufficiale completa dei servizi | Concept definitivo (mappa servizi→ambienti) | **[AD] Parzialmente risolto**: il logo dichiara tre pilastri — *Ristrutturazioni · Impianti · Servizi*. Resta da dettagliare le voci sotto ciascun pilastro |
 | Logo (vettoriale) | Scena 12 (la metamorfosi casa→logo dipende dalla forma del logo) | **[AD] Logo ricevuto** (raster): S12 definita sul metro a nastro. Serve versione vettoriale o approvazione del ridisegno fedele (ART_DIRECTION §2.2) |
-| Palette, font, foto reali, concept Higgsfield | Art direction definitiva, Scena 13 | **[AD] Ricevuti** palette (dal logo: navy + oro), 4 foto reali (bagni) e concept prima/dopo. Mancano: font ufficiale, foto di ambienti non-bagno |
+| Palette, font, foto reali, concept Higgsfield | Art direction definitiva, Scena 13 | **[AD] Ricevuti** 4 foto reali (bagni) e concept prima/dopo. Palette definita su indicazione del cliente: neutra quiet-luxury (bianco caldo + antracite + grigi, accento minerale dai materiali; niente oro — vedi ART_DIRECTION §8). Mancano: font ufficiale, foto di ambienti non-bagno |
 | Tono di voce / lingue (solo IT? IT+EN?) | Copywriting | |
 | Il modello 3D della villa **non esiste** | Tutta la produzione 3D | È il singolo asset più importante del progetto: va modellato ad hoc (Blender), *nato per essere smontato* — stati maquette/reale, stratigrafie separate, interni navigabili, UV per luci baked. Nessun modello di stock potrà mai farlo. |
 | KPI di business (contatti? chiamate? preventivi?) | Misurabilità del successo | Awwwards è un mezzo, non il fine |

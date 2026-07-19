@@ -2,6 +2,8 @@
 
 Analisi dei 16 riferimenti visivi ricevuti il 2026-07-19. Nessun riferimento viene copiato: da ciascuno viene estratto il linguaggio, e ogni estrazione si traduce in una decisione operativa per il [Concept V2](./CONCEPT_V2.md). Le decisioni che modificano il concept sono raccolte nella sezione 8.
 
+> **Revisione palette (indicazione cliente, 2026-07-19)** — L'oro è escluso dalla UI: direzione *quiet luxury* su base bianco caldo + antracite, gerarchia affidata ai grigi neutri, accenti discreti derivati dai materiali reali (pietra, marmo, legno), nessun effetto metallico. Riferimenti UI: Apple, Linear, Stripe, Notion, Vercel e minimalismo Awwwards. I colori del logo (navy + oro) vivono **solo dentro il logo**. La sezione 8 riflette questa direzione.
+
 ---
 
 ## 1. Inventario
@@ -22,7 +24,7 @@ Analisi dei 16 riferimenti visivi ricevuti il 2026-07-19. Nessun riferimento vie
 ### 2.1 Cosa dice
 
 - **Tre pilastri dichiarati nel lockup**: *RISTRUTTURAZIONI · IMPIANTI · SERVIZI*. Questo risolve in prima battuta l'input bloccante "lista servizi" del Concept V2 (§6): la mappa servizi→ambienti si organizza su questi tre pilastri. (Resta necessario il dettaglio delle voci sotto ciascun pilastro.)
-- **Palette del brand**: blu navy profondo (testo "MONDIAL"), oro/ambra (testo "SERVICE"), bianco. È una coppia ink+oro perfettamente compatibile con il mondo bianco del concept: il navy diventa il colore dell'inchiostro tipografico e delle linee CAD, l'oro l'unico accento (CTA, timeline, evidenziazioni). Nessun altro colore UI è necessario.
+- **Palette del brand**: blu navy profondo (testo "MONDIAL"), oro/ambra (testo "SERVICE"), bianco. Decisione (su indicazione del cliente): questi colori restano **confinati al logo** e non generano la palette UI. Il sito adotta una palette neutra quiet-luxury (§8) — l'oro in particolare è escluso da CTA, timeline e accenti per evitare l'estetica "gold luxury" artificiale. Il logo, apparendo su fondo bianco caldo e circondato da neutri, resta l'unico punto di colore pieno del sito: così guadagna presenza invece di perderla.
 - **Il metro a nastro è un regalo narrativo.** Il logo contiene già un elemento lineare, tecnico e di misura che avvolge un mondo. Tre conseguenze dirette:
   1. **La timeline dei capitoli è un metro.** L'indicatore di progresso del viaggio (Concept V2 §2.3.A) non sarà una generica fila di tacche: sarà una sottilissima grafica di metro a nastro che si srotola con lo scroll. Brand-specifica, funzionale, impossibile da scambiare per un template.
   2. **Le quote della Scena 02 sono il metro.** Le linee di quota del disegno CAD riprendono il linguaggio grafico del nastro graduato: il brand è presente nel DNA della scena senza mostrare mai il logo.
@@ -32,7 +34,7 @@ Analisi dei 16 riferimenti visivi ricevuti il 2026-07-19. Nessun riferimento vie
 
 - **Il file è raster e fotorealistico** (globo 3D, ombre, riflessi — con ogni probabilità generato). In un hero bianco minimale un logo skeuomorfico a piena risoluzione stona e non scala. Serve una delle due strade, da decidere col cliente:
   - **(A) Versione vettoriale ufficiale** se esiste;
-  - **(B — consigliata) Ridisegno vettoriale fedele**: stesso impianto (globo + metro + lockup), tratto semplificato, due varianti — *full* (hero, footer, S12) e *monogramma* (globo+nastro solo tratto, monocromo navy) per la UI persistente e la favicon.
+  - **(B — consigliata) Ridisegno vettoriale fedele**: stesso impianto (globo + metro + lockup), tratto semplificato, due varianti — *full* (hero, footer, S12) e *monogramma* (globo+nastro solo tratto, monocromo antracite) per la UI persistente e la favicon. Con la palette neutra (§8) il monogramma monocromo diventa la forma d'uso prevalente del marchio nella UI.
 - Il claim a tre pilastri va tenuto nel lockup solo alle dimensioni in cui è leggibile; sotto soglia si usa il lockup senza claim.
 
 ---
@@ -84,28 +86,39 @@ Cosa **non** viene assorbito:
 Dagli screenshot si estraggono **regole di sistema**, non layout:
 
 - **Gerarchia in tre soli livelli**: titolo enorme (peso alto), sottotitolo di una riga (peso regolare), coppia CTA. Mai un quarto elemento. Adottato per la Hero e per ogni sezione S13.
-- **Coppia CTA primaria/secondaria**: piena + outline, sempre affiancate, sempre con lo stesso lessico breve ("Scopri di più / Acquista" → per noi: *"Guarda come lavoriamo" / "Contattaci"*). L'oro del logo è il colore della primaria.
-- **Ritmo ad alternanza di fondi** tra sezioni (chiaro/scuro/colore): adottato in S13 in versione nostra — bianco / navy inchiostro / bianco — mai più di due fondi.
+- **Coppia CTA primaria/secondaria**: piena + outline, sempre affiancate, sempre con lo stesso lessico breve ("Scopri di più / Acquista" → per noi: *"Guarda come lavoriamo" / "Contattaci"*). La primaria è **antracite piena con testo bianco** (il pattern Apple/Vercel): nessun colore d'accento sulla CTA — l'autorevolezza viene dal contrasto, non dal colore.
+- **Ritmo ad alternanza di fondi** tra sezioni (chiaro/scuro/colore): adottato in S13 in versione nostra — bianco caldo / antracite / bianco caldo — mai più di due fondi.
 - **Il prodotto è sempre il centro ottico** e la tipografia non lo tocca mai: regola già presente nel concept ("il testo entra a camera quasi ferma"), qui confermata con una metrica: il titolo occupa il terzo superiore, il soggetto i due terzi inferiori.
 
 ---
 
 ## 7. archigreendesigns.com — contro-riferimento
 
-Hero scuro con foto d'interni, titolo enorme con una parola colorata, menu classico: è il template standard degli studi di architettura. Utile perché mostra esattamente ciò da cui distinguersi: nessuna narrazione, nessuna continuità, la foto come sfondo passivo. Nessun elemento adottato. Conferma indiretta: la parola colorata dentro il titolo (GREEN) è un pattern abusato — l'oro Mondial non verrà mai usato per colorare una parola del titolo.
+Hero scuro con foto d'interni, titolo enorme con una parola colorata, menu classico: è il template standard degli studi di architettura. Utile perché mostra esattamente ciò da cui distinguersi: nessuna narrazione, nessuna continuità, la foto come sfondo passivo. Nessun elemento adottato. Conferma indiretta: la parola colorata dentro il titolo (GREEN) è un pattern abusato — nel nostro sistema nessuna parola del titolo verrà mai colorata: la tipografia vive di solo peso e spazio.
 
 ---
 
-## 8. Design tokens v1 (bozza da validare con logo vettoriale e font definitivi)
+## 8. Design tokens v1 — quiet luxury (bozza da validare con logo vettoriale e font definitivi)
+
+**Principio.** Il lusso è silenzioso: la gerarchia nasce da peso tipografico, spazio e contrasto — mai dal colore. Il colore è trattato come materia, non come decorazione: la scala dei neutri fa tutto il lavoro, e l'unico accento è un tono minerale preso dai materiali reali delle foto (travertino/pietra chiara), usato in dosi da dettaglio. Nessun metallico, nessun gradiente dorato, nessun colore "da template AI". Riferimenti di misura: Apple (contrasto e aria), Linear/Vercel (scala di neutri disciplinata), Stripe/Notion (leggibilità come eleganza).
 
 **Palette UI**
 
 | Token | Valore indicativo | Uso |
 |---|---|---|
 | `--bianco` | #FAFAF8 (bianco caldo, mai #FFF puro) | fondo del mondo, Hero, S12 |
-| `--inchiostro` | #1C2733 (navy del logo) | tipografia, linee CAD, monogramma |
-| `--oro` | #E8A13C (oro del logo) | CTA primaria, metro/timeline, evidenziazioni. Un solo accento, usato con avarizia |
-| `--grafite` | #6B7680 | testo secondario, quote CAD a riposo |
+| `--antracite` | #17181A (quasi nero, sottotono freddo) | tipografia primaria, CTA primaria piena, fondi scuri S13, monogramma |
+| `--grigio-600` | #6E7076 | testo secondario, quote CAD a riposo |
+| `--grigio-300` | #C8C8C3 (neutro caldo) | hairline, bordi, tacche del metro a riposo |
+| `--grigio-100` | #EFEFEB | superfici leggere, hover, card |
+| `--pietra` | #8C8377 (greige minerale, dal travertino delle foto reali) | unico accento: stato attivo del metro/timeline, micro-evidenziazioni, focus. Mai su superfici ampie, mai su testo lungo |
+
+**Regole d'uso**
+- CTA primaria: antracite piena, testo bianco. Secondaria: outline grigio-300, testo antracite.
+- Metro/timeline: hairline grigio-300; il tratto percorso si scurisce in antracite; la tacca attiva è `--pietra`.
+- Linee CAD (S02): grigio-600 su bianco, con quote in antracite — inchiostro tecnico, non colore.
+- I colori del logo (navy, oro) compaiono esclusivamente dentro il logo full, nei soli punti in cui il logo full appare (hero, footer, S12). Ovunque altrove: monogramma antracite.
+- Il colore "vero" del sito è nella materia 3D (marmi, legno, pietra): la UI resta neutra proprio per lasciarle il palcoscenico.
 
 **Palette materiali 3D** (dalle foto reali): calacatta bianco venato · marquina nero · rovere caldo · pietra chiara a spacco · ottone brunito (rubinetterie) · vetro.
 
