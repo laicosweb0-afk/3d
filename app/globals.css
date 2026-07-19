@@ -1,0 +1,348 @@
+/* Design tokens v1 — quiet luxury (ART_DIRECTION §8) */
+:root {
+  --bianco: #fafaf8;
+  --antracite: #17181a;
+  --grigio-600: #6e7076;
+  --grigio-300: #c8c8c3;
+  --grigio-100: #efefeb;
+  --pietra: #8c8377;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto,
+    'Helvetica Neue', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: auto;
+}
+
+body {
+  background: var(--bianco);
+  color: var(--antracite);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---- mondo 3D ---- */
+.world {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+.world-canvas {
+  width: 100%;
+  height: 100%;
+}
+.journey-spacer {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ---- chrome persistente ---- */
+.chrome {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.4rem 2rem;
+  pointer-events: none;
+}
+.chrome-logo {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.chrome-cta {
+  pointer-events: auto;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--antracite);
+  text-decoration: none;
+  border: 1px solid var(--grigio-300);
+  border-radius: 999px;
+  padding: 0.5rem 1.1rem;
+  background: color-mix(in srgb, var(--bianco) 75%, transparent);
+  backdrop-filter: blur(8px);
+  transition: border-color 0.25s ease;
+}
+.chrome-cta:hover {
+  border-color: var(--antracite);
+}
+
+/* ---- hero (S01) ---- */
+.hero {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  padding: 0 1.5rem;
+}
+.hero-brand {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--grigio-600);
+  margin-bottom: 2.2rem;
+}
+.hero-title {
+  font-size: clamp(2.4rem, 7vw, 5.4rem);
+  font-weight: 650;
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+}
+.hero-title span {
+  display: block;
+}
+.hero-sub {
+  margin-top: 2rem;
+  font-size: clamp(0.85rem, 1.6vw, 1.05rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--grigio-600);
+}
+.hero-hint {
+  position: absolute;
+  bottom: 2.4rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--grigio-600);
+  animation: hint 2.6s ease-in-out infinite;
+}
+@keyframes hint {
+  0%, 100% { transform: translateY(0); opacity: 0.55; }
+  50% { transform: translateY(0.4rem); opacity: 1; }
+}
+
+/* ---- testi di scena ---- */
+.scene-copy {
+  position: fixed;
+  z-index: 10;
+  left: clamp(1.5rem, 7vw, 6rem);
+  bottom: clamp(4.5rem, 14vh, 9rem);
+  max-width: 26rem;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+}
+.scene-copy--s12 {
+  left: 50%;
+  bottom: 44%;
+  transform: translateX(-50%);
+  text-align: center;
+  max-width: 34rem;
+}
+.scene-copy-kicker {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--pietra);
+  margin-bottom: 0.9rem;
+}
+.scene-copy-title {
+  font-size: clamp(1.5rem, 3.2vw, 2.4rem);
+  font-weight: 620;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+}
+.scene-copy-body {
+  margin-top: 0.9rem;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--grigio-600);
+}
+
+.whiteout {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  background: var(--bianco);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---- il metro (timeline capitoli) ---- */
+.metro {
+  position: fixed;
+  right: clamp(1rem, 3vw, 2.2rem);
+  top: 50%;
+  transform: translateY(-50%);
+  height: min(52vh, 26rem);
+  z-index: 20;
+  display: flex;
+}
+.metro-track {
+  position: relative;
+  width: 1px;
+  background: var(--grigio-300);
+}
+.metro-fill {
+  position: absolute;
+  top: 0;
+  left: -0.5px;
+  width: 2px;
+  height: 0;
+  background: var(--antracite);
+}
+.metro-ticks {
+  position: relative;
+  list-style: none;
+  width: 0;
+}
+.metro-ticks li {
+  position: absolute;
+  right: 0;
+}
+.metro-ticks button {
+  pointer-events: auto;
+  display: block;
+  width: 22px;
+  height: 12px;
+  margin-top: -6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+}
+.metro-ticks button::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 8px;
+  height: 1px;
+  background: var(--grigio-300);
+  transition: width 0.25s ease, background 0.25s ease;
+}
+.metro-ticks li.is-active button::after {
+  width: 14px;
+  background: var(--pietra);
+}
+.metro-ticks button:hover::after {
+  width: 14px;
+  background: var(--antracite);
+}
+.metro-label {
+  position: absolute;
+  right: 26px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: var(--grigio-600);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+.metro-ticks button:hover .metro-label,
+.metro-ticks li.is-active .metro-label {
+  opacity: 1;
+}
+
+/* ---- S13 stub ---- */
+.s13 {
+  position: relative;
+  z-index: 5;
+  background: var(--bianco);
+  min-height: 90svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6rem 1.5rem;
+  border-top: 1px solid var(--grigio-100);
+}
+.s13-kicker {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--grigio-600);
+  margin-bottom: 1.6rem;
+}
+.s13-title {
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  max-width: 22ch;
+}
+.s13-ctas {
+  display: flex;
+  gap: 0.9rem;
+  margin-top: 2.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.btn {
+  display: inline-block;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 0.85rem 1.9rem;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.btn:active {
+  transform: scale(0.985);
+}
+.btn--primary {
+  background: var(--antracite);
+  color: var(--bianco);
+}
+.btn--ghost {
+  color: var(--antracite);
+  border: 1px solid var(--grigio-300);
+}
+.btn--ghost:hover {
+  border-color: var(--antracite);
+}
+.s13-note {
+  margin-top: 2.4rem;
+  font-size: 0.8rem;
+  color: var(--grigio-600);
+}
+
+/* ---- reduced motion ---- */
+.reduced .hero {
+  position: relative;
+  min-height: 100svh;
+}
+
+@media (max-width: 700px) {
+  .metro-label {
+    display: none;
+  }
+  .scene-copy {
+    max-width: 19rem;
+  }
+}
