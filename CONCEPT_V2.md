@@ -3,6 +3,8 @@
 **Stato: in attesa di approvazione.**
 Questo documento risponde alla missione del [Creative Master Brief](./CREATIVE_MASTER_BRIEF.md): analisi critica prima, concept migliorato poi. Nessuna riga di codice viene scritta prima dell'approvazione di questo documento.
 
+> **Aggiornamento 2026-07-19** — Ricevuti i 16 riferimenti visivi (Apple, loftthirtyone, logo, foto reali, concept prima/dopo). L'analisi completa è in [`ART_DIRECTION.md`](./ART_DIRECTION.md); gli aggiornamenti recepiti qui sono contrassegnati con **[AD]**.
+
 ---
 
 ## 0. Verdetto sintetico
@@ -89,9 +91,9 @@ La Hero è bianca e tipografica: pesa nulla. Quindi **la Hero è il loader**: ap
 
 | Input | Blocca | Note |
 |---|---|---|
-| Lista ufficiale completa dei servizi | Concept definitivo (mappa servizi→ambienti) | Il punto più urgente |
-| Logo (vettoriale) | Scena 12 (la metamorfosi casa→logo dipende dalla forma del logo) | Se il logo non ha una forma "architettonica", la Scena 12 va riprogettata sul segno reale |
-| Palette, font, foto reali, concept Higgsfield | Art direction definitiva, Scena 13 | Non blocca l'approvazione del concept |
+| Lista ufficiale completa dei servizi | Concept definitivo (mappa servizi→ambienti) | **[AD] Parzialmente risolto**: il logo dichiara tre pilastri — *Ristrutturazioni · Impianti · Servizi*. Resta da dettagliare le voci sotto ciascun pilastro |
+| Logo (vettoriale) | Scena 12 (la metamorfosi casa→logo dipende dalla forma del logo) | **[AD] Logo ricevuto** (raster): S12 definita sul metro a nastro. Serve versione vettoriale o approvazione del ridisegno fedele (ART_DIRECTION §2.2) |
+| Palette, font, foto reali, concept Higgsfield | Art direction definitiva, Scena 13 | **[AD] Ricevuti** palette (dal logo: navy + oro), 4 foto reali (bagni) e concept prima/dopo. Mancano: font ufficiale, foto di ambienti non-bagno |
 | Tono di voce / lingue (solo IT? IT+EN?) | Copywriting | |
 | Il modello 3D della villa **non esiste** | Tutta la produzione 3D | È il singolo asset più importante del progetto: va modellato ad hoc (Blender), *nato per essere smontato* — stati maquette/reale, stratigrafie separate, interni navigabili, UV per luci baked. Nessun modello di stock potrà mai farlo. |
 | KPI di business (contatti? chiamate? preventivi?) | Misurabilità del successo | Awwwards è un mezzo, non il fine |
@@ -160,7 +162,7 @@ La camera si avvicina alla finestra del bagno; la finestra si apre (ancora: lo s
 Suono: vento leggero, i suoni interni che sfumano.
 
 **S12 · Il nuovo foglio** *(2 vh)*
-Il percorso inverso della nascita, in forma abbreviata e reversibile: la luce torna piatta, i materiali si spengono zona per zona (inverso esatto della S04), la maquette bianca riappare, le linee CAD la riassorbono, e le linee convergono **nel segno del logo** (la meccanica precisa dipende dal logo reale — input richiesto). Il bianco torna assoluto.
+Il percorso inverso della nascita, in forma abbreviata e reversibile: la luce torna piatta, i materiali si spengono zona per zona (inverso esatto della S04), la maquette bianca riappare, le linee CAD la riassorbono. **[AD]** Meccanica finale definita dal logo reale (globo + metro a nastro): le linee si riavvolgono come un nastro graduato, il nastro avvolge il volume che si fa sfera — ed è il logo Mondial Service. Il bianco torna assoluto.
 Copy-cerniera, sola sullo schermo: *"Questa casa non esiste. La tua, iniziamo a disegnarla."* → CTA primaria.
 
 **S13 · Le sezioni Apple** *(scroll libero, nativo, nessuna regia)*
