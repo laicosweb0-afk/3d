@@ -432,11 +432,12 @@ export function Ground() {
     }
   });
 
-  // Non illuminato: il terreno è il foglio, si fonde con il fondo.
+  // Non illuminato e fuori dal tone mapping: il terreno è il foglio,
+  // si fonde con il fondo senza linea d'orizzonte.
   return (
     <mesh rotation-x={-Math.PI / 2} position={[0, -0.01, 0]}>
       <circleGeometry args={[60, 48]} />
-      <meshBasicMaterial ref={mat} color="#FAFAF8" />
+      <meshBasicMaterial ref={mat} color="#FAFAF8" toneMapped={false} />
     </mesh>
   );
 }

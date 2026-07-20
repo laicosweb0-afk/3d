@@ -7,6 +7,7 @@ export const COMPANY = {
   phoneHref: 'tel:+393297003558',
   whatsappHref: 'https://wa.me/393297003558',
   address: 'Via Giacomo Matteotti, 10 – 40027 Mordano (BO)',
+  mapsHref: 'https://www.google.com/maps/search/?api=1&query=Via+Giacomo+Matteotti+10%2C+40027+Mordano+BO',
   website: 'https://www.mondialservicesrl.it',
   email: null as string | null, // in attesa dal cliente
   piva: '03999921208',

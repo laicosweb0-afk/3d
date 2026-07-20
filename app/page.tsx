@@ -113,6 +113,10 @@ export default function Page() {
         </div>
         <address className="contatti-info">
           {COMPANY.address}
+          {' · '}
+          <a className="maps-link" href={COMPANY.mapsHref} target="_blank" rel="noopener">
+            Apri in Maps ↗
+          </a>
           <br />
           Disponibili 24 ore su 24, 7 giorni su 7.
         </address>

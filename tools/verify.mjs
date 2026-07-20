@@ -6,7 +6,8 @@ const VH = [
   ['s11', 1.5], ['s12', 2.0],
 ];
 const TOTAL = VH.reduce((a, [, v]) => a + v, 0);
-const H = 900;
+const W = parseInt(process.env.WIDTH ?? '1440', 10);
+const H = parseInt(process.env.HEIGHT ?? '900', 10);
 const totalScroll = (TOTAL - 1) * H;
 
 function pAt(id, t) {
@@ -37,7 +38,7 @@ const SHOTS = [
 ];
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
-const page = await browser.newPage({ viewport: { width: 1440, height: H } });
+const page = await browser.newPage({ viewport: { width: W, height: H } });
 const errors = [];
 page.on('pageerror', (e) => errors.push(String(e)));
 page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
@@ -48,7 +49,7 @@ await page.waitForTimeout(2500);
 for (const [name, p] of SHOTS) {
   const targetY = Math.min(p * totalScroll, totalScroll + H);
   const currentY = await page.evaluate(() => window.scrollY);
-  await page.mouse.move(720, 450);
+  await page.mouse.move(W / 2, H / 2);
   await page.mouse.wheel(0, targetY - currentY);
   await page.waitForTimeout(2600);
   await page.screenshot({ path: `${process.env.SHOTDIR}/${name}.png` });
