@@ -119,7 +119,8 @@ export default function Page() {
       </section>
 
       <footer className="footer">
-        <span>{COMPANY.name}</span>
+        <span>© {new Date().getFullYear()} {COMPANY.name}</span>
+        {COMPANY.piva && <span>P.IVA {COMPANY.piva}</span>}
         <span>{COMPANY.address}</span>
         <a href={COMPANY.phoneHref}>{COMPANY.phone}</a>
         <a href={COMPANY.website} rel="noopener">www.mondialservicesrl.it</a>

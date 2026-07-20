@@ -9,7 +9,7 @@ export const COMPANY = {
   address: 'Via Giacomo Matteotti, 10 – 40027 Mordano (BO)',
   website: 'https://www.mondialservicesrl.it',
   email: null as string | null, // in attesa dal cliente
-  piva: null as string | null,  // in attesa dal cliente
+  piva: '03999921208',
   claims: [
     { title: 'Garanzia e affidabilità', body: 'Ogni intervento è garantito e seguito da un unico interlocutore, dall’inizio alla fine.' },
     { title: 'Disponibili 24 ore su 24', body: 'Le urgenze non hanno orari. Noi nemmeno.' },

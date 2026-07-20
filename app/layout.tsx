@@ -22,6 +22,7 @@ const jsonLd = {
     addressCountry: 'IT',
   },
   openingHours: 'Mo-Su 00:00-24:00',
+  vatID: 'IT03999921208',
   makesOffer: ['Ristrutturazioni', 'Impianti', 'Servizi'].map((s) => ({
     '@type': 'Offer',
     itemOffered: { '@type': 'Service', name: s },
