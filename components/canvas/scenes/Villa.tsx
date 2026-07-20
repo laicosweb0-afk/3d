@@ -1,9 +1,9 @@
 'use client';
 
-// La villa placeholder di M1. Geometrie grigie, ma con la struttura dati
-// definitiva: buildOrder per la costruzione (S03), materiali sweep per la
-// lama (S04), gruppi apribili per parete (S08) e stratigrafia (S09).
-// In M2 le box diventano il modello Blender: i contratti restano questi.
+// La villa M2: stessa regia e stessi contratti di M1 (buildOrder, lama,
+// gruppi apribili), qualità artistica dei materiali dalle foto reali
+// Mondial Service: intonaco caldo, pietra a spacco, rovere, calacatta,
+// marquina, serramenti scuri. Geometrie ancora low-poly ma credibili.
 
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
@@ -15,10 +15,10 @@ import {
 import { progress } from '@/lib/progress';
 import { smooth, span, clamp01 } from '@/lib/scenes';
 import { sweepMaterial, sweepUniform } from '../materials/sweep';
+import { brandTextures } from '../materials/procedural';
 
-const BUILD_STEPS = 8; // gruppi di costruzione 0..7
+const BUILD_STEPS = 8;
 
-/** ScaleY di un gruppo di costruzione: finestre scaglionate su buildProgress. */
 function buildScale(bp: number, order: number): number {
   const start = (order / BUILD_STEPS) * 0.82;
   return smooth(span(bp, start, start + 0.18));
@@ -32,12 +32,42 @@ interface BlockProps {
   rotY?: number;
 }
 
-/** Volume che si costruisce dal basso (origine alla base). */
 function Block({ size, at, mat, order, rotY = 0 }: BlockProps) {
   return (
     <group position={at} rotation-y={rotY} userData={{ order }}>
-      <mesh position={[0, size[1] / 2, 0]} material={mat} castShadow>
+      <mesh position={[0, size[1] / 2, 0]} material={mat}>
         <boxGeometry args={size} />
+      </mesh>
+    </group>
+  );
+}
+
+/** Serramento: cornice a 4 profili + lastra arretrata (mai telaio pieno). */
+function Window({
+  at, w, h, mats, rotY = 0, order = 6,
+}: {
+  at: [number, number, number];
+  w: number; h: number;
+  mats: { telaio: THREE.Material; vetro: THREE.Material };
+  rotY?: number; order?: number;
+}) {
+  const t = 0.08, d = 0.09;
+  return (
+    <group position={at} rotation-y={rotY} userData={{ order }}>
+      <mesh position={[0, h + t / 2, 0]} material={mats.telaio}>
+        <boxGeometry args={[w + 2 * t, t, d]} />
+      </mesh>
+      <mesh position={[0, -t / 2, 0]} material={mats.telaio}>
+        <boxGeometry args={[w + 2 * t, t, d]} />
+      </mesh>
+      <mesh position={[-(w + t) / 2, h / 2, 0]} material={mats.telaio}>
+        <boxGeometry args={[t, h, d]} />
+      </mesh>
+      <mesh position={[(w + t) / 2, h / 2, 0]} material={mats.telaio}>
+        <boxGeometry args={[t, h, d]} />
+      </mesh>
+      <mesh position={[0, h / 2, -0.015]} material={mats.vetro}>
+        <boxGeometry args={[w, h, 0.02]} />
       </mesh>
     </group>
   );
@@ -58,24 +88,41 @@ export function Villa() {
   const slabGroup = useRef<THREE.Group>(null);
   const lampLight = useRef<THREE.PointLight>(null);
   const lampMat = useRef<THREE.MeshStandardMaterial>(null);
+  const glowWin = useRef<THREE.MeshStandardMaterial>(null);
 
-  const M = useMemo(() => ({
-    muro: sweepMaterial('#EAE6DD'),
-    pilastro: sweepMaterial('#DDD9D0'),
-    tetto: sweepMaterial('#595C61', { roughness: 0.7 }),
-    pavimento: sweepMaterial('#8F7A62', { roughness: 0.6 }),
-    porta: sweepMaterial('#816448', { roughness: 0.55 }),
-    arredo: sweepMaterial('#C9C4B9', { roughness: 0.8 }),
-    ceramica: sweepMaterial('#F4F2EE', { roughness: 0.3 }),
-    piastrella: sweepMaterial('#E5E1D8', { roughness: 0.4 }),
-    massetto: sweepMaterial('#BDB9B0', { roughness: 0.95 }),
-    serpentina: sweepMaterial('#B0503C', { roughness: 0.5 }),
-    isolante: sweepMaterial('#C4BBA8', { roughness: 0.95 }),
-    soletta: sweepMaterial('#A9A59D', { roughness: 0.95 }),
-    intonaco: sweepMaterial('#EDE9E0'),
-    montante: sweepMaterial('#8E959C', { roughness: 0.6 }),
-    tubo: sweepMaterial('#6E7076', { roughness: 0.5 }),
-  }), []);
+  const T = useMemo(() => brandTextures(), []);
+
+  const M = useMemo(() => {
+    const rovereScuro = T.rovere.clone();
+    rovereScuro.repeat.set(1.2, 1.1);
+    return {
+      muro: sweepMaterial('#E6DFD2', { roughness: 0.85 }),
+      pietraFacciata: sweepMaterial('#FFFFFF', { map: T.pietra, roughness: 0.9 }),
+      pilastro: sweepMaterial('#E3E0D8', { roughness: 0.8 }),
+      tetto: sweepMaterial('#3E4145', { roughness: 0.45, metalness: 0.35, envMapIntensity: 0.9 }),
+      pavimento: sweepMaterial('#FFFFFF', { map: T.rovere, roughness: 0.55, envMapIntensity: 0.5 }),
+      porta: sweepMaterial('#A8906F', { map: rovereScuro, roughness: 0.5 }),
+      telaio: sweepMaterial('#3A3D42', { roughness: 0.4, metalness: 0.6, envMapIntensity: 1 }),
+      vetro: new THREE.MeshStandardMaterial({
+        color: '#C9D6D8', transparent: true, opacity: 0.26,
+        roughness: 0.06, metalness: 0.1, envMapIntensity: 1.6,
+      }),
+      arredo: sweepMaterial('#C9C3B8', { roughness: 0.95 }),
+      arredoScuro: sweepMaterial('#4A463F', { roughness: 0.7 }),
+      calacatta: sweepMaterial('#FFFFFF', { map: T.calacatta, roughness: 0.3, envMapIntensity: 1.1 }),
+      marquina: sweepMaterial('#FFFFFF', { map: T.marquina, roughness: 0.22, envMapIntensity: 1.3 }),
+      ceramica: sweepMaterial('#F6F4F0', { roughness: 0.12, envMapIntensity: 1.2 }),
+      metallo: sweepMaterial('#8A8D92', { roughness: 0.3, metalness: 0.85, envMapIntensity: 1.3 }),
+      piastrella: sweepMaterial('#FFFFFF', { map: T.marquina, roughness: 0.25, envMapIntensity: 1.2 }),
+      massetto: sweepMaterial('#BDB9B0', { roughness: 0.95 }),
+      serpentina: sweepMaterial('#B0503C', { roughness: 0.5 }),
+      isolante: sweepMaterial('#C4BBA8', { roughness: 0.95 }),
+      soletta: sweepMaterial('#A9A59D', { roughness: 0.95 }),
+      intonaco: sweepMaterial('#EDE9E0', { roughness: 0.9 }),
+      montante: sweepMaterial('#8E959C', { roughness: 0.6, metalness: 0.3 }),
+      tubo: sweepMaterial('#6E7076', { roughness: 0.5 }),
+    };
+  }, [T]);
 
   const serpentineGeo = useMemo(() => {
     const pts: THREE.Vector3[] = [];
@@ -90,14 +137,28 @@ export function Villa() {
     return new THREE.TubeGeometry(curve, 220, 0.035, 10, false);
   }, []);
 
+  // vasca freestanding: profilo tornito liscio, chiuso sul bordo
+  const tubGeo = useMemo(() => {
+    const profile: THREE.Vector2[] = [
+      new THREE.Vector2(0.001, 0),
+      new THREE.Vector2(0.26, 0.004),
+      new THREE.Vector2(0.35, 0.07),
+      new THREE.Vector2(0.4, 0.22),
+      new THREE.Vector2(0.42, 0.42),
+      new THREE.Vector2(0.42, 0.53),
+      new THREE.Vector2(0.38, 0.55),
+      new THREE.Vector2(0.33, 0.53),
+      new THREE.Vector2(0.31, 0.42),
+    ];
+    return new THREE.LatheGeometry(profile, 32);
+  }, []);
+
   useFrame(() => {
     const p = progress.smoothed;
     if (!root.current) return;
 
-    // S04/S12 — lama di trasformazione (uniform globale)
     sweepUniform.value = sweepX(p);
 
-    // S03 — costruzione: scala dal suolo per buildOrder
     const bp = buildProgress(p);
     root.current.traverse((o) => {
       const order = (o.userData as { order?: number }).order;
@@ -107,13 +168,9 @@ export function Villa() {
       o.visible = s > 0.001;
     });
 
-    // S06 — la porta si apre con lo scroll (verso l'interno)
     if (doorRef.current) doorRef.current.rotation.y = doorOpen(p) * 1.9;
-
-    // S11 — la finestra si apre per l'uscita
     if (windowRef.current) windowRef.current.rotation.y = windowOpen(p) * 1.65;
 
-    // S08 — spaccato della parete: le pelli scorrono, gli strati si mostrano
     const w = wallOpen(p);
     const w2 = smooth(span(w, 0.35, 1));
     if (wallL.current) wallL.current.position.x = -1.125 - w * 0.95;
@@ -121,7 +178,6 @@ export function Villa() {
     if (insL.current) insL.current.position.x = -1.05 - w2 * 0.4;
     if (insR.current) insR.current.position.x = 1.05 + w2 * 0.4;
 
-    // S09 — esploso della stratigrafia (il bagno sale con la sua piastrella)
     const e = strataOpen(p);
     if (tileGroup.current) tileGroup.current.position.y = e * 0.95;
     if (screedGroup.current) screedGroup.current.position.y = e * 0.55;
@@ -129,19 +185,21 @@ export function Villa() {
     if (insulGroup.current) insulGroup.current.position.y = -e * 0.06;
     if (slabGroup.current) slabGroup.current.position.y = -e * 0.18;
 
-    // S10-bis — la casa si accende
     const glow = lightsOn(p);
     if (lampLight.current) lampLight.current.intensity = glow * 6;
     if (lampMat.current) lampMat.current.emissiveIntensity = glow * 4;
+    if (glowWin.current) glowWin.current.emissiveIntensity = glow * 1.6;
   });
+
+  const winMats = { telaio: M.telaio, vetro: M.vetro };
 
   return (
     <group ref={root}>
-      {/* ordine 0 — fondazioni (fronte pieno; zona bagno ribassata per la stratigrafia) */}
+      {/* ordine 0 — fondazioni */}
       <Block size={[10.6, 0.35, 5.8]} at={[0, 0, 1.4]} mat={M.soletta} order={0} />
       <Block size={[10.6, 0.15, 2.9]} at={[0, 0, -2.9]} mat={M.soletta} order={0} />
 
-      {/* ordine 1 — pavimenti interni */}
+      {/* ordine 1 — pavimenti interni (rovere) */}
       <Block size={[9.8, 0.06, 5.4]} at={[0, 0.35, 1.15]} mat={M.pavimento} order={1} />
       <Block size={[5.4, 0.26, 2.4]} at={[2.25, 0.15, -2.7]} mat={M.pavimento} order={1} />
 
@@ -150,34 +208,32 @@ export function Villa() {
         <Block key={i} size={[0.35, 3, 0.35]} at={[x, 0.35, z]} mat={M.pilastro} order={2} />
       ))}
 
-      {/* ordine 3 — muri perimetrali */}
+      {/* ordine 3 — muri perimetrali (facciata: intonaco + settore in pietra) */}
       <Block size={[10, 3, 0.3]} at={[0, 0.35, -3.85]} mat={M.muro} order={3} />
-      <Block size={[4.4, 3, 0.3]} at={[-2.8, 0.35, 3.85]} mat={M.muro} order={3} />
+      <Block size={[4.4, 3, 0.3]} at={[-2.8, 0.35, 3.85]} mat={M.pietraFacciata} order={3} />
       <Block size={[4.4, 3, 0.3]} at={[2.8, 0.35, 3.85]} mat={M.muro} order={3} />
       <Block size={[1.2, 0.8, 0.3]} at={[0, 2.55, 3.85]} mat={M.muro} order={3} />
       <Block size={[0.3, 3, 8]} at={[4.85, 0.35, 0]} mat={M.muro} order={3} />
-      {/* parete ovest con vano finestra (bagno) */}
       <Block size={[0.3, 3, 6.45]} at={[-4.85, 0.35, 0.775]} mat={M.muro} order={3} />
       <Block size={[0.3, 3, 0.45]} at={[-4.85, 0.35, -3.775]} mat={M.muro} order={3} />
       <Block size={[0.3, 0.6, 1.1]} at={[-4.85, 0.35, -3.0]} mat={M.muro} order={3} />
       <Block size={[0.3, 1.0, 1.1]} at={[-4.85, 2.35, -3.0]} mat={M.muro} order={3} />
 
-      {/* ordine 4 — copertura + soffitto interno */}
-      <Block size={[10.8, 0.35, 8.8]} at={[0, 3.35, 0]} mat={M.tetto} order={4} />
+      {/* ordine 4 — copertura sottile scura + soffitto */}
+      <Block size={[10.8, 0.22, 8.8]} at={[0, 3.35, 0]} mat={M.tetto} order={4} />
       <group position={[0, 3.34, 0]} userData={{ order: 4 }}>
         <mesh rotation-x={Math.PI / 2} material={M.intonaco}>
           <planeGeometry args={[9.8, 7.8]} />
         </mesh>
       </group>
 
-      {/* ordine 5 — parete interna attrezzata (S08), z = -1.5 */}
+      {/* ordine 5 — parete interna attrezzata (S08) */}
       <group position={[-2.75, 0.35, -1.5]} userData={{ order: 5 }}>
-        {/* pelli che si aprono */}
         <group ref={wallL} position={[-1.125, 0, 0]}>
           <mesh position={[0, 1.5, 0.1]} material={M.intonaco}>
             <boxGeometry args={[2.25, 3, 0.05]} />
           </mesh>
-          <mesh position={[0, 1.5, -0.1]} material={M.intonaco}>
+          <mesh position={[0, 1.5, -0.1]} material={M.calacatta}>
             <boxGeometry args={[2.25, 3, 0.05]} />
           </mesh>
         </group>
@@ -185,17 +241,15 @@ export function Villa() {
           <mesh position={[0, 1.5, 0.1]} material={M.intonaco}>
             <boxGeometry args={[2.25, 3, 0.05]} />
           </mesh>
-          <mesh position={[0, 1.5, -0.1]} material={M.intonaco}>
+          <mesh position={[0, 1.5, -0.1]} material={M.calacatta}>
             <boxGeometry args={[2.25, 3, 0.05]} />
           </mesh>
         </group>
-        {/* struttura: montanti (fuori dalla traiettoria della camera) */}
         {[-1.6, -0.35, 1.5].map((x) => (
           <mesh key={x} position={[x, 1.5, 0]} material={M.montante}>
             <boxGeometry args={[0.12, 3, 0.09]} />
           </mesh>
         ))}
-        {/* isolamento */}
         <group ref={insL} position={[-1.05, 0, 0]}>
           <mesh position={[0, 1.45, -0.035]} material={M.isolante}>
             <boxGeometry args={[1.15, 2.8, 0.07]} />
@@ -206,7 +260,6 @@ export function Villa() {
             <boxGeometry args={[1.15, 2.8, 0.07]} />
           </mesh>
         </group>
-        {/* impianti: corrugati e scatola */}
         {[0.75, 1.05].map((y) => (
           <mesh key={y} position={[0, y, 0.045]} rotation-z={Math.PI / 2} material={M.tubo}>
             <cylinderGeometry args={[0.022, 0.022, 2.8, 10]} />
@@ -217,23 +270,47 @@ export function Villa() {
         </mesh>
       </group>
 
+      {/* rivestimenti bagno: fascia marquina + parete calacatta (dalla foto reale) */}
+      <Block size={[4.35, 2.55, 0.05]} at={[-2.75, 0.36, -3.67]} mat={M.calacatta} order={5} />
+      <Block size={[0.05, 1.2, 0.85]} at={[-4.66, 0.36, -1.98]} mat={M.marquina} order={5} />
+      <Block size={[0.05, 0.55, 1.2]} at={[-4.66, 0.36, -3.0]} mat={M.marquina} order={5} />
+      <Block size={[0.05, 1.2, 0.35]} at={[-4.66, 0.36, -3.78]} mat={M.marquina} order={5} />
+
       {/* ordine 6 — serramenti */}
       <group position={[-0.6, 0.35, 3.85]} userData={{ order: 6 }}>
         <group ref={doorRef}>
           <mesh position={[0.6, 1.1, 0]} material={M.porta}>
             <boxGeometry args={[1.18, 2.2, 0.07]} />
           </mesh>
+          <mesh position={[1.05, 1.1, 0.06]} material={M.metallo}>
+            <cylinderGeometry args={[0.015, 0.015, 0.3, 8]} />
+          </mesh>
         </group>
       </group>
+      <Window at={[2.8, 1.3, 4.02]} w={1.7} h={1.45} mats={winMats} />
+      <Window at={[5.03, 0.85, 0.7]} w={2.7} h={1.85} mats={winMats} rotY={Math.PI / 2} />
       <group position={[-4.85, 0.95, -2.45]} userData={{ order: 6 }}>
         <group ref={windowRef}>
-          <mesh position={[0, 0.7, -0.55]} material={M.ceramica}>
-            <boxGeometry args={[0.05, 1.4, 1.08]} />
+          {/* anta della finestra del bagno: cornice + lastra */}
+          <mesh position={[0, 1.38, -0.55]} material={M.telaio}>
+            <boxGeometry args={[0.06, 0.08, 1.12]} />
+          </mesh>
+          <mesh position={[0, 0.02, -0.55]} material={M.telaio}>
+            <boxGeometry args={[0.06, 0.08, 1.12]} />
+          </mesh>
+          <mesh position={[0, 0.7, -0.03]} material={M.telaio}>
+            <boxGeometry args={[0.06, 1.44, 0.08]} />
+          </mesh>
+          <mesh position={[0, 0.7, -1.07]} material={M.telaio}>
+            <boxGeometry args={[0.06, 1.44, 0.08]} />
+          </mesh>
+          <mesh position={[0, 0.7, -0.55]} material={M.vetro}>
+            <boxGeometry args={[0.02, 1.28, 0.96]} />
           </mesh>
         </group>
       </group>
 
-      {/* stratigrafia del bagno (S09), zona x -5..-0.5, z -4..-1.5 */}
+      {/* stratigrafia del bagno (S09) */}
       <group position={[-2.75, 0, -2.75]} userData={{ order: 1 }}>
         <group ref={slabGroup}>
           <mesh position={[0, 0.22, 0]} material={M.soletta}>
@@ -253,18 +330,36 @@ export function Villa() {
             <boxGeometry args={[4.4, 0.05, 2.4]} />
           </mesh>
         </group>
-        {/* il bagno sale con la sua piastrella */}
+        {/* il bagno sale con la sua piastrella (marquina) */}
         <group ref={tileGroup}>
           <mesh position={[0, 0.465, 0]} material={M.piastrella}>
             <boxGeometry args={[4.4, 0.03, 2.4]} />
           </mesh>
-          {/* vasca freestanding (dalla foto reale marquina/calacatta) */}
-          <mesh position={[-1.55, 0.76, -0.55]} material={M.ceramica}>
-            <boxGeometry args={[1.6, 0.56, 0.78]} />
+          {/* vasca freestanding + rubinetteria (dalla foto marquina/calacatta) */}
+          <mesh
+            geometry={tubGeo}
+            material={M.ceramica}
+            position={[-1.55, 0.49, -0.55]}
+            scale={[1.7, 1.0, 1.05]}
+          />
+          <mesh position={[-2.2, 0.75, -0.9]} material={M.metallo}>
+            <cylinderGeometry args={[0.02, 0.02, 0.65, 8]} />
           </mesh>
-          <mesh position={[1.6, 0.87, -0.9]} material={M.arredo}>
-            <boxGeometry args={[0.85, 0.78, 0.42]} />
+          <mesh position={[-2.2, 1.08, -0.82]} rotation-x={Math.PI / 2.4} material={M.metallo}>
+            <cylinderGeometry args={[0.013, 0.013, 0.22, 8]} />
           </mesh>
+          {/* mobile bagno: rovere + top calacatta + lavabo */}
+          <group position={[1.6, 0, -0.9]}>
+            <mesh position={[0, 0.75, 0]} material={M.porta}>
+              <boxGeometry args={[0.95, 0.55, 0.45]} />
+            </mesh>
+            <mesh position={[0, 1.05, 0]} material={M.calacatta}>
+              <boxGeometry args={[1.0, 0.04, 0.5]} />
+            </mesh>
+            <mesh position={[0, 1.12, 0]} material={M.ceramica}>
+              <cylinderGeometry args={[0.16, 0.19, 0.13, 20]} />
+            </mesh>
+          </group>
         </group>
         {/* lampada del bagno (S10-bis) */}
         <mesh position={[-0.5, 3.28, -0.3]} rotation-x={Math.PI / 2}>
@@ -279,10 +374,44 @@ export function Villa() {
         <pointLight ref={lampLight} position={[-0.5, 2.6, -0.3]} color="#FFD9A0" intensity={0} distance={7} decay={1.6} />
       </group>
 
-      {/* ordine 7 — arredi del soggiorno */}
-      <Block size={[2.0, 0.7, 0.9]} at={[2.2, 0.41, 1.7]} mat={M.arredo} order={7} />
-      <Block size={[1.1, 0.34, 0.7]} at={[1.8, 0.41, -0.1]} mat={M.arredo} order={7} />
-      <Block size={[0.45, 0.5, 2.4]} at={[4.4, 0.41, 0.4]} mat={M.arredo} order={7} />
+      {/* finestre che si accendono (S10-bis, viste da fuori in S11) */}
+      <group position={[2.8, 1.3, 3.99]} userData={{ order: 6 }}>
+        <mesh position={[0, 0.725, 0]}>
+          <planeGeometry args={[1.6, 1.35]} />
+          <meshStandardMaterial
+            ref={glowWin}
+            color="#DDE3E4"
+            emissive="#FFD9A0"
+            emissiveIntensity={0}
+            transparent
+            opacity={0.55}
+          />
+        </mesh>
+      </group>
+
+      {/* ordine 7 — arredi soggiorno */}
+      <group position={[2.2, 0.41, 1.7]} userData={{ order: 7 }}>
+        <mesh position={[0, 0.22, 0]} material={M.arredo}>
+          <boxGeometry args={[2.0, 0.42, 0.9]} />
+        </mesh>
+        <mesh position={[0, 0.55, -0.36]} material={M.arredo}>
+          <boxGeometry args={[2.0, 0.5, 0.18]} />
+        </mesh>
+        {[-0.5, 0.5].map((x) => (
+          <mesh key={x} position={[x, 0.48, 0.02]} material={M.arredo}>
+            <boxGeometry args={[0.9, 0.14, 0.75]} />
+          </mesh>
+        ))}
+      </group>
+      <group position={[1.8, 0.41, -0.1]} userData={{ order: 7 }}>
+        <mesh position={[0, 0.32, 0]} material={M.calacatta}>
+          <boxGeometry args={[1.1, 0.05, 0.7]} />
+        </mesh>
+        <mesh position={[0, 0.15, 0]} material={M.arredoScuro}>
+          <boxGeometry args={[0.9, 0.3, 0.5]} />
+        </mesh>
+      </group>
+      <Block size={[0.45, 0.5, 2.4]} at={[4.4, 0.41, 0.4]} mat={M.arredoScuro} order={7} />
     </group>
   );
 }
