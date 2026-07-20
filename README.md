@@ -10,6 +10,7 @@ Un unico piano sequenza: il visitatore assiste alla trasformazione di uno spazio
 | [CONCEPT_V2.md](./CONCEPT_V2.md) | Analisi critica e concept approvato |
 | [ART_DIRECTION.md](./ART_DIRECTION.md) | Analisi dei riferimenti, palette quiet-luxury, token |
 | [DIRECTION_V3.md](./DIRECTION_V3.md) | Riallineamento identità: impresa edile premium, tema = trasformazione |
+| [DIRECTION_V4.md](./DIRECTION_V4.md) | Il reale come protagonista: le finestre di realtà nel viaggio |
 | [TECH_ARCHITECTURE.md](./TECH_ARCHITECTURE.md) | Architettura tecnica e milestone |
 
 ## Stato

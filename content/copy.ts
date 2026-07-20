@@ -27,7 +27,7 @@ export const JOURNEY_COPY: SceneCopy[] = [
     title: 'Dal primo sopralluogo alla consegna delle chiavi.',
   },
   {
-    scene: 's07', from: 0.3, to: 0.9,
+    scene: 's07', from: 0.22, to: 0.5,
     kicker: 'Trasformare gli spazi',
     title: 'Ristrutturazioni complete.',
     body: 'Il tuo spazio, trasformato e consegnato finito. Un unico interlocutore, dall’inizio alla fine.',
@@ -39,13 +39,13 @@ export const JOURNEY_COPY: SceneCopy[] = [
     body: 'Isolamento, struttura, impianti: il lavoro a regola d’arte è quello che non si vede.',
   },
   {
-    scene: 's09', from: 0.35, to: 0.8,
+    scene: 's09', from: 0.26, to: 0.5,
     kicker: 'La qualità invisibile',
     title: 'Sotto ogni pavimento, un lavoro fatto per durare.',
     body: 'Massetti, riscaldamento radiante, tubazioni: progettati e posati una volta, bene.',
   },
   {
-    scene: 's10', from: 0.3, to: 0.9,
+    scene: 's10', from: 0.16, to: 0.4,
     kicker: 'Il benessere quotidiano',
     title: 'Bagni chiavi in mano.',
     body: 'Dal massetto alla rubinetteria: tu scegli i materiali, noi consegniamo finito.',

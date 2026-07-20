@@ -8,6 +8,7 @@ import gsap from 'gsap';
 import { World } from './canvas/World';
 import { Hero } from './dom/Hero';
 import { Overlays } from './dom/Overlays';
+import { RealityWindows } from './dom/RealityWindows';
 import { TimelineMetro } from './dom/TimelineMetro';
 import { initScroll } from '@/lib/scroll';
 import { TOTAL_VH } from '@/lib/scenes';
@@ -112,6 +113,7 @@ export function ExperienceRoot() {
         style={{ height: `${TOTAL_VH * 100}svh` }}
       />
       <Hero />
+      <RealityWindows />
       <Overlays />
       <TimelineMetro />
       <header className="chrome">
