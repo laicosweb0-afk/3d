@@ -16,7 +16,9 @@ Un unico piano sequenza: il visitatore assiste alla trasformazione di uno spazio
 
 - **M0 — scaffold**: fatto (Next 15 + React 19 + R3F 9 + GSAP/ScrollTrigger + Lenis + Zustand).
 - **M1 — prototipo di regia**: fatto. Camera path completo e transizioni-firma: costruzione (S03), lama di trasformazione (S04), spaccato parete (S08), esploso stratigrafia con serpentina (S09), accensione (S10-bis).
-- **M2 — passata materica (in-engine)**: fatto. Materiali dalle foto reali (calacatta, marquina, rovere, pietra a spacco) come texture procedurali a runtime (`components/canvas/materials/procedural.ts`); serramenti scuri con vetro, vasca tornita, environment softbox + ombre di contatto. Le versioni fotografiche delle texture sono state generate con Higgsfield (nella libreria del progetto) ma la policy di rete della sessione ne blocca il download: si integrano in produzione sostituendo le mappe, senza toccare i materiali. La geometria resta low-poly ma con proporzioni e dettagli credibili; l'eventuale passata DCC (Blender) può sostituire il modello senza cambiare i contratti di regia.
+- **M2 — passata materica**: fatto. Texture fotografiche dei materiali reali (calacatta, marquina, rovere, pietra a spacco) fornite dal cliente via Higgsfield, integrate nei materiali sweep.
+- **M3 — realismo, suono, motion**: fatto. Ombre morbide reali (sole con shadow map), luce calda interna, micro-dettagli discreti (battiscopa, cornici, quadri, libri, pianta, lampada, asciugamani); sound design procedurale WebAudio opt-in (vento, sub, micro-impatti di cantiere, room tone, whoosh legati alla velocità) tutto `f(p)`; motion design con reveal delle sezioni e ingresso hero a easing cinematografico, rispettoso di `prefers-reduced-motion`.
+- **M4 — sezioni finali**: fatto. Metodo, Opere (prima/dopo dal mondo 3D), Ambienti, Materiali, Servizi, Garanzie, Contatti con dati reali (telefono, WhatsApp, email, P.IVA, Maps).
 
 ## Sviluppo
 

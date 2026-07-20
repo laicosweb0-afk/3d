@@ -41,6 +41,7 @@ export function World() {
   return (
     <Canvas
       className="world-canvas"
+      shadows="soft"
       camera={{ position: [0, 2.2, 16.5], fov: 40, near: 0.1, far: 120 }}
       dpr={[1, 1.75]}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
@@ -48,10 +49,25 @@ export function World() {
         scene.background = new THREE.Color('#FAFAF8');
       }}
     >
-      <ambientLight intensity={0.5} />
+      <ambientLight intensity={0.45} />
       <hemisphereLight intensity={0.35} color="#FFFFFF" groundColor="#D8D4CC" />
-      <directionalLight position={[6, 11, 5]} intensity={1.25} color="#FFF6EA" />
+      <directionalLight
+        position={[6, 11, 5]}
+        intensity={1.25}
+        color="#FFF6EA"
+        castShadow
+        shadow-mapSize={[2048, 2048]}
+        shadow-bias={-0.0004}
+        shadow-normalBias={0.02}
+        shadow-camera-left={-10}
+        shadow-camera-right={10}
+        shadow-camera-top={10}
+        shadow-camera-bottom={-10}
+        shadow-camera-far={40}
+      />
       <directionalLight position={[-8, 6, -6]} intensity={0.3} color="#EAF0F4" />
+      {/* luce calda interna, discreta: la casa non è mai fredda */}
+      <pointLight position={[1.5, 2.6, 1]} intensity={0.35} color="#FFE9CE" distance={9} decay={1.8} />
       <CameraRig />
       <QualityManager />
       <Suspense fallback={null}>

@@ -12,6 +12,7 @@ const jsonLd = {
   '@type': 'LocalBusiness',
   name: 'Mondial Service Srl',
   telephone: '+393297003558',
+  email: 'mmondial.servicee@gmail.com',
   url: 'https://www.mondialservicesrl.it',
   address: {
     '@type': 'PostalAddress',

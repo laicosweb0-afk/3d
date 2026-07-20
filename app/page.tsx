@@ -134,6 +134,7 @@ export default function Page() {
         <div className="s13-ctas">
           <a className="btn btn--primary" href={COMPANY.whatsappHref}>Scrivici su WhatsApp</a>
           <a className="btn btn--ghost" href={COMPANY.phoneHref}>{COMPANY.phone}</a>
+          <a className="btn btn--ghost" href={COMPANY.emailHref}>Scrivici una email</a>
         </div>
         <address className="contatti-info">
           {COMPANY.address}
@@ -151,6 +152,7 @@ export default function Page() {
         {COMPANY.piva && <span>P.IVA {COMPANY.piva}</span>}
         <span>{COMPANY.address}</span>
         <a href={COMPANY.phoneHref}>{COMPANY.phone}</a>
+        <a href={COMPANY.emailHref}>{COMPANY.email}</a>
         <a href={COMPANY.website} rel="noopener">www.mondialservicesrl.it</a>
       </footer>
     </main>

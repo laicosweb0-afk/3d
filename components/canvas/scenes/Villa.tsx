@@ -5,7 +5,7 @@
 // Mondial Service: intonaco caldo, pietra a spacco, rovere, calacatta,
 // marquina, serramenti scuri. Geometrie ancora low-poly ma credibili.
 
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
 import * as THREE from 'three';
@@ -138,8 +138,23 @@ export function Villa() {
       intonaco: sweepMaterial('#EDE9E0', { roughness: 0.9 }),
       montante: sweepMaterial('#8E959C', { roughness: 0.6, metalness: 0.3 }),
       tubo: sweepMaterial('#6E7076', { roughness: 0.5 }),
+      terracotta: sweepMaterial('#A5754F', { roughness: 0.85 }),
+      verde: sweepMaterial('#7D8471', { roughness: 1 }),
+      tela: sweepMaterial('#F1EEE6', { roughness: 0.95 }),
+      tessuto: sweepMaterial('#E9E4DA', { roughness: 1 }),
     };
   }, [T]);
+
+  // Ombre reali su tutto (tranne i trasparenti): il costo è un solo sole.
+  useEffect(() => {
+    root.current?.traverse((o) => {
+      if (o instanceof THREE.Mesh) {
+        const transparent = (o.material as THREE.Material)?.transparent;
+        o.castShadow = !transparent;
+        o.receiveShadow = true;
+      }
+    });
+  }, []);
 
   const serpentineGeo = useMemo(() => {
     const pts: THREE.Vector3[] = [];
@@ -363,6 +378,16 @@ export function Villa() {
           <mesh position={[-2.2, 1.08, -0.82]} rotation-x={Math.PI / 2.4} material={M.metallo}>
             <cylinderGeometry args={[0.013, 0.013, 0.22, 8]} />
           </mesh>
+          {/* barra e asciugamani sulla parete calacatta */}
+          <mesh position={[0.35, 1.25, -0.86]} rotation-z={Math.PI / 2} material={M.metallo}>
+            <cylinderGeometry args={[0.01, 0.01, 0.7, 8]} />
+          </mesh>
+          <mesh position={[0.2, 1.05, -0.84]} material={M.ceramica}>
+            <boxGeometry args={[0.26, 0.38, 0.02]} />
+          </mesh>
+          <mesh position={[0.52, 1.08, -0.84]} material={M.tessuto}>
+            <boxGeometry args={[0.24, 0.32, 0.02]} />
+          </mesh>
           {/* mobile bagno: rovere + top calacatta + lavabo */}
           <group position={[1.6, 0, -0.9]}>
             <mesh position={[0, 0.75, 0]} material={M.porta}>
@@ -402,6 +427,94 @@ export function Villa() {
             opacity={0.55}
           />
         </mesh>
+      </group>
+
+      {/* micro-dettagli architettonici: battiscopa e cornice porta (ordine 7) */}
+      <group userData={{ order: 7 }}>
+        <mesh position={[-2.75, 0.45, -1.36]} material={M.intonaco}>
+          <boxGeometry args={[4.5, 0.08, 0.02]} />
+        </mesh>
+        <mesh position={[4.69, 0.45, 0]} material={M.intonaco}>
+          <boxGeometry args={[0.02, 0.08, 7.4]} />
+        </mesh>
+        <mesh position={[0, 0.45, 3.69]} material={M.intonaco}>
+          <boxGeometry args={[9.4, 0.08, 0.02]} />
+        </mesh>
+        <mesh position={[-4.69, 0.45, 1.25]} material={M.intonaco}>
+          <boxGeometry args={[0.02, 0.08, 5.4]} />
+        </mesh>
+        {/* cornice della porta d'ingresso */}
+        <mesh position={[-0.66, 1.47, 4.02]} material={M.porta}>
+          <boxGeometry args={[0.09, 2.3, 0.05]} />
+        </mesh>
+        <mesh position={[0.66, 1.47, 4.02]} material={M.porta}>
+          <boxGeometry args={[0.09, 2.3, 0.05]} />
+        </mesh>
+        <mesh position={[0, 2.62, 4.02]} material={M.porta}>
+          <boxGeometry args={[1.42, 0.09, 0.05]} />
+        </mesh>
+      </group>
+
+      {/* dettagli d'ambiente, discreti (ordine 7) */}
+      <group userData={{ order: 7 }}>
+        {/* quadri minimal */}
+        <group position={[4.68, 1.55, -2.2]}>
+          <mesh material={M.arredoScuro}>
+            <boxGeometry args={[0.03, 0.95, 0.75]} />
+          </mesh>
+          <mesh position={[-0.02, 0, 0]} material={M.tela}>
+            <boxGeometry args={[0.01, 0.82, 0.62]} />
+          </mesh>
+        </group>
+        <group position={[1.6, 1.7, -3.68]}>
+          <mesh material={M.arredoScuro}>
+            <boxGeometry args={[0.7, 0.9, 0.03]} />
+          </mesh>
+          <mesh position={[0, 0, 0.02]} material={M.tela}>
+            <boxGeometry args={[0.58, 0.78, 0.01]} />
+          </mesh>
+        </group>
+        {/* libri sul tavolino */}
+        <mesh position={[1.62, 0.77, -0.18]} rotation-y={0.12} material={M.arredoScuro}>
+          <boxGeometry args={[0.3, 0.025, 0.21]} />
+        </mesh>
+        <mesh position={[1.64, 0.795, -0.16]} rotation-y={-0.06} material={M.tela}>
+          <boxGeometry args={[0.27, 0.022, 0.19]} />
+        </mesh>
+        <mesh position={[2.05, 0.77, 0.05]} rotation-y={0.4} material={M.verde}>
+          <boxGeometry args={[0.24, 0.02, 0.17]} />
+        </mesh>
+        {/* vaso sul mobile basso */}
+        <mesh position={[4.4, 0.99, 1.1]} material={M.ceramica}>
+          <cylinderGeometry args={[0.06, 0.08, 0.16, 16]} />
+        </mesh>
+        {/* pianta in vaso di terracotta */}
+        <group position={[-4.15, 0.41, 3.1]}>
+          <mesh position={[0, 0.16, 0]} material={M.terracotta}>
+            <cylinderGeometry args={[0.15, 0.12, 0.32, 16]} />
+          </mesh>
+          <mesh position={[0, 0.55, 0]} material={M.porta}>
+            <cylinderGeometry args={[0.018, 0.024, 0.5, 8]} />
+          </mesh>
+          <mesh position={[0, 0.95, 0]} scale={[1, 0.85, 1]} material={M.verde}>
+            <icosahedronGeometry args={[0.32, 1]} />
+          </mesh>
+          <mesh position={[0.18, 1.12, 0.08]} scale={[0.7, 0.6, 0.7]} material={M.verde}>
+            <icosahedronGeometry args={[0.24, 1]} />
+          </mesh>
+        </group>
+        {/* lampada da terra */}
+        <group position={[3.5, 0.41, 2.9]}>
+          <mesh position={[0, 0.01, 0]} material={M.metallo}>
+            <cylinderGeometry args={[0.14, 0.14, 0.02, 20]} />
+          </mesh>
+          <mesh position={[0, 0.7, 0]} material={M.metallo}>
+            <cylinderGeometry args={[0.012, 0.012, 1.4, 8]} />
+          </mesh>
+          <mesh position={[0, 1.45, 0]} material={M.tessuto}>
+            <cylinderGeometry args={[0.13, 0.16, 0.22, 20, 1, true]} />
+          </mesh>
+        </group>
       </group>
 
       {/* ordine 7 — arredi soggiorno */}
