@@ -10,6 +10,7 @@ import { Overlays } from './dom/Overlays';
 import { TimelineMetro } from './dom/TimelineMetro';
 import { initScroll } from '@/lib/scroll';
 import { TOTAL_VH } from '@/lib/scenes';
+import { progress, debugState } from '@/lib/progress';
 
 export function ExperienceRoot() {
   const [mounted, setMounted] = useState(false);
@@ -17,12 +18,24 @@ export function ExperienceRoot() {
   const spacer = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // modalità fotogramma per still di produzione/QA
+    const q = new URLSearchParams(window.location.search);
+    const pParam = q.get('p');
+    if (pParam !== null) {
+      debugState.fixedP = Math.min(1, Math.max(0, parseFloat(pParam)));
+      progress.p = debugState.fixedP;
+      progress.smoothed = debugState.fixedP;
+    }
+    debugState.clay = q.get('clay') === '1';
+    debugState.still = q.get('still') === '1';
+    if (q.get('ui') === '0') document.body.classList.add('no-ui');
     setMounted(true);
     setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }, []);
 
   useEffect(() => {
     if (!mounted || reduced || !spacer.current) return;
+    if (debugState.fixedP !== null) return; // fotogramma bloccato: niente scroll
     return initScroll(spacer.current);
   }, [mounted, reduced]);
 

@@ -7,7 +7,7 @@ import { useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { CAMERA_KEYS } from '@/content/direction';
-import { progress, dampProgress } from '@/lib/progress';
+import { progress, dampProgress, debugState } from '@/lib/progress';
 
 const _pos = new THREE.Vector3();
 const _tgt = new THREE.Vector3();
@@ -49,7 +49,9 @@ export function CameraRig() {
 
     // respiro steadicam: quasi nulla da fermi, vivo in movimento
     const time = t0.current + performance.now() / 1000;
-    const amp = 0.004 + Math.min(progress.velocity * 2.5, 1) * 0.012;
+    const amp = debugState.still
+      ? 0
+      : 0.004 + Math.min(progress.velocity * 2.5, 1) * 0.012;
     _pos.x += (Math.sin(time * 0.9) + Math.sin(time * 1.7 + 1.3)) * amp;
     _pos.y += (Math.sin(time * 1.1 + 0.5) + Math.sin(time * 2.1)) * amp * 0.7;
     _tgt.y += Math.sin(time * 0.7 + 2.0) * amp * 0.5;

@@ -332,6 +332,274 @@ body {
   color: var(--grigio-600);
 }
 
+/* ---- sezioni finali ---- */
+.sez {
+  position: relative;
+  z-index: 5;
+  background: var(--bianco);
+  padding: clamp(5rem, 12vh, 9rem) clamp(1.5rem, 7vw, 7rem);
+  border-top: 1px solid var(--grigio-100);
+}
+.sez--scura {
+  background: var(--antracite);
+  color: var(--bianco);
+  border-top: none;
+}
+.sez--scura .sez-kicker { color: var(--grigio-300); }
+.sez-kicker {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--grigio-600);
+  margin-bottom: 1.4rem;
+}
+.sez-title {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  max-width: 24ch;
+  line-height: 1.1;
+}
+.sez-sub {
+  margin-top: 1rem;
+  color: var(--grigio-600);
+  max-width: 44ch;
+}
+.sez--scura .sez-sub { color: var(--grigio-300); }
+
+.metodo-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 2.5rem 3rem;
+  margin-top: 3.5rem;
+}
+.metodo-num {
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: var(--pietra);
+}
+.metodo-grid h3 {
+  margin: 0.7rem 0 0.6rem;
+  font-size: 1.05rem;
+  font-weight: 620;
+}
+.metodo-grid p {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--grigio-600);
+}
+
+/* prima/dopo */
+.opere-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  gap: 2.5rem;
+  margin-top: 3.5rem;
+}
+.opera h3 {
+  margin-top: 1.1rem;
+  font-size: 1rem;
+  font-weight: 620;
+}
+.opera p {
+  font-size: 0.85rem;
+  color: var(--grigio-300);
+  margin-top: 0.2rem;
+}
+.ba {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 2px;
+  cursor: ew-resize;
+  user-select: none;
+  touch-action: pan-y;
+  background: var(--grigio-100);
+}
+.ba:focus-visible {
+  outline: 2px solid var(--pietra);
+  outline-offset: 3px;
+}
+.ba-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ba-clip {
+  position: absolute;
+  inset: 0;
+}
+.ba-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--bianco);
+  box-shadow: 0 0 0 0.5px rgba(23, 24, 26, 0.4);
+  transform: translateX(-0.5px);
+}
+.ba-handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--bianco) 85%, transparent);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--grigio-300);
+}
+.ba-handle::before,
+.ba-handle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-left: 1.5px solid var(--antracite);
+  border-bottom: 1.5px solid var(--antracite);
+}
+.ba-handle::before {
+  left: 6px;
+  transform: translateY(-50%) rotate(45deg);
+}
+.ba-handle::after {
+  right: 6px;
+  transform: translateY(-50%) rotate(225deg);
+}
+.ba-labels {
+  position: absolute;
+  left: 0.9rem;
+  right: 0.9rem;
+  bottom: 0.7rem;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bianco);
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+/* materiali */
+.mat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 2rem;
+  margin-top: 3.5rem;
+}
+.mat-swatch {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--grigio-100);
+}
+.mat-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+.mat-chip figcaption {
+  margin-top: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.mat-nome {
+  font-size: 0.92rem;
+  font-weight: 620;
+}
+.mat-nota {
+  font-size: 0.8rem;
+  color: var(--grigio-600);
+}
+
+/* servizi */
+.servizi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 2.5rem;
+  margin-top: 3.5rem;
+}
+.servizi-grid h3 {
+  font-size: 0.8rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--pietra);
+  margin-bottom: 1rem;
+}
+.servizi-grid ul {
+  list-style: none;
+}
+.servizi-grid li {
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--grigio-100);
+  font-size: 0.95rem;
+}
+
+/* garanzie */
+.claims-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 2.5rem 3rem;
+  margin-top: 2.5rem;
+}
+.claims-grid h3 {
+  font-size: 1.02rem;
+  font-weight: 620;
+  margin-bottom: 0.5rem;
+}
+.claims-grid p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--grigio-300);
+}
+
+.contatti-info {
+  margin-top: 2.2rem;
+  font-style: normal;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--grigio-600);
+}
+
+.footer {
+  position: relative;
+  z-index: 5;
+  background: var(--bianco);
+  border-top: 1px solid var(--grigio-100);
+  padding: 1.6rem clamp(1.5rem, 7vw, 7rem);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 2rem;
+  font-size: 0.78rem;
+  color: var(--grigio-600);
+}
+.footer a {
+  color: var(--grigio-600);
+  text-decoration: none;
+}
+.footer a:hover {
+  color: var(--antracite);
+}
+
+/* modalità fotogramma: solo il mondo, per still di produzione */
+.no-ui .hero,
+.no-ui .scene-copy,
+.no-ui .metro,
+.no-ui .chrome,
+.no-ui .whiteout {
+  display: none !important;
+}
+
 /* ---- reduced motion ---- */
 .reduced .hero {
   position: relative;

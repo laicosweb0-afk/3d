@@ -3,6 +3,7 @@
 // Tutto è funzione pura di p: nessun evento, solo tracce campionate.
 
 import { pAt, span, smooth, clamp01 } from '@/lib/scenes';
+import { debugState } from '@/lib/progress';
 
 export interface CamKey {
   p: number;
@@ -76,6 +77,7 @@ export function buildProgress(p: number): number {
  */
 export function sweepX(p: number): number {
   const IN = 8, OUT = -8;
+  if (debugState.clay) return IN;
   const fwd = smooth(span(p, pAt('s04', 0.02), pAt('s04', 0.95)));
   const back = smooth(span(p, pAt('s12', 0.08), pAt('s12', 0.5)));
   const x = IN + (OUT - IN) * fwd; // avanti: +8 → -8
@@ -84,6 +86,7 @@ export function sweepX(p: number): number {
 
 /** Contesto reale (terreno, cielo): appare nel volo, sparisce nel ritorno. */
 export function contextAmount(p: number): number {
+  if (debugState.clay) return 0; // il "progetto" vive nel mondo bianco
   const on = smooth(span(p, pAt('s05', 0.0), pAt('s05', 0.7)));
   const off = smooth(span(p, pAt('s11', 0.8), pAt('s12', 0.45)));
   return on * (1 - off);

@@ -145,10 +145,8 @@ export function Villa() {
       new THREE.Vector2(0.35, 0.07),
       new THREE.Vector2(0.4, 0.22),
       new THREE.Vector2(0.42, 0.42),
-      new THREE.Vector2(0.42, 0.53),
-      new THREE.Vector2(0.38, 0.55),
-      new THREE.Vector2(0.33, 0.53),
-      new THREE.Vector2(0.31, 0.42),
+      new THREE.Vector2(0.42, 0.52),
+      new THREE.Vector2(0.4, 0.55),
     ];
     return new THREE.LatheGeometry(profile, 32);
   }, []);

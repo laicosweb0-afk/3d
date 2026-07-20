@@ -11,6 +11,16 @@ export const progress = {
   velocity: 0,
 };
 
+/**
+ * Modalità fotogramma (per still di produzione e QA): ?p=0.52 blocca il
+ * progresso, &clay=1 forza lo stato maquette, &still=1 spegne la steadicam.
+ */
+export const debugState = {
+  fixedP: null as number | null,
+  clay: false,
+  still: false,
+};
+
 export function dampProgress(dt: number, lambda = 6): void {
   const k = 1 - Math.exp(-lambda * dt);
   const prev = progress.smoothed;
