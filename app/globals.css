@@ -488,6 +488,26 @@ body {
   pointer-events: none;
 }
 
+/* gli ambienti */
+.foto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  gap: 2rem;
+  margin-top: 3.5rem;
+}
+.foto-grid img {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: 2px;
+  display: block;
+}
+.foto-grid figcaption {
+  margin-top: 0.7rem;
+  font-size: 0.82rem;
+  color: var(--grigio-600);
+}
+
 /* materiali */
 .mat-grid {
   display: grid;

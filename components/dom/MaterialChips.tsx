@@ -1,10 +1,5 @@
-'use client';
-
-// Materiali Selezionati: i campioni sono le stesse texture del mondo 3D,
-// montate come canvas. Ciò che vedi nelle sezioni è ciò che vedi in scena.
-
-import { useEffect, useRef } from 'react';
-import { brandTextures } from '@/components/canvas/materials/procedural';
+// Materiali Selezionati: i campioni sono le stesse texture fotografiche
+// usate nel mondo 3D. Ciò che vedi in sezione è ciò che vedi in scena.
 
 const MATERIALI = [
   { key: 'calacatta', nome: 'Calacatta', nota: 'Bagni e piani, venatura tenue' },
@@ -14,29 +9,18 @@ const MATERIALI = [
 ] as const;
 
 export function MaterialChips() {
-  const grid = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = grid.current;
-    if (!el) return;
-    const T = brandTextures();
-    el.querySelectorAll<HTMLDivElement>('[data-mat]').forEach((slot) => {
-      const key = slot.dataset.mat as keyof typeof T;
-      const canvas = T[key].image as HTMLCanvasElement;
-      const copy = document.createElement('canvas');
-      copy.width = canvas.width;
-      copy.height = canvas.height;
-      copy.getContext('2d')!.drawImage(canvas, 0, 0);
-      copy.className = 'mat-canvas';
-      slot.replaceChildren(copy);
-    });
-  }, []);
-
   return (
-    <div className="mat-grid" ref={grid}>
+    <div className="mat-grid">
       {MATERIALI.map((m) => (
         <figure key={m.key} className="mat-chip">
-          <div className="mat-swatch" data-mat={m.key} aria-hidden="true" />
+          <div className="mat-swatch">
+            <img
+              className="mat-canvas"
+              src={`/assets/textures/${m.key}.jpg`}
+              alt={`Campione di ${m.nome}`}
+              loading="lazy"
+            />
+          </div>
           <figcaption>
             <span className="mat-nome">{m.nome}</span>
             <span className="mat-nota">{m.nota}</span>

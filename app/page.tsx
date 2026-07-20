@@ -67,6 +67,30 @@ export default function Page() {
         </div>
       </section>
 
+      {/* Gli ambienti — fotografie nello stile Mondial Service */}
+      <section className="sez" id="ambienti">
+        <p className="sez-kicker">Gli ambienti</p>
+        <h2 className="sez-title">Lo stile con cui consegniamo.</h2>
+        <div className="foto-grid">
+          <figure>
+            <img src="/assets/foto/soggiorno-1.jpg" alt="Zona giorno con parete in pietra, rovere e tavolino in calacatta" loading="lazy" />
+            <figcaption>Zona giorno — pietra, rovere, calacatta</figcaption>
+          </figure>
+          <figure>
+            <img src="/assets/foto/soggiorno-2.jpg" alt="Zona giorno con parete in pietra e tavolino in marquina" loading="lazy" />
+            <figcaption>Zona giorno — pietra e marquina</figcaption>
+          </figure>
+          <figure>
+            <img src="/assets/foto/cucina.jpg" alt="Cucina in rovere con piani in calacatta" loading="lazy" />
+            <figcaption>Cucina — rovere e calacatta</figcaption>
+          </figure>
+          <figure>
+            <img src="/assets/foto/cantiere.jpg" alt="Cantiere con impianto radiante a pavimento e tracce impianti" loading="lazy" />
+            <figcaption>Il cantiere — la qualità che poi non si vede</figcaption>
+          </figure>
+        </div>
+      </section>
+
       {/* Materiali selezionati */}
       <section className="sez" id="materiali">
         <p className="sez-kicker">Materiali selezionati</p>

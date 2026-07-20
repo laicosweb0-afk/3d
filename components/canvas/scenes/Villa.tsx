@@ -7,6 +7,7 @@
 
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import {
   buildProgress, sweepX, doorOpen, wallOpen, strataOpen,
@@ -15,7 +16,6 @@ import {
 import { progress } from '@/lib/progress';
 import { smooth, span, clamp01 } from '@/lib/scenes';
 import { sweepMaterial, sweepUniform } from '../materials/sweep';
-import { brandTextures } from '../materials/procedural';
 
 const BUILD_STEPS = 8;
 
@@ -90,11 +90,28 @@ export function Villa() {
   const lampMat = useRef<THREE.MeshStandardMaterial>(null);
   const glowWin = useRef<THREE.MeshStandardMaterial>(null);
 
-  const T = useMemo(() => brandTextures(), []);
+  // Texture fotografiche dei materiali reali (fornite dal cliente via Higgsfield)
+  const T = useTexture({
+    calacatta: '/assets/textures/calacatta.jpg',
+    marquina: '/assets/textures/marquina.jpg',
+    rovere: '/assets/textures/rovere.jpg',
+    pietra: '/assets/textures/pietra.jpg',
+  });
 
   const M = useMemo(() => {
+    const setup = (t: THREE.Texture, rx: number, ry: number) => {
+      t.wrapS = t.wrapT = THREE.RepeatWrapping;
+      t.repeat.set(rx, ry);
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.anisotropy = 8;
+      t.needsUpdate = true;
+    };
+    setup(T.calacatta, 1.6, 1.6);
+    setup(T.marquina, 1.8, 1.8);
+    setup(T.rovere, 3.2, 3.2);
+    setup(T.pietra, 2.2, 1.5);
     const rovereScuro = T.rovere.clone();
-    rovereScuro.repeat.set(1.2, 1.1);
+    rovereScuro.repeat.set(0.6, 1);
     return {
       muro: sweepMaterial('#E6DFD2', { roughness: 0.85 }),
       pietraFacciata: sweepMaterial('#FFFFFF', { map: T.pietra, roughness: 0.9 }),
