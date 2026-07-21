@@ -21,7 +21,7 @@ export const debugState = {
   still: false,
 };
 
-export function dampProgress(dt: number, lambda = 6): void {
+export function dampProgress(dt: number, lambda = 5): void {
   const k = 1 - Math.exp(-lambda * dt);
   const prev = progress.smoothed;
   progress.smoothed += (progress.p - progress.smoothed) * k;

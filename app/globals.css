@@ -104,6 +104,10 @@ body {
   border-radius: 1px;
   transition: height 0.3s ease, background 0.3s ease;
 }
+/* a riposo: silhouette di equalizzatore (si legge come audio, non "...") */
+.chrome-audio span:nth-child(1) { height: 45%; }
+.chrome-audio span:nth-child(2) { height: 78%; }
+.chrome-audio span:nth-child(3) { height: 58%; }
 .chrome-audio.is-on span {
   background: var(--antracite);
 }
@@ -589,13 +593,24 @@ body {
   gap: 2rem;
   margin-top: 3.5rem;
 }
+.foto-media {
+  overflow: hidden;
+  border-radius: 2px;
+  aspect-ratio: 3 / 2;
+}
 .foto-grid img {
   width: 100%;
-  aspect-ratio: 3 / 2;
+  height: 100%;
   object-fit: cover;
-  border-radius: 2px;
   display: block;
   filter: contrast(1.045) saturate(0.96) brightness(1.005);
+}
+/* margine per la parallax: l'immagine è più alta del contenitore, così
+   il translate rivela porzioni diverse senza mai lasciare vuoti */
+.foto-grid figure.has-parallax .foto-media img {
+  height: 118%;
+  transform: translate3d(0, -8%, 0);
+  will-change: transform;
 }
 .foto-grid figcaption {
   margin-top: 0.7rem;

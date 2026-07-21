@@ -16,8 +16,11 @@ export function Hero() {
       if (!ref.current) return;
       const p = progress.smoothed;
       const fade = 1 - smooth(span(p, pAt('s01', 0.35), pAt('s02', 0.45)));
+      const gone = 1 - fade;
       ref.current.style.opacity = String(fade);
-      ref.current.style.transform = `translateY(${(1 - fade) * -4}rem)`;
+      // arretra e va fuori fuoco: profondità, non un semplice dissolvi
+      ref.current.style.transform = `translateY(${gone * -4}rem) scale(${1 - gone * 0.03})`;
+      ref.current.style.filter = gone > 0.001 ? `blur(${(gone * 9).toFixed(2)}px)` : 'none';
       ref.current.style.visibility = fade < 0.005 ? 'hidden' : 'visible';
     };
     gsap.ticker.add(update);

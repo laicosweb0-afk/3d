@@ -14,7 +14,8 @@ let lenis: Lenis | null = null;
 export function initScroll(spacer: HTMLElement): () => void {
   gsap.registerPlugin(ScrollTrigger);
 
-  lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+  // lerp più basso = scroll più "pesante" e cinematico (premium)
+  lenis = new Lenis({ lerp: 0.085, smoothWheel: true });
   lenis.on('scroll', ScrollTrigger.update);
   const raf = (time: number) => lenis?.raf(time * 1000);
   gsap.ticker.add(raf);

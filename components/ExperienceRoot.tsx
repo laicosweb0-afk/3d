@@ -94,6 +94,28 @@ export function ExperienceRoot() {
     return () => io.disconnect();
   }, [mounted]);
 
+  // parallax: le foto degli ambienti scorrono un filo più lente dello
+  // scroll (depth cue Apple/Awwwards). Solo mentre sono a schermo.
+  useEffect(() => {
+    if (!mounted || reduced) return;
+    const figs = Array.from(
+      document.querySelectorAll<HTMLElement>('.foto-grid figure')
+    );
+    figs.forEach((f) => f.classList.add('has-parallax'));
+    const update = () => {
+      const vh = window.innerHeight;
+      for (const f of figs) {
+        const r = f.getBoundingClientRect();
+        if (r.bottom < -120 || r.top > vh + 120) continue;
+        const off = (r.top + r.height / 2 - vh / 2) / vh; // ~ -0.7..0.7
+        const img = f.querySelector<HTMLImageElement>('.foto-media img');
+        if (img) img.style.transform = `translate3d(0, calc(-8% + ${(off * -26).toFixed(1)}px), 0)`;
+      }
+    };
+    gsap.ticker.add(update);
+    return () => gsap.ticker.remove(update);
+  }, [mounted, reduced]);
+
   if (mounted && reduced) {
     return (
       <div className="reduced">
