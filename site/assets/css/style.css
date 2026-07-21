@@ -1,0 +1,293 @@
+/* MONDIAL SERVICE — La casa che nasce
+   Palette: notte di cantiere (#10151d) / intonaco (#f2ede3) / salvia (#7d8b6f) */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --ink: #10151d;
+  --ink-soft: #1a2230;
+  --plaster: #f2ede3;
+  --plaster-dim: rgba(242, 237, 227, 0.72);
+  --sage: #7d8b6f;
+  --serif: "Fraunces", Georgia, serif;
+  --sans: "Archivo", system-ui, sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--ink);
+  color: var(--plaster);
+  font-family: var(--sans);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- chrome ---------- */
+
+.topbar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(env(safe-area-inset-top, 0px) + 1.1rem) 1.6rem 1.1rem;
+  mix-blend-mode: difference;
+  pointer-events: none;
+}
+
+.wordmark {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.02rem;
+  letter-spacing: 0.24em;
+}
+.wordmark span {
+  font-weight: 300;
+  letter-spacing: 0.34em;
+  margin-left: 0.45em;
+}
+
+.topbar-tag {
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.dots {
+  position: fixed;
+  right: 1.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.dots button {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid var(--plaster-dim);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.3s, transform 0.3s;
+}
+.dots button.on {
+  background: var(--plaster);
+  transform: scale(1.35);
+}
+
+/* ---------- chapters ---------- */
+
+.chapter.scrub { position: relative; }
+/* JS sets the wrapper height (data-scrub × viewport) */
+
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.media, .media video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.media video { object-fit: cover; }
+.media {
+  background: var(--ink-soft) center / cover no-repeat;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(16,21,29,0.35) 0%, rgba(16,21,29,0) 30%),
+    linear-gradient(0deg, rgba(16,21,29,0.78) 0%, rgba(16,21,29,0.18) 42%, rgba(16,21,29,0) 62%);
+}
+.scrim-hero {
+  background:
+    linear-gradient(180deg, rgba(16,21,29,0.5) 0%, rgba(16,21,29,0) 34%),
+    linear-gradient(0deg, rgba(16,21,29,0.82) 0%, rgba(16,21,29,0.25) 48%, rgba(16,21,29,0) 70%);
+}
+
+.copy {
+  position: relative;
+  z-index: 2;
+  padding: 0 1.6rem calc(env(safe-area-inset-bottom, 0px) + 4.6rem);
+  max-width: 44rem;
+}
+
+.copy-hero {
+  align-self: center;
+  padding-bottom: 0;
+  text-align: left;
+}
+
+.kicker {
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--plaster-dim);
+  margin-bottom: 1.1rem;
+}
+
+h1, h2 {
+  font-family: var(--serif);
+  font-weight: 300;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+}
+h1 { font-size: clamp(3rem, 9vw, 6.4rem); }
+h2 { font-size: clamp(2.2rem, 6.4vw, 4.4rem); }
+
+.lede {
+  margin-top: 1.2rem;
+  font-size: clamp(0.95rem, 1.6vw, 1.12rem);
+  line-height: 1.55;
+  color: var(--plaster-dim);
+  max-width: 32rem;
+}
+
+.hint {
+  margin-top: 2.6rem;
+  width: 1px;
+  height: 56px;
+  background: rgba(242,237,227,0.28);
+  position: relative;
+  overflow: hidden;
+}
+.hint span {
+  position: absolute;
+  left: 0; top: -40%;
+  width: 100%; height: 40%;
+  background: var(--plaster);
+  animation: hintdrop 2.2s ease-in-out infinite;
+}
+@keyframes hintdrop { to { top: 110%; } }
+
+/* stato di costruzione: grezzo → finito */
+.build-meter {
+  position: absolute;
+  z-index: 3;
+  left: 1.6rem;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--plaster-dim);
+}
+.build-meter em { font-style: normal; }
+.build-meter i {
+  display: block;
+  width: clamp(90px, 18vw, 200px);
+  height: 1px;
+  background: rgba(242,237,227,0.25);
+}
+.build-meter b {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--sage);
+}
+
+/* entrance del capitolo hero (solo on-mount, mai gated dallo scroll) */
+.copy-hero .kicker, .copy-hero h1, .copy-hero .lede, .copy-hero .hint {
+  animation: rise 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.copy-hero h1 { animation-delay: 0.12s; }
+.copy-hero .lede { animation-delay: 0.26s; }
+.copy-hero .hint { animation-delay: 0.4s; }
+@keyframes rise {
+  from { transform: translateY(26px); }
+  to   { transform: translateY(0); }
+}
+
+/* ---------- finale ---------- */
+
+.finale {
+  background: var(--plaster);
+  color: var(--ink);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+}
+
+.finale-inner {
+  width: min(64rem, 100%);
+  margin: 0 auto;
+  padding: 7rem 1.6rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.kicker-dark { color: rgba(16,21,29,0.55); }
+.finale-title { color: var(--ink); }
+.lede-dark { color: rgba(16,21,29,0.68); margin-bottom: 3rem; }
+
+.map-frame {
+  width: 100%;
+  aspect-ratio: 16 / 8.5;
+  border: 1px solid rgba(16,21,29,0.16);
+  border-radius: 2px;
+  overflow: hidden;
+  filter: grayscale(0.9) sepia(0.14) contrast(0.96);
+}
+.map-frame iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.brand-block { margin-top: 3.4rem; }
+.wordmark-big {
+  font-size: clamp(1.3rem, 3.4vw, 2rem);
+  color: var(--ink);
+}
+.brand-line {
+  margin-top: 0.8rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(16,21,29,0.55);
+}
+
+.footer {
+  margin: 4rem 0 2.2rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: rgba(16,21,29,0.45);
+}
+
+/* ---------- mobile ---------- */
+
+@media (max-width: 640px) {
+  .topbar-tag { display: none; }
+  .dots { right: 0.65rem; gap: 0.7rem; }
+  .copy { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5rem); }
+}
+
+/* ---------- reduced motion: niente video, solo poster e contenuto ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .hint span, .copy-hero .kicker, .copy-hero h1, .copy-hero .lede, .copy-hero .hint {
+    animation: none;
+  }
+}
