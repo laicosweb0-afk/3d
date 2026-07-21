@@ -13,16 +13,24 @@ export interface RealityWindow {
   src: string;
   kicker: string;
   caption: string;
+  /** se presente: video-transizione (3D→reale) scrubbato dallo scroll,
+   * al posto del crossfade. L'ultimo frame del video è la foto reale. */
+  video?: string;
+  videoDuration?: number;
 }
 
 export const REALITY_WINDOWS: RealityWindow[] = [
   {
     id: 'soggiorno',
     scene: 's07',
-    from: 0.52, to: 0.88,
+    from: 0.52, to: 0.9,
     src: '/assets/foto/soggiorno-1.jpg',
     kicker: 'Dal vero',
     caption: 'La zona giorno, nello stile con cui consegniamo.',
+    // segnaposto (crossfade locale) — verrà sostituito dal morph xField.
+    // percorso base: il player serve .webm (Chromium/FF) o .mp4 (Safari)
+    video: '/assets/video/soggiorno-transizione',
+    videoDuration: 2,
   },
   {
     id: 'cantiere',
