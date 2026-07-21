@@ -43,10 +43,12 @@ export const CAMERA_KEYS: CamKey[] = [
   { p: pAt('s09', 0.25), pos: [-2.5, 1.4, -1.95], tgt: [-3.0, 0.6, -2.9], fov: 54 },
   { p: pAt('s09', 0.55), pos: [-2.25, 0.78, -2.25], tgt: [-3.8, 0.52, -3.1], fov: 54 },
   { p: pAt('s09', 0.85), pos: [-3.0, 0.75, -3.1],  tgt: [-4.3, 0.55, -3.4], fov: 54 },
-  // il bagno: risalita
-  { p: pAt('s10', 0.2),  pos: [-2.6, 1.5, -2.9],  tgt: [-4.3, 1.0, -3.35], fov: 52 },
-  { p: pAt('s10', 0.65), pos: [-2.1, 1.6, -2.5],  tgt: [-4.5, 0.95, -3.5], fov: 50 },
-  { p: pAt('s10', 1.0),  pos: [-2.9, 1.6, -2.9],  tgt: [-5.0, 1.5, -3.0], fov: 50 },
+  // il bagno: risalita, poi la camera incornicia la vasca (match con la
+  // foto reale: vasca grande e centrale, finestra piccola a sinistra)
+  { p: pAt('s10', 0.2),  pos: [-2.7, 1.45, -2.8],  tgt: [-4.3, 0.9, -3.3], fov: 50 },
+  { p: pAt('s10', 0.55), pos: [-3.25, 1.3, -2.72], tgt: [-4.35, 0.82, -3.28], fov: 46 },
+  { p: pAt('s10', 0.75), pos: [-3.3, 1.32, -2.7],  tgt: [-4.38, 0.85, -3.3], fov: 46 },
+  { p: pAt('s10', 1.0),  pos: [-2.9, 1.55, -2.9],  tgt: [-5.0, 1.4, -3.0], fov: 50 },
   // ATTO IV — la finestra (sulla parete ovest x=-5), uscita e risalita
   { p: pAt('s11', 0.35), pos: [-3.9, 1.6, -3.0],  tgt: [-5.1, 1.55, -3.0], fov: 48 },
   { p: pAt('s11', 0.7),  pos: [-7.8, 3.2, -3.1],  tgt: [0, 1.3, -1], fov: 44 },
