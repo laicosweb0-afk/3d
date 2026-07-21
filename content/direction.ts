@@ -23,14 +23,13 @@ export const CAMERA_KEYS: CamKey[] = [
   // ATTO II — la materia (dolly laterale: la lama insegue la camera)
   { p: pAt('s04', 0.5), pos: [0, 3.2, 14],   tgt: [0, 1.5, 0], fov: 42 },
   { p: pAt('s04', 1.0), pos: [-9.5, 3.2, 11], tgt: [-1, 1.5, 0], fov: 42 },
-  // il volo: orbita a drone dietro la casa
-  { p: pAt('s05', 0.35), pos: [-14.5, 7.5, 1], tgt: [0, 0.9, 0], fov: 40 },
-  { p: pAt('s05', 0.7),  pos: [-9, 10, -13],   tgt: [0, 0.8, 0], fov: 40 },
-  { p: pAt('s05', 1.0),  pos: [5, 9, -14.5],   tgt: [0, 0.9, 0], fov: 40 },
-  // la soglia: discesa a crane verso l'ingresso (porta a z=+4)
-  { p: pAt('s06', 0.35), pos: [10, 4.5, 8],   tgt: [0, 1.3, 2], fov: 42 },
-  { p: pAt('s06', 0.75), pos: [2.6, 2.2, 8.8], tgt: [0, 1.5, 3.8], fov: 44 },
-  { p: pAt('s06', 1.0),  pos: [0, 1.65, 6.4], tgt: [0, 1.45, 3.9], fov: 46 },
+  // il volo: una salita dolce che rivela la casa dal fronte (niente orbita)
+  { p: pAt('s05', 0.45), pos: [-5, 5, 13.5],   tgt: [0, 1.3, 1],   fov: 40 },
+  { p: pAt('s05', 1.0),  pos: [1.5, 4.6, 12.5], tgt: [0, 1.3, 2.2], fov: 41 },
+  // la soglia: discesa a crane verso l'ingresso, dritti (porta a z=+4)
+  { p: pAt('s06', 0.4),  pos: [1.2, 3.0, 9.3],  tgt: [0, 1.4, 3.2], fov: 43 },
+  { p: pAt('s06', 0.75), pos: [0.5, 2.0, 7.5],  tgt: [0, 1.5, 3.9], fov: 45 },
+  { p: pAt('s06', 1.0),  pos: [0, 1.65, 6.2],   tgt: [0, 1.45, 3.9], fov: 46 },
   // ATTO III — dentro
   { p: pAt('s07', 0.15), pos: [0, 1.6, 3.1],  tgt: [-0.5, 1.4, 0], fov: 52 },
   { p: pAt('s07', 0.55), pos: [0.9, 1.6, 1.4], tgt: [-2.5, 1.3, -0.6], fov: 52 },
