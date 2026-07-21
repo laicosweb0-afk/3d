@@ -45,15 +45,20 @@ export function World() {
       camera={{ position: [0, 2.2, 16.5], fov: 40, near: 0.1, far: 120 }}
       dpr={[1, 1.75]}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
-      onCreated={({ scene }) => {
+      onCreated={({ scene, gl }) => {
         scene.background = new THREE.Color('#FAFAF8');
+        // Neutral (Khronos PBR): preserva bianchi e fedeltà dei materiali
+        // reali — niente cast crema dell'ACES. È ciò che allinea la
+        // materia 3D alle fotografie del portfolio.
+        gl.toneMapping = THREE.NeutralToneMapping;
+        gl.toneMappingExposure = 1.05;
       }}
     >
-      <ambientLight intensity={0.45} />
-      <hemisphereLight intensity={0.35} color="#FFFFFF" groundColor="#D8D4CC" />
+      <ambientLight intensity={0.5} />
+      <hemisphereLight intensity={0.38} color="#FFFFFF" groundColor="#D8D4CC" />
       <directionalLight
         position={[6, 11, 5]}
-        intensity={1.25}
+        intensity={1.2}
         color="#FFF6EA"
         castShadow
         shadow-mapSize={[2048, 2048]}
@@ -66,12 +71,15 @@ export function World() {
         shadow-camera-far={40}
       />
       <directionalLight position={[-8, 6, -6]} intensity={0.3} color="#EAF0F4" />
-      {/* luce calda interna, discreta: la casa non è mai fredda */}
-      <pointLight position={[1.5, 2.6, 1]} intensity={0.35} color="#FFE9CE" distance={9} decay={1.8} />
+      {/* fill interni: le stanze devono avere la stessa luce ariosa delle
+          foto reali. Due sorgenti morbide (zona giorno + bagno), calde
+          ma non gialle, che non toccano il mondo bianco esterno. */}
+      <pointLight position={[1.2, 2.4, 0.5]} intensity={0.9} color="#FFF0DE" distance={16} decay={1.25} />
+      <pointLight position={[-2.8, 2.4, -2.4]} intensity={0.7} color="#FFF3E6" distance={13} decay={1.25} />
       <CameraRig />
       <QualityManager />
       <Suspense fallback={null}>
-        <Environment resolution={128} environmentIntensity={0.45}>
+        <Environment resolution={128} environmentIntensity={0.58}>
           {/* softbox da studio: pannelli morbidi, un cielo chiaro, un tocco caldo laterale */}
           <Lightformer intensity={2.2} position={[0, 6, -9]} scale={[12, 6, 1]} color="#FFFFFF" />
           <Lightformer intensity={1.2} position={[-8, 4, 3]} rotation-y={Math.PI / 2.6} scale={[8, 4, 1]} color="#FFF3E4" />

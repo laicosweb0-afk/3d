@@ -241,6 +241,9 @@ body {
   height: 100%;
   object-fit: cover;
   will-change: transform, opacity;
+  /* grading condiviso: porta ogni foto nello stesso registro tonale
+     del 3D (quiet luxury) — contrasto misurato, un filo meno saturo */
+  filter: contrast(1.045) saturate(0.96) brightness(1.005);
 }
 .rw-caption {
   position: absolute;
@@ -515,6 +518,7 @@ body {
   height: 100%;
   object-fit: cover;
   display: block;
+  filter: contrast(1.045) saturate(0.96) brightness(1.005);
 }
 .ba-clip {
   position: absolute;
@@ -587,6 +591,7 @@ body {
   object-fit: cover;
   border-radius: 2px;
   display: block;
+  filter: contrast(1.045) saturate(0.96) brightness(1.005);
 }
 .foto-grid figcaption {
   margin-top: 0.7rem;

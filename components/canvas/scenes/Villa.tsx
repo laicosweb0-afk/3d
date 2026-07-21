@@ -113,7 +113,7 @@ export function Villa() {
     const rovereScuro = T.rovere.clone();
     rovereScuro.repeat.set(0.6, 1);
     return {
-      muro: sweepMaterial('#E6DFD2', { roughness: 0.85 }),
+      muro: sweepMaterial('#EDE7DC', { roughness: 0.85 }),
       pietraFacciata: sweepMaterial('#FFFFFF', { map: T.pietra, roughness: 0.9 }),
       pilastro: sweepMaterial('#E3E0D8', { roughness: 0.8 }),
       tetto: sweepMaterial('#3E4145', { roughness: 0.45, metalness: 0.35, envMapIntensity: 0.9 }),
