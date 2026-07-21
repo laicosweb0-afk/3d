@@ -43,9 +43,12 @@ export const REALITY_WINDOWS: RealityWindow[] = [
   {
     id: 'bagno',
     scene: 's10',
-    from: 0.42, to: 0.72,
+    from: 0.4, to: 0.74,
     src: '/assets/foto/bagno-reale.jpg',
     kicker: 'Dal vero',
     caption: 'Un nostro bagno consegnato: marquina e calacatta, chiavi in mano.',
+    // morph 3D→reale (Seedance): il bagno grezzo si finisce nella foto reale
+    video: '/assets/video/bagno-transizione',
+    videoDuration: 5,
   },
 ];
