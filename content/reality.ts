@@ -27,10 +27,10 @@ export const REALITY_WINDOWS: RealityWindow[] = [
     src: '/assets/foto/soggiorno-1.jpg',
     kicker: 'Dal vero',
     caption: 'La zona giorno, nello stile con cui consegniamo.',
-    // segnaposto (crossfade locale) — verrà sostituito dal morph xField.
-    // percorso base: il player serve .webm (Chromium/FF) o .mp4 (Safari)
+    // morph 3D→reale (Seedance): primo frame = render 3D, ultimo = foto
+    // reale; scrubbato dallo scroll. Base path: .webm (Chromium/FF) / .mp4
     video: '/assets/video/soggiorno-transizione',
-    videoDuration: 2,
+    videoDuration: 5,
   },
   {
     id: 'cantiere',
