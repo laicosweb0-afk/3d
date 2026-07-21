@@ -129,10 +129,11 @@
     if (primed) return;
     primed = true;
     states.forEach(function (st) {
+      if (!st.video.src) return;
       var p = st.video.play();
       if (p && p.then) {
-        p.then(function () { st.video.pause(); })
-         .catch(function () { st.playFallback = true; });
+        /* best effort: un rifiuto qui non deve degradare lo scrub */
+        p.then(function () { st.video.pause(); }).catch(function () {});
       }
     });
     window.removeEventListener("touchstart", prime);
