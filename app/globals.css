@@ -164,9 +164,12 @@ body {
   padding: 0 1.5rem;
 }
 .hero-logo {
-  height: clamp(2.2rem, 5vw, 3.1rem);
-  width: auto;
-  margin-bottom: 2.4rem;
+  /* Il logo è un lockup orizzontale (globo + "MONDIAL SERVICE SRL"):
+     va dimensionato in larghezza, non in altezza, o la scritta diventa
+     illeggibile. L'immagine non è ritoccata: mostrata intera e leggibile. */
+  width: clamp(15rem, 34vw, 27rem);
+  height: auto;
+  margin-bottom: 2.2rem;
 }
 .hero-title {
   font-size: clamp(2.4rem, 7vw, 5.4rem);
@@ -300,8 +303,8 @@ body {
   top: 50%;
   left: 50%;
   z-index: 16;
-  height: clamp(2.4rem, 6vw, 3.6rem);
-  width: auto;
+  width: clamp(16rem, 38vw, 30rem);
+  height: auto;
   transform: translate(-50%, -50%);
   opacity: 0;
   pointer-events: none;

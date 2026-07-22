@@ -69,7 +69,7 @@ export function Overlays() {
       <img
         className="whiteout-logo"
         ref={logo}
-        src={asset('/assets/brand/logo-full.png')}
+        src={asset('/assets/brand/logo-full-text.png')}
         alt=""
         aria-hidden="true"
         draggable={false}
