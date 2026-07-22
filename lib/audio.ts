@@ -52,6 +52,15 @@ function build(): void {
   master.gain.value = 0;
   master.connect(ctx.destination);
 
+  // tap di QA: ?audiotap=1 espone l'uscita master come MediaStream, per
+  // poterla registrare e analizzare (livelli, silenzi) senza ascolto
+  // umano. Innocuo, mai attivo senza il parametro esplicito.
+  if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('audiotap') === '1') {
+    const dest = ctx.createMediaStreamDestination();
+    master.connect(dest);
+    (window as unknown as { __audioTapStream?: MediaStream }).__audioTapStream = dest.stream;
+  }
+
   // vento: rosa filtrato basso, respiro lento via LFO
   const windLp = ctx.createBiquadFilter();
   windLp.type = 'lowpass';
