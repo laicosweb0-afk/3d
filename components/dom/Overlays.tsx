@@ -9,6 +9,7 @@ import { progress } from '@/lib/progress';
 import { localT, span, smooth, clamp01, TOTAL_VH } from '@/lib/scenes';
 import { JOURNEY_COPY } from '@/content/copy';
 import { whiteout } from '@/content/direction';
+import { asset } from '@/lib/asset';
 
 /** 1 quando il viewport ha superato la fine del viaggio (siamo nelle sezioni). */
 export function afterJourney(): number {
@@ -68,7 +69,7 @@ export function Overlays() {
       <img
         className="whiteout-logo"
         ref={logo}
-        src="/assets/brand/logo-full.png"
+        src={asset('/assets/brand/logo-full.png')}
         alt=""
         aria-hidden="true"
         draggable={false}

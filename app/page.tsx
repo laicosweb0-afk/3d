@@ -6,6 +6,7 @@ import { JOURNEY_COPY } from '@/content/copy';
 import { REALITY_WINDOWS } from '@/content/reality';
 import { COMPANY, SERVICES, OPERE } from '@/content/company';
 import { CHAPTERS } from '@/lib/scenes';
+import { asset } from '@/lib/asset';
 
 // Dopo il viaggio, le sezioni: il metodo (i capitoli appena vissuti),
 // le opere (prima/dopo dal mondo 3D), i materiali, i servizi, i contatti.
@@ -64,8 +65,8 @@ export default function Page() {
           {OPERE.map((o) => (
             <div className="opera" key={o.id}>
               <BeforeAfter
-                before={`/assets/opere/${o.id}-progetto.jpg`}
-                after={`/assets/opere/${o.id}-consegna.jpg`}
+                before={asset(`/assets/opere/${o.id}-progetto.jpg`)}
+                after={asset(`/assets/opere/${o.id}-consegna.jpg`)}
                 alt={o.titolo}
               />
               <h3>{o.titolo}</h3>
@@ -82,25 +83,25 @@ export default function Page() {
         <div className="foto-grid">
           <figure>
             <div className="foto-media">
-              <img src="/assets/foto/soggiorno-1.jpg" alt="Zona giorno con parete in pietra, rovere e tavolino in calacatta" loading="lazy" />
+              <img src={asset('/assets/foto/soggiorno-1.jpg')} alt="Zona giorno con parete in pietra, rovere e tavolino in calacatta" loading="lazy" />
             </div>
             <figcaption>Zona giorno — pietra, rovere, calacatta</figcaption>
           </figure>
           <figure>
             <div className="foto-media">
-              <img src="/assets/foto/soggiorno-2.jpg" alt="Zona giorno con parete in pietra e tavolino in marquina" loading="lazy" />
+              <img src={asset('/assets/foto/soggiorno-2.jpg')} alt="Zona giorno con parete in pietra e tavolino in marquina" loading="lazy" />
             </div>
             <figcaption>Zona giorno — pietra e marquina</figcaption>
           </figure>
           <figure>
             <div className="foto-media">
-              <img src="/assets/foto/cucina.jpg" alt="Cucina in rovere con piani in calacatta" loading="lazy" />
+              <img src={asset('/assets/foto/cucina.jpg')} alt="Cucina in rovere con piani in calacatta" loading="lazy" />
             </div>
             <figcaption>Cucina — rovere e calacatta</figcaption>
           </figure>
           <figure>
             <div className="foto-media">
-              <img src="/assets/foto/cantiere.jpg" alt="Cantiere con impianto radiante a pavimento e tracce impianti" loading="lazy" />
+              <img src={asset('/assets/foto/cantiere.jpg')} alt="Cantiere con impianto radiante a pavimento e tracce impianti" loading="lazy" />
             </div>
             <figcaption>Il cantiere — la qualità che poi non si vede</figcaption>
           </figure>

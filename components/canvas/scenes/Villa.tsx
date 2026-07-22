@@ -15,6 +15,7 @@ import {
 } from '@/content/direction';
 import { progress } from '@/lib/progress';
 import { smooth, span, clamp01 } from '@/lib/scenes';
+import { asset } from '@/lib/asset';
 import { sweepMaterial, sweepUniform } from '../materials/sweep';
 
 const BUILD_STEPS = 8;
@@ -92,10 +93,10 @@ export function Villa() {
 
   // Texture fotografiche dei materiali reali (fornite dal cliente via Higgsfield)
   const T = useTexture({
-    calacatta: '/assets/textures/calacatta.jpg',
-    marquina: '/assets/textures/marquina.jpg',
-    rovere: '/assets/textures/rovere.jpg',
-    pietra: '/assets/textures/pietra.jpg',
+    calacatta: asset('/assets/textures/calacatta.jpg'),
+    marquina: asset('/assets/textures/marquina.jpg'),
+    rovere: asset('/assets/textures/rovere.jpg'),
+    pietra: asset('/assets/textures/pietra.jpg'),
   });
 
   const M = useMemo(() => {

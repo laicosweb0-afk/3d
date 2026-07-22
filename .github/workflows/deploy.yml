@@ -30,6 +30,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+        env:
+          # Anteprima gratuita servita in sottocartella: …github.io/3d/.
+          # Quando comprerete il dominio, rimuovete questa riga (basePath vuoto)
+          # e riaggiungete public/CNAME con www.mondialservicesrl.it.
+          NEXT_PUBLIC_BASE_PATH: /3d
       - uses: actions/upload-pages-artifact@v3
         with:
           path: out

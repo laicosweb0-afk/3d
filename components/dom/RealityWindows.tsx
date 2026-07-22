@@ -11,6 +11,7 @@ import gsap from 'gsap';
 import { progress } from '@/lib/progress';
 import { localT, span, smooth, clamp01 } from '@/lib/scenes';
 import { REALITY_WINDOWS } from '@/content/reality';
+import { asset } from '@/lib/asset';
 import { afterJourney } from './Overlays';
 
 const GRADE = 'contrast(1.045) saturate(0.96) brightness(1.005)';
@@ -103,16 +104,16 @@ export function RealityWindows() {
               preload="none"
               // poster e fallback: la foto reale (ultimo frame). Il
               // download vero parte lazy (vedi PRELOAD_LEAD sopra).
-              poster={w.src}
+              poster={asset(w.src)}
             >
-              <source src={`${w.video}.webm`} type="video/webm" />
-              <source src={`${w.video}.mp4`} type="video/mp4" />
+              <source src={asset(`${w.video}.webm`)} type="video/webm" />
+              <source src={asset(`${w.video}.mp4`)} type="video/mp4" />
             </video>
           ) : (
             <img
               className="rw-img"
               ref={(el) => { imgs.current[i] = el; }}
-              src={w.src}
+              src={asset(w.src)}
               alt=""
               draggable={false}
             />

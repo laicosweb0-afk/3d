@@ -6,6 +6,7 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { progress } from '@/lib/progress';
 import { pAt, span, smooth } from '@/lib/scenes';
+import { asset } from '@/lib/asset';
 import { HERO } from '@/content/copy';
 
 export function Hero() {
@@ -31,7 +32,7 @@ export function Hero() {
     <div className="hero" ref={ref}>
       <img
         className="hero-logo"
-        src="/assets/brand/logo-full.png"
+        src={asset('/assets/brand/logo-full.png')}
         alt="Mondial Service — Ristrutturazioni, Impianti, Servizi"
       />
       <h1 className="hero-title">

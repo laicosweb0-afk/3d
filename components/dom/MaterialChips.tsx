@@ -1,6 +1,8 @@
 // Materiali Selezionati: i campioni sono le stesse texture fotografiche
 // usate nel mondo 3D. Ciò che vedi in sezione è ciò che vedi in scena.
 
+import { asset } from '@/lib/asset';
+
 const MATERIALI = [
   { key: 'calacatta', nome: 'Calacatta', nota: 'Bagni e piani, venatura tenue' },
   { key: 'marquina', nome: 'Marquina', nota: 'Zoccoli e pavimenti, nero profondo' },
@@ -16,7 +18,7 @@ export function MaterialChips() {
           <div className="mat-swatch">
             <img
               className="mat-canvas"
-              src={`/assets/textures/${m.key}.jpg`}
+              src={asset(`/assets/textures/${m.key}.jpg`)}
               alt={`Campione di ${m.nome}`}
               loading="lazy"
             />
