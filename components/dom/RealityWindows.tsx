@@ -28,9 +28,17 @@ export function RealityWindows() {
   const loaded = useRef<boolean[]>([]);
 
   useEffect(() => {
+    // il canvas 3D: durante una finestra reale lo dissolviamo, così lo
+    // spazio DIVENTA foto/reale (cross-dissolve) invece di vedere l'immagine
+    // incollata sopra. La camera intanto è ferma (regia): sembra un unico
+    // movimento continuo, non uno stacco.
+    // Risoluzione pigra: il wrapper del canvas può montare dopo questo effetto.
+    let canvas: HTMLElement | null = null;
     const update = () => {
+      if (!canvas) canvas = document.querySelector<HTMLElement>('.world-canvas');
       const p = progress.smoothed;
       const out = 1 - afterJourney();
+      let maxA = 0;
       REALITY_WINDOWS.forEach((w, i) => {
         const fig = figs.current[i];
         if (!fig) return;
@@ -45,13 +53,15 @@ export function RealityWindows() {
           vidEl.load();
         }
 
-        const inWin = w.video ? 0.06 : 0.14;
+        // entrata più morbida e lunga: un vero incrocio, non uno snap
+        const inWin = w.video ? 0.13 : 0.15;
         const outWin = 0.1;
         const a = out *
           smooth(span(t, w.from, w.from + inWin)) *
           (1 - smooth(span(t, w.to - outWin, w.to)));
         fig.style.opacity = String(a);
         fig.style.visibility = a < 0.004 ? 'hidden' : 'visible';
+        if (a > maxA) maxA = a;
 
         const vid = vids.current[i];
         if (vid && w.video) {
@@ -63,16 +73,17 @@ export function RealityWindows() {
           if (Number.isFinite(target) && Math.abs(vid.currentTime - target) > 0.016) {
             vid.currentTime = target;
           }
-          // materializzazione: il filmato di cantiere entra a fuoco dal 3D
-          const vblur = (1 - a) * 6;
+          // niente blur/scale marcati: con il cross-dissolve del 3D sotto,
+          // un velo minimo basta e resta pulito
+          const vblur = (1 - a) * 2;
           vid.style.filter = `${GRADE} blur(${vblur.toFixed(2)}px)`;
-          vid.style.transform = `scale(${(1.05 - a * 0.05).toFixed(4)})`;
+          vid.style.transform = `scale(${(1.02 - a * 0.02).toFixed(4)})`;
         }
         const img = imgs.current[i];
         if (img && !w.video) {
-          const blur = (1 - a) * 7;
+          const blur = (1 - a) * 4;
           img.style.filter = `${GRADE} blur(${blur.toFixed(2)}px)`;
-          img.style.transform = `scale(${(1.06 - a * 0.06).toFixed(4)})`;
+          img.style.transform = `scale(${(1.04 - a * 0.04).toFixed(4)})`;
         }
         const cap = caps.current[i];
         if (cap) {
@@ -81,6 +92,8 @@ export function RealityWindows() {
           cap.style.transform = `translateY(${((1 - ca) * 0.8).toFixed(2)}rem)`;
         }
       });
+      // il 3D si ritira mentre il reale emerge: lo spazio si trasforma
+      if (canvas) canvas.style.opacity = String(1 - 0.92 * maxA);
     };
     gsap.ticker.add(update);
     return () => gsap.ticker.remove(update);
