@@ -136,8 +136,9 @@ export function updateAudio(p: number, velocity: number): void {
   const congedo = 1 - smooth(span(p, pAt('s12', 0.6), pAt('s12', 0.95)));
   set(gWind, 0.05 * Math.max(intro, uscita * congedo));
 
-  // sub: intro e congedo, appena percettibile
-  set(gSub, 0.018 * Math.max(intro, 1 - congedo === 0 ? 0 : smooth(span(p, pAt('s12', 0.3), pAt('s12', 0.8)))));
+  // sub: intro e rigonfio nel congedo, appena percettibile
+  const congedoSwell = smooth(span(p, pAt('s12', 0.3), pAt('s12', 0.8)));
+  set(gSub, 0.018 * Math.max(intro, congedoSwell));
 
   // room tone: dagli interni fino alla finestra
   const dentro = smooth(span(p, pAt('s06', 0.9), pAt('s07', 0.3))) *

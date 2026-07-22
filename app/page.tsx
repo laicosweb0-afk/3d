@@ -2,6 +2,7 @@ import { ExperienceRoot } from '@/components/ExperienceRoot';
 import { BeforeAfter } from '@/components/dom/BeforeAfter';
 import { MaterialChips } from '@/components/dom/MaterialChips';
 import { JOURNEY_COPY } from '@/content/copy';
+import { REALITY_WINDOWS } from '@/content/reality';
 import { COMPANY, SERVICES, OPERE } from '@/content/company';
 import { CHAPTERS } from '@/lib/scenes';
 
@@ -28,6 +29,12 @@ export default function Page() {
             {c.kicker && <h3>{c.kicker}</h3>}
             <h4>{c.title}</h4>
             {c.body && <p>{c.body}</p>}
+          </section>
+        ))}
+        {REALITY_WINDOWS.map((w) => (
+          <section key={w.id} className="visually-hidden">
+            <h3>{w.kicker}</h3>
+            <p>{w.caption}</p>
           </section>
         ))}
       </article>

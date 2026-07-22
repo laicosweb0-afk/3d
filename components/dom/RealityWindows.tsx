@@ -14,12 +14,17 @@ import { REALITY_WINDOWS } from '@/content/reality';
 import { afterJourney } from './Overlays';
 
 const GRADE = 'contrast(1.045) saturate(0.96) brightness(1.005)';
+// quanto presto, in progresso locale di scena, iniziare a scaricare il
+// video: abbastanza in anticipo da essere pronto, non così tanto da
+// competere con gli asset critici (Hero, maquette) al primo carico.
+const PRELOAD_LEAD = 0.2;
 
 export function RealityWindows() {
   const figs = useRef<(HTMLElement | null)[]>([]);
   const imgs = useRef<(HTMLImageElement | null)[]>([]);
   const vids = useRef<(HTMLVideoElement | null)[]>([]);
   const caps = useRef<(HTMLElement | null)[]>([]);
+  const loaded = useRef<boolean[]>([]);
 
   useEffect(() => {
     const update = () => {
@@ -29,6 +34,16 @@ export function RealityWindows() {
         const fig = figs.current[i];
         if (!fig) return;
         const t = localT(p, w.scene);
+
+        // caricamento pigro: il video parte a scaricare solo quando la
+        // finestra si avvicina, non al mount della pagina
+        const vidEl = vids.current[i];
+        if (vidEl && w.video && !loaded.current[i] && t > w.from - PRELOAD_LEAD) {
+          loaded.current[i] = true;
+          vidEl.preload = 'auto';
+          vidEl.load();
+        }
+
         const inWin = w.video ? 0.06 : 0.14;
         const outWin = 0.1;
         const a = out *
@@ -85,8 +100,9 @@ export function RealityWindows() {
               ref={(el) => { vids.current[i] = el; }}
               muted
               playsInline
-              preload="auto"
-              // poster e fallback: la foto reale (ultimo frame)
+              preload="none"
+              // poster e fallback: la foto reale (ultimo frame). Il
+              // download vero parte lazy (vedi PRELOAD_LEAD sopra).
               poster={w.src}
             >
               <source src={`${w.video}.webm`} type="video/webm" />
