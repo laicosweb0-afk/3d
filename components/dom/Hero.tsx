@@ -32,7 +32,7 @@ export function Hero() {
     <div className="hero" ref={ref}>
       <img
         className="hero-logo"
-        src={asset('/assets/brand/logo-full.png')}
+        src={asset('/assets/brand/logo-full-text.png')}
         alt="Mondial Service — Ristrutturazioni, Impianti, Servizi"
       />
       <h1 className="hero-title">

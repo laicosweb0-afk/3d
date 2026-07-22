@@ -30,9 +30,12 @@ export const CAMERA_KEYS: CamKey[] = [
   { p: pAt('s06', 0.4),  pos: [1.2, 3.0, 9.3],  tgt: [0, 1.4, 3.2], fov: 43 },
   { p: pAt('s06', 0.75), pos: [0.5, 2.0, 7.5],  tgt: [0, 1.5, 3.9], fov: 45 },
   { p: pAt('s06', 1.0),  pos: [0, 1.65, 6.2],   tgt: [0, 1.45, 3.9], fov: 46 },
-  // ATTO III — dentro
-  { p: pAt('s07', 0.15), pos: [0, 1.6, 3.1],  tgt: [-0.5, 1.4, 0], fov: 52 },
-  { p: pAt('s07', 0.55), pos: [0.9, 1.6, 1.4], tgt: [-2.5, 1.3, -0.6], fov: 52 },
+  // ATTO III — dentro. La camera entra nel soggiorno e poi TIENE FERMO
+  // per tutta la finestra del morph (video 3D→foto): l'utente resta al suo
+  // posto, è lo scroll a pilotare la trasformazione, non un movimento.
+  { p: pAt('s07', 0.15), pos: [0, 1.6, 3.1],    tgt: [-0.5, 1.4, 0],    fov: 52 },
+  { p: pAt('s07', 0.5),  pos: [0.5, 1.6, 1.7],  tgt: [-1.8, 1.35, -0.5], fov: 52 },
+  { p: pAt('s07', 0.9),  pos: [0.47, 1.6, 1.66], tgt: [-1.83, 1.35, -0.53], fov: 52 },
   { p: pAt('s07', 1.0),  pos: [-0.4, 1.55, 0.9], tgt: [-2.7, 1.45, -1.6], fov: 52 },
   // dentro la parete (parete interna a z=-1.5)
   { p: pAt('s08', 0.4),  pos: [-1.9, 1.55, 0.2], tgt: [-2.7, 1.35, -1.55], fov: 52 },
@@ -42,19 +45,22 @@ export const CAMERA_KEYS: CamKey[] = [
   { p: pAt('s09', 0.25), pos: [-2.5, 1.4, -1.95], tgt: [-3.0, 0.6, -2.9], fov: 54 },
   { p: pAt('s09', 0.55), pos: [-2.25, 0.78, -2.25], tgt: [-3.8, 0.52, -3.1], fov: 54 },
   { p: pAt('s09', 0.85), pos: [-3.0, 0.75, -3.1],  tgt: [-4.3, 0.55, -3.4], fov: 54 },
-  // il bagno: risalita, poi la camera incornicia la vasca (match con la
-  // foto reale: vasca grande e centrale, finestra piccola a sinistra)
-  { p: pAt('s10', 0.2),  pos: [-2.7, 1.45, -2.8],  tgt: [-4.3, 0.9, -3.3], fov: 50 },
-  { p: pAt('s10', 0.55), pos: [-3.25, 1.3, -2.72], tgt: [-4.35, 0.82, -3.28], fov: 46 },
-  { p: pAt('s10', 0.75), pos: [-3.3, 1.32, -2.7],  tgt: [-4.38, 0.85, -3.3], fov: 46 },
-  { p: pAt('s10', 1.0),  pos: [-2.9, 1.55, -2.9],  tgt: [-5.0, 1.4, -3.0], fov: 50 },
-  // ATTO IV — la finestra (sulla parete ovest x=-5), uscita e risalita
-  { p: pAt('s11', 0.35), pos: [-3.9, 1.6, -3.0],  tgt: [-5.1, 1.55, -3.0], fov: 48 },
-  { p: pAt('s11', 0.7),  pos: [-7.8, 3.2, -3.1],  tgt: [0, 1.3, -1], fov: 44 },
-  { p: pAt('s11', 1.0),  pos: [-11, 5, -0.5],     tgt: [0, 1.3, 0], fov: 42 },
-  // il nuovo foglio: ritorno al bianco
-  { p: pAt('s12', 0.45), pos: [-7, 5, 10],        tgt: [0, 1.0, 0], fov: 41 },
-  { p: pAt('s12', 1.0),  pos: [0, 3.2, 17],       tgt: [0, 0.9, 0], fov: 40 },
+  // il bagno: risalita, poi la camera incornicia la vasca e TIENE FERMO per
+  // tutta la finestra del morph (video 3D→foto reale). Vasca centrale,
+  // finestra piccola a sinistra: match con la foto reale.
+  { p: pAt('s10', 0.2),  pos: [-2.7, 1.45, -2.8],   tgt: [-4.3, 0.9, -3.3],   fov: 50 },
+  { p: pAt('s10', 0.4),  pos: [-3.25, 1.3, -2.72],  tgt: [-4.35, 0.82, -3.28], fov: 46 },
+  { p: pAt('s10', 0.75), pos: [-3.28, 1.31, -2.71], tgt: [-4.37, 0.84, -3.29], fov: 46 },
+  { p: pAt('s10', 1.0),  pos: [-2.9, 1.55, -2.9],   tgt: [-5.0, 1.4, -3.0],   fov: 50 },
+  // ATTO IV — congedo. Niente uscita dalla finestra né voli/giri attorno
+  // alla casa: un semplice arretramento dritto che ricompone la vista
+  // frontale a distanza, dolce e leggibile. Il bianco poi copre e il logo
+  // compare.
+  { p: pAt('s11', 0.4),  pos: [-3.2, 1.6, -2.5],  tgt: [-4.6, 1.4, -3.0], fov: 50 },
+  { p: pAt('s11', 1.0),  pos: [-1.8, 2.0, 1.8],   tgt: [-1.5, 1.35, -1.2], fov: 46 },
+  // il nuovo foglio: ritorno al bianco, di fronte, in allontanamento lineare
+  { p: pAt('s12', 0.5),  pos: [0, 2.6, 9.5],       tgt: [0, 1.1, 0], fov: 42 },
+  { p: pAt('s12', 1.0),  pos: [0, 3.2, 17],        tgt: [0, 0.9, 0], fov: 40 },
 ];
 
 // ---- Tracce degli eventi ancorati (tutte f(p), tutte reversibili) ----
@@ -66,9 +72,11 @@ export function cadDraw(p: number): number {
   return draw * (1 - retract);
 }
 
-/** Costruzione della maquette: 0..1 sull'arco di S03 (leggero anticipo per gruppo). */
+/** Costruzione della maquette: parte quasi subito (mentre la hero si
+ * congeda) e si completa più reattiva, entro la prima metà di S03. Così
+ * ai primi scroll la casa sta già nascendo, non resta un foglio vuoto. */
 export function buildProgress(p: number): number {
-  return span(p, pAt('s02', 0.85), pAt('s03', 0.98));
+  return span(p, pAt('s01', 0.7), pAt('s03', 0.45));
 }
 
 /**
