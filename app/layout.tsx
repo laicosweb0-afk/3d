@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import './brand-font.css';
 import './globals.css';
 
 const TITLE = 'Mondial Service — Ristrutturazioni, Impianti, Servizi | Mordano (BO)';

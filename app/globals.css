@@ -1,3 +1,6 @@
+/* Il font del brand (Hanken Grotesk) è definito in ./brand-font.css,
+   importato in app/layout.tsx prima di questo file. */
+
 /* Design tokens v1 — quiet luxury (ART_DIRECTION §8) */
 :root {
   --bianco: #fafaf8;
@@ -7,8 +10,8 @@
   --grigio-100: #efefeb;
   --pietra: #8c8377;
 
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto,
-    'Helvetica Neue', sans-serif;
+  --font-sans: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue', sans-serif;
 }
 
 * {
