@@ -7,7 +7,7 @@ name: Deploy sito (GitHub Pages)
 
 on:
   push:
-    branches: [claude/mondial-service-brief-mse02r]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
