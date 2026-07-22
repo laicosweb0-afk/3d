@@ -1,0 +1,56 @@
+name: Deploy sito (GitHub Pages)
+
+# Pubblica il sito statico su GitHub Pages ad ogni push sul branch, oppure
+# a mano dalla tab Actions ("Run workflow"). L'output è la cartella `out/`
+# generata dall'export statico di Next.js; il file public/CNAME mantiene il
+# dominio del brand (www.mondialservicesrl.it) servito alla radice.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Abilita Pages automaticamente (build_type: workflow) se non è già
+      # attivo, così non serve toccare le impostazioni del repository a mano.
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+        env:
+          # Anteprima gratuita servita in sottocartella: …github.io/3d/.
+          # Quando comprerete il dominio, rimuovete questa riga (basePath vuoto)
+          # e riaggiungete public/CNAME con www.mondialservicesrl.it.
+          NEXT_PUBLIC_BASE_PATH: /3d
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
