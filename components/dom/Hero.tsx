@@ -29,7 +29,11 @@ export function Hero() {
 
   return (
     <div className="hero" ref={ref}>
-      <p className="hero-brand">Mondial Service</p>
+      <img
+        className="hero-logo"
+        src="/assets/brand/logo-full.png"
+        alt="Mondial Service — Ristrutturazioni, Impianti, Servizi"
+      />
       <h1 className="hero-title">
         {HERO.title.split('\n').map((line) => (
           <span key={line}>{line}</span>

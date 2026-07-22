@@ -15,6 +15,7 @@ import { TOTAL_VH } from '@/lib/scenes';
 import { progress, debugState } from '@/lib/progress';
 import { setAudioEnabled, updateAudio } from '@/lib/audio';
 import { useApp } from '@/lib/store';
+import { Monogram } from './dom/Monogram';
 
 function AudioToggle() {
   const audioOn = useApp((s) => s.audioOn);
@@ -139,7 +140,10 @@ export function ExperienceRoot() {
       <Overlays />
       <TimelineMetro />
       <header className="chrome">
-        <span className="chrome-logo">Mondial Service</span>
+        <span className="chrome-logo">
+          <Monogram className="chrome-mark" />
+          Mondial Service
+        </span>
         <div className="chrome-actions">
           <AudioToggle />
           <a className="chrome-cta" href="#contatti">Contattaci</a>

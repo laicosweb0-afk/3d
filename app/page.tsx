@@ -1,6 +1,7 @@
 import { ExperienceRoot } from '@/components/ExperienceRoot';
 import { BeforeAfter } from '@/components/dom/BeforeAfter';
 import { MaterialChips } from '@/components/dom/MaterialChips';
+import { Monogram } from '@/components/dom/Monogram';
 import { JOURNEY_COPY } from '@/content/copy';
 import { REALITY_WINDOWS } from '@/content/reality';
 import { COMPANY, SERVICES, OPERE } from '@/content/company';
@@ -163,7 +164,10 @@ export default function Page() {
       </section>
 
       <footer className="footer">
-        <span>© {new Date().getFullYear()} {COMPANY.name}</span>
+        <span className="footer-brand">
+          <Monogram className="footer-mark" />
+          © {new Date().getFullYear()} {COMPANY.name}
+        </span>
         {COMPANY.piva && <span>P.IVA {COMPANY.piva}</span>}
         <span>{COMPANY.address}</span>
         <a href={COMPANY.phoneHref}>{COMPANY.phone}</a>

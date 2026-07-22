@@ -19,6 +19,7 @@ export function afterJourney(): number {
 export function Overlays() {
   const refs = useRef<(HTMLDivElement | null)[]>([]);
   const white = useRef<HTMLDivElement>(null);
+  const logo = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     const update = () => {
@@ -34,9 +35,16 @@ export function Overlays() {
         el.style.transform = `translateY(${(1 - a) * 1.2}rem)`;
         el.style.visibility = a < 0.005 ? 'hidden' : 'visible';
       });
+      const w = whiteout(p);
       if (white.current) {
         // Il bianco della chiusura accompagna l'atterraggio, poi si ritira.
-        white.current.style.opacity = String(whiteout(p) * 0.9 * out);
+        white.current.style.opacity = String(w * 0.9 * out);
+      }
+      if (logo.current) {
+        // la casa è tornata foglio bianco: ora è il logo a comparire
+        const lg = smooth(span(w, 0.55, 1)) * out;
+        logo.current.style.opacity = String(lg);
+        logo.current.style.transform = `translate(-50%, -50%) scale(${0.94 + lg * 0.06})`;
       }
     };
     gsap.ticker.add(update);
@@ -57,6 +65,14 @@ export function Overlays() {
         </div>
       ))}
       <div className="whiteout" ref={white} aria-hidden="true" />
+      <img
+        className="whiteout-logo"
+        ref={logo}
+        src="/assets/brand/logo-full.png"
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+      />
     </>
   );
 }
