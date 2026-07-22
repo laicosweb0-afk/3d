@@ -27,8 +27,9 @@ export const REALITY_WINDOWS: RealityWindow[] = [
     src: '/assets/foto/soggiorno-1.jpg',
     kicker: 'Dal vero',
     caption: 'La zona giorno, nello stile con cui consegniamo.',
-    // morph 3D→reale (Seedance): primo frame = render 3D, ultimo = foto
-    // reale; scrubbato dallo scroll. Base path: .webm (Chromium/FF) / .mp4
+    // morph costruzione→foto (Seedance): la stessa identica stanza si
+    // costruisce progressivamente fino alla foto reale, stessa prospettiva
+    // e finestre. Scrubbato dallo scroll. .webm (Chromium/FF) / .mp4 (Safari)
     video: '/assets/video/soggiorno-transizione',
     videoDuration: 5,
   },
@@ -47,7 +48,9 @@ export const REALITY_WINDOWS: RealityWindow[] = [
     src: '/assets/foto/bagno-reale.jpg',
     kicker: 'Dal vero',
     caption: 'Un nostro bagno consegnato: marquina e calacatta, chiavi in mano.',
-    // morph 3D→reale (Seedance): il bagno grezzo si finisce nella foto reale
+    // morph costruzione→foto (Seedance): lo stesso identico bagno si
+    // finisce progressivamente fino alla foto reale, stessa prospettiva
+    // e finestra. Scrubbato dallo scroll.
     video: '/assets/video/bagno-transizione',
     videoDuration: 5,
   },

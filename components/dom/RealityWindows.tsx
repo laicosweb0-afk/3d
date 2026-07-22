@@ -47,8 +47,10 @@ export function RealityWindows() {
           if (Number.isFinite(target) && Math.abs(vid.currentTime - target) > 0.016) {
             vid.currentTime = target;
           }
-          vid.style.filter = GRADE;
-          vid.style.transform = `scale(${(1.03 - a * 0.03).toFixed(4)})`;
+          // materializzazione: il filmato di cantiere entra a fuoco dal 3D
+          const vblur = (1 - a) * 6;
+          vid.style.filter = `${GRADE} blur(${vblur.toFixed(2)}px)`;
+          vid.style.transform = `scale(${(1.05 - a * 0.05).toFixed(4)})`;
         }
         const img = imgs.current[i];
         if (img && !w.video) {
