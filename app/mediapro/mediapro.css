@@ -1,0 +1,1088 @@
+/* ============================================================
+   MediaPro — design system
+   Dark cinematico, oro caldo, spaziature ampie.
+   Tutto è scopato sotto .mp per non toccare il sito principale.
+   ============================================================ */
+
+.mp {
+  --bg: #090909;
+  --bg2: #111111;
+  --card: #171717;
+  --text: #ffffff;
+  --text2: #b5b5b5;
+  --gold: #d6b37a;
+  --gold-dim: rgba(214, 179, 122, 0.35);
+  --line: rgba(255, 255, 255, 0.08);
+  --glass: rgba(23, 23, 23, 0.55);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter',
+    'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+  letter-spacing: -0.01em;
+}
+
+.mp *,
+.mp *::before,
+.mp *::after {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.mp ::selection {
+  background: var(--gold);
+  color: #090909;
+}
+
+/* ---------- tipografia comune ---------- */
+
+.mp-kicker {
+  font-size: 13px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.mp-h2 {
+  font-size: clamp(34px, 4.6vw, 68px);
+  font-weight: 250;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  margin-top: 22px;
+  max-width: 15em;
+}
+
+.mp-sub {
+  color: var(--text2);
+  font-weight: 300;
+  font-size: clamp(15px, 1.15vw, 18px);
+  line-height: 1.65;
+  margin-top: 20px;
+  max-width: 34em;
+}
+
+.mp-section {
+  position: relative;
+  padding: clamp(96px, 12vw, 180px) clamp(20px, 6vw, 96px);
+}
+
+/* reveal generico: gli elementi .mp-reveal partono invisibili
+   e vengono animati da GSAP quando entrano in viewport */
+.mp-reveal {
+  opacity: 0;
+}
+.mp--reduced .mp-reveal {
+  opacity: 1;
+}
+
+/* ---------- bottoni ---------- */
+
+.mp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 28px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease),
+    border-color 0.5s var(--ease), background 0.5s var(--ease);
+}
+.mp-btn .mp-btn-arrow {
+  transition: transform 0.5s var(--ease);
+}
+.mp-btn:hover {
+  transform: translateY(-3px);
+  border-color: var(--gold-dim);
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(214, 179, 122, 0.12), 0 0 44px -18px var(--gold-dim);
+}
+.mp-btn:hover .mp-btn-arrow {
+  transform: translateX(5px);
+}
+.mp-btn--gold {
+  background: linear-gradient(135deg, #e3c58f, var(--gold) 55%, #b6905a);
+  color: #0b0a08;
+  border-color: transparent;
+  font-weight: 500;
+}
+.mp-btn--gold:hover {
+  box-shadow: 0 18px 44px -14px rgba(214, 179, 122, 0.45);
+}
+
+/* ============================================================
+   NAV
+   ============================================================ */
+
+.mp-nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px clamp(20px, 4vw, 48px);
+  transition: background 0.6s ease, backdrop-filter 0.6s ease,
+    border-color 0.6s ease;
+  border-bottom: 1px solid transparent;
+}
+.mp-nav--solid {
+  background: rgba(9, 9, 9, 0.62);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom-color: var(--line);
+}
+.mp-nav-logo {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  text-decoration: none;
+}
+.mp-nav-logo em {
+  font-style: normal;
+  color: var(--gold);
+}
+.mp-nav-links {
+  display: flex;
+  gap: clamp(14px, 2.2vw, 34px);
+  list-style: none;
+  padding: 0;
+}
+.mp-nav-links a {
+  font-size: 13px;
+  color: var(--text2);
+  text-decoration: none;
+  letter-spacing: 0.06em;
+  transition: color 0.35s ease;
+  position: relative;
+  padding-bottom: 6px;
+}
+.mp-nav-links a::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--gold);
+  transform: translateX(-50%) scale(0);
+  transition: transform 0.35s var(--ease);
+}
+.mp-nav-links a:hover,
+.mp-nav-links a.is-active {
+  color: var(--text);
+}
+.mp-nav-links a.is-active::after {
+  transform: translateX(-50%) scale(1);
+}
+.mp-nav-num {
+  color: rgba(214, 179, 122, 0.7);
+  font-size: 11px;
+  margin-right: 5px;
+}
+.mp-nav .mp-btn {
+  padding: 11px 22px;
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .mp-nav-links {
+    display: none;
+  }
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+
+.mp-hero {
+  position: relative;
+  height: 260vh; /* spazio di scroll per la sequenza pinnata */
+}
+.mp--reduced .mp-hero {
+  height: auto;
+}
+
+.mp-hero-pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+.mp--reduced .mp-hero-pin {
+  position: relative;
+  height: 100vh;
+}
+
+/* fondale: vignetta + alone dorato in basso */
+.mp-hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 45% at 50% 88%, rgba(214, 179, 122, 0.10), transparent 65%),
+    radial-gradient(90% 80% at 50% 35%, #101010, var(--bg) 75%);
+}
+/* alone che segue il mouse */
+.mp-hero-glow {
+  position: absolute;
+  width: 60vmin;
+  height: 60vmin;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(214, 179, 122, 0.07), transparent);
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* particelle di profondità */
+.mp-hero-dust {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.mp-dust {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(214, 179, 122, 0.4);
+  filter: blur(0.5px);
+  animation: mp-float 9s ease-in-out infinite alternate;
+}
+.mp--reduced .mp-dust {
+  animation: none;
+}
+
+/* palcoscenico 3D */
+.mp-hero-stage {
+  position: relative;
+  perspective: 1400px;
+  display: grid;
+  place-items: center;
+  will-change: transform;
+}
+/* su desktop l'oggetto vive a destra, il testo a sinistra */
+@media (min-width: 901px) {
+  .mp-hero-stage {
+    transform: translateX(17vw);
+  }
+}
+
+/* il monolite */
+.mp-monolith {
+  position: relative;
+  width: clamp(240px, 30vmin, 380px);
+  aspect-ratio: 1 / 1.05;
+  border-radius: 30px;
+  transform-style: preserve-3d;
+  will-change: transform;
+  background:
+    linear-gradient(155deg, #232323 0%, #141414 38%, #0b0b0b 100%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    0 60px 110px -40px rgba(0, 0, 0, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    inset 0 -30px 60px -30px rgba(0, 0, 0, 0.8);
+  display: grid;
+  place-items: center;
+}
+/* riflesso che segue il mouse (le variabili --hx/--hy sono in %) */
+.mp-monolith::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    55% 45% at var(--hx, 30%) var(--hy, 20%),
+    rgba(255, 255, 255, 0.10),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+/* filo di luce dorata sul bordo inferiore */
+.mp-monolith::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    180deg,
+    transparent 55%,
+    rgba(214, 179, 122, 0.5)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.mp-monolith-logo {
+  font-size: clamp(30px, 4.4vmin, 52px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: #f4f4f4;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
+}
+.mp-monolith-logo em {
+  font-style: normal;
+  color: var(--gold);
+}
+
+/* riflesso a terra + alone del podio */
+.mp-podium {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 130%;
+  height: 90px;
+  transform: translate(-50%, 30px);
+  background: radial-gradient(
+    50% 100% at 50% 0%,
+    rgba(214, 179, 122, 0.16),
+    transparent 75%
+  );
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+/* sfere satellite */
+.mp-orb {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #e8e8e8, #9a9a9a 45%, #3c3c3c 80%, #1c1c1c);
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.9);
+  animation: mp-float 7s ease-in-out infinite alternate;
+  will-change: transform;
+}
+.mp--reduced .mp-orb {
+  animation: none;
+}
+.mp-orb--a {
+  width: clamp(52px, 7vmin, 90px);
+  height: clamp(52px, 7vmin, 90px);
+  right: -16%;
+  top: 4%;
+}
+.mp-orb--b {
+  width: clamp(30px, 4.4vmin, 56px);
+  height: clamp(30px, 4.4vmin, 56px);
+  left: -22%;
+  bottom: 6%;
+  animation-delay: -3.2s;
+  background: radial-gradient(circle at 32% 28%, #f2e3c8, var(--gold) 45%, #6d5732 85%, #2b2113);
+}
+
+@keyframes mp-float {
+  from {
+    transform: translateY(-9px);
+  }
+  to {
+    transform: translateY(9px);
+  }
+}
+
+/* blocco testuale del hero */
+.mp-hero-copy {
+  position: absolute;
+  z-index: 3;
+  left: clamp(20px, 6vw, 96px);
+  bottom: clamp(56px, 11vh, 130px);
+  max-width: 620px;
+  will-change: transform, opacity;
+}
+.mp-hero-kicker {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--gold);
+  font-size: 13px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+.mp-hero-kicker::before {
+  content: '';
+  width: 44px;
+  height: 1px;
+  background: var(--gold-dim);
+}
+.mp-hero-title {
+  margin-top: 22px;
+  font-size: clamp(38px, 5.4vw, 84px);
+  font-weight: 250;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+}
+.mp-hero-line {
+  display: block;
+  overflow: hidden;
+}
+.mp-hero-line > span {
+  display: block;
+  will-change: transform;
+}
+.mp-hero-line--accent {
+  color: var(--gold);
+}
+.mp-hero-sub {
+  margin-top: 24px;
+  color: var(--text2);
+  font-weight: 300;
+  font-size: clamp(14px, 1.1vw, 17px);
+  line-height: 1.65;
+  max-width: 30em;
+}
+.mp-hero-cta {
+  margin-top: 34px;
+}
+
+/* indicatore di scroll */
+.mp-hero-scroll {
+  position: absolute;
+  z-index: 3;
+  right: clamp(20px, 5vw, 72px);
+  bottom: clamp(44px, 9vh, 100px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--text2);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+}
+.mp-hero-scroll::after {
+  content: '';
+  width: 1px;
+  height: 56px;
+  background: linear-gradient(var(--gold), transparent);
+  animation: mp-scrollhint 2.2s var(--ease) infinite;
+}
+@keyframes mp-scrollhint {
+  0% {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  55% {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  100% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+}
+
+/* titolo-ponte che appare a fine sequenza hero */
+.mp-hero-bridge {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.mp-hero-bridge .mp-kicker {
+  display: block;
+}
+.mp-hero-bridge h2 {
+  margin-top: 18px;
+  font-size: clamp(34px, 4.8vw, 72px);
+  font-weight: 250;
+  letter-spacing: -0.02em;
+}
+.mp--reduced .mp-hero-bridge {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .mp-hero-copy {
+    right: clamp(20px, 6vw, 96px);
+    bottom: 12vh;
+  }
+  .mp-hero-scroll {
+    display: none;
+  }
+  .mp-hero-stage {
+    transform: translateY(-12vh);
+  }
+  .mp-orb--a {
+    right: -6%;
+  }
+  .mp-orb--b {
+    left: -8%;
+  }
+}
+
+/* ============================================================
+   PORTFOLIO
+   ============================================================ */
+
+.mp-portfolio {
+  background:
+    radial-gradient(70% 40% at 50% 0%, rgba(214, 179, 122, 0.05), transparent 70%),
+    var(--bg);
+}
+.mp-portfolio-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+  margin-bottom: clamp(40px, 6vw, 84px);
+}
+.mp-portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: clamp(16px, 2vw, 28px);
+  perspective: 1200px;
+}
+.mp-project {
+  position: relative;
+  grid-column: span 4;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--card);
+  border: 1px solid var(--line);
+  aspect-ratio: 4 / 5;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--text);
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: border-color 0.5s ease, box-shadow 0.6s var(--ease);
+}
+/* il primo progetto è protagonista */
+.mp-project--lead {
+  grid-column: span 8;
+  grid-row: span 2;
+  aspect-ratio: auto;
+}
+.mp-project:hover {
+  border-color: rgba(214, 179, 122, 0.35);
+  box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.9),
+    0 0 60px -30px var(--gold-dim);
+}
+.mp-project-media {
+  position: absolute;
+  inset: 0;
+}
+.mp-project-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 1.1s var(--ease), filter 1.1s var(--ease);
+  filter: saturate(0.9) brightness(0.92);
+}
+.mp-project:hover .mp-project-media img {
+  transform: scale(1.045) rotate(0.4deg);
+  filter: saturate(1) brightness(1);
+}
+/* velo di leggibilità sopra il visual */
+.mp-project::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(5, 5, 5, 0.85) 0%,
+    rgba(5, 5, 5, 0.12) 38%,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+/* riflesso dinamico sul vetro della card */
+.mp-project-shine {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: radial-gradient(
+    60% 50% at var(--hx, 50%) var(--hy, 0%),
+    rgba(255, 255, 255, 0.09),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+.mp-project:hover .mp-project-shine {
+  opacity: 1;
+}
+.mp-project-meta {
+  position: absolute;
+  z-index: 3;
+  left: 26px;
+  right: 26px;
+  bottom: 22px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+.mp-project-client {
+  font-size: clamp(17px, 1.5vw, 24px);
+  font-weight: 550;
+  letter-spacing: 0.02em;
+}
+.mp-project-type {
+  margin-top: 5px;
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 300;
+}
+.mp-project-year {
+  color: var(--gold);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+}
+.mp-project-arrow {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  background: rgba(9, 9, 9, 0.5);
+  backdrop-filter: blur(8px);
+  transition: transform 0.5s var(--ease), background 0.5s ease,
+    border-color 0.5s ease, color 0.5s ease;
+}
+.mp-project:hover .mp-project-arrow {
+  transform: rotate(-45deg);
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #0b0a08;
+}
+
+@media (max-width: 900px) {
+  .mp-portfolio-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .mp-project,
+  .mp-project--lead {
+    grid-column: span 2;
+    grid-row: auto;
+    aspect-ratio: 4 / 3;
+  }
+}
+
+/* ============================================================
+   SERVIZI
+   ============================================================ */
+
+.mp-servizi {
+  background: var(--bg2);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.mp-servizi-inner {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) 2fr;
+  gap: clamp(40px, 6vw, 110px);
+  align-items: start;
+}
+.mp-servizi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+  gap: clamp(14px, 1.6vw, 22px);
+}
+.mp-service {
+  position: relative;
+  padding: 26px 24px 24px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.03), transparent 55%),
+    var(--card);
+  transition: transform 0.55s var(--ease), border-color 0.55s ease,
+    box-shadow 0.55s var(--ease);
+  will-change: transform;
+}
+.mp-service:hover {
+  transform: translateY(-6px);
+  border-color: rgba(214, 179, 122, 0.3);
+  box-shadow: 0 26px 50px -30px rgba(0, 0, 0, 0.9),
+    0 0 44px -24px var(--gold-dim);
+}
+.mp-service-icon {
+  width: 44px;
+  height: 44px;
+  color: var(--gold);
+  filter: drop-shadow(0 0 10px rgba(214, 179, 122, 0.25));
+}
+.mp-service-icon path,
+.mp-service-icon circle,
+.mp-service-icon rect,
+.mp-service-icon line,
+.mp-service-icon polyline {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mp-service h3 {
+  margin-top: 18px;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.mp-service p {
+  margin-top: 8px;
+  color: var(--text2);
+  font-size: 13.5px;
+  font-weight: 300;
+  line-height: 1.55;
+}
+
+@media (max-width: 1000px) {
+  .mp-servizi-inner {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   RISULTATI
+   ============================================================ */
+
+.mp-risultati-grid {
+  margin-top: clamp(44px, 6vw, 80px);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: clamp(14px, 1.6vw, 24px);
+}
+.mp-stat {
+  padding: 34px 26px 30px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.035), transparent 50%),
+    var(--card);
+  transition: transform 0.55s var(--ease), border-color 0.55s ease,
+    box-shadow 0.55s var(--ease);
+  will-change: transform;
+}
+.mp-stat:hover {
+  transform: translateY(-6px);
+  border-color: rgba(214, 179, 122, 0.3);
+  box-shadow: 0 0 50px -24px var(--gold-dim);
+}
+.mp-stat-value {
+  font-size: clamp(34px, 3vw, 50px);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.mp-stat-value em {
+  font-style: normal;
+  color: var(--gold);
+  font-size: 0.72em;
+  margin-left: 2px;
+}
+.mp-stat-label {
+  margin-top: 12px;
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.5;
+}
+@media (max-width: 1100px) {
+  .mp-risultati-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .mp-risultati-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ============================================================
+   METODO — timeline orizzontale
+   ============================================================ */
+
+.mp-metodo {
+  background: var(--bg2);
+  border-top: 1px solid var(--line);
+}
+.mp-timeline {
+  position: relative;
+  margin-top: clamp(56px, 8vw, 110px);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+}
+/* la linea di collegamento e il suo riempimento progressivo */
+.mp-timeline::before {
+  content: '';
+  position: absolute;
+  top: 27px;
+  left: 4%;
+  right: 4%;
+  height: 1px;
+  background: var(--line);
+}
+.mp-timeline-fill {
+  position: absolute;
+  top: 27px;
+  left: 4%;
+  width: 92%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold), rgba(214, 179, 122, 0.35));
+  transform-origin: left;
+  transform: scaleX(0);
+  box-shadow: 0 0 14px rgba(214, 179, 122, 0.5);
+}
+.mp--reduced .mp-timeline-fill {
+  transform: scaleX(1);
+}
+.mp-step {
+  position: relative;
+  text-align: center;
+  padding: 0 8px;
+}
+.mp-step-dot {
+  position: relative;
+  z-index: 1;
+  width: 54px;
+  height: 54px;
+  margin: 0 auto;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--card);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  color: var(--text2);
+  letter-spacing: 0.08em;
+  transition: border-color 0.6s ease, color 0.6s ease, box-shadow 0.6s ease,
+    transform 0.6s var(--ease), background 0.6s ease;
+}
+.mp-step.is-active .mp-step-dot {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: #141210;
+  box-shadow: 0 0 30px -6px var(--gold-dim), inset 0 0 12px rgba(214, 179, 122, 0.12);
+  transform: scale(1.12);
+}
+.mp-step h3 {
+  margin-top: 20px;
+  font-size: 15.5px;
+  font-weight: 500;
+  transition: color 0.5s ease;
+  color: var(--text2);
+}
+.mp-step.is-active h3 {
+  color: var(--text);
+}
+.mp-step p {
+  margin-top: 8px;
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.55;
+  opacity: 0.75;
+}
+@media (max-width: 900px) {
+  .mp-timeline {
+    grid-template-columns: 1fr;
+    gap: 34px;
+    text-align: left;
+  }
+  .mp-timeline::before,
+  .mp-timeline-fill {
+    top: 0;
+    bottom: 0;
+    left: 27px;
+    right: auto;
+    width: 1px;
+    height: 100%;
+  }
+  .mp-timeline-fill {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  .mp--reduced .mp-timeline-fill {
+    transform: scaleY(1);
+  }
+  .mp-step {
+    display: grid;
+    grid-template-columns: 54px 1fr;
+    column-gap: 22px;
+    text-align: left;
+    padding: 0;
+  }
+  .mp-step-dot {
+    margin: 0;
+    grid-row: span 2;
+  }
+  .mp-step h3 {
+    margin-top: 4px;
+  }
+}
+
+/* ============================================================
+   CONTATTI
+   ============================================================ */
+
+.mp-contatti {
+  background:
+    radial-gradient(55% 45% at 78% 85%, rgba(214, 179, 122, 0.08), transparent 70%),
+    radial-gradient(60% 50% at 15% 10%, #101010, transparent 75%),
+    var(--bg);
+  border-top: 1px solid var(--line);
+}
+.mp-contatti-inner {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: clamp(40px, 6vw, 110px);
+  align-items: center;
+}
+.mp-contatti-title {
+  font-size: clamp(36px, 4.6vw, 66px);
+  font-weight: 250;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  margin-top: 22px;
+}
+.mp-channels {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 420px;
+}
+.mp-channel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(23, 23, 23, 0.5);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14.5px;
+  font-weight: 400;
+  transition: transform 0.5s var(--ease), border-color 0.5s ease,
+    box-shadow 0.5s var(--ease), background 0.5s ease;
+}
+.mp-channel:hover {
+  transform: translateX(6px);
+  border-color: rgba(214, 179, 122, 0.35);
+  background: rgba(30, 27, 22, 0.6);
+  box-shadow: 0 0 40px -22px var(--gold-dim);
+}
+.mp-channel span:last-child {
+  color: var(--gold);
+  transition: transform 0.5s var(--ease);
+}
+.mp-channel:hover span:last-child {
+  transform: translateX(4px);
+}
+
+/* pannello form in vetro */
+.mp-form {
+  padding: clamp(28px, 3vw, 44px);
+  border-radius: 26px;
+  border: 1px solid var(--line);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.04), transparent 45%),
+    var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 60px 120px -60px rgba(0, 0, 0, 0.9);
+}
+.mp-form h3 {
+  font-size: 21px;
+  font-weight: 500;
+}
+.mp-form-sub {
+  margin-top: 8px;
+  color: var(--text2);
+  font-size: 13.5px;
+  font-weight: 300;
+}
+.mp-field {
+  margin-top: 18px;
+  display: block;
+}
+.mp-field span {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 8px;
+}
+.mp-field input,
+.mp-field textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(9, 9, 9, 0.55);
+  color: var(--text);
+  font: inherit;
+  font-size: 14.5px;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+  resize: vertical;
+}
+.mp-field input:focus,
+.mp-field textarea:focus {
+  outline: none;
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 0 3px rgba(214, 179, 122, 0.12);
+}
+.mp-form .mp-btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: 26px;
+}
+@media (max-width: 1000px) {
+  .mp-contatti-inner {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.mp-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 34px clamp(20px, 6vw, 96px);
+  border-top: 1px solid var(--line);
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 300;
+}
+.mp-footer a {
+  color: var(--text2);
+  text-decoration: none;
+  transition: color 0.35s ease;
+}
+.mp-footer a:hover {
+  color: var(--gold);
+}
