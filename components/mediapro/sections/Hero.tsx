@@ -23,6 +23,7 @@ export function Hero({ reduced }: { reduced: boolean }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const monolithRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
+  const flareRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
   const bridgeRef = useRef<HTMLDivElement>(null);
 
@@ -76,14 +77,33 @@ export function Hero({ reduced }: { reduced: boolean }) {
         .to(monolith, { rotationY: -16, rotationX: 6, duration: 0.75 }, 0.05)
         // la luce cambia: l'ambiente si scurisce, resta il bagliore
         .to('.mp-hero-bg', { opacity: 0.35, duration: 0.5 }, 0.3)
-        .to(stageRef.current, { autoAlpha: 0, scale: 1.85, duration: 0.3 }, 0.68)
-        // dal buio nasce il ponte verso il portfolio
+        // il momento di luce: mentre la camera entra, l'oggetto si accende.
+        // Senza questo, a metà sequenza si vede solo buio su buio.
+        .fromTo(
+          flareRef.current,
+          { autoAlpha: 0, scale: 0.3 },
+          { autoAlpha: 1, scale: 1, duration: 0.35, ease: 'power2.in' },
+          0.45
+        )
+        // l'oggetto si dissolve nella luce prima che arrivi il testo,
+        // così non si sovrappongono
+        .to(stageRef.current, { autoAlpha: 0, scale: 1.85, duration: 0.16 }, 0.62)
+        // il bagliore non si spegne del tutto: resta acceso mentre l'hero
+        // esce di scena, così il passaggio al portfolio non è mai buio pieno
+        .to(
+          flareRef.current,
+          { autoAlpha: 0.4, scale: 2.4, duration: 0.24, ease: 'power2.out' },
+          0.76
+        )
+        // dalla luce nasce la battuta di raccordo…
         .fromTo(
           bridgeRef.current,
           { autoAlpha: 0, scale: 0.94, y: 40 },
-          { autoAlpha: 1, scale: 1, y: 0, duration: 0.24, ease: 'power2.out' },
-          0.74
-        );
+          { autoAlpha: 1, scale: 1, y: 0, duration: 0.12, ease: 'power2.out' },
+          0.78
+        )
+        // …e se ne va prima che l'hero si sganci, per non finire sotto la nav
+        .to(bridgeRef.current, { autoAlpha: 0, y: -34, duration: 0.05 }, 0.95);
 
       // --- il mouse: riflessi e micro-rotazioni, sempre morbidi ---
       const rx = gsap.quickTo(monolith, 'rotationX', { duration: 0.9, ease: 'power3.out' });
@@ -128,6 +148,8 @@ export function Hero({ reduced }: { reduced: boolean }) {
           ))}
         </div>
 
+        <div ref={flareRef} className="mp-hero-flare" aria-hidden />
+
         <div ref={stageRef} className="mp-hero-stage">
           <div ref={monolithRef} className="mp-monolith">
             <span className="mp-monolith-logo">
@@ -161,11 +183,10 @@ export function Hero({ reduced }: { reduced: boolean }) {
 
         <div className="mp-hero-scroll">Scroll</div>
 
+        {/* Non è un titolo di sezione: è la battuta che porta dentro al
+            portfolio, così non si legge due volte la stessa intestazione. */}
         <div ref={bridgeRef} className="mp-hero-bridge" aria-hidden>
-          <div>
-            <span className="mp-kicker">02 — Portfolio</span>
-            <h2>Progetti che parlano di risultati.</h2>
-          </div>
+          <p>Adesso, il lavoro.</p>
         </div>
       </div>
     </section>

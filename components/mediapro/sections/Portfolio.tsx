@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { gsap } from '../gsap';
+import { SplitTitle } from '../SplitTitle';
 import { PROJECTS } from '../content';
 import { asset } from '@/lib/asset';
 
@@ -71,9 +72,11 @@ export function Portfolio() {
       <div className="mp-portfolio-head">
         <div>
           <p className="mp-kicker mp-reveal">02 — Portfolio</p>
-          <h2 className="mp-h2 mp-reveal">
-            Ogni progetto è una storia di creatività, strategia e impatto.
-          </h2>
+          <SplitTitle
+            className="mp-h2"
+            text="Ogni progetto è una storia di creatività, strategia e impatto."
+            accent={['impatto']}
+          />
         </div>
         <a className="mp-btn mp-reveal" href="#contatti">
           Vedi tutti i progetti <span className="mp-btn-arrow">→</span>

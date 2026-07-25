@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Lenis from 'lenis';
 import { gsap, ScrollTrigger } from './gsap';
+import { Ambient, Cursor, ScrollProgress } from './Chrome';
 import { Nav } from './Nav';
 import { Hero } from './sections/Hero';
 import { Portfolio } from './sections/Portfolio';
@@ -70,6 +71,9 @@ export function Site() {
 
   return (
     <div ref={rootRef} className={`mp${reduced ? ' mp--reduced' : ''}`}>
+      <Ambient />
+      <ScrollProgress />
+      <Cursor />
       <Nav />
       <main>
         <Hero reduced={reduced} />

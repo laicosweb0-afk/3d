@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { gsap } from '../gsap';
+import { SplitTitle } from '../SplitTitle';
 import { STEPS } from '../content';
 
 export function Process({ reduced }: { reduced: boolean }) {
@@ -55,7 +56,11 @@ export function Process({ reduced }: { reduced: boolean }) {
   return (
     <section ref={sectionRef} className="mp-section mp-metodo" id="metodo">
       <p className="mp-kicker mp-reveal">05 — Il nostro metodo</p>
-      <h2 className="mp-h2 mp-reveal">Un processo collaudato per risultati straordinari.</h2>
+      <SplitTitle
+        className="mp-h2"
+        text="Un processo collaudato per risultati straordinari."
+        accent={['straordinari']}
+      />
       <div className="mp-timeline">
         <div className="mp-timeline-fill" />
         {STEPS.map((s) => (

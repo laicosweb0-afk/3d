@@ -1,5 +1,6 @@
 'use client';
 
+import { SplitTitle } from '../SplitTitle';
 import { BRAND, CONTACT } from '../content';
 
 export function Contact() {
@@ -19,7 +20,7 @@ export function Contact() {
       <div className="mp-contatti-inner">
         <div>
           <p className="mp-kicker mp-reveal">{CONTACT.kicker}</p>
-          <h2 className="mp-contatti-title mp-reveal">{CONTACT.title}</h2>
+          <SplitTitle className="mp-contatti-title" text={CONTACT.title} accent={['tuo']} />
           <p className="mp-sub mp-reveal">{CONTACT.sub}</p>
           <div className="mp-channels">
             {CONTACT.channels.map((c) => (

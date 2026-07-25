@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { gsap } from '../gsap';
+import { SplitTitle } from '../SplitTitle';
 import { SERVICES } from '../content';
 
 // Icone a linea (24×24): disegnate a mano per potersi "tracciare" da sole.
@@ -105,7 +106,11 @@ export function Services() {
       <div className="mp-servizi-inner">
         <div>
           <p className="mp-kicker mp-reveal">03 — Servizi</p>
-          <h2 className="mp-h2 mp-reveal">Soluzioni su misura per far crescere il tuo business.</h2>
+          <SplitTitle
+            className="mp-h2"
+            text="Soluzioni su misura per far crescere il tuo business."
+            accent={['business']}
+          />
           <p className="mp-sub mp-reveal">
             Un unico partner creativo, dalla strategia alla pubblicazione. Ogni servizio è
             pensato per lavorare insieme agli altri.

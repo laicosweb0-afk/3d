@@ -7,16 +7,23 @@ page.on('console', (m) => { if (m.type() === 'error') console.log('CONSOLE ERROR
 page.on('pageerror', (e) => console.log('PAGE ERROR:', e.message));
 
 await page.goto('http://localhost:8931/mediapro/', { waitUntil: 'networkidle' });
+// muove il mouse: così il cursore su misura compare negli screenshot
+await page.mouse.move(760, 430);
 await page.waitForTimeout(2600);
 await page.screenshot({ path: `${outDir}/01-hero.png` });
 
-// metà della sequenza pinnata del hero
-await page.mouse.wheel(0, 1600);
+// metà della sequenza pinnata: la camera entra e l'oggetto si accende
+await page.mouse.wheel(0, 560);
 await page.waitForTimeout(1800);
 await page.screenshot({ path: `${outDir}/02-hero-mid.png` });
 
-// fine hero / ponte verso il portfolio
-await page.mouse.wheel(0, 1400);
+// climax: il bagliore al massimo
+await page.mouse.wheel(0, 190);
+await page.waitForTimeout(1800);
+await page.screenshot({ path: `${outDir}/02b-hero-flare.png` });
+
+// fine hero: la battuta di raccordo verso il portfolio
+await page.mouse.wheel(0, 130);
 await page.waitForTimeout(1800);
 await page.screenshot({ path: `${outDir}/03-bridge.png` });
 

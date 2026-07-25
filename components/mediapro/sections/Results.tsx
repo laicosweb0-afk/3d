@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { gsap } from '../gsap';
+import { SplitTitle } from '../SplitTitle';
 import { STATS } from '../content';
 
 export function Results({ reduced }: { reduced: boolean }) {
@@ -41,7 +42,11 @@ export function Results({ reduced }: { reduced: boolean }) {
   return (
     <section ref={sectionRef} className="mp-section" id="risultati">
       <p className="mp-kicker mp-reveal">04 — Risultati</p>
-      <h2 className="mp-h2 mp-reveal">Numeri che raccontano il nostro impegno.</h2>
+      <SplitTitle
+        className="mp-h2"
+        text="Numeri che raccontano il nostro impegno."
+        accent={['impegno']}
+      />
       <p className="mp-sub mp-reveal">
         La creatività si misura: ogni progetto parte da un obiettivo e finisce in un dato.
       </p>
