@@ -1,63 +1,59 @@
 import { chromium } from 'playwright-core';
 
 const outDir = process.argv[2] || '.';
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const browser = await chromium.launch({
+  executablePath: '/opt/pw-browsers/chromium',
+  // in headless il WebGL passa da SwiftShader: senza questi flag il canvas resta nero
+  args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+});
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 page.on('console', (m) => { if (m.type() === 'error') console.log('CONSOLE ERROR:', m.text()); });
 page.on('pageerror', (e) => console.log('PAGE ERROR:', e.message));
 
 await page.goto('http://localhost:8931/mediapro/', { waitUntil: 'networkidle' });
-// muove il mouse: così il cursore su misura compare negli screenshot
 await page.mouse.move(760, 430);
-await page.waitForTimeout(2600);
-await page.screenshot({ path: `${outDir}/01-hero.png` });
+// la scena 3D si monta dopo l'idratazione: va attesa
+await page.waitForTimeout(4000);
 
-// metà della sequenza pinnata: la camera entra e l'oggetto si accende
-await page.mouse.wheel(0, 560);
-await page.waitForTimeout(1800);
-await page.screenshot({ path: `${outDir}/02-hero-mid.png` });
+const webgl = await page.evaluate(() => {
+  const c = document.querySelector('.mp-canvas canvas');
+  if (!c) return 'nessun canvas';
+  return `canvas ${c.width}x${c.height}`;
+});
+console.log('scena 3D:', webgl);
 
-// climax: il bagliore al massimo
-await page.mouse.wheel(0, 190);
-await page.waitForTimeout(1800);
-await page.screenshot({ path: `${outDir}/02b-hero-flare.png` });
+// Lenis attenua la rotella: una wheel di N px non produce N px di scroll.
+// Si insiste fino a raggiungere davvero la posizione voluta.
+async function scrollTo(target) {
+  for (let i = 0; i < 40; i++) {
+    const y = await page.evaluate(() => window.scrollY);
+    if (y >= target - 12) break;
+    await page.mouse.wheel(0, Math.min(600, (target - y) * 1.3 + 60));
+    await page.waitForTimeout(220);
+  }
+  await page.waitForTimeout(1700);
+  return page.evaluate(() => Math.round(window.scrollY));
+}
 
-// fine hero: la battuta di raccordo verso il portfolio
-await page.mouse.wheel(0, 130);
-await page.waitForTimeout(1800);
-await page.screenshot({ path: `${outDir}/03-bridge.png` });
+// La sequenza dell'hero: 320vh totali, 220vh (1980px) di tratto bloccato.
+const beats = [
+  [0, '01-scena-sola'],
+  [430, '02-marchio'],
+  [760, '03-bagliore'],
+  [1180, '04-titolo'],
+  [1720, '05-completa'],
+];
+for (const [pos, name] of beats) {
+  const y = await scrollTo(pos);
+  console.log(`${name}: scroll ${y}px (progresso hero ${(y / 1980).toFixed(2)})`);
+  await page.screenshot({ path: `${outDir}/${name}.png` });
+}
 
-// portfolio
-await page.evaluate(() => document.getElementById('portfolio').scrollIntoView());
-await page.waitForTimeout(2200);
-await page.screenshot({ path: `${outDir}/04-portfolio.png` });
-
-// portfolio, parte bassa della griglia
-await page.mouse.wheel(0, 900);
-await page.waitForTimeout(1600);
-await page.screenshot({ path: `${outDir}/04b-portfolio-bottom.png` });
-
-// servizi
-await page.evaluate(() => document.getElementById('servizi').scrollIntoView());
-await page.waitForTimeout(2600);
-await page.screenshot({ path: `${outDir}/05-servizi.png` });
-
-// risultati
-await page.evaluate(() => document.getElementById('risultati').scrollIntoView());
-await page.waitForTimeout(2400);
-await page.screenshot({ path: `${outDir}/06-risultati.png` });
-
-// metodo
-await page.evaluate(() => document.getElementById('metodo').scrollIntoView());
-await page.waitForTimeout(1200);
-await page.mouse.wheel(0, 400);
-await page.waitForTimeout(1600);
-await page.screenshot({ path: `${outDir}/07-metodo.png` });
-
-// contatti
-await page.evaluate(() => document.getElementById('contatti').scrollIntoView());
-await page.waitForTimeout(2200);
-await page.screenshot({ path: `${outDir}/08-contatti.png` });
+for (const id of ['portfolio', 'servizi', 'risultati', 'metodo', 'contatti']) {
+  await page.evaluate((i) => document.getElementById(i).scrollIntoView(), id);
+  await page.waitForTimeout(2200);
+  await page.screenshot({ path: `${outDir}/s-${id}.png` });
+}
 
 await browser.close();
 console.log('done');

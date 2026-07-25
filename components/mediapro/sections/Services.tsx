@@ -84,9 +84,15 @@ export function Services() {
         gsap
           .timeline({
             scrollTrigger: { trigger: card, start: 'top 88%' },
-            delay: (i % 4) * 0.08,
+            delay: (i % 3) * 0.09,
           })
-          .fromTo(card, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' })
+          // Non compaiono: escono dalla profondità della stessa scena 3D che
+          // si vede dietro di loro, ruotando mentre si mettono in piano.
+          .fromTo(
+            card,
+            { opacity: 0, z: -260, y: 60, rotateX: -26 },
+            { opacity: 1, z: 0, y: 0, rotateX: 0, duration: 1.15, ease: 'power3.out' }
+          )
           // l'icona si disegna da sola, poi il testo affiora
           .to(strokes, { strokeDashoffset: 0, duration: 1.4, ease: 'power2.inOut', stagger: 0.1 }, '<0.15')
           .fromTo(
@@ -96,6 +102,34 @@ export function Services() {
             '<0.5'
           );
       });
+
+      // Inclinazione fisica al passaggio del mouse + luce che segue il punto
+      // di contatto: la card reagisce come un oggetto, non come un riquadro.
+      const cards = gsap.utils.toArray<HTMLElement>('.mp-service');
+      const cleanups = cards.map((card) => {
+        const rx = gsap.quickTo(card, 'rotationX', { duration: 0.6, ease: 'power3.out' });
+        const ry = gsap.quickTo(card, 'rotationY', { duration: 0.6, ease: 'power3.out' });
+        const onMove = (e: PointerEvent) => {
+          const r = card.getBoundingClientRect();
+          const nx = ((e.clientX - r.left) / r.width) * 2 - 1;
+          const ny = ((e.clientY - r.top) / r.height) * 2 - 1;
+          ry(nx * 7);
+          rx(ny * -7);
+          card.style.setProperty('--bx', `${((e.clientX - r.left) / r.width) * 100}%`);
+          card.style.setProperty('--by', `${((e.clientY - r.top) / r.height) * 100}%`);
+        };
+        const onLeave = () => {
+          rx(0);
+          ry(0);
+        };
+        card.addEventListener('pointermove', onMove);
+        card.addEventListener('pointerleave', onLeave);
+        return () => {
+          card.removeEventListener('pointermove', onMove);
+          card.removeEventListener('pointerleave', onLeave);
+        };
+      });
+      return () => cleanups.forEach((fn) => fn());
     }, section);
 
     return () => ctx.revert();

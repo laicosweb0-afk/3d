@@ -12,9 +12,12 @@ type Props = {
 };
 
 /**
- * Titolo che si rivela parola per parola: ogni parola sale da dietro una
- * maschera, con un leggero sfasamento. È il reveal usato su tutti i titoli
- * di sezione, al posto del fade generico.
+ * Titolo che si assembla lettera per lettera.
+ *
+ * Ogni carattere arriva da una profondità diversa e ruota sul proprio asse
+ * mentre si mette a posto: non è una dissolvenza, è un testo che si compone.
+ * Le parole restano unità indivisibili (`white-space: nowrap` sulla parola),
+ * così l'animazione non manda a capo il testo in modo innaturale.
  */
 export function SplitTitle({ text, as: Tag = 'h2', className = '', accent = [] }: Props) {
   const ref = useRef<HTMLHeadingElement>(null);
@@ -26,14 +29,17 @@ export function SplitTitle({ text, as: Tag = 'h2', className = '', accent = [] }
 
     const ctx = gsap.context(() => {
       gsap.fromTo(
-        el.querySelectorAll('.mp-word > span'),
-        { yPercent: 118 },
+        el.querySelectorAll('.mp-char'),
+        { yPercent: 105, rotateX: -78, autoAlpha: 0, z: -60 },
         {
           yPercent: 0,
-          duration: 1.2,
+          rotateX: 0,
+          autoAlpha: 1,
+          z: 0,
+          duration: 0.85,
           ease: 'power3.out',
-          stagger: 0.05,
-          scrollTrigger: { trigger: el, start: 'top 88%' },
+          stagger: { each: 0.016, from: 'start' },
+          scrollTrigger: { trigger: el, start: 'top 86%' },
         }
       );
     }, el);
@@ -45,14 +51,19 @@ export function SplitTitle({ text, as: Tag = 'h2', className = '', accent = [] }
 
   return (
     <Tag ref={ref} className={`mp-split ${className}`.trim()}>
-      {words.map((word, i) => {
+      {words.map((word, wi) => {
         const bare = word.replace(/[.,;:!?—]/g, '');
+        const isAccent = accent.includes(bare);
         return (
-          <Fragment key={`${word}-${i}`}>
-            <span className={`mp-word${accent.includes(bare) ? ' mp-word--accent' : ''}`}>
-              <span>{word}</span>
+          <Fragment key={`${word}-${wi}`}>
+            <span className={`mp-word${isAccent ? ' mp-word--accent' : ''}`}>
+              {[...word].map((ch, ci) => (
+                <span key={ci} className="mp-char">
+                  {ch}
+                </span>
+              ))}
             </span>
-            {i < words.length - 1 && ' '}
+            {wi < words.length - 1 && ' '}
           </Fragment>
         );
       })}

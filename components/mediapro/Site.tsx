@@ -1,9 +1,18 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Lenis from 'lenis';
 import { gsap, ScrollTrigger } from './gsap';
 import { Ambient, Cursor, ScrollProgress } from './Chrome';
+import { Magnetic } from './Magnetic';
+import { scroll } from './three/scrollState';
+
+// La scena 3D è pesante e ha senso solo lato client: fuori dal bundle
+// iniziale, e caricata solo quando le animazioni sono davvero attive.
+const Scene = dynamic(() => import('./three/Scene').then((m) => m.Scene), {
+  ssr: false,
+});
 import { Nav } from './Nav';
 import { Hero } from './sections/Hero';
 import { Portfolio } from './sections/Portfolio';
@@ -78,11 +87,38 @@ export function Site() {
     return () => ctx.revert();
   }, [mode]);
 
+  // Alimenta la scena 3D: avanzamento sull'intera pagina e posizione del
+  // puntatore. Nessuno dei due passa da setState — la camera li legge a ogni
+  // fotogramma, un re-render per frame sarebbe insostenibile.
+  useEffect(() => {
+    if (mode !== 'motion') return;
+
+    const st = ScrollTrigger.create({
+      start: 0,
+      end: 'max',
+      onUpdate: (self) => {
+        scroll.page = self.progress;
+      },
+    });
+
+    const onPointer = (e: PointerEvent) => {
+      scroll.pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+      scroll.pointer.y = (e.clientY / window.innerHeight) * 2 - 1;
+    };
+    window.addEventListener('pointermove', onPointer, { passive: true });
+
+    return () => {
+      st.kill();
+      window.removeEventListener('pointermove', onPointer);
+    };
+  }, [mode]);
+
   return (
     <div ref={rootRef} className={`mp mp--${mode}`}>
-      <Ambient />
+      {mode === 'motion' ? <Scene /> : <Ambient />}
       <ScrollProgress />
       <Cursor />
+      <Magnetic />
       <Nav />
       <main>
         <Hero reduced={reduced} />
