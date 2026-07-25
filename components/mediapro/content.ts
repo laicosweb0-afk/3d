@@ -89,6 +89,14 @@ export const SERVICES = [
   { id: 'strategy', label: 'Strategy', desc: 'Prima la direzione, poi la produzione.' },
 ];
 
+/**
+ * Formattazione italiana deterministica (2500 → "2.500"). Non usiamo
+ * toLocaleString: il Node della build e il browser applicano regole CLDR
+ * diverse sul raggruppamento, e la differenza rompe l'idratazione di React.
+ */
+export const formatIt = (n: number): string =>
+  n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
 export const STATS = [
   { value: 100, suffix: '+', label: 'Clienti soddisfatti' },
   { value: 2500, suffix: '+', label: 'Contenuti creati' },

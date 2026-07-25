@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from '../gsap';
 import { SplitTitle } from '../SplitTitle';
-import { STATS } from '../content';
+import { STATS, formatIt } from '../content';
 
 export function Results({ reduced }: { reduced: boolean }) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -17,6 +17,9 @@ export function Results({ reduced }: { reduced: boolean }) {
         const valueEl = card.querySelector<HTMLElement>('.mp-stat-num')!;
         const target = Number(valueEl.dataset.value);
         const counter = { v: 0 };
+        // L'HTML contiene già il numero vero (così senza JS non si legge "0"):
+        // lo azzeriamo solo ora che il conteggio parte davvero.
+        valueEl.textContent = '0';
 
         gsap
           .timeline({ scrollTrigger: { trigger: card, start: 'top 88%' }, delay: i * 0.08 })
@@ -28,7 +31,7 @@ export function Results({ reduced }: { reduced: boolean }) {
               duration: 1.8,
               ease: 'power2.out',
               onUpdate: () => {
-                valueEl.textContent = Math.round(counter.v).toLocaleString('it-IT');
+                valueEl.textContent = formatIt(Math.round(counter.v));
               },
             },
             '<0.2'
@@ -52,10 +55,10 @@ export function Results({ reduced }: { reduced: boolean }) {
       </p>
       <div className="mp-risultati-grid">
         {STATS.map((s) => (
-          <div key={s.label} className="mp-stat" style={reduced ? undefined : { opacity: 0 }}>
+          <div key={s.label} className="mp-stat">
             <p className="mp-stat-value">
               <span className="mp-stat-num" data-value={s.value}>
-                {reduced ? s.value.toLocaleString('it-IT') : '0'}
+                {formatIt(s.value)}
               </span>
               <em>{s.suffix}</em>
             </p>

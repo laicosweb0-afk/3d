@@ -37,6 +37,14 @@
   color: #090909;
 }
 
+/* Navigazione da tastiera: il focus deve restare visibile anche con il
+   cursore su misura attivo. */
+.mp :focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
 /* ---------- tipografia comune ---------- */
 
 .mp-kicker {
@@ -70,13 +78,14 @@
   padding: clamp(88px, 9.5vw, 152px) clamp(20px, 6vw, 96px);
 }
 
-/* reveal generico: gli elementi .mp-reveal partono invisibili
-   e vengono animati da GSAP quando entrano in viewport */
-.mp-reveal {
+/* Nascondere è un'azione, non l'impostazione di partenza: questi elementi
+   spariscono SOLO quando le animazioni sono attive davvero. Senza JavaScript,
+   o con prefers-reduced-motion, la pagina resta interamente leggibile invece
+   di mostrare mezze sezioni vuote. GSAP poi sovrascrive inline. */
+.mp--motion .mp-reveal,
+.mp--motion .mp-stat,
+.mp--motion .mp-step {
   opacity: 0;
-}
-.mp--reduced .mp-reveal {
-  opacity: 1;
 }
 
 /* Titoli che si rivelano parola per parola. Il padding/margin negativo serve
@@ -95,7 +104,7 @@
 .mp-split .mp-word--accent {
   color: var(--gold);
 }
-.mp--reduced .mp-split .mp-word > span {
+.mp:not(.mp--motion) .mp-split .mp-word > span {
   transform: none !important;
 }
 
@@ -339,7 +348,7 @@ body.mp-has-cursor .mp textarea {
   position: relative;
   height: 190vh;
 }
-.mp--reduced .mp-hero {
+.mp:not(.mp--motion) .mp-hero {
   height: auto;
 }
 
@@ -352,7 +361,7 @@ body.mp-has-cursor .mp textarea {
   display: grid;
   place-items: center;
 }
-.mp--reduced .mp-hero-pin {
+.mp:not(.mp--motion) .mp-hero-pin {
   position: relative;
   height: 100vh;
 }
@@ -391,7 +400,7 @@ body.mp-has-cursor .mp textarea {
   filter: blur(0.5px);
   animation: mp-float 9s ease-in-out infinite alternate;
 }
-.mp--reduced .mp-dust {
+.mp:not(.mp--motion) .mp-dust {
   animation: none;
 }
 
@@ -422,7 +431,7 @@ body.mp-has-cursor .mp textarea {
     left: calc(50% + 17vw);
   }
 }
-.mp--reduced .mp-hero-flare {
+.mp:not(.mp--motion) .mp-hero-flare {
   display: none;
 }
 
@@ -527,7 +536,7 @@ body.mp-has-cursor .mp textarea {
   animation: mp-float 7s ease-in-out infinite alternate;
   will-change: transform;
 }
-.mp--reduced .mp-orb {
+.mp:not(.mp--motion) .mp-orb {
   animation: none;
 }
 .mp-orb--a {
@@ -664,7 +673,7 @@ body.mp-has-cursor .mp textarea {
   letter-spacing: -0.02em;
   color: var(--text2);
 }
-.mp--reduced .mp-hero-bridge {
+.mp:not(.mp--motion) .mp-hero-bridge {
   display: none;
 }
 
@@ -1128,7 +1137,7 @@ body.mp-has-cursor .mp textarea {
   transform: scaleX(0);
   box-shadow: 0 0 14px rgba(214, 179, 122, 0.5);
 }
-.mp--reduced .mp-timeline-fill {
+.mp:not(.mp--motion) .mp-timeline-fill {
   transform: scaleX(1);
 }
 .mp-step {
@@ -1197,7 +1206,7 @@ body.mp-has-cursor .mp textarea {
     transform: scaleY(0);
     transform-origin: top;
   }
-  .mp--reduced .mp-timeline-fill {
+  .mp:not(.mp--motion) .mp-timeline-fill {
     transform: scaleY(1);
   }
   .mp-step {

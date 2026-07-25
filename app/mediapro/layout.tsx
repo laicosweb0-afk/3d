@@ -8,6 +8,9 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
+  // Finché i progetti in vetrina sono segnaposto, la pagina non va indicizzata.
+  // Da togliere quando entrano i lavori veri.
+  robots: { index: false, follow: false },
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,

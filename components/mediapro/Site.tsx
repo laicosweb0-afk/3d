@@ -13,14 +13,23 @@ import { Process } from './sections/Process';
 import { Contact } from './sections/Contact';
 import { BRAND } from './content';
 
+/**
+ * Tre stati, non due: finché il JavaScript non ha girato siamo in "pending" e
+ * NIENTE viene nascosto. È la differenza fra una pagina che degrada bene e una
+ * che resta mezza vuota se lo script non parte o se l'utente ha chiesto meno
+ * animazioni: nascondere è un'azione, non l'impostazione di partenza.
+ */
+type Motion = 'pending' | 'motion' | 'reduced';
+
 export function Site() {
   const rootRef = useRef<HTMLDivElement>(null);
-  const [reduced, setReduced] = useState(false);
+  const [mode, setMode] = useState<Motion>('pending');
+  const reduced = mode === 'reduced';
 
   // Scroll fluido con Lenis, agganciato al ticker GSAP: un solo rAF loop.
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduced(mq.matches);
+    setMode(mq.matches ? 'reduced' : 'motion');
     if (mq.matches) return;
 
     const lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 0.9 });
@@ -50,7 +59,7 @@ export function Site() {
 
   // Reveal generico: ogni .mp-reveal sale dolcemente entrando in viewport.
   useEffect(() => {
-    if (reduced) return;
+    if (mode !== 'motion') return;
     const ctx = gsap.context(() => {
       gsap.utils.toArray<HTMLElement>('.mp-reveal').forEach((el) => {
         gsap.fromTo(
@@ -67,10 +76,10 @@ export function Site() {
       });
     }, rootRef);
     return () => ctx.revert();
-  }, [reduced]);
+  }, [mode]);
 
   return (
-    <div ref={rootRef} className={`mp${reduced ? ' mp--reduced' : ''}`}>
+    <div ref={rootRef} className={`mp mp--${mode}`}>
       <Ambient />
       <ScrollProgress />
       <Cursor />

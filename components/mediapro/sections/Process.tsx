@@ -64,7 +64,7 @@ export function Process({ reduced }: { reduced: boolean }) {
       <div className="mp-timeline">
         <div className="mp-timeline-fill" />
         {STEPS.map((s) => (
-          <div key={s.n} className="mp-step" style={reduced ? undefined : { opacity: 0 }}>
+          <div key={s.n} className="mp-step">
             <div className="mp-step-dot">{s.n}</div>
             <h3>{s.label}</h3>
             <p>{s.desc}</p>
