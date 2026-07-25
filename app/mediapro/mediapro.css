@@ -90,22 +90,30 @@
 
 /* Titoli che si rivelano parola per parola. Il padding/margin negativo serve
    a non tagliare le lettere discendenti (g, p, q) con l'overflow. */
+.mp-split {
+  /* i caratteri ruotano sul proprio asse: senza prospettiva sarebbe uno
+     schiacciamento piatto invece di una rotazione */
+  perspective: 700px;
+}
 .mp-split .mp-word {
   display: inline-block;
+  white-space: nowrap;
   overflow: hidden;
   vertical-align: bottom;
-  padding-bottom: 0.14em;
-  margin-bottom: -0.14em;
+  padding-bottom: 0.16em;
+  margin-bottom: -0.16em;
+  transform-style: preserve-3d;
 }
-.mp-split .mp-word > span {
+.mp-split .mp-char {
   display: inline-block;
   will-change: transform;
 }
 .mp-split .mp-word--accent {
   color: var(--gold);
 }
-.mp:not(.mp--motion) .mp-split .mp-word > span {
+.mp:not(.mp--motion) .mp-split .mp-char {
   transform: none !important;
+  opacity: 1 !important;
 }
 
 /* ---------- piani di profondità e cromature ---------- */
@@ -215,6 +223,7 @@ body.mp-has-cursor .mp textarea {
 /* ---------- bottoni ---------- */
 
 .mp-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 12px;
@@ -223,6 +232,8 @@ body.mp-has-cursor .mp textarea {
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.03);
   color: var(--text);
+  overflow: hidden;
+  isolation: isolate;
   font-size: 14px;
   font-weight: 400;
   letter-spacing: 0.04em;
@@ -230,6 +241,23 @@ body.mp-has-cursor .mp textarea {
   cursor: pointer;
   transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease),
     border-color 0.5s var(--ease), background 0.5s var(--ease);
+}
+/* Luce interna che segue il punto di contatto del puntatore. */
+.mp-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    58% 130% at var(--bx, 50%) var(--by, 50%),
+    rgba(214, 179, 122, 0.28),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.45s var(--ease);
+}
+.mp-btn:hover::before {
+  opacity: 1;
 }
 .mp-btn .mp-btn-arrow {
   transition: transform 0.5s var(--ease);
@@ -342,11 +370,11 @@ body.mp-has-cursor .mp textarea {
    ============================================================ */
 
 .mp-hero {
-  /* La sequenza si consuma nei primi (altezza - 100vh) di scroll: oltre,
-     l'hero uscirebbe di scena a vuoto. 190vh è il compromesso fra respiro
-     della regia e assenza di tempi morti. */
+  /* La coreografia (marchio → bagliore → titolo → pulsante) occupa tutto il
+     tratto bloccato, cioè altezza − 100vh: nessun tempo morto, e abbastanza
+     respiro perché ogni passaggio si legga. */
   position: relative;
-  height: 190vh;
+  height: 320vh;
 }
 .mp:not(.mp--motion) .mp-hero {
   height: auto;
@@ -367,203 +395,58 @@ body.mp-has-cursor .mp textarea {
 }
 
 /* fondale: vignetta + alone dorato in basso */
-.mp-hero-bg {
-  position: absolute;
+/* Il canvas 3D sta dietro a tutto e non si sposta mai: è lo spazio in cui
+   vivono tutte le sezioni, non uno sfondo dell'hero. */
+.mp-canvas {
+  position: fixed;
   inset: 0;
-  background:
-    radial-gradient(60% 45% at 50% 88%, rgba(214, 179, 122, 0.10), transparent 65%),
-    radial-gradient(90% 80% at 50% 35%, #101010, var(--bg) 75%);
-}
-/* alone che segue il mouse */
-.mp-hero-glow {
-  position: absolute;
-  width: 60vmin;
-  height: 60vmin;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(214, 179, 122, 0.07), transparent);
-  pointer-events: none;
-  will-change: transform;
-}
-
-/* particelle di profondità */
-.mp-hero-dust {
-  position: absolute;
-  inset: 0;
+  z-index: 0;
   pointer-events: none;
 }
-.mp-dust {
-  position: absolute;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: rgba(214, 179, 122, 0.4);
-  filter: blur(0.5px);
-  animation: mp-float 9s ease-in-out infinite alternate;
-}
-.mp:not(.mp--motion) .mp-dust {
-  animation: none;
+.mp-canvas canvas {
+  display: block;
 }
 
-/* Il bagliore che si accende mentre la camera entra nell'oggetto: è il
-   climax della sequenza, e riempie il tratto in cui il monolite ingrandito
-   sarebbe solo scuro su scuro. Centrato sull'oggetto, non sul viewport. */
-.mp-hero-flare {
+/* Il marchio che emerge dalla profondità a inizio sequenza. */
+.mp-hero-wordmark {
   position: absolute;
+  z-index: 3;
   left: 50%;
   top: 50%;
-  z-index: 2;
-  width: 44vmin;
-  height: 44vmin;
-  margin: -22vmin 0 0 -22vmin;
-  border-radius: 50%;
-  background: radial-gradient(
-    closest-side,
-    rgba(255, 243, 222, 0.5),
-    rgba(214, 179, 122, 0.22) 46%,
-    transparent 72%
-  );
+  transform: translate(-50%, -50%);
+  font-size: clamp(38px, 7vw, 104px);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  color: #f4f4f4;
   opacity: 0;
   pointer-events: none;
-  will-change: transform, opacity;
+  text-shadow: 0 4px 60px rgba(0, 0, 0, 0.7);
 }
-@media (min-width: 901px) {
-  .mp-hero-flare {
-    left: calc(50% + 17vw);
-  }
-}
-.mp:not(.mp--motion) .mp-hero-flare {
-  display: none;
-}
-
-/* palcoscenico 3D */
-.mp-hero-stage {
-  position: relative;
-  perspective: 1400px;
-  display: grid;
-  place-items: center;
-  will-change: transform;
-}
-/* su desktop l'oggetto vive a destra, il testo a sinistra */
-@media (min-width: 901px) {
-  .mp-hero-stage {
-    transform: translateX(17vw);
-  }
-}
-
-/* il monolite */
-.mp-monolith {
-  position: relative;
-  width: clamp(240px, 30vmin, 380px);
-  aspect-ratio: 1 / 1.05;
-  border-radius: 30px;
-  transform-style: preserve-3d;
-  will-change: transform;
-  background:
-    linear-gradient(155deg, #232323 0%, #141414 38%, #0b0b0b 100%);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  box-shadow:
-    0 60px 110px -40px rgba(0, 0, 0, 0.95),
-    inset 0 1px 0 rgba(255, 255, 255, 0.10),
-    inset 0 -30px 60px -30px rgba(0, 0, 0, 0.8);
-  display: grid;
-  place-items: center;
-}
-/* riflesso che segue il mouse (le variabili --hx/--hy sono in %) */
-.mp-monolith::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(
-    55% 45% at var(--hx, 30%) var(--hy, 20%),
-    rgba(255, 255, 255, 0.10),
-    transparent 70%
-  );
-  pointer-events: none;
-}
-/* filo di luce dorata sul bordo inferiore */
-.mp-monolith::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    180deg,
-    transparent 55%,
-    rgba(214, 179, 122, 0.5)
-  );
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-.mp-monolith-logo {
-  font-size: clamp(30px, 4.4vmin, 52px);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  color: #f4f4f4;
-  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
-}
-.mp-monolith-logo em {
+.mp-hero-wordmark em {
   font-style: normal;
   color: var(--gold);
 }
 
-/* riflesso a terra + alone del podio */
-.mp-podium {
+/* Il bagliore che cresce dietro all'oggetto a metà sequenza. */
+.mp-hero-glow2 {
   position: absolute;
-  top: 100%;
+  z-index: 1;
   left: 50%;
-  width: 130%;
-  height: 90px;
-  transform: translate(-50%, 30px);
+  top: 52%;
+  width: 62vmin;
+  height: 62vmin;
+  margin: -31vmin 0 0 -31vmin;
+  border-radius: 50%;
   background: radial-gradient(
-    50% 100% at 50% 0%,
-    rgba(214, 179, 122, 0.16),
-    transparent 75%
+    closest-side,
+    rgba(255, 240, 214, 0.4),
+    rgba(214, 179, 122, 0.17) 45%,
+    transparent 72%
   );
-  filter: blur(6px);
+  opacity: 0;
   pointer-events: none;
 }
 
-/* sfere satellite */
-.mp-orb {
-  position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(circle at 32% 28%, #e8e8e8, #9a9a9a 45%, #3c3c3c 80%, #1c1c1c);
-  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.9);
-  animation: mp-float 7s ease-in-out infinite alternate;
-  will-change: transform;
-}
-.mp:not(.mp--motion) .mp-orb {
-  animation: none;
-}
-.mp-orb--a {
-  width: clamp(52px, 7vmin, 90px);
-  height: clamp(52px, 7vmin, 90px);
-  right: -16%;
-  top: 4%;
-}
-.mp-orb--b {
-  width: clamp(30px, 4.4vmin, 56px);
-  height: clamp(30px, 4.4vmin, 56px);
-  left: -22%;
-  bottom: 6%;
-  animation-delay: -3.2s;
-  background: radial-gradient(circle at 32% 28%, #f2e3c8, var(--gold) 45%, #6d5732 85%, #2b2113);
-}
-
-@keyframes mp-float {
-  from {
-    transform: translateY(-9px);
-  }
-  to {
-    transform: translateY(9px);
-  }
-}
-
-/* blocco testuale del hero */
 .mp-hero-copy {
   position: absolute;
   z-index: 3;
@@ -572,31 +455,18 @@ body.mp-has-cursor .mp textarea {
   max-width: 620px;
   will-change: transform, opacity;
 }
-.mp-hero-kicker {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  color: var(--gold);
-  font-size: 13px;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-}
-.mp-hero-kicker::before {
-  content: '';
-  width: 44px;
-  height: 1px;
-  background: var(--gold-dim);
-}
 .mp-hero-title {
-  margin-top: 22px;
   font-size: clamp(38px, 5.4vw, 84px);
   font-weight: 250;
   line-height: 1.04;
   letter-spacing: -0.025em;
+  /* le righe entrano ruotando sull'asse X: serve prospettiva reale */
+  perspective: 900px;
 }
 .mp-hero-line {
   display: block;
   overflow: hidden;
+  transform-style: preserve-3d;
 }
 .mp-hero-line > span {
   display: block;
@@ -678,27 +548,17 @@ body.mp-has-cursor .mp textarea {
 }
 
 @media (max-width: 900px) {
-  /* In verticale l'oggetto sta sopra e il testo sotto: vanno separati,
-     altrimenti il monolite finisce addosso al titolo. */
   .mp-hero-copy {
     right: clamp(20px, 6vw, 96px);
     bottom: 8vh;
   }
+  /* In verticale, all'ingresso, a schermo c'è solo il cubo: senza questo
+     indicatore non ci sarebbe alcun invito a scorrere. */
   .mp-hero-scroll {
-    display: none;
-  }
-  .mp-hero-stage {
-    transform: translateY(-22vh);
-  }
-  .mp-monolith {
-    width: clamp(150px, 46vw, 240px);
-  }
-  .mp-orb--a {
-    right: -10%;
-    top: 0;
-  }
-  .mp-orb--b {
-    left: -12%;
+    right: auto;
+    left: 50%;
+    bottom: 6vh;
+    transform: translateX(-50%);
   }
 }
 
@@ -986,6 +846,8 @@ body.mp-has-cursor .mp textarea {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
   gap: clamp(14px, 1.6vw, 22px);
+  /* le card entrano dalla profondità e si inclinano: serve prospettiva */
+  perspective: 1100px;
 }
 .mp-service {
   position: relative;
@@ -993,16 +855,57 @@ body.mp-has-cursor .mp textarea {
   border-radius: 20px;
   border: 1px solid var(--line);
   background: linear-gradient(165deg, rgba(255, 255, 255, 0.03), transparent 55%),
-    var(--card);
-  transition: transform 0.55s var(--ease), border-color 0.55s ease,
-    box-shadow 0.55s var(--ease);
+    rgba(23, 23, 23, 0.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transform-style: preserve-3d;
+  transition: border-color 0.55s ease, box-shadow 0.55s var(--ease);
   will-change: transform;
+  /* galleggiamento continuo: nessuna card è mai perfettamente ferma */
+  animation: mp-cardfloat 7s ease-in-out infinite alternate;
+}
+.mp-service:nth-child(3n + 2) {
+  animation-duration: 8.4s;
+  animation-delay: -2.6s;
+}
+.mp-service:nth-child(3n + 3) {
+  animation-duration: 6.2s;
+  animation-delay: -4.1s;
+}
+.mp:not(.mp--motion) .mp-service {
+  animation: none;
+}
+/* luce interna che segue il puntatore */
+.mp-service::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    50% 60% at var(--bx, 50%) var(--by, 50%),
+    rgba(214, 179, 122, 0.14),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.5s var(--ease);
+  pointer-events: none;
+}
+.mp-service:hover::after {
+  opacity: 1;
 }
 .mp-service:hover {
-  transform: translateY(-6px);
-  border-color: rgba(214, 179, 122, 0.3);
-  box-shadow: 0 26px 50px -30px rgba(0, 0, 0, 0.9),
-    0 0 44px -24px var(--gold-dim);
+  border-color: rgba(214, 179, 122, 0.32);
+  box-shadow: 0 32px 60px -32px rgba(0, 0, 0, 0.95),
+    0 0 50px -22px var(--gold-dim);
+}
+
+@keyframes mp-cardfloat {
+  from {
+    translate: 0 -5px;
+  }
+  to {
+    translate: 0 5px;
+  }
 }
 .mp-service-icon {
   width: 44px;
