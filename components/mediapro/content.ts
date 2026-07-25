@@ -36,8 +36,10 @@ export type Project = {
   client: string;
   type: string;
   year: string;
-  image: string;
-  // Gradiente di riserva se l'immagine non è disponibile.
+  // Fotografia (opzionale) oppure visual grafico disegnato in CSS.
+  image?: string;
+  art?: boolean;
+  // Gradiente di base sotto il visual.
   fallback: string;
 };
 
@@ -47,7 +49,7 @@ export const PROJECTS: Project[] = [
     client: 'NIKE',
     type: 'Social Media Campaign',
     year: '2025',
-    image: '/assets/mediapro/nike.jpg',
+    art: true,
     fallback: 'radial-gradient(120% 140% at 20% 10%, #2a2118 0%, #14100b 45%, #090909 100%)',
   },
   {
@@ -55,7 +57,7 @@ export const PROJECTS: Project[] = [
     client: 'TISSOT',
     type: 'Product Video',
     year: '2025',
-    image: '/assets/mediapro/tissot.jpg',
+    art: true,
     fallback: 'radial-gradient(120% 140% at 80% 20%, #1d2026 0%, #0f1114 45%, #090909 100%)',
   },
   {
@@ -63,7 +65,7 @@ export const PROJECTS: Project[] = [
     client: 'LAMACERAMICHE',
     type: 'Brand Identity',
     year: '2024',
-    image: '/assets/mediapro/lamaceramiche.jpg',
+    art: true,
     fallback: 'radial-gradient(120% 140% at 30% 80%, #201d1a 0%, #121110 45%, #090909 100%)',
   },
   {
@@ -71,7 +73,7 @@ export const PROJECTS: Project[] = [
     client: 'FUTURE LAB',
     type: 'Web Design',
     year: '2024',
-    image: '/assets/mediapro/futurelab.jpg',
+    art: true,
     fallback: 'radial-gradient(120% 140% at 70% 70%, #171d2a 0%, #0e1118 45%, #090909 100%)',
   },
 ];

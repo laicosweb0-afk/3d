@@ -89,14 +89,17 @@ export function Portfolio() {
             aria-label={`${p.client} — ${p.type}`}
           >
             <div className="mp-project-media" style={{ background: p.fallback }}>
-              <img
-                src={asset(p.image)}
-                alt=""
-                loading="lazy"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
+              {p.art && <div className={`mp-art mp-art--${p.id}`} />}
+              {p.image && (
+                <img
+                  src={asset(p.image)}
+                  alt=""
+                  loading="lazy"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              )}
             </div>
             <div className="mp-project-shine" />
             <div className="mp-project-meta">

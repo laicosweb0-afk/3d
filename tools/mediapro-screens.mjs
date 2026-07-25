@@ -25,6 +25,11 @@ await page.evaluate(() => document.getElementById('portfolio').scrollIntoView())
 await page.waitForTimeout(2200);
 await page.screenshot({ path: `${outDir}/04-portfolio.png` });
 
+// portfolio, parte bassa della griglia
+await page.mouse.wheel(0, 900);
+await page.waitForTimeout(1600);
+await page.screenshot({ path: `${outDir}/04b-portfolio-bottom.png` });
+
 // servizi
 await page.evaluate(() => document.getElementById('servizi').scrollIntoView());
 await page.waitForTimeout(2600);
