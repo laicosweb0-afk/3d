@@ -11,6 +11,28 @@ import { asset } from '@/lib/asset';
 const IDS = ['bufala', 'mou', 'mondial', 'aurea', 'woman'] as const;
 
 /**
+ * File del marchio, così come consegnato dal cliente.
+ *
+ * REGOLA: si usa esclusivamente il file originale, senza alcuna elaborazione.
+ * Niente estrazione dell'alfa, niente chiave cromatica, niente ritaglio
+ * automatico: sono tutti procedimenti che alterano lettere, spessori e vuoti
+ * interni del marchio. Finché il cliente non fornisce un file ufficiale con
+ * trasparenza (SVG, AI, EPS, PDF o PNG), il logo viene mostrato con il proprio
+ * fondo pieno — un'etichetta, che è un compromesso onesto — perché l'identità
+ * del marchio vale più dell'estetica della scena.
+ *
+ * Stringa vuota = nessun file utilizzabile, e allora non si mostra nulla.
+ * Woman Beauty Center: disponibile solo una schermata Instagram, non un logo.
+ */
+const ARTWORK: Record<(typeof IDS)[number], string> = {
+  bufala: '/assets/mediapro/orig-bufala.png',
+  mou: '/assets/mediapro/orig-mou.png',
+  mondial: '/assets/mediapro/orig-mondial.png',
+  aurea: '/assets/mediapro/orig-aurea.jpg',
+  woman: '',
+};
+
+/**
  * L'oggetto iconico di ogni cliente. Niente cubi generici: la forma racconta
  * il marchio prima ancora che si legga il nome.
  *
@@ -37,14 +59,17 @@ type Spec = {
  * da evitare.
  */
 const SPECS: Record<(typeof IDS)[number], Spec> = {
+  // Il colore dell'oggetto è accordato al fondo del file del marchio, così
+  // l'etichetta si fonde nella superficie invece di leggersi come un
+  // rettangolo incollato. Si interviene sull'oggetto, mai sul logo.
   // sfera r=1.42: la stampa sta sulla calotta frontale
-  bufala: { color: '#f6f3ec', metalness: 0.02, roughness: 0.66, transmission: 0, print: { w: 1.5, y: 0, z: 1.36 } },
+  bufala: { color: '#ffffff', metalness: 0.02, roughness: 0.66, transmission: 0, print: { w: 1.5, y: 0, z: 1.36 } },
   // cartone largo 1.7, semiprofondità 0.85
-  mou: { color: '#e8e2d4', metalness: 0.02, roughness: 0.78, transmission: 0, print: { w: 1.4, y: -0.1, z: 0.87 } },
+  mou: { color: '#f7e9d7', metalness: 0.02, roughness: 0.78, transmission: 0, print: { w: 1.4, y: -0.1, z: 0.87 } },
   // dado esagonale: asse lungo Z, faccia piatta a z = 0.31
   mondial: { color: '#a7b0ba', metalness: 1, roughness: 0.3, transmission: 0, print: { w: 1.95, y: 0, z: 0.33 } },
   // anello r=1.18: la stampa vive nel vuoto centrale
-  aurea: { color: '#e7dfd2', metalness: 0.5, roughness: 0.12, transmission: 0, print: { w: 1.7, y: 0, z: 0.34 } },
+  aurea: { color: '#fbfbfb', metalness: 0.5, roughness: 0.12, transmission: 0, print: { w: 1.7, y: 0, z: 0.34 } },
   // vaso r=1.08: stampa sul fronte del corpo
   woman: { color: '#efe9ee', metalness: 0.1, roughness: 0.16, transmission: 0.55, print: { w: 1.45, y: -0.28, z: 1.1 } },
 };
@@ -122,30 +147,28 @@ function ObjMaterial({ id }: { id: (typeof IDS)[number] }) {
 }
 
 /**
- * La stampa del marchio sulla superficie.
+ * L'etichetta con il marchio, applicata alla superficie dell'oggetto.
  *
- * È un piano appoggiato alla superficie con il PNG trasparente del cliente:
- * niente riquadro, niente fondo, solo il segno. Riceve le luci della stanza
- * con la stessa rugosità dell'oggetto, quindi si comporta come una
- * serigrafia — non come un adesivo che ignora l'illuminazione. Il
- * `polygonOffset` la tiene incollata alla superficie senza sfarfallii.
+ * L'immagine è il file del cliente così com'è, fondo compreso: viene solo
+ * posizionata e illuminata, mai ritoccata. Le proporzioni del piano seguono
+ * quelle native del file, così il marchio non viene mai stirato. Riceve le
+ * luci della stanza con la rugosità dell'oggetto che la ospita, quindi si
+ * comporta come un'etichetta stampata e non come un'immagine incollata.
  */
-function Print({ id, tex }: { id: (typeof IDS)[number]; tex: THREE.Texture }) {
+function Print({ id, tex }: { id: (typeof IDS)[number]; tex: THREE.Texture | null }) {
   const s = SPECS[id];
+  if (!tex) return null;
   const ratio = tex.image ? tex.image.width / tex.image.height : 2;
   return (
     <mesh position={[0, s.print.y, s.print.z]}>
       <planeGeometry args={[s.print.w, s.print.w / ratio]} />
       <meshPhysicalMaterial
         map={tex}
-        transparent
-        alphaTest={0.02}
         roughness={Math.min(0.85, s.roughness + 0.08)}
-        metalness={s.metalness * 0.4}
-        envMapIntensity={0.8}
+        metalness={s.metalness * 0.3}
+        envMapIntensity={0.7}
         polygonOffset
         polygonOffsetFactor={-6}
-        depthWrite={false}
       />
     </mesh>
   );
@@ -161,13 +184,21 @@ export function Objects() {
   const inner = useRef<THREE.Group>(null);
   const slots = useRef<(THREE.Group | null)[]>([]);
 
-  const textures = useTexture(IDS.map((f) => asset(`/assets/mediapro/lg-${f}.png`)));
-  useMemo(() => {
-    textures.forEach((t) => {
+  // si caricano solo i file effettivamente disponibili
+  const paths = IDS.map((id) => ARTWORK[id]).filter(Boolean) as string[];
+  const loaded = useTexture(paths.map((p) => asset(p)));
+  const byId = useMemo(() => {
+    const map: Partial<Record<(typeof IDS)[number], THREE.Texture>> = {};
+    let k = 0;
+    for (const id of IDS) {
+      if (!ARTWORK[id]) continue;
+      const t = loaded[k++];
       t.colorSpace = THREE.SRGBColorSpace;
       t.anisotropy = 8;
-    });
-  }, [textures]);
+      map[id] = t;
+    }
+    return map;
+  }, [loaded]);
 
   useFrame((state, dt) => {
     if (!group.current || !inner.current) return;
@@ -208,7 +239,7 @@ export function Objects() {
             visible={i === 0}
           >
             <Shape id={id} />
-            <Print id={id} tex={textures[i]} />
+            <Print id={id} tex={byId[id] ?? null} />
           </group>
         ))}
       </group>
