@@ -32,6 +32,26 @@ export type World = {
   speed: number;
   /** Densità e vivacità del pulviscolo. */
   dust: number;
+
+  /* ---- fisica del mondo: non cambiano solo i colori ---- */
+  /** Deriva verticale della materia: negativa = cade, positiva = sale. */
+  gravity: number;
+  /** Deriva orizzontale: il vento di questo mondo. */
+  wind: number;
+  /** Quanto il moto è irregolare: 0 = corpi calmi, 1 = agitati. */
+  turbulence: number;
+
+  /* ---- regia della camera: ogni mondo si guarda in un modo diverso ---- */
+  /** Distanza della camera dal centro. */
+  camRadius: number;
+  /** Altezza della camera. */
+  camHeight: number;
+  /** Quanto la camera oscilla da sola (galleggiamento). */
+  camFloat: number;
+  /** Velocità con cui la camera raggiunge la posizione voluta: bassa = pesante. */
+  camLag: number;
+  /** Scatti meccanici invece di moto continuo (Mondial). */
+  camStep: number;
 };
 
 const c = (hex: string) => new THREE.Color(hex);
@@ -51,6 +71,14 @@ export const WORLDS: World[] = [
     spread: 4.2,
     speed: 0.5,
     dust: 1,
+    gravity: -0.5,
+    wind: 0.1,
+    turbulence: 0.15,
+    camRadius: 8.6,
+    camHeight: 0.6,
+    camFloat: 0.35,
+    camLag: 2.4,
+    camStep: 0,
   },
   // 02 — MOU: verde e panna, la mozzarella. Materia tonda e opaca, non metallo.
   {
@@ -66,6 +94,14 @@ export const WORLDS: World[] = [
     spread: 3.9,
     speed: 0.62,
     dust: 0.85,
+    gravity: -0.2,
+    wind: 0.25,
+    turbulence: 0.2,
+    camRadius: 8,
+    camHeight: 0.9,
+    camFloat: 0.5,
+    camLag: 1.7,
+    camStep: 0,
   },
   // 03 — Mondial Service: blu notte e ambra, il metallo del mestiere.
   {
@@ -81,6 +117,14 @@ export const WORLDS: World[] = [
     spread: 3.9,
     speed: 1.5,
     dust: 1.35,
+    gravity: -1.4,
+    wind: 0.05,
+    turbulence: 0.9,
+    camRadius: 9.4,
+    camHeight: 1.9,
+    camFloat: 0.08,
+    camLag: 6.5,
+    camStep: 1,
   },
   // 04 — AureaClub: rosa, perla e nero. Materia lucida e ordinata.
   {
@@ -96,6 +140,14 @@ export const WORLDS: World[] = [
     spread: 4.5,
     speed: 0.55,
     dust: 0.9,
+    gravity: 0.15,
+    wind: 0.35,
+    turbulence: 0.25,
+    camRadius: 7.2,
+    camHeight: 0.5,
+    camFloat: 0.2,
+    camLag: 3.4,
+    camStep: 0,
   },
   // 05 — Woman Beauty Center: magenta e nero, luce netta.
   {
@@ -111,6 +163,14 @@ export const WORLDS: World[] = [
     spread: 3.5,
     speed: 0.42,
     dust: 1.45,
+    gravity: 0.35,
+    wind: 0.18,
+    turbulence: 0.1,
+    camRadius: 8.2,
+    camHeight: 1.4,
+    camFloat: 0.85,
+    camLag: 1.3,
+    camStep: 0,
   },
 ];
 
@@ -127,6 +187,14 @@ export type BlendedWorld = {
   spread: number;
   speed: number;
   dust: number;
+  gravity: number;
+  wind: number;
+  turbulence: number;
+  camRadius: number;
+  camHeight: number;
+  camFloat: number;
+  camLag: number;
+  camStep: number;
 };
 
 export const blended: BlendedWorld = {
@@ -141,6 +209,14 @@ export const blended: BlendedWorld = {
   spread: 4,
   speed: 0.5,
   dust: 1,
+  gravity: 0,
+  wind: 0,
+  turbulence: 0.2,
+  camRadius: 8.4,
+  camHeight: 1,
+  camFloat: 0.3,
+  camLag: 3,
+  camStep: 0,
 };
 
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -170,5 +246,13 @@ export function blendWorlds(index: number): BlendedWorld {
   blended.spread = mix(A.spread, B.spread, t);
   blended.speed = mix(A.speed, B.speed, t);
   blended.dust = mix(A.dust, B.dust, t);
+  blended.gravity = mix(A.gravity, B.gravity, t);
+  blended.wind = mix(A.wind, B.wind, t);
+  blended.turbulence = mix(A.turbulence, B.turbulence, t);
+  blended.camRadius = mix(A.camRadius, B.camRadius, t);
+  blended.camHeight = mix(A.camHeight, B.camHeight, t);
+  blended.camFloat = mix(A.camFloat, B.camFloat, t);
+  blended.camLag = mix(A.camLag, B.camLag, t);
+  blended.camStep = mix(A.camStep, B.camStep, t);
   return blended;
 }

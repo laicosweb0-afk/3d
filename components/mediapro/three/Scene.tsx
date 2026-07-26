@@ -90,9 +90,11 @@ function Optics() {
   });
   return (
     <EffectComposer enableNormalPass={false} multisampling={0}>
-      {/* bokeh contenuto: più alto gonfia gli oggetti fuori fuoco fino a
-          coprire il testo, e la scena diventa una macchia */}
-      <DepthOfField ref={dof} worldFocusRange={11} bokehScale={1.9} />
+      {/* Fuoco stretto attorno al cubo del marchio: il logo deve essere il
+          punto più nitido della scena, e tutto il resto leggermente più
+          morbido per farlo risaltare. Il bokeh resta contenuto perché più
+          alto gonfia gli oggetti fuori fuoco fino a coprire il testo. */}
+      <DepthOfField ref={dof} worldFocusRange={5.5} bokehScale={2.4} />
       <Bloom intensity={0.72} luminanceThreshold={0.62} luminanceSmoothing={0.3} mipmapBlur />
       <Vignette offset={0.28} darkness={0.62} />
     </EffectComposer>

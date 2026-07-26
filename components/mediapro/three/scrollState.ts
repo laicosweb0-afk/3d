@@ -18,6 +18,12 @@ export const scroll = {
   world: 0,
   /** 0→1: quanto il portfolio ha preso il controllo della scena. */
   cases: 0,
+  /**
+   * 0→1: quanto siamo dentro il passaggio fra un mondo e il successivo.
+   * A 1 si è nel cuore del portale: la camera accelera, la materia si stira,
+   * lo schermo va in bianco o in nero e dall'altra parte c'è un altro mondo.
+   */
+  portal: 0,
   /** Posizione del puntatore normalizzata in [-1, 1]. */
   pointer: { x: 0, y: 0 },
 };

@@ -1188,3 +1188,17 @@ body.mp-has-cursor .mp textarea {
 .mp-footer a:hover {
   color: var(--gold);
 }
+
+/* Il lampo di attraversamento fra un mondo e il successivo. Sta sopra alla
+   scena ma sotto alla nav, e non intercetta mai il puntatore. */
+.mp-cases-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+}
+.mp:not(.mp--motion) .mp-cases-flash {
+  display: none;
+}

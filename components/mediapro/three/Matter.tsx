@@ -81,15 +81,26 @@ function Family({ family, seed }: FamilyProps) {
       const s = seeds[i];
       // il moto è lento nei mondi morbidi, nervoso in quello dell'officina
       const wobble = Math.sin(t * w.speed + s.phase) * 0.22;
-      const r = s.dist * w.spread * (0.55 + emerge * 0.45) + wobble;
-      dummy.position.set(s.dir.x * r, s.dir.y * r * 0.8, s.dir.z * r);
+      const jitter = w.turbulence * Math.sin(t * 3.1 * w.speed + s.phase * 4) * 0.3;
+      const r = s.dist * w.spread * (0.55 + emerge * 0.45) + wobble + jitter;
+
+      // Fisica del mondo: la gravità fa cadere o salire la materia, il vento
+      // la trascina di lato. Il moto ciclico evita che si accumuli fuori campo.
+      const drift = (v: number, speed: number) =>
+        ((((v + t * speed + 20) % 12) + 12) % 12) - 6;
+      const gy = drift(s.dir.y * r * 0.8, w.gravity);
+      const gx = drift(s.dir.x * r, w.wind);
+      dummy.position.set(gx, gy, s.dir.z * r);
+
       dummy.rotation.set(
         t * w.speed * s.spin * 0.35 + s.phase,
         t * w.speed * s.spin * 0.5,
         s.phase
       );
+      // dentro al portale la materia si stira verso la camera: sono le scie
+      // di velocità che rendono leggibile l'accelerazione
       const sc = s.size * weight;
-      dummy.scale.setScalar(sc);
+      dummy.scale.set(sc, sc, sc * (1 + scroll.portal * 7));
       dummy.updateMatrix();
       mesh.current.setMatrixAt(i, dummy.matrix);
     }
