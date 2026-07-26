@@ -40,8 +40,6 @@ export type Project = {
   line: string;
   /** Materia da cui è fatto il mondo di questo progetto. */
   matter: string;
-  /** Marchio del cliente, mostrato dentro la scena. */
-  logo: string;
 };
 
 export const PROJECTS: Project[] = [
@@ -52,7 +50,6 @@ export const PROJECTS: Project[] = [
     year: '2025',
     line: 'Dal latte alla carta: un’identità che sa di fresco.',
     matter: 'Latte, bianco, carta',
-    logo: '/assets/mediapro/bufala.jpg',
   },
   {
     id: 'mou',
@@ -61,7 +58,6 @@ export const PROJECTS: Project[] = [
     year: '2025',
     line: 'La mozzarella dove vuoi tu: un marchio che si fa riconoscere da lontano.',
     matter: 'Verde, panna, mozzarella',
-    logo: '/assets/mediapro/mou.jpg',
   },
   {
     id: 'mondial',
@@ -70,7 +66,6 @@ export const PROJECTS: Project[] = [
     year: '2025',
     line: 'Ristrutturazioni, impianti, servizi: il mestiere messo in scena.',
     matter: 'Blu notte, ambra, metallo',
-    logo: '/assets/mediapro/mondial.jpg',
   },
   {
     id: 'aurea',
@@ -79,7 +74,6 @@ export const PROJECTS: Project[] = [
     year: '2024',
     line: 'The intelligence of beauty: una rete globale che si muove come un club.',
     matter: 'Rosa, perla, nero',
-    logo: '/assets/mediapro/aurea.jpg',
   },
   {
     id: 'woman',
@@ -88,7 +82,6 @@ export const PROJECTS: Project[] = [
     year: '2024',
     line: 'Dal 1989: eleganza che non ha bisogno di alzare la voce.',
     matter: 'Magenta, nero, luce',
-    logo: '/assets/mediapro/woman.jpg',
   },
 ];
 
