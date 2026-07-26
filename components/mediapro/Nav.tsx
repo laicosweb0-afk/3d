@@ -8,27 +8,40 @@ export function Nav() {
   const [active, setActive] = useState('hero');
 
   useEffect(() => {
-    const onScroll = () => setSolid(window.scrollY > 40);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
+    // Qui prima c'era un IntersectionObserver: segnalava l'entrata di una
+    // sezione ma non l'uscita, quindi in una scrollata veloce vinceva
+    // l'ultimo evento arrivato e la voce evidenziata poteva restare indietro.
+    // Misurare a ogni frame utile quale sezione contiene il centro dello
+    // schermo è deterministico: non c'è ordine di eventi che possa sbagliarlo.
+    let queued = false;
 
-    // Evidenzia la voce della sezione attualmente in vista.
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) setActive(e.target.id);
-        }
-      },
-      { rootMargin: '-45% 0px -45% 0px' }
-    );
-    NAV.forEach(({ id }) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
+    const measure = () => {
+      queued = false;
+      setSolid(window.scrollY > 40);
+      const mid = window.innerHeight / 2;
+      let current = NAV[0].id;
+      for (const { id } of NAV) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const r = el.getBoundingClientRect();
+        if (r.top <= mid && r.bottom > mid) current = id;
+      }
+      setActive(current);
+    };
+
+    const onScroll = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(measure);
+    };
+
+    measure();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
 
     return () => {
       window.removeEventListener('scroll', onScroll);
-      observer.disconnect();
+      window.removeEventListener('resize', onScroll);
     };
   }, []);
 
