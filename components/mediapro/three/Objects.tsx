@@ -50,6 +50,8 @@ type Spec = {
   transmission: number;
   /** Dimensione e posizione della stampa del marchio sulla superficie. */
   print: { w: number; y: number; z: number };
+  /** Targa avvitata con rivetti, come le targhette dei macchinari. */
+  rivets?: boolean;
 };
 
 /**
@@ -63,11 +65,11 @@ const SPECS: Record<(typeof IDS)[number], Spec> = {
   // l'etichetta si fonde nella superficie invece di leggersi come un
   // rettangolo incollato. Si interviene sull'oggetto, mai sul logo.
   // sfera r=1.42: la stampa sta sulla calotta frontale
-  bufala: { color: '#ffffff', metalness: 0.02, roughness: 0.66, transmission: 0, print: { w: 1.5, y: 0, z: 1.36 } },
+  bufala: { color: '#ffffff', metalness: 0.02, roughness: 0.66, transmission: 0, print: { w: 1.9, y: 0, z: 0.79 } },
   // cartone largo 1.7, semiprofondità 0.85
   mou: { color: '#f7e9d7', metalness: 0.02, roughness: 0.78, transmission: 0, print: { w: 1.4, y: -0.1, z: 0.87 } },
   // dado esagonale: asse lungo Z, faccia piatta a z = 0.31
-  mondial: { color: '#a7b0ba', metalness: 1, roughness: 0.3, transmission: 0, print: { w: 1.95, y: 0, z: 0.33 } },
+  mondial: { color: '#a7b0ba', metalness: 1, roughness: 0.3, transmission: 0, print: { w: 1.85, y: 0, z: 0.34 }, rivets: true },
   // anello r=1.18: la stampa vive nel vuoto centrale
   aurea: { color: '#fbfbfb', metalness: 0.5, roughness: 0.12, transmission: 0, print: { w: 1.7, y: 0, z: 0.34 } },
   // vaso r=1.08: stampa sul fronte del corpo
@@ -76,11 +78,21 @@ const SPECS: Record<(typeof IDS)[number], Spec> = {
 
 function Shape({ id }: { id: (typeof IDS)[number] }) {
   if (id === 'bufala') {
+    // Cassetta di legno: il marchio contiene già una targa lignea, e su una
+    // cassetta un'etichetta rettangolare stampata è la norma, non un ripiego.
     return (
-      <mesh castShadow>
-        <sphereGeometry args={[1.42, 64, 64]} />
-        <ObjMaterial id={id} />
-      </mesh>
+      <group>
+        <mesh castShadow>
+          <boxGeometry args={[2.4, 1.55, 1.5]} />
+          <meshPhysicalMaterial color="#6b4a2c" metalness={0.02} roughness={0.82} clearcoat={0.15} />
+        </mesh>
+        {[-0.62, 0, 0.62].map((y) => (
+          <mesh key={y} castShadow position={[0, y, 0.76]}>
+            <boxGeometry args={[2.42, 0.46, 0.05]} />
+            <meshPhysicalMaterial color="#7d5834" metalness={0.02} roughness={0.78} />
+          </mesh>
+        ))}
+      </group>
     );
   }
   if (id === 'mou') {
@@ -159,18 +171,35 @@ function Print({ id, tex }: { id: (typeof IDS)[number]; tex: THREE.Texture | nul
   const s = SPECS[id];
   if (!tex) return null;
   const ratio = tex.image ? tex.image.width / tex.image.height : 2;
+  const h = s.print.w / ratio;
   return (
-    <mesh position={[0, s.print.y, s.print.z]}>
-      <planeGeometry args={[s.print.w, s.print.w / ratio]} />
-      <meshPhysicalMaterial
-        map={tex}
-        roughness={Math.min(0.85, s.roughness + 0.08)}
-        metalness={s.metalness * 0.3}
-        envMapIntensity={0.7}
-        polygonOffset
-        polygonOffsetFactor={-6}
-      />
-    </mesh>
+    <group position={[0, s.print.y, s.print.z]}>
+      {/* La targa ha spessore: uno spigolo che raccoglie la luce è ciò che
+          distingue un'etichetta applicata da un'immagine proiettata. */}
+      <mesh castShadow>
+        <boxGeometry args={[s.print.w, h, 0.035]} />
+        <meshPhysicalMaterial
+          map={tex}
+          roughness={Math.min(0.85, s.roughness + 0.08)}
+          metalness={s.metalness * 0.3}
+          envMapIntensity={0.7}
+        />
+      </mesh>
+      {/* Rivetti: su una targa industriale sono il dettaglio che la rende
+          davvero avvitata all'oggetto invece che appoggiata. */}
+      {s.rivets &&
+        [
+          [-s.print.w / 2 + 0.09, h / 2 - 0.09],
+          [s.print.w / 2 - 0.09, h / 2 - 0.09],
+          [-s.print.w / 2 + 0.09, -h / 2 + 0.09],
+          [s.print.w / 2 - 0.09, -h / 2 + 0.09],
+        ].map(([x, y], i) => (
+          <mesh key={i} position={[x, y, 0.03]}>
+            <sphereGeometry args={[0.035, 16, 16]} />
+            <meshPhysicalMaterial color="#c9ced4" metalness={1} roughness={0.24} />
+          </mesh>
+        ))}
+    </group>
   );
 }
 
