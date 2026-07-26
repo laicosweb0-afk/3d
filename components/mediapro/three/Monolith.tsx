@@ -98,8 +98,10 @@ export function Monolith() {
     }
 
     // Apertura: i pannelli si allontanano lungo la propria normale nell'ultimo
-    // tratto dell'hero, e restano aperti per tutto il portfolio.
-    const open = Math.max(0, (p - 0.72) / 0.28) + scroll.cases * 0.35;
+    // tratto dell'hero, restano aperti per tutto il portfolio e si richiudono
+    // uscendone — il cubo si ricompone e torna un oggetto solo, in lontananza.
+    const back = scroll.after;
+    const open = (Math.max(0, (p - 0.72) / 0.28) + scroll.cases * 0.35) * (1 - back);
     panels.current.forEach((m, i) => {
       if (!m) return;
       const n = FACES[i].n;
@@ -128,17 +130,23 @@ export function Monolith() {
 
     if (group.current) {
       const heroShift = Math.max(0, (p - 0.42) / 0.58);
-      const after = Math.max(0, scroll.page - 0.3) / 0.7;
+      const drift = Math.max(0, scroll.page - 0.3) / 0.7;
       // durante il portfolio il cubo torna al centro: è il contenitore da cui
       // esce la materia di ogni progetto
-      const x = heroShift * 2.7 * (1 - scroll.cases) + after * 1.6 * (1 - scroll.cases);
+      const near = 1 - scroll.cases;
+      const x = heroShift * 2.7 * near + drift * 1.6 * near + back * 3.1;
       group.current.position.x = damp(group.current.position.x, x, 3, d);
-      group.current.position.z = damp(group.current.position.z, after * -2.6 * (1 - scroll.cases), 3, d);
-      group.current.position.y = damp(group.current.position.y, after * -0.6 * (1 - scroll.cases), 3, d);
+      // Dopo il portfolio scende in profondità: la nebbia se ne prende una
+      // parte e quello che resta è una sagoma lontana, non un oggetto che
+      // passa davanti al testo.
+      const z = drift * -2.6 * near - back * 7.4;
+      group.current.position.z = damp(group.current.position.z, z, 3, d);
+      const y = drift * -0.6 * near + back * 1.5;
+      group.current.position.y = damp(group.current.position.y, y, 3, d);
       // Aprendosi il cubo si fa da parte senza sparire: resta il contenitore
       // riconoscibile da cui la materia è uscita, ma non deve più dominare
       // l'inquadratura, che ora appartiene al progetto.
-      const shrink = 1 - scroll.cases * 0.92;
+      const shrink = (1 - scroll.cases * 0.92) * (1 - back * 0.68);
       group.current.scale.setScalar(damp(group.current.scale.x, shrink, 3, d));
       // sotto una certa soglia sparisce del tutto: nelle stanze dei clienti
       // il campo appartiene al cubo del marchio, non piu' a questo

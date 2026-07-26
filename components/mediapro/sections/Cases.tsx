@@ -87,6 +87,24 @@ export function Cases({ reduced }: { reduced: boolean }) {
         },
       });
 
+      // Uscita dal portfolio. Superata l'ultima stanza, `scroll.cases` torna a
+      // zero e senza questo il cubo dell'hero tornerebbe grande al centro,
+      // attraversando il testo delle sezioni successive. Qui si misura quanto
+      // ci siamo allontanati, e il cubo si richiude e va in fondo.
+      ScrollTrigger.create({
+        trigger: section,
+        start: 'bottom bottom',
+        end: 'bottom top',
+        onUpdate: (self) => {
+          scroll.after = self.progress;
+        },
+        onLeave: () => {
+          scroll.after = 1;
+        },
+        onLeaveBack: () => {
+          scroll.after = 0;
+        },
+      });
     }, section);
 
     return () => ctx.revert();

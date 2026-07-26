@@ -24,6 +24,13 @@ export const scroll = {
    * lo schermo va in bianco o in nero e dall'altra parte c'è un altro mondo.
    */
   portal: 0,
+  /**
+   * 0→1 sul viewport successivo al portfolio: quanto ci siamo lasciati alle
+   * spalle le stanze dei progetti. Serve al cubo dell'hero per richiudersi e
+   * tornare in fondo invece di ricomparire a tutta scena sulle sezioni di
+   * testo, dove `cases` è di nuovo 0 e da solo non basta a tenerlo lontano.
+   */
+  after: 0,
   /** Posizione del puntatore normalizzata in [-1, 1]. */
   pointer: { x: 0, y: 0 },
 };
