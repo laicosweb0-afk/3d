@@ -138,8 +138,11 @@ export function Monolith() {
       // Aprendosi il cubo si fa da parte senza sparire: resta il contenitore
       // riconoscibile da cui la materia è uscita, ma non deve più dominare
       // l'inquadratura, che ora appartiene al progetto.
-      const shrink = 1 - scroll.cases * 0.62;
+      const shrink = 1 - scroll.cases * 0.92;
       group.current.scale.setScalar(damp(group.current.scale.x, shrink, 3, d));
+      // sotto una certa soglia sparisce del tutto: nelle stanze dei clienti
+      // il campo appartiene al cubo del marchio, non piu' a questo
+      group.current.visible = scroll.cases < 0.92;
     }
   });
 

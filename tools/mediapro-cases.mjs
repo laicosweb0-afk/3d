@@ -18,11 +18,18 @@ async function to(y) {
   await p.waitForTimeout(1700);
   return p.evaluate(()=>Math.round(window.scrollY));
 }
-const H = await p.evaluate(() => document.getElementById('portfolio').offsetTop);
-const VH = 900;
-console.log('portfolio inizia a', H);
+const sec = await p.evaluate(() => {
+  const e = document.getElementById('portfolio');
+  return { top: e.offsetTop, h: e.offsetHeight };
+});
+const H = sec.top;
+// tratto bloccato = altezza sezione - una viewport; i centri delle stanze
+// tengono conto dei margini di testa e coda (PAD = 0.09)
+const TRAVEL = sec.h - 900;
+const PAD = 0.09;
+console.log('portfolio inizia a', H, 'tratto', TRAVEL);
 for (let i=0;i<5;i++){
-  const y = H + Math.round(i * (5*VH - VH) / 4) + 10;
+  const y = H + Math.round((PAD + (i/4) * (1 - PAD*2)) * TRAVEL);
   const at = await to(y);
   const st = await p.evaluate(()=>({w:+(window.__w??-1)}));
   console.log(`progetto ${i+1}: scroll ${at}`);

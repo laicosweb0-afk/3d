@@ -33,9 +33,19 @@ export function Cases({ reduced }: { reduced: boolean }) {
         start: 'top top',
         end: 'bottom bottom',
         onUpdate: (self) => {
-          // 0 → n-1 sull'intera sezione
-          const w = self.progress * (n - 1);
+          const prog = self.progress;
+          // Margini in testa e in coda: senza, il primo e l'ultimo progetto
+          // cadono esattamente sulle dissolvenze di entrata e uscita, e la
+          // loro stanza non si vede mai per intero.
+          const PAD = 0.09;
+          const inner = Math.max(0, Math.min(1, (prog - PAD) / (1 - PAD * 2)));
+          const w = inner * (n - 1);
           scroll.world = w;
+          // Un'unica fonte di verità anche per `cases`: con due trigger
+          // separati che scrivevano sulla stessa variabile, nelle zone di
+          // sovrapposizione vinceva l'ultimo che aggiornava e la scena
+          // restava a metà strada.
+          scroll.cases = Math.min(1, prog / PAD, (1 - prog) / PAD);
 
           // ogni scheda è piena vicino al proprio indice e sfuma allontanandosi
           cardsRef.current.forEach((el, i) => {
@@ -49,26 +59,6 @@ export function Cases({ reduced }: { reduced: boolean }) {
         },
       });
 
-      // La scena prende il controllo quando la sezione entra e lo restituisce
-      // quando esce: fuori da qui la materia resta dentro al cubo.
-      ScrollTrigger.create({
-        trigger: section,
-        start: 'top 85%',
-        end: 'top top',
-        scrub: 0.6,
-        onUpdate: (self) => {
-          scroll.cases = self.progress;
-        },
-      });
-      ScrollTrigger.create({
-        trigger: section,
-        start: 'bottom bottom',
-        end: 'bottom 40%',
-        scrub: 0.6,
-        onUpdate: (self) => {
-          scroll.cases = 1 - self.progress;
-        },
-      });
     }, section);
 
     return () => ctx.revert();
@@ -79,7 +69,7 @@ export function Cases({ reduced }: { reduced: boolean }) {
       ref={sectionRef}
       className="mp-cases"
       id="portfolio"
-      style={{ height: `${PROJECTS.length * 100}vh` }}
+      style={{ height: `${PROJECTS.length * 100 + 60}vh` }}
     >
       <div className="mp-cases-pin">
         <p className="mp-kicker mp-cases-kicker">02 — Portfolio</p>
