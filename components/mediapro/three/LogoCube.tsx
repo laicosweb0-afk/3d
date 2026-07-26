@@ -58,9 +58,15 @@ export function LogoCube() {
       mat.current.needsUpdate = true;
     }
 
+    // Il marchio nasce dalla luce: entrando nella stanza la stampa è
+    // sovraesposta e si assesta man mano che la presenza cresce, invece di
+    // apparire con una dissolvenza piatta.
     if (mat.current.map) mat.current.emissiveMap = mat.current.map;
     mat.current.emissive.set('#ffffff');
-    mat.current.emissiveIntensity = 0.42;
+    // La sovraesposizione è legata al portale, non alla presenza: legata alla
+    // presenza restava accesa per quasi tutta la stanza e il marchio andava in
+    // bianco pieno. Così la luce c'è solo nell'istante dell'attraversamento.
+    mat.current.emissiveIntensity = 0.42 + scroll.portal * 1.6;
 
     // Il cubo segue l'angolo dell'orbita della camera, con un dondolio sopra:
     // ruota sempre, ma una faccia resta rivolta verso chi guarda. Con una

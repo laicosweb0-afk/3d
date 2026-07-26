@@ -18,9 +18,23 @@ import { asset } from '@/lib/asset';
  * Il testo di ogni progetto entra e esce in dissolvenza incrociata sulla base
  * dello stesso indice, così non esiste un momento di "cambio pagina".
  */
+/**
+ * Colore del lampo di attraversamento, uno per mondo di destinazione: bianco
+ * pieno verso i mondi del latte, buio verso l'officina. È il mezzo secondo in
+ * cui non si vede nulla e lo spazio viene sostituito.
+ */
+const FLASH = [
+  'rgba(255,255,255,1)',
+  'rgba(244,255,236,1)',
+  'rgba(6,8,12,1)',
+  'rgba(255,240,247,1)',
+  'rgba(255,232,244,1)',
+];
+
 export function Cases({ reduced }: { reduced: boolean }) {
   const sectionRef = useRef<HTMLElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const flashRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (reduced) return;
@@ -47,6 +61,20 @@ export function Cases({ reduced }: { reduced: boolean }) {
           // restava a metà strada.
           scroll.cases = Math.min(1, prog / PAD, (1 - prog) / PAD);
 
+          // Portale: quanto siamo vicini alla soglia fra due mondi. Sale a 1
+          // esattamente sul confine, dove la camera accelera, la materia si
+          // stira e lo schermo lampeggia — e dall'altra parte c'è un mondo
+          // diverso. Non è una dissolvenza: è un attraversamento.
+          const edge = Math.abs(w - Math.round(w));
+          const portal = Math.max(0, (edge - 0.28) / 0.22);
+          scroll.portal = portal * scroll.cases;
+          if (flashRef.current) {
+            flashRef.current.style.opacity = String(scroll.portal * 0.92);
+            // il colore del lampo appartiene al mondo verso cui si sta andando
+            const to = w > Math.round(w) ? Math.ceil(w) : Math.floor(w);
+            flashRef.current.style.background = FLASH[Math.max(0, Math.min(4, to))];
+          }
+
           // ogni scheda è piena vicino al proprio indice e sfuma allontanandosi
           cardsRef.current.forEach((el, i) => {
             if (!el) return;
@@ -71,6 +99,7 @@ export function Cases({ reduced }: { reduced: boolean }) {
       id="portfolio"
       style={{ height: `${PROJECTS.length * 100 + 60}vh` }}
     >
+      <div ref={flashRef} className="mp-cases-flash" aria-hidden />
       <div className="mp-cases-pin">
         <p className="mp-kicker mp-cases-kicker">02 — Portfolio</p>
 

@@ -52,7 +52,7 @@ export const PROJECTS: Project[] = [
     year: '2025',
     line: 'Dal latte alla carta: un’identità che sa di fresco.',
     matter: 'Latte, bianco, carta',
-    logo: '',
+    logo: '/assets/mediapro/bufala.jpg',
   },
   {
     id: 'mou',

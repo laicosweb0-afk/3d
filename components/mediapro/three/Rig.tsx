@@ -3,6 +3,7 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { scroll, damp } from './scrollState';
+import { blendWorlds } from './worlds';
 
 // La camera si avvicina, ma si ferma prima di "entrare" nell'oggetto: oltre
 // una certa distanza il cubo smette di leggersi come cubo e diventa una lastra.
@@ -23,8 +24,10 @@ const orbit = new THREE.Vector3();
  */
 export function Rig() {
   const { camera, size } = useThree();
+  const _t = { current: 0 };
 
-  useFrame((_, dt) => {
+  useFrame((state, dt) => {
+    _t.current = state.clock.elapsedTime;
     const d = Math.min(dt, 0.05);
     const p = scroll.hero;
     // In verticale l'inquadratura è stretta e l'oggetto riempirebbe tutto lo
@@ -36,18 +39,29 @@ export function Rig() {
     const e = 1 - Math.pow(1 - p, 2.4);
     desired.copy(HERO_FROM).lerp(HERO_TO, e);
 
-    // Orbita attorno alla scena durante il portfolio. L'angolo avanza col
-    // progetto, l'altezza ondeggia: è una carrellata circolare, non un taglio.
+    // Ogni mondo ha la sua regia: raggio, altezza, galleggiamento e persino
+    // il modo di raggiungere la posizione. Woman galleggia, Aurea orbita
+    // stretta attorno al logo, Mondial si muove pesante e a scatti, MOU è
+    // morbida come se fosse immersa. Non è la stessa camera ricolorata.
     const c = scroll.cases;
+    const w = blendWorlds(scroll.world);
+    let lag = 3.4;
     if (c > 0.001) {
+      const tt = _t.current;
       const a = -0.35 + scroll.world * 0.78;
-      const radius = (8.4 - Math.sin(scroll.world * 1.1) * 1.1) * pull;
+      // il portale tira la camera dentro: il raggio crolla verso il centro
+      const radius = (w.camRadius - scroll.portal * 4.6) * pull;
+      const float = Math.sin(tt * 0.55) * w.camFloat;
+      // movimento meccanico: la posizione viene quantizzata a scatti
+      const stepped = w.camStep > 0.5 ? Math.round(a * 6) / 6 : a;
       orbit.set(
-        Math.sin(a) * radius,
-        1.1 + Math.sin(scroll.world * 0.9) * 1.25,
-        Math.cos(a) * radius
+        Math.sin(stepped) * radius,
+        w.camHeight + float + Math.sin(scroll.world * 0.9) * 0.5,
+        Math.cos(stepped) * radius
       );
       desired.lerp(orbit, Math.min(1, c));
+      // camLag basso = camera pesante, che arriva in ritardo sul bersaglio
+      lag = w.camLag + scroll.portal * 6;
     } else {
       desired.z *= pull;
     }
@@ -56,9 +70,9 @@ export function Rig() {
     desired.x += scroll.pointer.x * 0.5;
     desired.y += scroll.pointer.y * -0.32;
 
-    camera.position.x = damp(camera.position.x, desired.x, 3.4, d);
-    camera.position.y = damp(camera.position.y, desired.y, 3.4, d);
-    camera.position.z = damp(camera.position.z, desired.z, 3.4, d);
+    camera.position.x = damp(camera.position.x, desired.x, lag, d);
+    camera.position.y = damp(camera.position.y, desired.y, lag, d);
+    camera.position.z = damp(camera.position.z, desired.z, lag, d);
 
     // Durante l'hero la camera NON insegue l'oggetto che scivola a destra:
     // se lo seguisse, ruotando riporterebbe tutto al centro e lo scostamento
