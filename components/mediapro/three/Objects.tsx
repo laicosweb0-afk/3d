@@ -8,7 +8,7 @@ import { scroll, damp } from './scrollState';
 import { blendWorlds } from './worlds';
 import { asset } from '@/lib/asset';
 
-const IDS = ['bufala', 'mou', 'mondial', 'aurea', 'woman'] as const;
+const IDS = ['bufala', 'mou', 'mondial', 'aurea', 'loewe', 'woman'] as const;
 
 /**
  * File del marchio, così come consegnato dal cliente.
@@ -29,6 +29,7 @@ const ARTWORK: Record<(typeof IDS)[number], string> = {
   mou: '/assets/mediapro/orig-mou.png',
   mondial: '/assets/mediapro/orig-mondial.png',
   aurea: '/assets/mediapro/orig-aurea.jpg',
+  loewe: '/assets/mediapro/orig-loewe.jpg',
   woman: '',
 };
 
@@ -72,6 +73,9 @@ const SPECS: Record<(typeof IDS)[number], Spec> = {
   mondial: { color: '#a7b0ba', metalness: 1, roughness: 0.3, transmission: 0, print: { w: 1.85, y: 0, z: 0.34 }, rivets: true },
   // anello r=1.18: la stampa vive nel vuoto centrale
   aurea: { color: '#fbfbfb', metalness: 0.5, roughness: 0.12, transmission: 0, print: { w: 1.7, y: 0, z: 0.34 } },
+  // lastra di vetro nero: il file ha gia' il fondo nero, quindi su questa
+  // superficie il marchio non ha bordi visibili — si integra da solo
+  loewe: { color: '#0a0b0d', metalness: 0.85, roughness: 0.05, transmission: 0, print: { w: 2.5, y: 0, z: 0.09 } },
   // vaso r=1.08: stampa sul fronte del corpo
   woman: { color: '#efe9ee', metalness: 0.1, roughness: 0.16, transmission: 0.55, print: { w: 1.45, y: -0.28, z: 1.1 } },
 };
@@ -115,6 +119,14 @@ function Shape({ id }: { id: (typeof IDS)[number] }) {
     return (
       <mesh castShadow rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[1.45, 1.45, 0.62, 6]} />
+        <ObjMaterial id={id} />
+      </mesh>
+    );
+  }
+  if (id === 'loewe') {
+    return (
+      <mesh castShadow>
+        <boxGeometry args={[2.9, 1.7, 0.14]} />
         <ObjMaterial id={id} />
       </mesh>
     );

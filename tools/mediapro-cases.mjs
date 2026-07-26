@@ -28,8 +28,9 @@ const H = sec.top;
 const TRAVEL = sec.h - 900;
 const PAD = 0.09;
 console.log('portfolio inizia a', H, 'tratto', TRAVEL);
-for (let i=0;i<5;i++){
-  const y = H + Math.round((PAD + (i/4) * (1 - PAD*2)) * TRAVEL);
+const N = await p.evaluate(()=>document.querySelectorAll('.mp-case').length);
+for (let i=0;i<N;i++){
+  const y = H + Math.round((PAD + (i/(N-1)) * (1 - PAD*2)) * TRAVEL);
   const at = await to(y);
   const st = await p.evaluate(()=>({w:+(window.__w??-1)}));
   console.log(`progetto ${i+1}: scroll ${at}`);

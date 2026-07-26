@@ -27,6 +27,7 @@ const FLASH = [
   'rgba(244,255,236,1)',
   'rgba(6,8,12,1)',
   'rgba(255,240,247,1)',
+  'rgba(232,238,248,1)',
   'rgba(255,232,244,1)',
 ];
 
@@ -71,7 +72,7 @@ export function Cases({ reduced }: { reduced: boolean }) {
             flashRef.current.style.opacity = String(scroll.portal * 0.92);
             // il colore del lampo appartiene al mondo verso cui si sta andando
             const to = w > Math.round(w) ? Math.ceil(w) : Math.floor(w);
-            flashRef.current.style.background = FLASH[Math.max(0, Math.min(4, to))];
+            flashRef.current.style.background = FLASH[Math.max(0, Math.min(FLASH.length - 1, to))];
           }
 
           // ogni scheda è piena vicino al proprio indice e sfuma allontanandosi

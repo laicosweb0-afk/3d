@@ -149,7 +149,31 @@ export const WORLDS: World[] = [
     camLag: 3.4,
     camStep: 0,
   },
-  // 05 — Woman Beauty Center: magenta e nero, luce netta.
+  // 05 — LOEWE × Jacob & Co: cromo e nero notte. Materia lucida e fredda,
+  // camera che scivola lenta e bassa, come da un tender in movimento.
+  {
+    id: 'loewe',
+    color: c('#cfd4da'),
+    light: c('#dfe8f5'),
+    fog: c('#050608'),
+    fogDensity: 0.062,
+    metalness: 1,
+    roughness: 0.06,
+    transmission: 0,
+    weights: [0.3, 1, 0.45],
+    spread: 4.4,
+    speed: 0.34,
+    dust: 0.7,
+    gravity: 0.08,
+    wind: 0.5,
+    turbulence: 0.06,
+    camRadius: 8.8,
+    camHeight: 0.35,
+    camFloat: 0.55,
+    camLag: 1.5,
+    camStep: 0,
+  },
+  // 06 — Woman Beauty Center: magenta e nero, luce netta.
   {
     id: 'woman',
     color: c('#e0559b'),
