@@ -76,6 +76,16 @@ export const PROJECTS: Project[] = [
     matter: 'Rosa, perla, nero',
   },
   {
+    id: 'loewe',
+    client: 'LOEWE × Jacob & Co',
+    // Shooting per il lancio, non identita' di marca: la distinzione e'
+    // importante, sono due affermazioni diverse su cosa abbiamo fatto.
+    type: 'Shooting',
+    year: '2025',
+    line: 'A bordo di uno yacht a Montecarlo, per il lancio della collaborazione.',
+    matter: 'Cromo, nero, notte',
+  },
+  {
     id: 'woman',
     client: 'Woman Beauty Center',
     type: 'Art Direction',
