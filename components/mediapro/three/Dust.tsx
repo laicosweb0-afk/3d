@@ -4,6 +4,7 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { scroll } from './scrollState';
+import { blendWorlds } from './worlds';
 
 /**
  * Il pulviscolo sospeso: dà scala e profondità alla scena, e attraversando il
@@ -49,12 +50,19 @@ export function Dust() {
   useFrame((state, dt) => {
     if (!points.current) return;
     const t = state.clock.elapsedTime;
-    // deriva lentissima + leggera reazione al puntatore
-    points.current.rotation.y = t * 0.014 + scroll.pointer.x * 0.05;
+    const w = blendWorlds(scroll.world);
+    // deriva lentissima + leggera reazione al puntatore; nei mondi "veloci"
+    // (l'officina) il pulviscolo si muove come scintille, non come polvere
+    points.current.rotation.y = t * 0.014 * w.speed * 2 + scroll.pointer.x * 0.05;
     points.current.position.y = Math.sin(t * 0.1) * 0.32 + scroll.pointer.y * 0.18;
-    // mentre la camera entra, il pulviscolo si dirada
+
     const m = points.current.material as THREE.PointsMaterial;
-    m.opacity = 0.55 - scroll.hero * 0.22;
+    // mentre la camera entra il pulviscolo si dirada; nel portfolio prende
+    // colore e densità dal mondo del progetto corrente
+    const base = 0.55 - scroll.hero * 0.22;
+    m.opacity = base * (1 - scroll.cases) + 0.5 * w.dust * scroll.cases;
+    m.size = 0.045 + scroll.cases * (w.dust - 1) * 0.02;
+    m.color.lerp(w.light, scroll.cases * 0.08);
   });
 
   return (

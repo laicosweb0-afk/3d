@@ -36,45 +36,52 @@ export type Project = {
   client: string;
   type: string;
   year: string;
-  // Fotografia (opzionale) oppure visual grafico disegnato in CSS.
-  image?: string;
-  art?: boolean;
-  // Gradiente di base sotto il visual.
-  fallback: string;
+  /** Riga che accompagna la scena 3D dedicata al progetto. */
+  line: string;
+  /** Materia da cui è fatto il mondo di questo progetto. */
+  matter: string;
 };
 
 export const PROJECTS: Project[] = [
   {
-    id: 'nike',
-    client: 'NIKE',
-    type: 'Social Media Campaign',
+    id: 'bufala',
+    client: 'Quelli della Bufala',
+    type: 'Brand & Packaging',
     year: '2025',
-    art: true,
-    fallback: 'radial-gradient(120% 140% at 20% 10%, #2a2118 0%, #14100b 45%, #090909 100%)',
+    line: 'Dal latte alla carta: un’identità che sa di fresco.',
+    matter: 'Latte, bianco, carta',
   },
   {
-    id: 'tissot',
-    client: 'TISSOT',
-    type: 'Product Video',
+    id: 'mou',
+    client: 'MOU',
+    type: 'Packaging & Rendering',
     year: '2025',
-    art: true,
-    fallback: 'radial-gradient(120% 140% at 80% 20%, #1d2026 0%, #0f1114 45%, #090909 100%)',
+    line: 'Superfici calde, luce bassa, dettaglio ravvicinato.',
+    matter: 'Caramello, oro, cartone',
   },
   {
-    id: 'lamaceramiche',
-    client: 'LAMACERAMICHE',
-    type: 'Brand Identity',
-    year: '2024',
-    art: true,
-    fallback: 'radial-gradient(120% 140% at 30% 80%, #201d1a 0%, #121110 45%, #090909 100%)',
+    id: 'mondial',
+    client: 'Mondial Service',
+    type: 'Sito & Direzione',
+    year: '2025',
+    line: 'Officina, metallo, precisione: il mestiere messo in scena.',
+    matter: 'Acciaio, scintille, grafite',
   },
   {
-    id: 'futurelab',
-    client: 'FUTURE LAB',
-    type: 'Web Design',
+    id: 'aurea',
+    client: 'Aurea',
+    type: 'Interfacce & AI',
     year: '2024',
-    art: true,
-    fallback: 'radial-gradient(120% 140% at 70% 70%, #171d2a 0%, #0e1118 45%, #090909 100%)',
+    line: 'Flussi, dati, CRM: il software reso elegante.',
+    matter: 'Vetro, bianco, oro',
+  },
+  {
+    id: 'parfum',
+    client: 'Woman Parfum',
+    type: 'Art Direction',
+    year: '2024',
+    line: 'Il profumo che si diffonde, il cristallo che trattiene la luce.',
+    matter: 'Cristallo, nebbia, oro',
   },
 ];
 
