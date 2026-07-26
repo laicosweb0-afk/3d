@@ -10,6 +10,14 @@ export const scroll = {
   hero: 0,
   /** 0→1 sull'intera pagina: tiene la camera in movimento anche dopo l'hero. */
   page: 0,
+  /**
+   * Indice frazionario del mondo del portfolio: 0 = primo progetto, 2.4 = poco
+   * oltre il terzo. Essendo continuo, il passaggio fra un progetto e l'altro è
+   * una miscela e non un taglio.
+   */
+  world: 0,
+  /** 0→1: quanto il portfolio ha preso il controllo della scena. */
+  cases: 0,
   /** Posizione del puntatore normalizzata in [-1, 1]. */
   pointer: { x: 0, y: 0 },
 };

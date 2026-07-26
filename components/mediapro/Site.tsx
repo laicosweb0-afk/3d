@@ -15,7 +15,7 @@ const Scene = dynamic(() => import('./three/Scene').then((m) => m.Scene), {
 });
 import { Nav } from './Nav';
 import { Hero } from './sections/Hero';
-import { Portfolio } from './sections/Portfolio';
+import { Cases } from './sections/Cases';
 import { Services } from './sections/Services';
 import { Results } from './sections/Results';
 import { Process } from './sections/Process';
@@ -122,7 +122,7 @@ export function Site() {
       <Nav />
       <main>
         <Hero reduced={reduced} />
-        <Portfolio />
+        <Cases reduced={reduced} />
         <Services />
         <Results reduced={reduced} />
         <Process reduced={reduced} />
