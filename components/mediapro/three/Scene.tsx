@@ -7,6 +7,7 @@ import { Bloom, DepthOfField, EffectComposer, Vignette } from '@react-three/post
 import * as THREE from 'three';
 import { Monolith } from './Monolith';
 import { Matter } from './Matter';
+import { LogoCube, Room } from './LogoCube';
 import { Dust } from './Dust';
 import { Rig } from './Rig';
 import { scroll } from './scrollState';
@@ -129,6 +130,8 @@ export function Scene() {
 
           <Monolith />
           <Matter />
+          <LogoCube />
+          <Room />
           <Dust />
         </Suspense>
 

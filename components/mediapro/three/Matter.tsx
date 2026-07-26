@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { scroll } from './scrollState';
 import { blendWorlds } from './worlds';
 
-const COUNT = 26;
+const COUNT = 17;
 const dummy = new THREE.Object3D();
 
 /** Distribuzione deterministica: la scena dev'essere identica a ogni visita. */
