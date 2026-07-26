@@ -3,8 +3,17 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from '../gsap';
 import { SplitTitle } from '../SplitTitle';
-import { STATS, formatIt } from '../content';
+import { SECTORS } from '../content';
 
+/**
+ * Sezione 04.
+ *
+ * Qui prima c'erano dei contatori: 100+ clienti, 2.500+ contenuti, 50M+
+ * visualizzazioni. Erano cifre inventate, e su un portfolio una cifra
+ * inventata è l'unica cosa che un potenziale cliente può verificare e trovare
+ * falsa. Al loro posto ci sono i settori realmente attraversati, con i nomi
+ * dei clienti: meno appariscente, ma vero e controllabile.
+ */
 export function Results({ reduced }: { reduced: boolean }) {
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -13,29 +22,19 @@ export function Results({ reduced }: { reduced: boolean }) {
     const section = sectionRef.current!;
 
     const ctx = gsap.context(() => {
-      gsap.utils.toArray<HTMLElement>('.mp-stat').forEach((card, i) => {
-        const valueEl = card.querySelector<HTMLElement>('.mp-stat-num')!;
-        const target = Number(valueEl.dataset.value);
-        const counter = { v: 0 };
-        // L'HTML contiene già il numero vero (così senza JS non si legge "0"):
-        // lo azzeriamo solo ora che il conteggio parte davvero.
-        valueEl.textContent = '0';
-
-        gsap
-          .timeline({ scrollTrigger: { trigger: card, start: 'top 88%' }, delay: i * 0.08 })
-          .fromTo(card, { opacity: 0, y: 54 }, { opacity: 1, y: 0, duration: 1, ease: 'power3.out' })
-          .to(
-            counter,
-            {
-              v: target,
-              duration: 1.8,
-              ease: 'power2.out',
-              onUpdate: () => {
-                valueEl.textContent = formatIt(Math.round(counter.v));
-              },
-            },
-            '<0.2'
-          );
+      gsap.utils.toArray<HTMLElement>('.mp-sector').forEach((card, i) => {
+        gsap.fromTo(
+          card,
+          { opacity: 0, y: 54 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            ease: 'power3.out',
+            delay: i * 0.09,
+            scrollTrigger: { trigger: card, start: 'top 88%' },
+          }
+        );
       });
     }, section);
 
@@ -44,25 +43,21 @@ export function Results({ reduced }: { reduced: boolean }) {
 
   return (
     <section ref={sectionRef} className="mp-section" id="risultati">
-      <p className="mp-kicker mp-reveal">04 — Risultati</p>
+      <p className="mp-kicker mp-reveal">04 — Dove lavoriamo</p>
       <SplitTitle
         className="mp-h2"
-        text="Numeri che raccontano il nostro impegno."
-        accent={['impegno']}
+        text="Quattro settori, un solo modo di lavorare."
+        accent={['lavorare.']}
       />
       <p className="mp-sub mp-reveal">
-        La creatività si misura: ogni progetto parte da un obiettivo e finisce in un dato.
+        Ogni progetto qui sotto è verificabile: nomi veri, lavori veri.
       </p>
-      <div className="mp-risultati-grid">
-        {STATS.map((s) => (
-          <div key={s.label} className="mp-stat">
-            <p className="mp-stat-value">
-              <span className="mp-stat-num" data-value={s.value}>
-                {formatIt(s.value)}
-              </span>
-              <em>{s.suffix}</em>
-            </p>
-            <p className="mp-stat-label">{s.label}</p>
+      <div className="mp-settori-grid">
+        {SECTORS.map((s) => (
+          <div key={s.label} className="mp-sector">
+            <h3>{s.label}</h3>
+            <p className="mp-sector-clients">{s.clients}</p>
+            <p className="mp-sector-line">{s.line}</p>
           </div>
         ))}
       </div>
