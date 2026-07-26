@@ -1,6 +1,14 @@
 // Tutti i testi e i dati del sito MediaPro in un unico posto:
 // per cambiare copy, progetti o numeri si tocca solo questo file.
 
+/**
+ * ATTENZIONE — email, WhatsApp e social qui sotto sono SEGNAPOSTO inventati:
+ * non corrispondono a nessuna casella e a nessun profilo reale. È l'unico
+ * contenuto non veritiero rimasto sul sito, ed è il motivo per cui la pagina
+ * è ancora `noindex` (vedi app/mediapro/layout.tsx). Sostituirli con i recapiti
+ * veri e togliere il noindex sono la stessa operazione: finché un visitatore
+ * può scrivere a un indirizzo che non esiste, il sito non va indicizzato.
+ */
 export const BRAND = {
   name: 'MediaPro',
   tagline: 'Content & Creative Studio',
@@ -14,7 +22,7 @@ export const NAV = [
   { id: 'hero', label: 'Home' },
   { id: 'portfolio', label: 'Portfolio' },
   { id: 'servizi', label: 'Servizi' },
-  { id: 'risultati', label: 'Risultati' },
+  { id: 'risultati', label: 'Settori' },
   { id: 'metodo', label: 'Metodo' },
   { id: 'contatti', label: 'Contatti' },
 ];
@@ -107,19 +115,32 @@ export const SERVICES = [
 ];
 
 /**
- * Formattazione italiana deterministica (2500 → "2.500"). Non usiamo
- * toLocaleString: il Node della build e il browser applicano regole CLDR
- * diverse sul raggruppamento, e la differenza rompe l'idratazione di React.
+ * Sezione 04. Al posto di statistiche inventate — 100+ clienti, 50M+
+ * visualizzazioni e simili, che non corrispondevano a nulla — ci sono i
+ * settori realmente attraversati, con i clienti come prova verificabile.
+ * Numeri veri se e quando ci saranno; nel frattempo nessuna cifra falsa.
  */
-export const formatIt = (n: number): string =>
-  n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-
-export const STATS = [
-  { value: 100, suffix: '+', label: 'Clienti soddisfatti' },
-  { value: 2500, suffix: '+', label: 'Contenuti creati' },
-  { value: 50, suffix: 'M+', label: 'Visualizzazioni totali' },
-  { value: 300, suffix: '+', label: 'Campagne lanciate' },
-  { value: 98, suffix: '%', label: 'Clienti che ci raccomandano' },
+export const SECTORS = [
+  {
+    label: 'Alimentare',
+    clients: 'Quelli della Bufala · MOU',
+    line: 'Marchi nati da zero, dal nome al packaging.',
+  },
+  {
+    label: 'Edilizia e impianti',
+    clients: 'Mondial Service',
+    line: 'Un mestiere concreto raccontato senza retorica.',
+  },
+  {
+    label: 'Beauty',
+    clients: 'AureaClub · Woman Beauty Center',
+    line: 'Identità e piattaforme per un settore che vive di immagine.',
+  },
+  {
+    label: 'Lusso ed eventi',
+    clients: 'LOEWE × Jacob & Co',
+    line: 'Shooting sul posto, dove il tempo per rifare non esiste.',
+  },
 ];
 
 export const STEPS = [
