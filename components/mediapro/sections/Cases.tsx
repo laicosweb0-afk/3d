@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { gsap, ScrollTrigger } from '../gsap';
 import { scroll } from '../three/scrollState';
 import { PROJECTS } from '../content';
+import { asset } from '@/lib/asset';
 
 /**
  * Il portfolio non è una griglia di card: è una sequenza di scene.
@@ -94,6 +95,11 @@ export function Cases({ reduced }: { reduced: boolean }) {
               style={reduced ? undefined : { opacity: i === 0 ? 1 : 0 }}
             >
               <p className="mp-case-num">{String(i + 1).padStart(2, '0')}</p>
+              {p.logo && (
+                <span className="mp-case-logo">
+                  <img src={asset(p.logo)} alt={`Marchio ${p.client}`} loading="lazy" />
+                </span>
+              )}
               <h3 className="mp-case-client">{p.client}</h3>
               <p className="mp-case-type">{p.type}</p>
               <p className="mp-case-line">{p.line}</p>
