@@ -89,7 +89,7 @@ export function Rig() {
     const after = Math.max(0, scroll.page - 0.16) / 0.84;
     target.set(after * 1.2 * (1 - c), -after * 0.3 * (1 - c), 0);
 
-    // Nel portfolio il soggetto sta a destra, sempre.
+    // Il soggetto sta a destra, sempre. Dall'hero fino all'ultima stanza.
     //
     // Prima l'oggetto era al centro e la camera gli girava intorno: da certe
     // angolazioni finiva addosso al testo, e nessuna velatura salva un titolo
@@ -97,15 +97,21 @@ export function Rig() {
     // la trasversale della camera — cioè il "sinistra" dell'inquadratura, non
     // quello del mondo — e il soggetto si trova a destra qualunque sia
     // l'angolo dell'orbita. Il testo ha metà schermo tutta per sé.
-    if (c > 0.001) {
+    //
+    // Vale anche per l'hero: il cubo passava esattamente dietro alle righe del
+    // titolo, ed è il primo posto in cui non deve succedere.
+    if (aspect < 1) {
+      // In verticale non c'è una metà da liberare: lo schermo è stretto e
+      // spostare di lato manderebbe il soggetto fuori campo. Si libera l'altra
+      // dimensione — la mira scende, quindi l'oggetto sale — e il testo occupa
+      // la parte bassa. Stesso principio, asse diverso.
+      target.addScaledVector(camera.up, -(1.5 + c * 0.6));
+    } else {
       right.subVectors(camera.position, target).normalize().cross(camera.up).normalize();
-      // in verticale non c'è spazio per lo scostamento: sarebbe fuori campo
-      // abbastanza da liberare il testo, non tanto da mandare il soggetto
-      // a metà fuori dall'inquadratura
-      const shift = aspect < 1 ? 0.5 : 1.75;
       // il segno: `right` così calcolato punta alla sinistra dell'inquadratura,
       // quindi spostare la mira in quella direzione manda il soggetto a destra
-      target.addScaledVector(right, shift * Math.min(1, c));
+      const shift = 1.55 + 0.2 * Math.min(1, c);
+      target.addScaledVector(right, shift);
     }
     camera.lookAt(target);
   });
