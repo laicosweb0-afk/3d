@@ -56,76 +56,136 @@ export interface Shot {
   prompt: string;
 }
 
+// ---- I mattoni condivisi dei prompt (vedi COERENZA_CASA.md) ----
+//
+// La casa si descrive UNA volta sola. Ripetere la descrizione in dodici prompt
+// significa che prima o poi due divergono, e il visitatore vede due case
+// diverse nello stesso piano sequenza.
+
+/** L'edificio visto da fuori. Il tratto riconoscibile è la facciata divisa. */
+const ESTERNO =
+  'The building is a single-storey house, roughly 10 by 8 metres, with 3-metre ' +
+  'walls and a thin flat dark roof slab cantilevered about 40cm on every side, ' +
+  'over an exposed concrete foundation plinth. Its entrance facade is split in ' +
+  'two materials: the left half clad in rough split natural stone, the right ' +
+  'half in smooth render, with an oak entrance door at the centre and one ' +
+  'window to the right of the door. One large window on the right flank, one ' +
+  'small tall window on the left flank, blind rear wall. All window frames are ' +
+  'dark aluminium.';
+
+/** L'interno consegnato. Vale solo dalle scene dentro casa in poi. */
+const INTERNO =
+  'Interior finishes: oak plank flooring throughout, pale rendered walls, ' +
+  'calacatta marble surfaces. The bathroom, in the rear left corner, has black ' +
+  'marquina marble floor, a calacatta marble wall, a white freestanding ' +
+  'bathtub and an oak vanity with a calacatta top.';
+
+/**
+ * La regola che rende impossibile l'incoerenza: finché non entriamo davvero,
+ * dalle aperture non si deve leggere nessun interno. In cantiere perché dentro
+ * non c'è ancora niente; a casa finita perché il vetro riflette.
+ */
+const VUOTI_CANTIERE =
+  'The openings read as dark empty voids: no finished interior is visible ' +
+  'through them.';
+const VETRI_SPECCHIO =
+  'The windows read as dark reflective glass mirroring the sky and trees; the ' +
+  'interior is not legible through them.';
+
+/** Il luogo. Senza dirlo esce un cantiere generico da qualunque parte del mondo. */
+const LUOGO =
+  'Set in the flat countryside of northern Italy: farmland, a row of poplars ' +
+  'and low hedges on the horizon. Overcast European daylight, soft diffused ' +
+  'shadows.';
+
+/** La resa. Fotografia documentaria d'architettura, non "cinematografico". */
+const RESA =
+  'Documentary architectural photography, full frame camera, natural colour, ' +
+  'sharp focus. No people, no text, no signage, no logos, no stylisation, no ' +
+  'second storey, no pitched roof, no white window frames, no balconies.';
+
+/** Un solo movimento continuo: il piano sequenza non deve mai staccare. */
+const CONTINUO =
+  'ONE single continuous shot, no cuts, no scene changes, no zoom, no handheld ' +
+  'shake.';
+
 /**
  * I dodici ciak, uno per scena. L'ordine è quello del viaggio.
  *
  * Il filo che tiene tutto — ed è la cosa che interessa di più — è che si stia
  * costruendo mentre si scorre: dal terreno alla consegna, senza mai staccare.
+ *
+ * Ogni prompt si compone dai mattoni qui sopra: quello che è comune a tutte le
+ * clip sta scritto in un posto solo, e nel prompt resta soltanto ciò che
+ * distingue quel ciak dagli altri.
  */
 export const SHOTS: Shot[] = [
   {
     scene: 's01',
-    soggetto: 'Il terreno prima di tutto. La luce del mattino, nessuna casa ancora.',
+    soggetto: 'Il terreno prima di tutto. Nessuna casa ancora.',
     fonte: 'previz',
     prompt:
-      'Photoreal architectural documentary. An empty building plot at dawn, ' +
-      'levelled earth and string lines marking the foundation footprint, soft ' +
-      'overcast morning light, no people. Slow steady push-in. Shot on a full ' +
-      'frame camera, 35mm, natural colour, no stylisation.',
+      `${CONTINUO} An empty building plot: levelled earth with string lines ` +
+      `and batter boards marking out a rectangular foundation footprint. ` +
+      `Nothing is built yet. The camera pushes in slowly and steadily. ` +
+      `${LUOGO} ${RESA}`,
   },
   {
     scene: 's02',
-    soggetto: 'Il rilievo: tracciamento e picchetti sul terreno, il disegno che diventa cantiere.',
+    soggetto: 'Il rilievo: tracciamento e picchetti, il disegno che diventa cantiere.',
     fonte: 'previz',
     prompt:
-      'Photoreal construction documentary. Surveyors setting out a house ' +
-      'footprint: batter boards, string lines, chalk marks and a laser level ' +
-      'on a tripod over levelled ground. Slow crane rise revealing the full ' +
-      'outline. Overcast daylight, natural colour, handheld-steady.',
+      `${CONTINUO} Setting out a house footprint on bare ground: batter ` +
+      `boards, taut string lines, chalk marks and a laser level on a tripod. ` +
+      `The camera rises slowly on a crane, revealing the full rectangular ` +
+      `outline from above. Still nothing built. ${LUOGO} ${RESA}`,
   },
   {
     scene: 's03',
-    soggetto: 'La costruzione vera: fondazioni, muri che salgono, solaio. Il cuore del racconto.',
+    soggetto: 'La costruzione: dallo scheletro al guscio grezzo. Il cuore del racconto.',
     fonte: 'previz',
     prompt:
-      'Photoreal construction timelapse of a single-storey house being built: ' +
-      'concrete foundations poured, block walls rising course by course, ' +
-      'lintels set, roof slab cast. Continuous slow lateral dolly around the ' +
-      'building as it grows. Real site, scaffolding, cement dust, overcast ' +
-      'daylight. Documentary realism, no people in frame.',
+      `${CONTINUO} The camera performs a slow steady lateral dolly around the ` +
+      `building while descending slightly. Across the shot the house builds ` +
+      `itself from a partial concrete block shell to a complete structural ` +
+      `shell: walls closed course by course, window openings formed, dark ` +
+      `aluminium frames installed, scaffolding and props removed, ground ` +
+      `cleared. It stays RAW — bare grey blockwork and cement render, no ` +
+      `stone cladding and no finishes yet. ${ESTERNO} ${VUOTI_CANTIERE} ` +
+      `${LUOGO} ${RESA}`,
   },
   {
     scene: 's04',
-    soggetto:
-      'La materia: la stessa parete grezza che diventa finita. Il grezzo e il finito nello stesso fotogramma.',
+    soggetto: 'La materia: il grezzo che diventa finito, sulla stessa parete.',
     fonte: 'previz',
     prompt:
-      'Photoreal architectural transformation. A house facade transitions from ' +
-      'bare structural blockwork to finished cladding — natural split stone, ' +
-      'smooth render, oak door, dark aluminium window frames — the change ' +
-      'sweeping horizontally across the wall. Static camera, materials ' +
-      'resolving in place. Natural daylight, no stylisation.',
+      `${CONTINUO} Static camera on the entrance facade. The wall transforms ` +
+      `in place from bare grey blockwork into its finished materials, the ` +
+      `change sweeping horizontally across the frame: rough split natural ` +
+      `stone appearing on the left half, smooth render on the right half, the ` +
+      `oak entrance door and dark aluminium frames resolving into place. ` +
+      `${ESTERNO} ${VETRI_SPECCHIO} ${LUOGO} ${RESA}`,
   },
   {
     scene: 's05',
-    soggetto: 'Il volo: la casa finita, vista da fuori, il contesto che appare.',
+    soggetto: 'Il volo: la casa finita, rivelata dal fronte.',
     fonte: 'previz',
     prompt:
-      'Photoreal aerial-to-eye-level shot of a finished contemporary ' +
-      'single-storey house: split stone facade, flat dark roof, oak entrance ' +
-      'door, large dark-framed windows, trimmed lawn. Smooth slow drone ' +
-      'descent revealing the front elevation. Late afternoon sun, soft ' +
-      'shadows, natural colour grade.',
+      `${CONTINUO} A smooth slow drone descent from above down towards eye ` +
+      `level, revealing the finished house from the front. The building is ` +
+      `complete: clean facade, trimmed lawn, tidy ground, no site equipment. ` +
+      `${ESTERNO} ${VETRI_SPECCHIO} ${LUOGO} ${RESA}`,
   },
   {
     scene: 's06',
     soggetto: 'La soglia: ci si avvicina all’ingresso e la porta si apre.',
     fonte: 'previz',
     prompt:
-      'Photoreal steadicam shot approaching the entrance of a finished modern ' +
-      'house, oak door on a stone facade. The door swings open revealing warm ' +
-      'interior light. Continuous forward motion, no cut. Natural daylight ' +
-      'outside, warm light inside, documentary realism.',
+      `${CONTINUO} A steadicam move advancing towards the entrance of the ` +
+      `finished house and coming to the oak door at the centre of the split ` +
+      `facade. The door swings inwards, revealing a glimpse of an oak plank ` +
+      `floor and pale rendered walls in soft daylight. Continuous forward ` +
+      `motion. ${ESTERNO} ${LUOGO} ${RESA}`,
   },
   {
     scene: 's07',
@@ -133,66 +193,62 @@ export const SHOTS: Shot[] = [
     fonte: 'reale',
     foto: 'public/assets/foto/soggiorno-1.jpg',
     prompt:
-      'Photoreal interior. Slow steadicam move through a finished living room: ' +
-      'oak plank floor, stone feature wall, calacatta marble surfaces, warm ' +
-      'diffused daylight from a large window. Calm, unhurried camera. Real ' +
-      'estate documentary realism, natural colour, no people.',
+      `${CONTINUO} A slow steadicam move through the finished living room, ` +
+      `calm and unhurried. Warm diffused daylight from a large window. ` +
+      `${INTERNO} ${RESA}`,
   },
   {
     scene: 's08',
-    soggetto:
-      'Dentro la parete: la stessa parete aperta in cantiere, isolamento e impianti a vista.',
+    soggetto: 'Dentro la parete: isolamento e impianti a vista.',
     fonte: 'previz',
     prompt:
-      'Photoreal construction documentary. An interior partition wall opened ' +
-      'up during works: metal studs, mineral wool insulation, electrical ' +
-      'conduits and copper pipework visible inside the cavity, plasterboard ' +
-      'partly fixed. Slow camera move along the wall into the cavity. Work ' +
-      'light and daylight mixed, dust in the air, natural colour.',
+      `${CONTINUO} A slow camera move along an interior partition wall opened ` +
+      `up during works, then into the cavity: metal studs, mineral wool ` +
+      `insulation, electrical conduits and copper pipework inside, ` +
+      `plasterboard partly fixed. Work light mixed with daylight, fine dust ` +
+      `in the air. ${RESA}`,
   },
   {
     scene: 's09',
-    soggetto:
-      'Sotto il pavimento: il radiante posato, la serpentina. Abbiamo la foto vera del cantiere.',
+    soggetto: 'Sotto il pavimento: il radiante posato. Abbiamo la foto vera.',
     fonte: 'reale',
     foto: 'public/assets/foto/cantiere.jpg',
     prompt:
-      'Photoreal construction documentary. Low camera gliding just above an ' +
-      'underfloor heating installation: red PEX pipework clipped in ' +
-      'serpentine loops over insulation panels, manifold at the wall, screed ' +
-      'ready to be poured. Real site, work lighting, natural colour, no people.',
+      `${CONTINUO} A low camera gliding just above an underfloor heating ` +
+      `installation: red pipework clipped in serpentine loops over insulation ` +
+      `panels, manifold at the wall, screed ready to be poured. Work ` +
+      `lighting. ${RESA}`,
   },
   {
     scene: 's10',
-    soggetto:
-      'Il bagno consegnato: marquina e calacatta. È il lavoro vero su cui è modellato il bagno 3D.',
+    soggetto: 'Il bagno consegnato: marquina e calacatta. Il lavoro vero.',
     fonte: 'reale',
     foto: 'public/assets/foto/bagno-reale.jpg',
     prompt:
-      'Photoreal interior. Slow reveal of a finished luxury bathroom: black ' +
-      'marquina marble floor and dark wall, white calacatta marble wall, ' +
-      'freestanding white bathtub, small window with daylight. The lights come ' +
-      'up warmly towards the end of the move. Natural colour, no people.',
+      `${CONTINUO} A slow reveal of the finished bathroom, ending framed on ` +
+      `the freestanding white bathtub. Daylight from the small window on the ` +
+      `left; towards the end of the move the lights come up warmly. ` +
+      `${INTERNO} ${RESA}`,
   },
   {
     scene: 's11',
     soggetto: 'La finestra: si esce dallo sguardo, la luce di fuori riprende.',
     fonte: 'previz',
     prompt:
-      'Photoreal interior-to-exterior move. Camera pulls back from a bathroom ' +
-      'window towards the room, then continues retreating through the finished ' +
-      'house. Daylight from the window, warm interior light. Continuous ' +
-      'smooth motion, documentary realism, natural colour.',
+      `${CONTINUO} The camera pulls back from the small bathroom window into ` +
+      `the room and keeps retreating through the finished house towards the ` +
+      `living room. Daylight from the window, warm interior light. ` +
+      `${INTERNO} ${RESA}`,
   },
   {
     scene: 's12',
     soggetto: 'Il congedo: la casa finita, di fronte, che si allontana.',
     fonte: 'previz',
     prompt:
-      'Photoreal exterior. Slow linear pull-back from the finished house, ' +
-      'recomposing the full front elevation at distance, split stone facade ' +
-      'and dark roof centred in frame. Soft late daylight, calm, no people. ' +
-      'Natural colour, documentary realism.',
+      `${CONTINUO} A slow linear pull-back from the finished house, ` +
+      `recomposing the full front elevation at distance, centred in frame. ` +
+      `Calm, soft late daylight. ${ESTERNO} ${VETRI_SPECCHIO} ${LUOGO} ` +
+      `${RESA}`,
   },
 ];
 
