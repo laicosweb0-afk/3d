@@ -14,7 +14,7 @@ import {
   lightsOn, windowOpen, contextAmount,
 } from '@/content/direction';
 import { progress } from '@/lib/progress';
-import { smooth, span, clamp01 } from '@/lib/scenes';
+import { smooth, span } from '@/lib/scenes';
 import { asset } from '@/lib/asset';
 import { sweepMaterial, sweepUniform } from '../materials/sweep';
 
@@ -550,17 +550,19 @@ export function Ground() {
   const mat = useRef<THREE.MeshBasicMaterial>(null);
   const white = useMemo(() => new THREE.Color('#FAFAF8'), []);
   const green = useMemo(() => new THREE.Color('#E2E5DA'), []);
+  const tinta = useMemo(() => new THREE.Color(), []);
 
   useFrame(({ scene }) => {
     const c = contextAmount(progress.smoothed);
-    if (mat.current) mat.current.color.copy(white).lerp(green, c * 0.8);
-    if (scene.background instanceof THREE.Color) {
-      scene.background.setRGB(
-        THREE.MathUtils.lerp(0.98, 0.936, clamp01(c) * 0.5),
-        THREE.MathUtils.lerp(0.98, 0.945, clamp01(c) * 0.5),
-        THREE.MathUtils.lerp(0.972, 0.955, clamp01(c) * 0.5)
-      );
-    }
+    // Una sola tinta per il foglio e per il fondo. Prima erano due calcoli
+    // separati e il fondo era scritto con setRGB, che interpreta i numeri
+    // nello spazio di lavoro (lineare) mentre il foglio nasce da un esadecimale
+    // in sRGB: 0.98 lineare esce 253, #FAFAF8 esce 250. Tre livelli di
+    // scarto — invisibili su carta, una riga netta da bordo a bordo sullo
+    // schermo. Copiando lo stesso colore l'orizzonte non può ricomparire.
+    tinta.copy(white).lerp(green, c * 0.8);
+    if (mat.current) mat.current.color.copy(tinta);
+    if (scene.background instanceof THREE.Color) scene.background.copy(tinta);
   });
 
   // Non illuminato e fuori dal tone mapping: il terreno è il foglio,

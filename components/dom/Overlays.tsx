@@ -33,7 +33,12 @@ export function Overlays() {
         const win = 0.14;
         const a = out * smooth(span(t, c.from, c.from + win)) * (1 - smooth(span(t, c.to - win, c.to)));
         el.style.opacity = String(a);
-        el.style.transform = `translateY(${(1 - a) * 1.2}rem)`;
+        // Lo scostamento d'ingresso passa da una variabile, non dal transform.
+        // Scrivendo `transform` da qui si cancellava quello del foglio di
+        // stile: il testo del congedo è centrato con translateX(-50%) e
+        // restava appeso a partire da metà schermo. Ora la CSS compone i due
+        // pezzi e ogni scena tiene la propria centratura.
+        el.style.setProperty('--copy-y', `${(1 - a) * 1.2}rem`);
         el.style.visibility = a < 0.005 ? 'hidden' : 'visible';
       });
       const w = whiteout(p);

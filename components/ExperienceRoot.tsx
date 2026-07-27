@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { World } from './canvas/World';
 import { Hero } from './dom/Hero';
-import { Overlays } from './dom/Overlays';
+import { Overlays, afterJourney } from './dom/Overlays';
 import { RealityWindows } from './dom/RealityWindows';
 import { TimelineMetro } from './dom/TimelineMetro';
 import { initScroll } from '@/lib/scroll';
@@ -42,6 +42,7 @@ export function ExperienceRoot() {
   const [mounted, setMounted] = useState(false);
   const [reduced, setReduced] = useState(false);
   const spacer = useRef<HTMLDivElement>(null);
+  const world = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // modalità fotogramma per still di produzione/QA
@@ -69,6 +70,23 @@ export function ExperienceRoot() {
   useEffect(() => {
     if (!mounted || reduced) return;
     const update = () => updateAudio(progress.smoothed, progress.velocity);
+    gsap.ticker.add(update);
+    return () => gsap.ticker.remove(update);
+  }, [mounted, reduced]);
+
+  // Il congedo del mondo. Le sezioni scorrono sopra il canvas, che è fisso:
+  // finché resta opaco la prima sezione gli passa davanti come una lama e
+  // taglia la casa a metà parete, con tanto di filo del border-top. Il mondo
+  // si dissolve sulla stessa curva con cui se ne vanno chrome, metro e testi
+  // — quando la sezione arriva non c'è più niente da tagliare.
+  useEffect(() => {
+    if (!mounted || reduced || !world.current) return;
+    const el = world.current;
+    const update = () => {
+      const out = afterJourney();
+      el.style.opacity = String(1 - out);
+      el.style.visibility = out >= 1 ? 'hidden' : 'visible';
+    };
     gsap.ticker.add(update);
     return () => gsap.ticker.remove(update);
   }, [mounted, reduced]);
@@ -127,7 +145,7 @@ export function ExperienceRoot() {
 
   return (
     <>
-      <div className="world" aria-hidden="true">
+      <div className="world" aria-hidden="true" ref={world}>
         {mounted && <World />}
       </div>
       <div

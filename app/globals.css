@@ -6,6 +6,9 @@
   --bianco: #fafaf8;
   --antracite: #17181a;
   --grigio-600: #6e7076;
+  /* Per i testi che stanno sopra il mondo 3D, dove il fondo non lo decidiamo
+     noi: --grigio-600 su un pavimento in rovere sta sotto il rapporto 4.5:1. */
+  --grigio-800: #44464b;
   --grigio-300: #c8c8c3;
   --grigio-100: #efefeb;
   --pietra: #8c8377;
@@ -71,6 +74,10 @@ body {
   padding: 1.4rem 2rem;
   pointer-events: none;
 }
+/* Stesso alone dei testi di scena. Il pulsante audio e il "Contattaci" hanno
+   la loro pastiglia opaca e sopravvivono ovunque; il marchio era testo nudo e
+   nel bagno spariva dentro il marquina nero. Una pastiglia anche qui sarebbe
+   stata pesante su un lockup. */
 .chrome-logo {
   display: flex;
   align-items: center;
@@ -80,11 +87,20 @@ body {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--antracite);
+  text-shadow:
+    0 0 4px var(--bianco),
+    0 0 12px var(--bianco),
+    0 0 26px color-mix(in srgb, var(--bianco) 85%, transparent);
 }
+/* Il monogramma è un SVG, che l'ombra del testo non tocca: a lui la stessa
+   cosa va detta come filtro. */
 .chrome-mark {
   width: 22px;
   height: 22px;
   flex-shrink: 0;
+  filter:
+    drop-shadow(0 0 3px var(--bianco))
+    drop-shadow(0 0 9px var(--bianco));
 }
 .chrome-actions {
   display: flex;
@@ -212,20 +228,43 @@ body {
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
+  transform: translateY(var(--copy-y, 0));
+}
+/* L'alone. I testi del viaggio sono antracite su qualunque cosa il 3D stia
+   inquadrando: sul foglio bianco si leggono, sul pavimento in rovere e sulla
+   parete in pietra sparivano — e il kicker, che è già --pietra, per primo.
+   Le didascalie delle finestre di realtà avevano la loro ombra fin dall'inizio;
+   qui non c'era niente.
+   È un alone sui glifi, non un velo rettangolare dietro il blocco: un velo,
+   per quanto sfumato, si taglia sul proprio bordo e nelle scene chiare si
+   vedeva il rettangolo. Così invece non c'è nessun bordo da tagliare, e
+   sul foglio bianco — bianco su bianco — semplicemente non esiste. */
+.scene-copy-kicker,
+.scene-copy-title,
+.scene-copy-body {
+  text-shadow:
+    0 0 4px var(--bianco),
+    0 0 12px var(--bianco),
+    0 0 28px color-mix(in srgb, var(--bianco) 85%, transparent);
 }
 .scene-copy--s12 {
   left: 50%;
   bottom: 44%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(var(--copy-y, 0));
   text-align: center;
   max-width: 34rem;
 }
+/* Il kicker portava --pietra e il testo --grigio-600: sul foglio bianco è la
+   gerarchia giusta, sul rovere e sulla pietra sono due grigi chiari su un
+   fondo chiaro e sparivano. Qui la gerarchia la fanno corpo, peso e
+   spaziatura — che si vedono su qualsiasi fondo — non lo sbiadire del colore.
+   Nelle sezioni sotto, dove il fondo è nostro, --pietra resta al suo posto. */
 .scene-copy-kicker {
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: var(--pietra);
+  color: var(--grigio-800);
   margin-bottom: 0.9rem;
 }
 .scene-copy-title {
@@ -238,7 +277,7 @@ body {
   margin-top: 0.9rem;
   font-size: 0.98rem;
   line-height: 1.6;
-  color: var(--grigio-600);
+  color: var(--grigio-800);
 }
 
 /* ---- finestre di realtà ---- */
