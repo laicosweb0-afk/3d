@@ -91,10 +91,10 @@ export function Monolith() {
 
     if (cube.current) {
       const idle = entry.landed;
-      cube.current.position.y = entry.y + idle * Math.sin(t * 0.5) * 0.07;
-      cube.current.rotation.y = entry.ry + idle * t * 0.075 + p * 1.1;
-      cube.current.rotation.x = entry.rx + idle * Math.sin(t * 0.32) * 0.055 + p * 0.2;
-      cube.current.rotation.z = idle * Math.sin(t * 0.21) * 0.02;
+      cube.current.position.y = entry.y + idle * Math.sin(t * 0.32) * 0.055;
+      cube.current.rotation.y = entry.ry + idle * t * 0.045 + p * 0.72;
+      cube.current.rotation.x = entry.rx + idle * Math.sin(t * 0.2) * 0.04 + p * 0.14;
+      cube.current.rotation.z = idle * Math.sin(t * 0.13) * 0.015;
     }
 
     // Apertura: i pannelli si allontanano lungo la propria normale nell'ultimo
@@ -111,7 +111,7 @@ export function Monolith() {
     });
 
     // Le sfere accelerano con lo scroll e vengono spinte fuori dall'impatto.
-    spin.current += d * (0.15 + p * 1.45);
+    spin.current += d * (0.09 + p * 0.72);
     const s = spin.current;
     const kick = 1 + impulse.current * 0.55;
     if (orbitA.current) {

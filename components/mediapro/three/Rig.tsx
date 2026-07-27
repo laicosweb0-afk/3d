@@ -49,8 +49,11 @@ export function Rig() {
     if (c > 0.001) {
       const tt = _t.current;
       const a = -0.35 + scroll.world * 0.78;
-      // il portale tira la camera dentro: il raggio crolla verso il centro
-      const radius = (w.camRadius - scroll.portal * 4.6) * pull;
+      // Il portale avvicina la camera, non la scaraventa: prima il raggio
+      // crollava di quasi cinque unità in mezzo secondo e il movimento si
+      // leggeva come uno strappo. Un avvicinamento contenuto, su un tragitto
+      // più lungo, fa lo stesso effetto e sembra una macchina su binario.
+      const radius = (w.camRadius - scroll.portal * 1.9) * pull;
       const float = Math.sin(tt * 0.55) * w.camFloat;
       // movimento meccanico: la posizione viene quantizzata a scatti
       const stepped = w.camStep > 0.5 ? Math.round(a * 6) / 6 : a;
@@ -61,7 +64,7 @@ export function Rig() {
       );
       desired.lerp(orbit, Math.min(1, c));
       // camLag basso = camera pesante, che arriva in ritardo sul bersaglio
-      lag = w.camLag + scroll.portal * 6;
+      lag = w.camLag + scroll.portal * 1.6;
     } else {
       desired.z *= pull;
     }

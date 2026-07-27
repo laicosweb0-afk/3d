@@ -100,9 +100,13 @@
   max-width: 27em;
 }
 
+/* Il respiro fra una sezione e l'altra.
+   Non è spazio sprecato: è il tempo in cui l'occhio chiude una cosa prima di
+   aprirne un'altra. Con margini stretti le sezioni si toccano e sembrano un
+   elenco continuo; larghi, ognuna diventa una pagina a sé. */
 .mp-section {
   position: relative;
-  padding: clamp(88px, 9.5vw, 152px) clamp(20px, 6vw, 96px);
+  padding: clamp(112px, 13vw, 220px) clamp(20px, 6vw, 96px);
 }
 
 /* Nascondere è un'azione, non l'impostazione di partenza: questi elementi
@@ -1253,6 +1257,10 @@ body.mp-has-cursor .mp textarea {
 
 /* Il lampo di attraversamento fra un mondo e il successivo. Sta sopra alla
    scena ma sotto alla nav, e non intercetta mai il puntatore. */
+/* Il velo di attraversamento: si chiude dai bordi verso il centro, come un
+   diaframma. Un riempimento pieno sarebbe uno stacco; una vignetta che stringe
+   e poi si riapre è un movimento di macchina, e il centro resta sempre
+   leggibile mentre lo spazio dietro viene sostituito. */
 .mp-cases-flash {
   position: fixed;
   inset: 0;
@@ -1260,6 +1268,13 @@ body.mp-has-cursor .mp textarea {
   opacity: 0;
   pointer-events: none;
   will-change: opacity;
+  /* Due strati: una velatura uniforme che porta la scena in ombra, e sopra
+     una vignetta che stringe dai bordi. Insieme fanno un passaggio in ombra —
+     la scena non sparisce mai del tutto, si intravede quel tanto che basta a
+     capire che è la stessa, ma il cambio di mondo avviene al riparo. */
+  background:
+    radial-gradient(120% 100% at 50% 50%, transparent 4%, var(--veil, rgba(10, 9, 8, 1)) 70%),
+    var(--veil, rgba(10, 9, 8, 1));
 }
 .mp:not(.mp--motion) .mp-cases-flash {
   display: none;

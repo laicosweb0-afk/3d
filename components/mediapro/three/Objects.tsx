@@ -270,8 +270,8 @@ export function Objects() {
 
     // segue l'angolo dell'orbita: una faccia resta sempre verso chi guarda
     const camAngle = -0.35 + scroll.world * 0.78;
-    inner.current.rotation.y = camAngle + Math.sin(t * 0.22) * 0.26;
-    inner.current.rotation.x = Math.sin(t * 0.3) * 0.07;
+    inner.current.rotation.y = camAngle + Math.sin(t * 0.14) * 0.16;
+    inner.current.rotation.x = Math.sin(t * 0.19) * 0.05;
 
     // Luce di servizio sul marchio. L'atmosfera di ogni mondo è tinta e spesso
     // molto scura — sul nero LOEWE il logo spariva nel fondo — quindi il
@@ -287,7 +287,7 @@ export function Objects() {
       fill.current.visible = presence > 0.02;
     }
 
-    group.current.position.y = damp(group.current.position.y, Math.sin(t * 0.5) * 0.13, 3, d);
+    group.current.position.y = damp(group.current.position.y, Math.sin(t * 0.3) * 0.09, 3, d);
     group.current.scale.setScalar(damp(group.current.scale.x, presence * 1.05, 5, d));
     group.current.position.z = damp(group.current.position.z, (1 - presence) * -3.4, 4, d);
     group.current.visible = presence > 0.02;

@@ -18,17 +18,24 @@ import { PROJECTS } from '../content';
  * dello stesso indice, così non esiste un momento di "cambio pagina".
  */
 /**
- * Colore del lampo di attraversamento, uno per mondo di destinazione: bianco
- * pieno verso i mondi del latte, buio verso l'officina. È il mezzo secondo in
- * cui non si vede nulla e lo spazio viene sostituito.
+ * Il velo di attraversamento.
+ *
+ * Prima era un lampo bianco pieno, uno per mondo di destinazione. Funzionava
+ * come stacco, ma rompeva la scena: per mezzo secondo il sito smetteva di
+ * essere nero e oro e diventava un altro sito. Un attraversamento non deve
+ * accendere la luce, deve toglierla — nel buio si passa, dal bianco si esce.
+ *
+ * Restano sei toni perché ogni soglia conservi il suo carattere, ma sono tutti
+ * dentro la stessa palette: antracite, nero caldo, nero bluastro. La differenza
+ * fra uno e l'altro si sente senza vedersi.
  */
-const FLASH = [
-  'rgba(255,255,255,1)',
-  'rgba(244,255,236,1)',
-  'rgba(6,8,12,1)',
-  'rgba(255,240,247,1)',
-  'rgba(232,238,248,1)',
-  'rgba(255,232,244,1)',
+const VEIL = [
+  'rgba(10,9,8,1)',
+  'rgba(8,10,8,1)',
+  'rgba(6,7,10,1)',
+  'rgba(10,8,7,1)',
+  'rgba(7,8,11,1)',
+  'rgba(10,7,9,1)',
 ];
 
 export function Cases({ reduced }: { reduced: boolean }) {
@@ -62,18 +69,27 @@ export function Cases({ reduced }: { reduced: boolean }) {
           // restava a metà strada.
           scroll.cases = Math.min(1, prog / PAD, (1 - prog) / PAD);
 
-          // Portale: quanto siamo vicini alla soglia fra due mondi. Sale a 1
-          // esattamente sul confine, dove la camera accelera, la materia si
-          // stira e lo schermo lampeggia — e dall'altra parte c'è un mondo
-          // diverso. Non è una dissolvenza: è un attraversamento.
+          // Portale: quanto siamo vicini alla soglia fra due mondi.
+          //
+          // La soglia comincia prima e sale più piano di quanto facesse: la
+          // vecchia curva partiva a un quarto di strada e arrivava a fondo
+          // scala in un soffio, così tutto — camera, materia, velo — scattava
+          // insieme. Distribuito su quasi metà del tragitto, lo stesso
+          // passaggio si sente come un respiro invece che come uno stacco.
           const edge = Math.abs(w - Math.round(w));
-          const portal = Math.max(0, (edge - 0.28) / 0.22);
-          scroll.portal = portal * scroll.cases;
+          const portal = Math.max(0, (edge - 0.12) / 0.38);
+          // curva morbida in entrata e in uscita: niente spigoli sul confine
+          scroll.portal = portal * portal * (3 - 2 * portal) * scroll.cases;
           if (flashRef.current) {
-            flashRef.current.style.opacity = String(scroll.portal * 0.92);
-            // il colore del lampo appartiene al mondo verso cui si sta andando
+            // Il velo scurisce, non illumina, e non arriva mai a coprire del
+            // tutto: dietro si continua a intravedere lo spazio, che è ciò che
+            // tiene insieme le due stanze invece di separarle.
+            flashRef.current.style.opacity = String(scroll.portal * 0.8);
             const to = w > Math.round(w) ? Math.ceil(w) : Math.floor(w);
-            flashRef.current.style.background = FLASH[Math.max(0, Math.min(FLASH.length - 1, to))];
+            flashRef.current.style.setProperty(
+              '--veil',
+              VEIL[Math.max(0, Math.min(VEIL.length - 1, to))]
+            );
           }
 
           // La firma tipografica del progetto, dove c'è: entra più tardi delle
@@ -90,9 +106,13 @@ export function Cases({ reduced }: { reduced: boolean }) {
           cardsRef.current.forEach((el, i) => {
             if (!el) return;
             const d = Math.abs(w - i);
-            const a = Math.max(0, 1 - d * 1.55);
-            el.style.opacity = String(a);
-            el.style.transform = `translateY(${(w - i) * 34}px)`;
+            // Il testo esce del tutto prima che entri il successivo. Con una
+            // dissolvenza incrociata larga, a metà strada si vedevano due
+            // titoli sovrapposti e nessuno dei due si leggeva: sembrava un
+            // errore, non una transizione. Meglio un istante senza testo.
+            const a = Math.max(0, 1 - d * 2.1);
+            el.style.opacity = String(a * a);
+            el.style.transform = `translateY(${(w - i) * 22}px)`;
             el.style.pointerEvents = a > 0.5 ? 'auto' : 'none';
           });
         },
@@ -121,12 +141,15 @@ export function Cases({ reduced }: { reduced: boolean }) {
     return () => ctx.revert();
   }, [reduced]);
 
+  // Una viewport e mezza per stanza invece di una: con una scrollata veloce le
+  // stanze passavano prima di essersi mostrate. Non è lo scroll a rallentare —
+  // è ogni progetto ad avere il tempo di esistere.
   return (
     <section
       ref={sectionRef}
       className="mp-cases"
       id="portfolio"
-      style={{ height: `${PROJECTS.length * 100 + 60}vh` }}
+      style={{ height: `${PROJECTS.length * 148 + 70}vh` }}
     >
       <div ref={flashRef} className="mp-cases-flash" aria-hidden />
       <div className="mp-cases-pin">

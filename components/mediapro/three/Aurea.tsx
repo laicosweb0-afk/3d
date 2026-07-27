@@ -43,12 +43,12 @@ class Lemniscate extends THREE.Curve<THREE.Vector3> {
 const CURVE = new Lemniscate();
 
 /** Filamenti in cui la curva si sfalda. */
-const FILAMENTS = 260;
+const FILAMENTS = 170;
 /** Nodi della rete e connessioni fra loro. */
 const NODES = 30;
 const LINKS = 46;
 /** Infiniti in miniatura in orbita attorno alla curva. */
-const MOTES = 85;
+const MOTES = 46;
 
 /**
  * Gli infiniti satelliti: lo stesso segno a scale diverse, in orbita attorno
@@ -124,8 +124,12 @@ export function Aurea() {
       const out = rest
         .clone()
         .normalize()
-        .multiplyScalar(1.6 + r() * 3.4)
-        .add(new THREE.Vector3(r() - 0.5, r() - 0.5, r() - 0.5).multiplyScalar(2.6));
+        // Volavano fino a cinque unità dal centro e riempivano l'inquadratura:
+        // a metà soglia lo schermo era un intrico di aghi. Restando vicini
+        // all'oggetto si legge ancora che si sfalda, ma resta un oggetto che si
+        // sfalda invece che una scarica di scintille.
+        .multiplyScalar(1.15 + r() * 1.5)
+        .add(new THREE.Vector3(r() - 0.5, r() - 0.5, r() - 0.5).multiplyScalar(1.1));
       return {
         rest,
         out,
@@ -195,7 +199,7 @@ export function Aurea() {
       at: r(),
       radius: 0.3 + r() * 1.75,
       phase: r() * Math.PI * 2,
-      speed: 0.5 + r() * 1.4,
+      speed: 0.28 + r() * 0.7,
       size: 0.03 + r() * 0.062,
       tilt: r() * Math.PI,
       turn: r() * Math.PI,
@@ -232,10 +236,12 @@ export function Aurea() {
     const target = Math.max(0, Math.min(1, (0.68 - dist) / 0.22)) * scroll.cases;
     s.presence = damp(s.presence, target, 8, d);
 
-    // Lo sfaldamento parte quando l'oggetto è ancora tutto in scena e cresce
-    // avvicinandosi alla soglia: prima si spacca, poi attraversiamo. Nell'ordine
-    // inverso non si vedrebbe nulla, perché a quel punto la stanza è già finita.
-    const edge = Math.max(0, Math.min(1, (dist - 0.16) / 0.26));
+    // Lo sfaldamento comincia tardi e finisce presto: per quasi tutta la stanza
+    // l'infinito è un oggetto solo e fermo, e si spacca soltanto nel tratto
+    // finale, quando il velo ha già cominciato a scendere. Prima cominciava
+    // troppo presto e nel mezzo della stanza restavano filamenti accesi
+    // attorno all'oro — sembravano detriti, non un attraversamento.
+    const edge = Math.max(0, Math.min(1, (dist - 0.3) / 0.22));
     const shatterTarget = Math.max(edge, scroll.portal);
     s.shatter = damp(s.shatter, shatterTarget, 8, d);
 
@@ -256,9 +262,9 @@ export function Aurea() {
       // di chi guarda — si muove, ma resta sempre un infinito.
       const cam = frame.camera.position;
       const face = Math.atan2(cam.x, cam.z);
-      spin.current.rotation.y = face + Math.sin(t * 0.28) * 0.34;
-      spin.current.rotation.x = -0.12 + Math.sin(t * 0.23) * 0.13;
-      spin.current.rotation.z = Math.sin(t * 0.17) * 0.09;
+      spin.current.rotation.y = face + Math.sin(t * 0.17) * 0.24;
+      spin.current.rotation.x = -0.12 + Math.sin(t * 0.14) * 0.09;
+      spin.current.rotation.z = Math.sin(t * 0.1) * 0.06;
     }
 
     // ---- la curva piena, che cede il posto ai filamenti aprendosi ----
@@ -277,11 +283,18 @@ export function Aurea() {
       // sembrano detriti attaccati all'oro, non un oggetto che si è ricomposto.
       // La soglia è alta apposta — al centro della stanza lo sfaldamento non è
       // mai esattamente zero, e senza margine i filamenti non se ne vanno mai.
-      const sh = Math.max(0, (s.shatter - 0.03) / 0.97);
+      // Legati al velo, non solo alla distanza.
+      //
+      // Con la sola distanza restava sempre un residuo: bastava fermarsi un
+      // po' fuori centro e i filamenti erano lì, sparsi attorno all'oro come
+      // detriti. Moltiplicando per il portale diventa una garanzia: se non si
+      // sta attraversando davvero, non c'è niente da vedere.
+      const sh =
+        Math.max(0, (s.shatter - 0.03) / 0.97) * Math.min(1, scroll.portal * 1.5);
       shards.current.visible = sh > 0.001;
       if (shards.current.visible) {
-        shardMat.current.emissiveIntensity = 1.4 + sh * 2.6;
-        shardMat.current.opacity = Math.min(1, sh * 3);
+        shardMat.current.emissiveIntensity = 0.9 + sh * 1.4;
+        shardMat.current.opacity = Math.min(0.8, sh * 2.2);
         for (let i = 0; i < FILAMENTS; i++) {
           const f = filaments[i];
           // interpolazione con un pizzico di anticipo: partono a scaglioni,
@@ -290,7 +303,7 @@ export function Aurea() {
           const k = Math.min(1, sh * lag);
           dummy.position.lerpVectors(f.rest, f.out, k);
           // in volo si allungano nella direzione del moto: sono scie
-          const stretch = 1 + k * 7;
+          const stretch = 1 + k * 3.4;
           vTangent.copy(f.tan);
           qAlign.setFromUnitVectors(vUp, vTangent);
           dummy.quaternion.copy(qAlign);
@@ -307,7 +320,7 @@ export function Aurea() {
     if (pulses.current) {
       pulses.current.visible = s.shatter < 0.6;
       pulses.current.children.forEach((child, i) => {
-        const u = (t * 0.11 + i / pulses.current!.children.length) % 1;
+        const u = (t * 0.07 + i / pulses.current!.children.length) % 1;
         CURVE.getPoint(u, child.position);
         const beat = 0.7 + Math.sin(t * 2.4 + i) * 0.3;
         child.scale.setScalar(beat * (1 - s.shatter));
@@ -355,20 +368,28 @@ export function Aurea() {
     // dice ancora di chi è la stanza, anche a chi non guarda il centro.
     if (motes.current && moteMat.current) {
       const tmp = vScratch;
+      const cam = frame.camera.position;
+      const face = Math.atan2(cam.x, cam.z);
       for (let i = 0; i < MOTES; i++) {
         const m = moteSeeds[i];
         const u = (m.at + t * 0.012) % 1;
-        const ph = m.phase + t * 0.4 * m.speed;
+        const ph = m.phase + t * 0.22 * m.speed;
         CURVE.getPoint(u, tmp);
         dummy.position.set(
           tmp.x + Math.cos(ph) * m.radius,
           tmp.y + Math.sin(ph * 0.7) * m.radius * 0.5,
           tmp.z + Math.sin(ph) * m.radius
         );
+        // Rivolti verso chi guarda, come quello grande.
+        //
+        // Ruotavano liberi su tre assi, e in ogni istante una buona metà si
+        // presentava di taglio: un infinito visto di profilo è un trattino, e
+        // decine di trattini dorati sparsi nella stanza sembrano detriti. Ora
+        // girano solo nel proprio piano — restano vivi, ma restano infiniti.
         dummy.rotation.set(
-          m.tilt + t * 0.22 * m.speed,
-          m.turn + t * 0.31 * m.speed,
-          m.roll
+          -0.1 + Math.sin(t * 0.15 * m.speed + m.tilt) * 0.16,
+          face + Math.sin(t * 0.11 * m.speed + m.turn) * 0.22,
+          m.roll + t * 0.09 * m.speed
         );
         // i più lontani si rimpiccioliscono aprendosi la curva, così lo
         // sfaldamento coinvolge tutta la stanza e non solo il centro
