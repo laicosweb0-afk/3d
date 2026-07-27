@@ -18,7 +18,8 @@ giunzione è lo stesso identico fotogramma tra una clip e la successiva.
 | --- | --- | --- | --- | --- |
 | 1 | soggiorno: porta sul cantiere → stanza che si costruisce → pavimento che si apre | `72c577d8-e13c-4607-a421-66a806e58e81` | 8 s | **approvata** |
 | 2 | tuffo: giù nel buco → tra i tubi → bagno in cantiere | `59e4c52f-49f5-4ea5-917d-3978817f2ad2` | 4 s | **approvata** (PRIMA versione; la variante "emerge da sotto" `cd08e087` è SCARTATA — peggiore, non usare) |
-| 3 | bagno: grezzo → si costruisce → fotografia reale | `3a8f5373-aa91-4ffe-8b45-5b4ab2d37c61` | 6 s | in verifica |
+| 3 | bagno: grezzo → si costruisce → fotografia reale | `3a8f5373-aa91-4ffe-8b45-5b4ab2d37c61` | 6 s | **approvata** |
+| 4 | uscita: dal bagno reale → attraverso la finestra → fuori lungo il fianco, e basta (niente rientro, niente giro) | `5a7576ae-288f-4d0f-b1a6-9c9ede467cfb` | 4 s | in verifica |
 
 ## I fotogrammi di giunzione della catena
 
@@ -27,7 +28,15 @@ giunzione è lo stesso identico fotogramma tra una clip e la successiva.
 | porta aperta sul cantiere | `65890ee2-b525-4c35-9eba-877a0b09426f` | inizio soggiorno |
 | soggiorno finito col pavimento aperto (foto reale editata) | `e0d48c0c-746d-43a5-8dfa-b3a3486c0f2f` | fine soggiorno = inizio tuffo |
 | bagno al grezzo | `bfa1149d-20bb-4f3b-9854-2130b652697e` | fine tuffo = inizio bagno |
-| foto reale del bagno | media `c1a2a6b3-f9fd-4187-a0cb-576796a6c92c` | fine bagno |
+| foto reale del bagno | media `c1a2a6b3-f9fd-4187-a0cb-576796a6c92c` | fine bagno = inizio uscita |
+| esterno sul fianco, finestrella aperta | `8851c871-8fc2-4e3e-89ed-0f99bc5e093d` | fine uscita → fondale su cui scorrono le sezioni |
+
+## Dopo l'uscita: solo codice
+
+L'ultimo fotogramma dell'uscita resta fermo come fondale e le sezioni del sito
+scorrono sopra, continuando lo stesso gesto di scroll. Nessuna dissolvenza,
+nessun bianco, nessun logo: la transizione l'ha già fatta la camera passando
+dalla finestra. Il vecchio congedo (s12, whiteout) decade.
 
 ## L'Atto I (esterni — generati con la ricetta V1, approvati a inizio giornata)
 
