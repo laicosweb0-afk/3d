@@ -37,7 +37,17 @@ export const HERO = {
     { text: 'i brand in esperienze.', accent: false },
   ],
   sub: 'Studio creativo indipendente. Strategia, produzione e design per marchi che vogliono farsi ricordare.',
-  cta: 'Scopri il nostro universo',
+  /**
+   * Due azioni, non una.
+   *
+   * Prima ce n'era una sola e diceva "Scopri il nostro universo": suggestiva,
+   * ma non dice dove porta, e chi non ha voglia di scoprire niente non ha
+   * nient'altro da fare che chiudere. Ora la prima porta alla prova — i lavori
+   * — e la seconda al contatto diretto, per chi ha già deciso. Sono lì dal
+   * primo istante: nessuna delle due richiede di scorrere per essere trovata.
+   */
+  cta: 'Guarda i lavori',
+  ctaAlt: 'Parlane con noi',
 };
 
 export type Project = {

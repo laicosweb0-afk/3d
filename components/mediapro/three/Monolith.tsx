@@ -134,7 +134,9 @@ export function Monolith() {
       // durante il portfolio il cubo torna al centro: è il contenitore da cui
       // esce la materia di ogni progetto
       const near = 1 - scroll.cases;
-      const x = heroShift * 2.7 * near + drift * 1.6 * near + back * 3.1;
+      // lo scostamento grosso ora lo fa la camera (vedi Rig): qui resta solo
+      // un accenno, altrimenti i due si sommano e il cubo esce dal bordo
+      const x = heroShift * 0.8 * near + drift * 1.6 * near + back * 3.1;
       group.current.position.x = damp(group.current.position.x, x, 3, d);
       // Dopo il portfolio scende in profondità: la nebbia se ne prende una
       // parte e quello che resta è una sagoma lontana, non un oggetto che

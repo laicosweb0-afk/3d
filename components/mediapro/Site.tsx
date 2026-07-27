@@ -30,10 +30,51 @@ import { BRAND } from './content';
  */
 type Motion = 'pending' | 'motion' | 'reduced';
 
+/**
+ * La macchina ha davvero una GPU con cui disegnare?
+ *
+ * Non è una domanda teorica: su schede in blocklist, in alcune sessioni remote
+ * e su qualche browser con l'accelerazione disattivata, `<canvas>` esiste ma il
+ * contesto WebGL non si crea. Montare la scena lì significa un errore in
+ * console e un rettangolo nero al posto dell'hero. Meglio saperlo prima e
+ * servire la stessa pagina senza scena: il testo non dipende dalla grafica.
+ */
+function canRender3D() {
+  try {
+    const c = document.createElement('canvas');
+    return !!(c.getContext('webgl2') || c.getContext('webgl'));
+  } catch {
+    return false;
+  }
+}
+
 export function Site() {
   const rootRef = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<Motion>('pending');
+  /**
+   * La scena entra dopo il primo disegno, mai insieme.
+   *
+   * Compilare shader e costruire geometrie occupa il thread principale per
+   * qualche centinaio di millisecondi: facendolo subito, l'animazione
+   * d'ingresso del titolo parte a scatti proprio nei due secondi in cui si
+   * decide se restare. Prima si legge, poi arriva la scena.
+   */
+  const [scene3d, setScene3d] = useState(false);
   const reduced = mode === 'reduced';
+
+  useEffect(() => {
+    if (mode !== 'motion' || !canRender3D()) return;
+    const w = window as typeof window & {
+      requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
+    };
+    const start = () => setScene3d(true);
+    if (w.requestIdleCallback) {
+      const id = w.requestIdleCallback(start, { timeout: 2200 });
+      return () => (window as any).cancelIdleCallback?.(id);
+    }
+    const t = window.setTimeout(start, 900);
+    return () => window.clearTimeout(t);
+  }, [mode]);
 
   // Scroll fluido con Lenis, agganciato al ticker GSAP: un solo rAF loop.
   useEffect(() => {
@@ -115,7 +156,11 @@ export function Site() {
 
   return (
     <div ref={rootRef} className={`mp mp--${mode}`}>
-      {mode === 'motion' ? <Scene /> : <Ambient />}
+      {/* L'ambiente resta sempre sotto: è ciò che si vede nel secondo prima che
+          la scena arrivi, e ciò che resta se non può arrivare mai. Senza, quel
+          momento è uno schermo nero. */}
+      <Ambient />
+      {scene3d && <Scene />}
       <ScrollProgress />
       <Cursor />
       <Magnetic />

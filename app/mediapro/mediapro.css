@@ -115,7 +115,9 @@
    di mostrare mezze sezioni vuote. GSAP poi sovrascrive inline. */
 .mp--motion .mp-reveal,
 .mp--motion .mp-sector,
-.mp--motion .mp-step {
+.mp--motion .mp-step,
+.mp--motion .mp-hero-anim,
+.mp--motion .mp-hero-line > span {
   opacity: 0;
 }
 
@@ -401,11 +403,14 @@ body.mp-has-cursor .mp textarea {
    ============================================================ */
 
 .mp-hero {
-  /* La coreografia (marchio → bagliore → titolo → pulsante) occupa tutto il
-     tratto bloccato, cioè altezza − 100vh: nessun tempo morto, e abbastanza
-     respiro perché ogni passaggio si legga. */
+  /* Una viewport bloccata più una di uscita.
+     Erano 320vh perché lo scroll doveva far nascere titolo, sottotitolo e
+     pulsante uno alla volta. Ora nascono da soli al caricamento e allo scroll
+     resta solo l'uscita: due viewport bastano, e le altre due erano scroll
+     che non portava da nessuna parte — cioè il modo più veloce per far
+     chiudere la pagina a chi ha fretta. */
   position: relative;
-  height: 320vh;
+  height: 200vh;
 }
 .mp:not(.mp--motion) .mp-hero {
   height: auto;
@@ -439,24 +444,7 @@ body.mp-has-cursor .mp textarea {
 }
 
 /* Il marchio che emerge dalla profondità a inizio sequenza. */
-.mp-hero-wordmark {
-  position: absolute;
-  z-index: 3;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  font-size: clamp(38px, 7vw, 104px);
-  font-weight: 600;
-  letter-spacing: -0.035em;
-  color: #f4f4f4;
-  opacity: 0;
-  pointer-events: none;
-  text-shadow: 0 4px 60px rgba(0, 0, 0, 0.7);
-}
-.mp-hero-wordmark em {
-  font-style: normal;
-  color: var(--gold);
-}
+
 
 /* Il bagliore che cresce dietro all'oggetto a metà sequenza. */
 .mp-hero-glow2 {
@@ -516,8 +504,10 @@ body.mp-has-cursor .mp textarea {
 }
 .mp-hero-cta {
   margin-top: 42px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
 }
-
 /* indicatore di scroll */
 .mp-hero-scroll {
   position: absolute;
@@ -556,40 +546,18 @@ body.mp-has-cursor .mp textarea {
   }
 }
 
-/* titolo-ponte che appare a fine sequenza hero */
-.mp-hero-bridge {
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  opacity: 0;
-  pointer-events: none;
-  will-change: transform, opacity;
-}
-.mp-hero-bridge p {
-  font-size: clamp(30px, 4.4vw, 66px);
-  font-weight: 250;
-  letter-spacing: -0.02em;
-  color: var(--text2);
-}
-.mp:not(.mp--motion) .mp-hero-bridge {
-  display: none;
-}
-
 @media (max-width: 900px) {
   .mp-hero-copy {
     right: clamp(20px, 6vw, 96px);
     bottom: 8vh;
   }
-  /* In verticale, all'ingresso, a schermo c'è solo il cubo: senza questo
-     indicatore non ci sarebbe alcun invito a scorrere. */
+  /* Serviva quando all'ingresso c'era solo il cubo e nient'altro: senza un
+     indicatore non c'era alcun invito a proseguire. Ora in verticale ci sono
+     due pulsanti visibili dal primo istante, che dicono cosa fare molto meglio
+     di una scritta di traverso — e quella scritta finiva sopra al secondo
+     pulsante, che è un difetto e basta. */
   .mp-hero-scroll {
-    right: auto;
-    left: 50%;
-    bottom: 6vh;
-    transform: translateX(-50%);
+    display: none;
   }
 }
 

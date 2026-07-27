@@ -3,33 +3,79 @@
 import { useEffect, useRef } from 'react';
 import { gsap, ScrollTrigger } from '../gsap';
 import { scroll } from '../three/scrollState';
-import { HERO } from '../content';
+import { BRAND, HERO } from '../content';
 
 /**
- * L'hero non è una schermata con sopra un'animazione: è una sequenza.
+ * L'hero dice cosa facciamo prima che tu debba fare qualcosa.
  *
- * All'ingresso c'è solo la scena 3D — il cubo, le sfere, la nebbia. Poi lo
- * scroll fa avanzare la camera e, uno alla volta, gli elementi della pagina
- * nascono dentro quella scena: prima il marchio, poi il bagliore, poi le righe
- * del titolo, infine il pulsante. Alla fine della sequenza la scena è
- * completa, e solo allora comincia il sito vero e proprio.
+ * Prima la coreografia era guidata dallo scroll: all'arrivo c'era solo la scena
+ * 3D, e titolo, sottotitolo e pulsante nascevano man mano che si scorreva. Era
+ * bello da vedere e sbagliato da progettare — chi apriva la pagina e restava
+ * fermo due secondi vedeva un cubo nel buio e la parola "Scroll", e non aveva
+ * il minimo indizio di cosa fosse questo sito. È esattamente il momento in cui
+ * si chiude una scheda.
  *
- * Il markup resta un h1 normale con tutto il testo: senza JavaScript o con
- * prefers-reduced-motion si legge tutto, la coreografia è un di più.
+ * Ora l'ingresso è a tempo, non a scroll: entro due secondi dal caricamento il
+ * titolo, la frase e il pulsante sono lì, senza che l'utente muova un dito. Lo
+ * scroll governa l'uscita — la copia arretra mentre la camera entra nella scena
+ * e passa il testimone al portfolio. Stessa regia, ordine invertito.
+ *
+ * Il markup resta un h1 con tutto il testo: senza JavaScript, o con
+ * prefers-reduced-motion, si legge tutto e la coreografia è un di più.
  */
 export function Hero({ reduced }: { reduced: boolean }) {
   const sectionRef = useRef<HTMLElement>(null);
-  const wordmarkRef = useRef<HTMLParagraphElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const subRef = useRef<HTMLParagraphElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
+  const copyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (reduced) return;
     const section = sectionRef.current!;
 
     const ctx = gsap.context(() => {
+      // ---- ingresso: a tempo, parte da solo al caricamento ----
+      const intro = gsap.timeline({ delay: 0.12 });
+
+      intro.fromTo(
+        glowRef.current,
+        { autoAlpha: 0, scale: 0.55 },
+        { autoAlpha: 0.55, scale: 1, duration: 1.6, ease: 'power2.out' },
+        0
+      );
+      intro.fromTo(
+        titleRef.current!.querySelectorAll('.mp-hero-line > span'),
+        { yPercent: 112, autoAlpha: 0 },
+        {
+          yPercent: 0,
+          autoAlpha: 1,
+          duration: 1.05,
+          stagger: 0.13,
+          ease: 'power3.out',
+        },
+        0
+      );
+      intro.fromTo(
+        '.mp-hero-sub',
+        { autoAlpha: 0, y: 22 },
+        { autoAlpha: 1, y: 0, duration: 0.85, ease: 'power2.out' },
+        0.5
+      );
+      intro.fromTo(
+        '.mp-hero-cta',
+        { autoAlpha: 0, y: 18 },
+        { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power2.out' },
+        0.68
+      );
+      // l'indizio di scroll arriva per ultimo: prima si legge, poi si scorre
+      intro.fromTo(
+        '.mp-hero-scroll',
+        { autoAlpha: 0 },
+        { autoAlpha: 1, duration: 0.7, ease: 'power2.out' },
+        1.05
+      );
+
+      // ---- uscita: guidata dallo scroll ----
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: section,
@@ -44,62 +90,16 @@ export function Hero({ reduced }: { reduced: boolean }) {
         defaults: { ease: 'none' },
       });
 
-      // 1. l'indizio di scroll si ritira appena parti
-      tl.to('.mp-hero-scroll', { autoAlpha: 0, duration: 0.06 }, 0);
-
-      // 2. il marchio emerge dalla profondità
-      tl.fromTo(
-        wordmarkRef.current,
-        { autoAlpha: 0, scale: 0.72, filter: 'blur(14px)' },
-        { autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 0.14, ease: 'power2.out' },
-        0.14
-      );
-
-      // 3. il bagliore cresce dietro all'oggetto
-      tl.fromTo(
-        glowRef.current,
-        { autoAlpha: 0, scale: 0.4 },
-        { autoAlpha: 1, scale: 1, duration: 0.16, ease: 'power2.in' },
-        0.28
-      );
-
-      // 4. il marchio lascia il posto al titolo
+      // l'indizio si ritira al primo accenno di scroll
+      tl.to('.mp-hero-scroll', { autoAlpha: 0, duration: 0.05 }, 0);
+      // il bagliore cresce mentre la camera entra
+      tl.to(glowRef.current, { autoAlpha: 1, scale: 1.35, duration: 0.6 }, 0.1);
+      // La copia si ritira nella seconda metà: resta leggibile per tutta la
+      // prima, così anche chi scorre piano ha il tempo di finire la frase.
       tl.to(
-        wordmarkRef.current,
-        { autoAlpha: 0, scale: 1.35, filter: 'blur(10px)', duration: 0.09 },
-        0.36
-      );
-
-      // 5. le righe del titolo entrano una alla volta, ognuna con la sua entrata
-      tl.fromTo(
-        titleRef.current!.querySelectorAll('.mp-hero-line > span'),
-        { yPercent: 118, rotateX: -42, autoAlpha: 0 },
-        {
-          yPercent: 0,
-          rotateX: 0,
-          autoAlpha: 1,
-          duration: 0.11,
-          stagger: 0.05,
-          ease: 'power3.out',
-        },
-        0.44
-      );
-
-      // 6. il sottotitolo
-      tl.fromTo(
-        subRef.current,
-        { autoAlpha: 0, y: 26 },
-        { autoAlpha: 1, y: 0, duration: 0.08, ease: 'power2.out' },
-        0.62
-      );
-
-      // 7. il pulsante nasce dalla luce. Chiude a 0.79: l'ultimo quinto di
-      // scroll è una pausa a scena completa, prima che l'hero si sganci.
-      tl.fromTo(
-        ctaRef.current,
-        { autoAlpha: 0, scale: 0.62, filter: 'blur(12px)' },
-        { autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 0.11, ease: 'back.out(1.7)' },
-        0.68
+        copyRef.current,
+        { autoAlpha: 0, y: -70, filter: 'blur(6px)', duration: 0.42 },
+        0.46
       );
 
       ScrollTrigger.refresh();
@@ -113,11 +113,7 @@ export function Hero({ reduced }: { reduced: boolean }) {
       <div className="mp-hero-pin">
         <div ref={glowRef} className="mp-hero-glow2" aria-hidden />
 
-        <p ref={wordmarkRef} className="mp-hero-wordmark" aria-hidden>
-          MediaPro<em>.</em>
-        </p>
-
-        <div className="mp-hero-copy">
+        <div ref={copyRef} className="mp-hero-copy">
           <h1 ref={titleRef} className="mp-hero-title">
             {HERO.lines.map((line) => (
               <span
@@ -128,17 +124,23 @@ export function Hero({ reduced }: { reduced: boolean }) {
               </span>
             ))}
           </h1>
-          <p ref={subRef} className="mp-hero-sub">
-            {HERO.sub}
-          </p>
-          <div ref={ctaRef} className="mp-hero-cta">
-            <a className="mp-btn mp-btn--magnetic" href="#portfolio">
+          <p className="mp-hero-sub mp-hero-anim">{HERO.sub}</p>
+          <div className="mp-hero-cta mp-hero-anim">
+            <a className="mp-btn mp-btn--gold mp-btn--magnetic" href="#portfolio">
               {HERO.cta} <span className="mp-btn-arrow">→</span>
+            </a>
+            <a
+              className="mp-btn"
+              href={`https://wa.me/${BRAND.phoneDigits}`}
+              target="_blank"
+              rel="noopener"
+            >
+              {HERO.ctaAlt} <span className="mp-btn-arrow">→</span>
             </a>
           </div>
         </div>
 
-        <div className="mp-hero-scroll">Scroll</div>
+        <div className="mp-hero-scroll mp-hero-anim">Scroll</div>
       </div>
     </section>
   );
