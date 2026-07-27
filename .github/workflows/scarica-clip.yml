@@ -10,9 +10,16 @@ name: Scarica le clip del viaggio
 # prendere (in libreria esistono anche le varianti scartate, che si
 # assomigliano molto).
 #
-# Si lancia a mano dalla tab Actions → "Scarica le clip del viaggio" → Run.
+# Parte da sé quando questo file viene modificato e spinto. Il lancio a mano
+# (workflow_dispatch) funzionerebbe solo se il workflow stesse sul ramo
+# principale, e qui siamo su un ramo di lavoro. Il filtro su `paths` evita che
+# il commit delle clip lo faccia ripartire all'infinito: le clip non toccano
+# questo file.
 
 on:
+  push:
+    paths:
+      - '.github/workflows/scarica-clip.yml'
   workflow_dispatch:
 
 permissions:
