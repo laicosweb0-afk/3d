@@ -77,7 +77,22 @@ const SPECS: Record<(typeof IDS)[number], Spec> = {
   // superficie il marchio non ha bordi visibili — si integra da solo
   loewe: { color: '#0a0b0d', metalness: 0.85, roughness: 0.05, transmission: 0, print: { w: 2.5, y: 0, z: 0.09 } },
   // vaso r=1.08: stampa sul fronte del corpo
-  woman: { color: '#efe9ee', metalness: 0.1, roughness: 0.16, transmission: 0.55, print: { w: 1.45, y: -0.28, z: 1.1 } },
+  // porcellana, non vetro: con transmission alta la materia che passa dietro si
+  // vedeva attraverso la parete e sembravano ditate sul vasetto
+  woman: { color: '#efe9ee', metalness: 0.1, roughness: 0.2, transmission: 0.12, print: { w: 1.45, y: -0.28, z: 1.1 } },
+};
+
+/**
+ * Luce frontale sul marchio, dosata per oggetto: è l'inverso della chiarezza
+ * della superficie su cui il marchio è applicato.
+ */
+const FILL: Record<(typeof IDS)[number], number> = {
+  bufala: 5,
+  mou: 7,
+  mondial: 16,
+  aurea: 6,
+  loewe: 30,
+  woman: 7,
 };
 
 function Shape({ id }: { id: (typeof IDS)[number] }) {
@@ -224,6 +239,7 @@ export function Objects() {
   const group = useRef<THREE.Group>(null);
   const inner = useRef<THREE.Group>(null);
   const slots = useRef<(THREE.Group | null)[]>([]);
+  const fill = useRef<THREE.PointLight>(null);
 
   // si caricano solo i file effettivamente disponibili
   const paths = IDS.map((id) => ARTWORK[id]).filter(Boolean) as string[];
@@ -261,6 +277,20 @@ export function Objects() {
     inner.current.rotation.y = camAngle + Math.sin(t * 0.22) * 0.26;
     inner.current.rotation.x = Math.sin(t * 0.3) * 0.07;
 
+    // Luce di servizio sul marchio. L'atmosfera di ogni mondo è tinta e spesso
+    // molto scura — sul nero LOEWE il logo spariva nel fondo — quindi il
+    // marchio ha una sua sorgente bianca, ferma fra l'occhio e l'oggetto.
+    // Non tinge: illumina e basta, così i colori restano quelli del file.
+    if (fill.current) {
+      const cam = state.camera.position;
+      fill.current.position.set(cam.x * 0.42, cam.y * 0.42 + 0.6, cam.z * 0.42);
+      // Tanta quanta ne serve, non di più: la lastra nera LOEWE ne vuole molta,
+      // la cassetta bianca quasi nessuna — dove il fondo è già chiaro una luce
+      // forte la brucia e il marchio annega nel bagliore.
+      fill.current.intensity = presence * FILL[IDS[idx]];
+      fill.current.visible = presence > 0.02;
+    }
+
     group.current.position.y = damp(group.current.position.y, Math.sin(t * 0.5) * 0.13, 3, d);
     group.current.scale.setScalar(damp(group.current.scale.x, presence * 1.05, 5, d));
     group.current.position.z = damp(group.current.position.z, (1 - presence) * -3.4, 4, d);
@@ -269,21 +299,25 @@ export function Objects() {
   });
 
   return (
-    <group ref={group}>
-      <group ref={inner}>
-        {IDS.map((id, i) => (
-          <group
-            key={id}
-            ref={(g) => {
-              slots.current[i] = g;
-            }}
-            visible={i === 0}
-          >
-            <Shape id={id} />
-            <Print id={id} tex={byId[id] ?? null} />
-          </group>
-        ))}
+    <>
+      {/* fuori dal gruppo: non deve seguirne scala e rotazione */}
+      <pointLight ref={fill} color="#ffffff" distance={14} decay={1.6} />
+      <group ref={group}>
+        <group ref={inner}>
+          {IDS.map((id, i) => (
+            <group
+              key={id}
+              ref={(g) => {
+                slots.current[i] = g;
+              }}
+              visible={i === 0}
+            >
+              <Shape id={id} />
+              <Print id={id} tex={byId[id] ?? null} />
+            </group>
+          ))}
+        </group>
       </group>
-    </group>
+    </>
   );
 }

@@ -133,7 +133,7 @@ export function Site() {
           © {new Date().getFullYear()} {BRAND.name}. Tutti i diritti riservati.
         </span>
         <span>{BRAND.tagline}</span>
-        <a href={`mailto:${BRAND.email}`}>{BRAND.email}</a>
+        <a href={`tel:+${BRAND.phoneDigits}`}>{BRAND.phone}</a>
       </footer>
     </div>
   );

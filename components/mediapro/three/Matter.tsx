@@ -8,6 +8,8 @@ import { blendWorlds } from './worlds';
 
 const COUNT = 17;
 const dummy = new THREE.Object3D();
+/** Raggio del corridoio all'altezza del marchio: poco più dell'oggetto. */
+const CLEAR = 2.05;
 
 /** Distribuzione deterministica: la scena dev'essere identica a ogni visita. */
 function seeded(n: number) {
@@ -60,6 +62,29 @@ function Family({ family, seed }: FamilyProps) {
     const t = state.clock.elapsedTime;
     const w = blendWorlds(scroll.world);
 
+    // Corridoio libero fra la camera e il marchio.
+    //
+    // La materia si muove su tutto lo spazio e finiva per passare davanti al
+    // logo: sullo shooting LOEWE un pannello copriva "Jacob & Co" per intero.
+    // Qui si calcola il cono che dall'occhio inquadra l'oggetto e si spinge
+    // fuori ogni frammento che ci finisce dentro. Il cono si stringe
+    // avvicinandosi alla camera, perché è lì che basta poco a coprire tutto.
+    // Non è una regola grafica: è la stessa ragione per cui su un set nessuno
+    // passa davanti all'obiettivo. Il marchio resta sempre visibile.
+    const cam = state.camera.position;
+    const camDist = Math.max(0.001, Math.hypot(cam.x, cam.y, cam.z));
+    const ax = cam.x / camDist;
+    const ay = cam.y / camDist;
+    const az = cam.z / camDist;
+    // una perpendicolare stabile all'asse, per i casi esattamente centrati
+    let ux = -ay;
+    let uy = ax;
+    let uz = 0;
+    const ulen = Math.hypot(ux, uy, uz) || 1;
+    ux /= ulen;
+    uy /= ulen;
+    uz /= ulen;
+
     // Quanto questa famiglia è presente adesso, e quanto la materia è uscita
     // dal cubo: prima dell'apertura resta tutto dentro, a scala zero.
     const emerge = scroll.cases;
@@ -91,6 +116,25 @@ function Family({ family, seed }: FamilyProps) {
       const gy = drift(s.dir.y * r * 0.8, w.gravity);
       const gx = drift(s.dir.x * r, w.wind);
       dummy.position.set(gx, gy, s.dir.z * r);
+
+      // quanto il frammento è avanti rispetto al marchio, lungo l'asse camera
+      const along = gx * ax + gy * ay + s.dir.z * r * az;
+      if (along > 0) {
+        // il cono parte largo come l'oggetto e si chiude verso l'obiettivo
+        const room = CLEAR * (1 - along / camDist);
+        const ox = gx - along * ax;
+        const oy = gy - along * ay;
+        const oz = s.dir.z * r - along * az;
+        const perp = Math.hypot(ox, oy, oz);
+        if (room > 0 && perp < room) {
+          const k = perp > 1e-3 ? room / perp : 0;
+          dummy.position.set(
+            along * ax + (k ? ox * k : ux * room),
+            along * ay + (k ? oy * k : uy * room),
+            along * az + (k ? oz * k : uz * room)
+          );
+        }
+      }
 
       dummy.rotation.set(
         t * w.speed * s.spin * 0.35 + s.phase,
