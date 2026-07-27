@@ -23,8 +23,11 @@ export const CLIPS: ClipDef[] = [
   { id: 'terreno',     file: '01-terreno',     durata: 4, titolo: 'Il terreno' },
   { id: 'fondazioni',  file: '02-fondazioni',  durata: 5, titolo: 'Le fondazioni' },
   { id: 'costruzione', file: '03-costruzione', durata: 8, titolo: 'La costruzione' },
-  { id: 'materia',     file: '04-materia',     durata: 5, titolo: 'La materia' },
-  { id: 'volo',        file: '05-volo',        durata: 4, titolo: 'Il volo' },
+  // 04-materia e 05-volo sono uscite dal viaggio: finivano la casa PRIMA che
+  // il visitatore entrasse, e dentro lo trovava ancora cantiere. Lo stato
+  // dell'edificio deve solo avanzare, mai tornare indietro — una casa col
+  // prato rasato non ha il massetto grezzo di là dalla porta. I file restano
+  // nel repo: se serviranno, serviranno dopo l'uscita, non prima.
   { id: 'soglia',      file: '06-soglia',      durata: 4, titolo: 'La soglia' },
   { id: 'soggiorno',   file: '07-soggiorno',   durata: 8, titolo: 'Il soggiorno' },
   { id: 'tuffo',       file: '08-tuffo',       durata: 4, titolo: 'Il tuffo' },
