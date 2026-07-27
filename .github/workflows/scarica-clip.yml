@@ -1,0 +1,90 @@
+name: Scarica le clip del viaggio
+
+# Questo ambiente di sviluppo non raggiunge i server Higgsfield: la policy di
+# rete li blocca in uscita. Ma gli indirizzi delle clip sono pubblici, e un
+# runner GitHub non ha quel blocco — quindi scarica lui al posto nostro e
+# committa i file nel repo.
+#
+# Vantaggio rispetto allo scaricamento a mano: la corrispondenza fra clip e
+# nome file è scritta qui sotto, quindi non si può sbagliare quale versione
+# prendere (in libreria esistono anche le varianti scartate, che si
+# assomigliano molto).
+#
+# Si lancia a mano dalla tab Actions → "Scarica le clip del viaggio" → Run.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scarica:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scarica le dieci clip approvate
+        run: |
+          set -euo pipefail
+          BASE="https://d8j0ntlcm91z4.cloudfront.net/user_3EzPcrBGp32RbeIR79HWLyATCBp"
+          mkdir -p public/assets/video/viaggio
+
+          # nome-destinazione : file sorgente
+          # L'ordine è quello del racconto; i job id stanno in GIRATO.md.
+          scarica() {
+            local nome="$1" src="$2"
+            echo "→ $nome"
+            curl -fsSL --retry 3 --retry-delay 2 \
+              -o "public/assets/video/viaggio/$nome.mp4" "$BASE/$src"
+          }
+
+          # ATTO I — fuori: la casa nasce
+          scarica 01-terreno     hf_20260727_131127_1550b466-e004-45c1-8e49-88cc8e6810ca.mp4
+          scarica 02-fondazioni  hf_20260727_131054_98f26439-e931-4e40-9523-3360d4b69a89.mp4
+          scarica 03-costruzione hf_20260727_113910_cb8a197b-49c6-4da5-a7d6-e8ba95877673.mp4
+          scarica 04-materia     hf_20260727_131016_31ffd18a-c3d8-48b2-a825-cc8a04362a17.mp4
+          scarica 05-volo        hf_20260727_161337_9297e03a-079e-4cfb-a7f9-724dce5c073c.mp4
+          scarica 06-soglia      hf_20260727_161430_44e8e25d-c7a1-4ceb-8dd9-48e70e47ea67.mp4
+
+          # ATTO II — dentro: le stanze si costruiscono
+          scarica 07-soggiorno   hf_20260727_171653_72c577d8-e13c-4607-a421-66a806e58e81.mp4
+          # tuffo: PRIMA versione (quella approvata). La variante "emerge da
+          # sotto" cd08e087 è scartata e non va scaricata.
+          scarica 08-tuffo       hf_20260727_180002_59e4c52f-49f5-4ea5-917d-3978817f2ad2.mp4
+          scarica 09-bagno       hf_20260727_180753_3a8f5373-aa91-4ffe-8b45-5b4ab2d37c61.mp4
+          # uscita: la versione che finisce sul cielo bianco. La variante con
+          # l'effetto specchio 5a7576ae è scartata.
+          scarica 10-uscita      hf_20260727_195430_0b948a95-c83f-4424-8944-8e3128e0196f.mp4
+
+          ls -la public/assets/video/viaggio/
+
+      - name: Verifica che siano video veri
+        run: |
+          set -euo pipefail
+          for f in public/assets/video/viaggio/*.mp4; do
+            # un mp4 valido ha il box "ftyp" nei primi byte: se il server avesse
+            # risposto con una pagina d'errore ce ne accorgiamo qui, non dopo
+            # aver committato dieci file inutili
+            if ! head -c 12 "$f" | grep -q ftyp; then
+              echo "NON è un mp4: $f"; exit 1
+            fi
+            echo "ok $(basename "$f") $(du -h "$f" | cut -f1)"
+          done
+
+      - name: Committa le clip
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/assets/video/viaggio
+          if git diff --cached --quiet; then
+            echo "nessuna novità"
+          else
+            git commit -m "Clip del viaggio scaricate da Higgsfield
+
+          Scaricate dal runner perché l'ambiente di sviluppo non raggiunge i
+          loro server. La corrispondenza clip/nome è nel workflow, così non si
+          possono confondere con le varianti scartate."
+            git push
+          fi
