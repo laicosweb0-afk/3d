@@ -128,27 +128,34 @@ export const WORLDS: World[] = [
     camLag: 6.5,
     camStep: 1,
   },
-  // 04 — AureaClub: rosa, perla e nero. Materia lucida e ordinata.
+  // 04 — AureaClub: vetro nero e oro satinato, luce morbida.
+  //
+  // È l'unica stanza in cui la materia generica quasi sparisce: qui il mondo
+  // sono i nodi e le connessioni di three/Aurea.tsx, e lasciare anche gocce e
+  // schegge in giro era proprio ciò che la rendeva uguale a tutte le altre.
+  // I pesi bassi non la svuotano, le fanno spazio.
   {
     id: 'aurea',
-    color: c('#d86f9c'),
-    light: c('#ffd8e6'),
-    fog: c('#0d0a0c'),
-    fogDensity: 0.05,
-    metalness: 0.35,
-    roughness: 0.12,
-    transmission: 0.6,
-    weights: [0.6, 1, 0.2],
-    spread: 4.5,
-    speed: 0.55,
-    dust: 0.9,
-    gravity: 0.15,
-    wind: 0.35,
-    turbulence: 0.25,
-    camRadius: 7.2,
-    camHeight: 0.5,
-    camFloat: 0.2,
-    camLag: 3.4,
+    color: c('#c9a25f'),
+    light: c('#f3dcae'),
+    fog: c('#04040a'),
+    // nebbia più densa: il nero attorno diventa profondità, non fondale
+    fogDensity: 0.085,
+    metalness: 0.9,
+    roughness: 0.1,
+    transmission: 0.35,
+    weights: [0.05, 0.14, 0.04],
+    spread: 5.6,
+    speed: 0.3,
+    dust: 0.5,
+    gravity: 0.08,
+    wind: 0.12,
+    turbulence: 0.05,
+    // orbita stretta e lenta: si guarda da vicino, come uno strumento
+    camRadius: 6.6,
+    camHeight: 0.35,
+    camFloat: 0.22,
+    camLag: 2.2,
     camStep: 0,
   },
   // 05 — LOEWE × Jacob & Co: cromo e nero notte. Materia lucida e fredda,

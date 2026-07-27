@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import { Monolith } from './Monolith';
 import { Matter } from './Matter';
 import { Objects } from './Objects';
+import { Aurea } from './Aurea';
 import { Room } from './LogoCube';
 import { Dust } from './Dust';
 import { Rig } from './Rig';
@@ -137,6 +138,7 @@ export function Scene() {
           <Monolith />
           <Matter />
           <Objects />
+          <Aurea />
           <Room />
           <Dust />
         </Suspense>

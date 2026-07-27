@@ -28,7 +28,9 @@ const ARTWORK: Record<(typeof IDS)[number], string> = {
   bufala: '/assets/mediapro/orig-bufala.png',
   mou: '/assets/mediapro/orig-mou.png',
   mondial: '/assets/mediapro/orig-mondial.png',
-  aurea: '/assets/mediapro/orig-aurea.jpg',
+  // Aurea non ha etichetta: la sua stanza è costruita a parte (three/Aurea.tsx),
+  // dove il simbolo è la scena stessa e non un rettangolo appoggiato al centro.
+  aurea: '',
   loewe: '/assets/mediapro/orig-loewe.jpg',
   woman: '',
 };
@@ -71,8 +73,8 @@ const SPECS: Record<(typeof IDS)[number], Spec> = {
   mou: { color: '#f7e9d7', metalness: 0.02, roughness: 0.78, transmission: 0, print: { w: 1.4, y: -0.1, z: 0.87 } },
   // dado esagonale: asse lungo Z, faccia piatta a z = 0.31
   mondial: { color: '#a7b0ba', metalness: 1, roughness: 0.3, transmission: 0, print: { w: 1.85, y: 0, z: 0.34 }, rivets: true },
-  // anello r=1.18: la stampa vive nel vuoto centrale
-  aurea: { color: '#fbfbfb', metalness: 0.5, roughness: 0.12, transmission: 0, print: { w: 1.7, y: 0, z: 0.34 } },
+  // nessun oggetto e nessuna stampa: la stanza Aurea è a parte
+  aurea: { color: '#fbfbfb', metalness: 0.5, roughness: 0.12, transmission: 0, print: { w: 0, y: 0, z: 0 } },
   // lastra di vetro nero: il file ha gia' il fondo nero, quindi su questa
   // superficie il marchio non ha bordi visibili — si integra da solo
   loewe: { color: '#0a0b0d', metalness: 0.85, roughness: 0.05, transmission: 0, print: { w: 2.5, y: 0, z: 0.09 } },
@@ -90,7 +92,7 @@ const FILL: Record<(typeof IDS)[number], number> = {
   bufala: 5,
   mou: 7,
   mondial: 16,
-  aurea: 6,
+  aurea: 0,
   loewe: 30,
   woman: 7,
 };
@@ -146,14 +148,8 @@ function Shape({ id }: { id: (typeof IDS)[number] }) {
       </mesh>
     );
   }
-  if (id === 'aurea') {
-    return (
-      <mesh castShadow rotation={[0.35, 0, 0]}>
-        <torusGeometry args={[1.18, 0.3, 32, 96]} />
-        <ObjMaterial id={id} />
-      </mesh>
-    );
-  }
+  // Aurea non ha un oggetto qui: la sua stanza è tutta in three/Aurea.tsx.
+  if (id === 'aurea') return null;
   // woman: vaso cosmetico con coperchio
   return (
     <group>
