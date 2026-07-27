@@ -188,6 +188,10 @@ body {
   position: fixed;
   inset: 0;
   z-index: 10;
+  /* Il foglio bianco su cui il marchio respira: l'apertura non deve essere
+     un logo appoggiato sopra una fotografia di terra. Sparisce insieme
+     all'hero, scoprendo il girato sotto. */
+  background: #faf9f7;
   display: flex;
   flex-direction: column;
   align-items: center;

@@ -16,7 +16,11 @@ export function Hero() {
     const update = () => {
       if (!ref.current) return;
       const p = progress.smoothed;
-      const fade = 1 - smooth(span(p, pAt('s01', 0.35), pAt('s02', 0.45)));
+      // Finestra espressa in progresso assoluto, non ancorata alle scene 3D:
+      // il viaggio col girato reale è più corto, e con la vecchia finestra
+      // l'hero restava fermo quattro secondi buoni — quattro fotogrammi
+      // identici nel punto in cui l'utente decide se restare.
+      const fade = 1 - smooth(span(p, 0.005, 0.045));
       const gone = 1 - fade;
       ref.current.style.opacity = String(fade);
       // arretra e va fuori fuoco: profondità, non un semplice dissolvi
