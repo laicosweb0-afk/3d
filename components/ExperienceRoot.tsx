@@ -55,6 +55,19 @@ export function ExperienceRoot() {
     }
     debugState.clay = q.get('clay') === '1';
     debugState.still = q.get('still') === '1';
+    // Aggancio per gli strumenti di previz: sposta il progresso senza
+    // ricaricare la pagina. Serve a renderizzare una sequenza (il video della
+    // traiettoria di camera da dare ai modelli come riferimento del
+    // movimento): ricaricare a ogni fotogramma costerebbe minuti per pochi
+    // secondi di girato. Esiste solo in modalità fotogramma, mai in produzione.
+    if (debugState.still) {
+      (window as unknown as { __setP?: (v: number) => void }).__setP = (v) => {
+        const c = Math.min(1, Math.max(0, v));
+        debugState.fixedP = c;
+        progress.p = c;
+        progress.smoothed = c;
+      };
+    }
     if (q.get('ui') === '0') document.body.classList.add('no-ui');
     setMounted(true);
     setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
