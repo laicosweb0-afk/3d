@@ -96,7 +96,10 @@ function Optics() {
           morbido per farlo risaltare. Il bokeh resta contenuto perché più
           alto gonfia gli oggetti fuori fuoco fino a coprire il testo. */}
       <DepthOfField ref={dof} worldFocusRange={5.5} bokehScale={2.4} />
-      <Bloom intensity={0.72} luminanceThreshold={0.62} luminanceSmoothing={0.3} mipmapBlur />
+      {/* Soglia alta: sotto 0.62 anche una superficie chiara e basta — il
+          cartone MOU, la cassetta bianca — entrava nel bloom e il marchio ci
+          annegava dentro. Il bagliore deve restare ai riflessi veri. */}
+      <Bloom intensity={0.7} luminanceThreshold={0.82} luminanceSmoothing={0.26} mipmapBlur />
       <Vignette offset={0.28} darkness={0.62} />
     </EffectComposer>
   );

@@ -4,15 +4,27 @@ import { SplitTitle } from '../SplitTitle';
 import { BRAND, CONTACT } from '../content';
 
 export function Contact() {
-  // Sito statico: il form apre il client di posta con il messaggio già pronto.
+  // Sito statico, nessun server a cui inviare: il form apre WhatsApp sul numero
+  // business con il messaggio già scritto. Prima puntava a una casella di posta
+  // che non esisteva, quindi non arrivava niente a nessuno.
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    const subject = encodeURIComponent(`Nuovo progetto — ${data.get('nome')}`);
-    const body = encodeURIComponent(
-      `Nome: ${data.get('nome')}\nEmail: ${data.get('email')}\n\n${data.get('messaggio')}`
+    const nome = String(data.get('nome') || '').trim();
+    const email = String(data.get('email') || '').trim();
+    const messaggio = String(data.get('messaggio') || '').trim();
+    const testo = [
+      `Ciao MediaPro, sono ${nome}.`,
+      messaggio,
+      email ? `Se preferite: ${email}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n\n');
+    window.open(
+      `https://wa.me/${BRAND.phoneDigits}?text=${encodeURIComponent(testo)}`,
+      '_blank',
+      'noopener'
     );
-    window.location.href = `mailto:${BRAND.email}?subject=${subject}&body=${body}`;
   };
 
   return (
@@ -31,7 +43,10 @@ export function Contact() {
                 target="_blank"
                 rel="noopener"
               >
-                <span>{c.label}</span>
+                <span>
+                  {c.label}
+                  <em className="mp-channel-value">{c.value}</em>
+                </span>
                 <span>→</span>
               </a>
             ))}
@@ -40,21 +55,25 @@ export function Contact() {
 
         <form className="mp-form mp-reveal" onSubmit={onSubmit}>
           <h3>Scrivici</h3>
-          <p className="mp-form-sub">Raccontaci il tuo progetto e ti risponderemo il prima possibile.</p>
+          <p className="mp-form-sub">
+            Compila e si apre WhatsApp con il messaggio già pronto: da lì ci arriva
+            direttamente.
+          </p>
           <label className="mp-field">
             <span>Nome</span>
             <input name="nome" type="text" placeholder="Il tuo nome" required />
           </label>
+          {/* non obbligatoria: chi scrive da WhatsApp ha già lasciato il numero */}
           <label className="mp-field">
-            <span>Email</span>
-            <input name="email" type="email" placeholder="nome@azienda.it" required />
+            <span>Email (facoltativa)</span>
+            <input name="email" type="email" placeholder="nome@azienda.it" />
           </label>
           <label className="mp-field">
             <span>Messaggio</span>
             <textarea name="messaggio" rows={4} placeholder="Il tuo messaggio…" required />
           </label>
           <button className="mp-btn mp-btn--gold" type="submit">
-            Invia messaggio <span className="mp-btn-arrow">→</span>
+            Invia su WhatsApp <span className="mp-btn-arrow">→</span>
           </button>
         </form>
       </div>

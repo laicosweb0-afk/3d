@@ -1080,6 +1080,15 @@ body.mp-has-cursor .mp textarea {
 .mp-channel:hover span:last-child {
   transform: translateX(4px);
 }
+/* Il recapito accanto all'etichetta: il numero si legge senza dover cliccare. */
+.mp-channel-value {
+  display: block;
+  margin-top: 3px;
+  font-style: normal;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
 
 /* pannello form in vetro */
 .mp-form {

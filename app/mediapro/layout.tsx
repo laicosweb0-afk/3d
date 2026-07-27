@@ -8,9 +8,11 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  // I progetti ora sono reali e le statistiche inventate sono state rimosse.
-  // Resta un solo motivo per non indicizzare: i recapiti in content.ts sono
-  // ancora segnaposto. Appena arrivano quelli veri, questa riga si toglie.
+  // Sul sito non c'è più niente di inventato: progetti reali, nessuna
+  // statistica gonfiata, e il numero business al posto dei recapiti segnaposto.
+  // Il noindex resta per scelta, non per difetto — i lavori veri non sono
+  // ancora dentro, e una pagina finisce in cache sui motori molto prima di
+  // quanto ne esca. È una riga sola da togliere quando si vuole essere trovati.
   robots: { index: false, follow: false },
   openGraph: {
     title: TITLE,

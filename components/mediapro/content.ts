@@ -2,20 +2,21 @@
 // per cambiare copy, progetti o numeri si tocca solo questo file.
 
 /**
- * ATTENZIONE — email, WhatsApp e social qui sotto sono SEGNAPOSTO inventati:
- * non corrispondono a nessuna casella e a nessun profilo reale. È l'unico
- * contenuto non veritiero rimasto sul sito, ed è il motivo per cui la pagina
- * è ancora `noindex` (vedi app/mediapro/layout.tsx). Sostituirli con i recapiti
- * veri e togliere il noindex sono la stessa operazione: finché un visitatore
- * può scrivere a un indirizzo che non esiste, il sito non va indicizzato.
+ * Recapiti. Qui c'è solo quello che esiste davvero.
+ *
+ * Il numero business è reale. Email, Instagram e LinkedIn non ci sono ancora:
+ * non li ho sostituiti con segnaposto perché un recapito finto è peggio di un
+ * recapito assente — chi scrive a un indirizzo inesistente pensa di essere
+ * stato ignorato. Appena arrivano, si aggiungono qui e compaiono da sole nella
+ * sezione contatti, che si costruisce da `CONTACT.channels`.
  */
 export const BRAND = {
   name: 'MediaPro',
   tagline: 'Content & Creative Studio',
-  email: 'hello@mediapro.studio',
-  whatsapp: 'https://wa.me/393000000000',
-  instagram: 'https://instagram.com/mediapro',
-  linkedin: 'https://linkedin.com/company/mediapro',
+  /** Come si legge sul sito. */
+  phone: '+39 328 591 3683',
+  /** Come lo vogliono i link `tel:` e `wa.me`: solo cifre, prefisso incluso. */
+  phoneDigits: '393285913683',
 };
 
 export const NAV = [
@@ -154,11 +155,11 @@ export const STEPS = [
 export const CONTACT = {
   kicker: '06 — Contatti',
   title: 'Il prossimo progetto potrebbe essere il tuo.',
-  sub: 'Raccontaci il tuo progetto e ti rispondiamo entro 24 ore.',
+  sub: 'Scrivici su WhatsApp o chiamaci: rispondiamo noi, non un centralino.',
+  // Due voci invece di quattro. Instagram e LinkedIn torneranno qui quando
+  // esisteranno davvero: una riga in piu' in questo elenco e ricompaiono.
   channels: [
-    { label: 'WhatsApp', href: BRAND.whatsapp },
-    { label: 'Instagram', href: BRAND.instagram },
-    { label: 'Email', href: `mailto:${BRAND.email}` },
-    { label: 'LinkedIn', href: BRAND.linkedin },
+    { label: 'WhatsApp', value: BRAND.phone, href: `https://wa.me/${BRAND.phoneDigits}` },
+    { label: 'Telefono', value: BRAND.phone, href: `tel:+${BRAND.phoneDigits}` },
   ],
 };

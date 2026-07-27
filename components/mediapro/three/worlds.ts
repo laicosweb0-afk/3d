@@ -74,7 +74,9 @@ export const WORLDS: World[] = [
     gravity: -0.5,
     wind: 0.1,
     turbulence: 0.15,
-    camRadius: 8.6,
+    // più vicina delle altre: la cassetta è l'oggetto più basso della serie e
+    // da lontano il marchio sulla targa diventava illeggibile
+    camRadius: 7.3,
     camHeight: 0.6,
     camFloat: 0.35,
     camLag: 2.4,
