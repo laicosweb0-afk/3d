@@ -19,7 +19,7 @@ giunzione è lo stesso identico fotogramma tra una clip e la successiva.
 | 1 | soggiorno: porta sul cantiere → stanza che si costruisce → pavimento che si apre | `72c577d8-e13c-4607-a421-66a806e58e81` | 8 s | **approvata** |
 | 2 | tuffo: giù nel buco → tra i tubi → bagno in cantiere | `59e4c52f-49f5-4ea5-917d-3978817f2ad2` | 4 s | **approvata** (PRIMA versione; la variante "emerge da sotto" `cd08e087` è SCARTATA — peggiore, non usare) |
 | 3 | bagno: grezzo → si costruisce → fotografia reale | `3a8f5373-aa91-4ffe-8b45-5b4ab2d37c61` | 6 s | **approvata** |
-| 4 | uscita: dal bagno reale → attraverso la finestra → fuori lungo il fianco, e basta (niente rientro, niente giro) | `5a7576ae-288f-4d0f-b1a6-9c9ede467cfb` | 4 s | in verifica |
+| 4 | uscita: finestra che si apre → attraversamento → SOLO giardino e alberi (mai la casa) → la camera sale al cielo coperto e il fotogramma diventa bianco | da generare | ~4 s | **concordata, non ancora generata** |
 
 ## I fotogrammi di giunzione della catena
 
@@ -29,14 +29,22 @@ giunzione è lo stesso identico fotogramma tra una clip e la successiva.
 | soggiorno finito col pavimento aperto (foto reale editata) | `e0d48c0c-746d-43a5-8dfa-b3a3486c0f2f` | fine soggiorno = inizio tuffo |
 | bagno al grezzo | `bfa1149d-20bb-4f3b-9854-2130b652697e` | fine tuffo = inizio bagno |
 | foto reale del bagno | media `c1a2a6b3-f9fd-4187-a0cb-576796a6c92c` | fine bagno = inizio uscita |
-| esterno sul fianco, finestrella aperta | `8851c871-8fc2-4e3e-89ed-0f99bc5e093d` | fine uscita → fondale su cui scorrono le sezioni |
+| vista dal giardino che sale al cielo bianco | da generare | fine uscita → il bianco su cui vivono le sezioni |
+
+## Il capitolo bianco (l'uscita corretta — decisione del 27/07 sera)
+
+Dalla finestra della casa NON si vede la casa: è il punto da cui si guarda.
+L'uscita mostra solo ciò che la finestra inquadra — prato, alberi, campagna —
+poi la camera sale verso il cielo coperto e il fotogramma diventa naturalmente
+quasi bianco. Il sito è già bianco: le sezioni compaiono sul bianco che il
+cielo ha preparato, e l'utente non si accorge di essere uscito dalla casa.
+Nei prompt: mai la casa in campo dopo l'attraversamento, mai voltarsi indietro.
 
 ## Dopo l'uscita: solo codice
 
-L'ultimo fotogramma dell'uscita resta fermo come fondale e le sezioni del sito
-scorrono sopra, continuando lo stesso gesto di scroll. Nessuna dissolvenza,
-nessun bianco, nessun logo: la transizione l'ha già fatta la camera passando
-dalla finestra. Il vecchio congedo (s12, whiteout) decade.
+L'ultimo fotogramma (bianco cielo) si fonde col fondo della pagina e le
+sezioni scorrono sopra nello stesso gesto di scroll. Nessuna dissolvenza da
+mascherare: il bianco è arrivato in camera. Il vecchio congedo (s12) decade.
 
 ## L'Atto I (esterni — generati con la ricetta V1, approvati a inizio giornata)
 
@@ -64,3 +72,8 @@ di s06 verso il fotogramma nuovo, o si accetta il micro-salto. Da decidere.
   li ha contaminati — il 3D rientrava nelle stanze — e s07 partiva da un
   interno già finito che si "smontava". Causa documentata in GIORNATA_27_07.md.
 - `cd08e087-ad1d-415f-8d6e-fa6403ad4c35` (tuffo V2 "emerge da sotto").
+- `5a7576ae-288f-4d0f-b1a6-9c9ede467cfb` (uscita V1): usciva da un punto
+  sbagliato e fuori si rivedeva la casa come in uno specchio. Causa: il
+  fotogramma d'arrivo mostrava la casa — geometricamente impossibile dalla sua
+  stessa finestra. Anche il fotogramma `8851c871` (esterno sul fianco) decade
+  come arrivo dell'uscita.
