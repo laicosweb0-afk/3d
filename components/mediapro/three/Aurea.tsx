@@ -47,10 +47,23 @@ const FILAMENTS = 260;
 /** Nodi della rete e connessioni fra loro. */
 const NODES = 30;
 const LINKS = 46;
-/** Pulviscolo in orbita attorno alla curva. */
-const ORBITERS = 420;
+/** Infiniti in miniatura in orbita attorno alla curva. */
+const MOTES = 85;
+
+/**
+ * Gli infiniti satelliti: lo stesso segno a scale diverse, in orbita attorno
+ * a quello grande. Uno solo sarebbe un oggetto; ripetuto diventa un motivo, e
+ * un motivo si riconosce anche di sfuggita.
+ */
+const SATELLITES = [
+  { scale: 0.3, orbit: 3.5, rise: 1.5, speed: 0.13, phase: 0, tilt: 0.5, roll: 0.2 },
+  { scale: 0.19, orbit: 4.4, rise: 0.9, speed: -0.1, phase: 2.2, tilt: -0.7, roll: -0.4 },
+  { scale: 0.28, orbit: 3.2, rise: 2.1, speed: 0.08, phase: 4.1, tilt: 1.1, roll: 0.6 },
+  { scale: 0.14, orbit: 5.1, rise: 1.2, speed: -0.16, phase: 5.6, tilt: 0.2, roll: 1.3 },
+];
 
 const dummy = new THREE.Object3D();
+const vScratch = new THREE.Vector3();
 const vTangent = new THREE.Vector3();
 const vUp = new THREE.Vector3(1, 0, 0);
 const qAlign = new THREE.Quaternion();
@@ -74,8 +87,10 @@ export function Aurea() {
   const shards = useRef<THREE.InstancedMesh>(null);
   const shardMat = useRef<THREE.MeshStandardMaterial>(null);
   const pulses = useRef<THREE.Group>(null);
-  const orbiters = useRef<THREE.Points>(null);
-  const orbMat = useRef<THREE.PointsMaterial>(null);
+  const motes = useRef<THREE.InstancedMesh>(null);
+  const moteMat = useRef<THREE.MeshStandardMaterial>(null);
+  const satellites = useRef<(THREE.Group | null)[]>([]);
+  const satMat = useRef<THREE.MeshPhysicalMaterial>(null);
   const netNodes = useRef<THREE.Points>(null);
   const netLines = useRef<THREE.LineSegments>(null);
   const nodeMat = useRef<THREE.PointsMaterial>(null);
@@ -171,18 +186,21 @@ export function Aurea() {
     return g;
   }, [network]);
 
-  const orbGeo = useMemo(() => {
+  /** L'infinito in miniatura: pochi segmenti, ne servono centoventi copie. */
+  const moteGeo = useMemo(() => new THREE.TubeGeometry(CURVE, 44, 0.09, 4, true), []);
+
+  const moteSeeds = useMemo(() => {
     const r = seeded(41);
-    const pos = new Float32Array(ORBITERS * 3);
-    const seedData = new Float32Array(ORBITERS * 3);
-    for (let i = 0; i < ORBITERS; i++) {
-      seedData[i * 3] = r(); // punto sulla curva
-      seedData[i * 3 + 1] = 0.2 + r() * 1.5; // distanza dalla curva
-      seedData[i * 3 + 2] = r() * Math.PI * 2; // fase
-    }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    return { geo: g, seedData };
+    return Array.from({ length: MOTES }, () => ({
+      at: r(),
+      radius: 0.3 + r() * 1.75,
+      phase: r() * Math.PI * 2,
+      speed: 0.5 + r() * 1.4,
+      size: 0.03 + r() * 0.062,
+      tilt: r() * Math.PI,
+      turn: r() * Math.PI,
+      roll: r() * Math.PI,
+    }));
   }, []);
 
   useFrame((frame, dt) => {
@@ -330,23 +348,50 @@ export function Aurea() {
       netLines.current.visible = s.net > 0.02;
     }
 
-    // ---- pulviscolo in orbita attorno alla curva ----
-    if (orbiters.current && orbMat.current) {
-      const pos = orbGeo.geo.attributes.position.array as Float32Array;
-      const sd = orbGeo.seedData;
-      const tmp = new THREE.Vector3();
-      for (let i = 0; i < ORBITERS; i++) {
-        const u = (sd[i * 3] + t * 0.012) % 1;
-        const rad = sd[i * 3 + 1];
-        const ph = sd[i * 3 + 2] + t * 0.45;
+    // ---- il pulviscolo: non punti, ma infiniti in miniatura ----
+    //
+    // È lo stesso segno ripetuto a scale diverse. Un punto luminoso è un punto
+    // luminoso ovunque; un infinito piccolissimo che passa vicino all'occhio
+    // dice ancora di chi è la stanza, anche a chi non guarda il centro.
+    if (motes.current && moteMat.current) {
+      const tmp = vScratch;
+      for (let i = 0; i < MOTES; i++) {
+        const m = moteSeeds[i];
+        const u = (m.at + t * 0.012) % 1;
+        const ph = m.phase + t * 0.4 * m.speed;
         CURVE.getPoint(u, tmp);
-        pos[i * 3] = tmp.x + Math.cos(ph) * rad;
-        pos[i * 3 + 1] = tmp.y + Math.sin(ph * 0.7) * rad * 0.5;
-        pos[i * 3 + 2] = tmp.z + Math.sin(ph) * rad;
+        dummy.position.set(
+          tmp.x + Math.cos(ph) * m.radius,
+          tmp.y + Math.sin(ph * 0.7) * m.radius * 0.5,
+          tmp.z + Math.sin(ph) * m.radius
+        );
+        dummy.rotation.set(
+          m.tilt + t * 0.22 * m.speed,
+          m.turn + t * 0.31 * m.speed,
+          m.roll
+        );
+        // i più lontani si rimpiccioliscono aprendosi la curva, così lo
+        // sfaldamento coinvolge tutta la stanza e non solo il centro
+        dummy.scale.setScalar(m.size * (1 - s.shatter * 0.55));
+        dummy.updateMatrix();
+        motes.current.setMatrixAt(i, dummy.matrix);
       }
-      orbGeo.geo.attributes.position.needsUpdate = true;
-      orbMat.current.opacity = s.presence * 0.5;
+      motes.current.instanceMatrix.needsUpdate = true;
+      moteMat.current.opacity = s.presence * 0.72;
+      moteMat.current.emissiveIntensity = 0.9 + Math.sin(t * 1.1) * 0.25;
     }
+
+    // ---- gli infiniti satelliti: lo stesso segno, altre scale ----
+    satellites.current.forEach((g, i) => {
+      if (!g) return;
+      const sat = SATELLITES[i];
+      const a = t * sat.speed + sat.phase;
+      g.position.set(Math.cos(a) * sat.orbit, Math.sin(a * 0.8) * sat.rise, Math.sin(a) * sat.orbit);
+      g.rotation.set(sat.tilt + Math.sin(a * 0.6) * 0.25, a * 1.4, sat.roll);
+      g.scale.setScalar(sat.scale * (1 - s.shatter * 0.8));
+      g.visible = s.shatter < 0.9;
+    });
+    if (satMat.current) satMat.current.opacity = s.presence * 0.85;
   });
 
   return (
@@ -408,16 +453,52 @@ export function Aurea() {
         <lineBasicMaterial ref={lineMat} transparent color="#d8b98a" depthWrite={false} />
       </lineSegments>
 
-      <points ref={orbiters} geometry={orbGeo.geo}>
-        <pointsMaterial
-          ref={orbMat}
+      {/* il pulviscolo: centoventi infiniti in miniatura */}
+      <instancedMesh ref={motes} args={[moteGeo, undefined, MOTES]}>
+        <meshStandardMaterial
+          ref={moteMat}
           transparent
           color="#ffdca8"
-          size={0.035}
-          sizeAttenuation
+          emissive="#c9a25f"
+          metalness={0.8}
+          roughness={0.3}
           depthWrite={false}
         />
-      </points>
+      </instancedMesh>
+
+      {/* gli infiniti satelliti: lo stesso segno, altre scale, altre orbite */}
+      {SATELLITES.map((sat, i) => (
+        <group
+          key={i}
+          ref={(g) => {
+            satellites.current[i] = g;
+          }}
+        >
+          <mesh geometry={geometry}>
+            {i === 0 ? (
+              <meshPhysicalMaterial
+                ref={satMat}
+                transparent
+                color="#b9954f"
+                metalness={1}
+                roughness={0.3}
+                emissive="#6b5122"
+                envMapIntensity={2}
+              />
+            ) : (
+              <meshPhysicalMaterial
+                transparent
+                opacity={0.7}
+                color="#b9954f"
+                metalness={1}
+                roughness={0.3}
+                emissive="#6b5122"
+                envMapIntensity={2}
+              />
+            )}
+          </mesh>
+        </group>
+      ))}
     </group>
   );
 }

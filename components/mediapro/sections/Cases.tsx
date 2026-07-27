@@ -34,6 +34,7 @@ const FLASH = [
 export function Cases({ reduced }: { reduced: boolean }) {
   const sectionRef = useRef<HTMLElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const marksRef = useRef<(HTMLDivElement | null)[]>([]);
   const flashRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -74,6 +75,16 @@ export function Cases({ reduced }: { reduced: boolean }) {
             const to = w > Math.round(w) ? Math.ceil(w) : Math.floor(w);
             flashRef.current.style.background = FLASH[Math.max(0, Math.min(FLASH.length - 1, to))];
           }
+
+          // La firma tipografica del progetto, dove c'è: entra più tardi delle
+          // schede e resta appena percettibile, perché è una filigrana sulla
+          // scena e non un titolo che compete con quello a sinistra.
+          marksRef.current.forEach((el, i) => {
+            if (!el) return;
+            const a = Math.max(0, 1 - Math.abs(w - i) * 2.4);
+            el.style.opacity = String(a * 0.16);
+            el.style.transform = `translateY(${(w - i) * 26}px)`;
+          });
 
           // ogni scheda è piena vicino al proprio indice e sfuma allontanandosi
           cardsRef.current.forEach((el, i) => {
@@ -141,6 +152,22 @@ export function Cases({ reduced }: { reduced: boolean }) {
             </div>
           ))}
         </div>
+
+        {PROJECTS.map((p, i) =>
+          p.wordmark ? (
+            <div
+              key={`m-${p.id}`}
+              className="mp-cases-mark"
+              aria-hidden
+              ref={(el) => {
+                marksRef.current[i] = el;
+              }}
+              style={reduced ? undefined : { opacity: 0 }}
+            >
+              {p.wordmark}
+            </div>
+          ) : null
+        )}
 
         <div className="mp-cases-index" aria-hidden>
           {PROJECTS.map((p, i) => (

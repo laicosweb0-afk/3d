@@ -49,6 +49,14 @@ export type Project = {
   line: string;
   /** Materia da cui è fatto il mondo di questo progetto. */
   matter: string;
+  /**
+   * Firma tipografica da mostrare in scena al posto del marchio.
+   *
+   * Serve dove il file ufficiale del logo non c'è: il nome composto in
+   * caratteri è un'affermazione onesta — è tipografia, e si vede che lo è —
+   * mentre un marchio ridisegnato a occhio sarebbe una falsificazione.
+   */
+  wordmark?: string;
 };
 
 export const PROJECTS: Project[] = [
@@ -83,6 +91,7 @@ export const PROJECTS: Project[] = [
     year: '2024',
     line: 'The intelligence of beauty: una rete globale che si muove come un club.',
     matter: 'Oro satinato, vetro nero, connessioni',
+    wordmark: 'Aurea',
   },
   {
     id: 'loewe',
@@ -104,15 +113,49 @@ export const PROJECTS: Project[] = [
   },
 ];
 
+/**
+ * I servizi, chiamati per quello che lasciano al cliente e non per il nome del
+ * mestiere. "Video Production" lo scrivono tutti e non dice niente: chi cerca
+ * un fornitore compra il risultato, non la categoria merceologica. Il nome
+ * tecnico resta nella descrizione, dove serve a farsi capire senza occupare
+ * il posto che spetta alla promessa.
+ */
 export const SERVICES = [
-  { id: 'content', label: 'Content Creation', desc: 'Fotografia e contenuti pensati per fermare lo scroll.' },
-  { id: 'video', label: 'Video Production', desc: 'Dal concept al montaggio, con occhio cinematografico.' },
-  { id: 'social', label: 'Social Media', desc: 'Gestione completa dei canali, con una voce riconoscibile.' },
-  { id: 'web', label: 'Web Design', desc: 'Siti che sembrano prodotti, non brochure.' },
-  { id: 'ai', label: 'AI Content', desc: 'Pipeline generative integrate nella produzione reale.' },
-  { id: 'adv', label: 'Advertising', desc: 'Campagne misurabili su Meta, Google e TikTok.' },
-  { id: 'brand', label: 'Brand Identity', desc: 'Identità visive coerenti, dal logo al tono di voce.' },
-  { id: 'strategy', label: 'Strategy', desc: 'Prima la direzione, poi la produzione.' },
+  {
+    id: 'strategy',
+    label: 'Strategie costruite su misura',
+    desc: 'Prima si capisce il mercato e si sceglie una direzione. Poi si produce. Nell’ordine inverso si spende e basta.',
+  },
+  {
+    id: 'brand',
+    label: 'Brand che vengono ricordati',
+    desc: 'Nome, marchio, colori, tono di voce, packaging. Un’identità che regge anche fuori dallo schermo.',
+  },
+  {
+    id: 'content',
+    label: 'Immagini che catturano attenzione',
+    desc: 'Fotografia di prodotto, still life, ritratti, set sul posto. Scatti che reggono l’ingrandimento e fermano il pollice.',
+  },
+  {
+    id: 'video',
+    label: 'Video che lasciano il segno',
+    desc: 'Dal concept al montaggio, con occhio cinematografico. Spot, reel, backstage, lanci.',
+  },
+  {
+    id: 'adv',
+    label: 'Campagne che generano risultati',
+    desc: 'Meta, Google e TikTok, con budget e numeri alla mano. Si misura, si corregge, si scala.',
+  },
+  {
+    id: 'social',
+    label: 'Canali che costruiscono pubblico',
+    desc: 'Piano editoriale, produzione e pubblicazione. Una voce riconoscibile, tenuta nel tempo.',
+  },
+  {
+    id: 'web',
+    label: 'Esperienze digitali premium',
+    desc: 'Siti che sembrano prodotti, non brochure. Veloci, curati, costruiti per durare.',
+  },
 ];
 
 /**
