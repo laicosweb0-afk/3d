@@ -52,15 +52,27 @@ export const CAMERA_KEYS: CamKey[] = [
   { p: pAt('s10', 0.4),  pos: [-3.25, 1.3, -2.72],  tgt: [-4.35, 0.82, -3.28], fov: 46 },
   { p: pAt('s10', 0.75), pos: [-3.28, 1.31, -2.71], tgt: [-4.37, 0.84, -3.29], fov: 46 },
   { p: pAt('s10', 1.0),  pos: [-2.9, 1.55, -2.9],   tgt: [-5.0, 1.4, -3.0],   fov: 50 },
-  // ATTO IV — congedo. Niente uscita dalla finestra né voli/giri attorno
-  // alla casa: un semplice arretramento dritto che ricompone la vista
-  // frontale a distanza, dolce e leggibile. Il bianco poi copre e il logo
-  // compare.
-  { p: pAt('s11', 0.4),  pos: [-3.2, 1.6, -2.5],  tgt: [-4.6, 1.4, -3.0], fov: 50 },
-  { p: pAt('s11', 1.0),  pos: [-1.8, 2.0, 1.8],   tgt: [-1.5, 1.35, -1.2], fov: 46 },
-  // il nuovo foglio: ritorno al bianco, di fronte, in allontanamento lineare
-  { p: pAt('s12', 0.5),  pos: [0, 2.6, 9.5],       tgt: [0, 1.1, 0], fov: 42 },
-  { p: pAt('s12', 1.0),  pos: [0, 3.2, 17],        tgt: [0, 0.9, 0], fov: 40 },
+  // ATTO IV — si esce dalla finestra. È il gesto che chiude il viaggio e, allo
+  // stesso tempo, cuce l'esperienza al resto del sito: il passaggio alle
+  // sezioni non è una dissolvenza ma un movimento di macchina, così l'utente
+  // non percepisce nessuno stacco — la camera semplicemente continua.
+  // L'apertura del bagno è centrata su [-4.85, 1.65, -3.0]; windowOpen() la
+  // spalanca entro s11 0.55, cioè prima che la si attraversi a 0.7.
+  // L'attraversamento va fatto IN ASSE con l'apertura (y 1.65, z -3.0) e
+  // guardando lontano: con un bersaglio vicino la direzione ruota mentre ci si
+  // avvicina, il fotogramma si riempie di stipite e il passaggio non si legge.
+  { p: pAt('s11', 0.35), pos: [-3.2, 1.65, -3.0],  tgt: [-13, 1.65, -3.0], fov: 50 },
+  { p: pAt('s11', 0.7),  pos: [-4.85, 1.65, -3.0], tgt: [-13, 1.65, -3.0], fov: 48 },
+  // Appena fuori lo sguardo comincia già a ruotare verso la casa: se la camera
+  // uscisse guardando dritto davanti a sé si troverebbe il vuoto in campo, e
+  // il congedo dovrebbe recuperare con una rotazione brusca.
+  { p: pAt('s11', 1.0),  pos: [-7.5, 1.9, -2.8],   tgt: [-11.0, 1.75, -1.6], fov: 46 },
+  // fuori: la spinta che ci ha portati fuori prosegue e prende quota mentre lo
+  // sguardo rientra sull'edificio, che si ricompone di tre quarti da sinistra.
+  // Niente orbita attorno alla casa: la posizione va sempre nella stessa
+  // direzione, è solo il bersaglio che rientra.
+  { p: pAt('s12', 0.35), pos: [-10.5, 2.5, 0.5],   tgt: [-6.0, 1.5, -1.4], fov: 44 },
+  { p: pAt('s12', 1.0),  pos: [-14.5, 3.4, 7.5],   tgt: [-2.0, 1.1, -0.6], fov: 40 },
 ];
 
 // ---- Tracce degli eventi ancorati (tutte f(p), tutte reversibili) ----
