@@ -5,3 +5,6 @@ out/
 next-env.d.ts
 .DS_Store
 previz/.frames/
+# lavorazione temporanea degli strumenti di previz
+previz/.frames/
+previz/.demo-frames/
