@@ -10,8 +10,10 @@ import { Hero } from './dom/Hero';
 import { Overlays, afterJourney } from './dom/Overlays';
 import { RealityWindows } from './dom/RealityWindows';
 import { TimelineMetro } from './dom/TimelineMetro';
+import { VideoJourney } from './dom/VideoJourney';
 import { initScroll } from '@/lib/scroll';
 import { TOTAL_VH } from '@/lib/scenes';
+import { VIAGGIO_VH } from '@/content/viaggio';
 import { progress, debugState } from '@/lib/progress';
 import { setAudioEnabled, updateAudio } from '@/lib/audio';
 import { useApp } from '@/lib/store';
@@ -41,6 +43,10 @@ function AudioToggle() {
 export function ExperienceRoot() {
   const [mounted, setMounted] = useState(false);
   const [reduced, setReduced] = useState(false);
+  // Modalità video (?video=1): il viaggio è il girato reale scrubbato dallo
+  // scroll al posto del 3D. Opt-in finché le clip non sono nel repo: senza
+  // file la modalità non trova i video e il sito 3D resta la via normale.
+  const [videoMode, setVideoMode] = useState(false);
   const spacer = useRef<HTMLDivElement>(null);
   const world = useRef<HTMLDivElement>(null);
 
@@ -73,6 +79,7 @@ export function ExperienceRoot() {
       };
     }
     if (q.get('ui') === '0') document.body.classList.add('no-ui');
+    setVideoMode(q.get('video') === '1');
     setMounted(true);
     setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }, []);
@@ -163,17 +170,20 @@ export function ExperienceRoot() {
   return (
     <>
       <div className="world" aria-hidden="true" ref={world}>
-        {mounted && <World />}
+        {mounted && (videoMode ? <VideoJourney /> : <World />)}
       </div>
       <div
         className="journey-spacer"
         ref={spacer}
-        style={{ height: `${TOTAL_VH * 100}svh` }}
+        style={{ height: `${(videoMode ? VIAGGIO_VH : TOTAL_VH) * 100}svh` }}
       />
       <Hero />
-      <RealityWindows />
-      <Overlays />
-      <TimelineMetro />
+      {/* Finestre di realtà, testi e metro appartengono alla regia 3D: in
+          modalità video il girato È la realtà, e i testi andranno riancorati
+          alle clip (lavoro successivo). */}
+      {!videoMode && <RealityWindows />}
+      {!videoMode && <Overlays />}
+      {!videoMode && <TimelineMetro />}
       <header className="chrome">
         <span className="chrome-logo">
           <Monogram className="chrome-mark" />
