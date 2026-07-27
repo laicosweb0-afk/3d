@@ -76,6 +76,9 @@ export function cadDraw(p: number): number {
  * congeda) e si completa più reattiva, entro la prima metà di S03. Così
  * ai primi scroll la casa sta già nascendo, non resta un foglio vuoto. */
 export function buildProgress(p: number): number {
+  // La previz può fissarlo per renderizzare un dato stato di cantiere sotto una
+  // camera qualsiasi (vedi debugState.bp). Non tocca il viaggio vero.
+  if (debugState.bp !== null) return debugState.bp;
   return span(p, pAt('s01', 0.7), pAt('s03', 0.45));
 }
 

@@ -19,6 +19,14 @@ export const debugState = {
   fixedP: null as number | null,
   clay: false,
   still: false,
+  /**
+   * Forza l'avanzamento della costruzione, scollegandolo dal progresso.
+   * Serve alla previz: per generare il girato reale bisogna poter renderizzare
+   * la camera di un confine con lo stato di cantiere di un altro momento —
+   * quanto è costruita la casa lo decide il racconto, non la curva del 3D.
+   * `null` = comportamento normale, la costruzione segue lo scroll.
+   */
+  bp: null as number | null,
 };
 
 export function dampProgress(dt: number, lambda = 5): void {

@@ -55,6 +55,10 @@ export function ExperienceRoot() {
     }
     debugState.clay = q.get('clay') === '1';
     debugState.still = q.get('still') === '1';
+    const bpParam = q.get('bp');
+    if (bpParam !== null) {
+      debugState.bp = Math.min(1, Math.max(0, parseFloat(bpParam)));
+    }
     // Aggancio per gli strumenti di previz: sposta il progresso senza
     // ricaricare la pagina. Serve a renderizzare una sequenza (il video della
     // traiettoria di camera da dare ai modelli come riferimento del
