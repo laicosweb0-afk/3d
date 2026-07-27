@@ -4,7 +4,11 @@ out/
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
-previz/.frames/
-# lavorazione temporanea degli strumenti di previz
+
+# Lavorazione degli strumenti di previz: fotogrammi intermedi e registrazioni.
+# Non si versionano perché si rigenerano da un comando (gli strumenti sono nel
+# repo) e peserebbero più del codice che le produce.
 previz/.frames/
 previz/.demo-frames/
+previz/demo.mp4
+previz/demo-anteprima.mp4
