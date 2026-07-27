@@ -165,13 +165,28 @@ export function Cases({ reduced }: { reduced: boolean }) {
               }}
               style={reduced ? undefined : { opacity: i === 0 ? 1 : 0 }}
             >
+              {/* L'ordine è l'ordine in cui si legge: numero, nome, frase.
+                  Il tipo di lavoro stava fra il nome e la frase e spezzava
+                  proprio il punto in cui l'occhio deve scivolare dall'uno
+                  all'altra: ora è in fondo, insieme alla materia, dove sta
+                  la scheda tecnica e non il messaggio. */}
               <p className="mp-case-num">{String(i + 1).padStart(2, '0')}</p>
               <h3 className="mp-case-client">{p.client}</h3>
-              <p className="mp-case-type">{p.type}</p>
               <p className="mp-case-line">{p.line}</p>
-              <p className="mp-case-matter">
-                <span>Materia</span> {p.matter}
-              </p>
+              <dl className="mp-case-meta">
+                <div>
+                  <dt>Lavoro</dt>
+                  <dd>{p.type}</dd>
+                </div>
+                <div>
+                  <dt>Materia</dt>
+                  <dd>{p.matter}</dd>
+                </div>
+                <div>
+                  <dt>Anno</dt>
+                  <dd>{p.year}</dd>
+                </div>
+              </dl>
             </div>
           ))}
         </div>

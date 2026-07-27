@@ -90,7 +90,7 @@ export const PROJECTS: Project[] = [
     type: 'Brand & Piattaforma',
     year: '2024',
     line: 'The intelligence of beauty: una rete globale che si muove come un club.',
-    matter: 'Oro satinato, vetro nero, connessioni',
+    matter: 'Oro, vetro nero, rete',
     wordmark: 'Aurea',
   },
   {
