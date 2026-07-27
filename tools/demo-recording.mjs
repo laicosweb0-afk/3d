@@ -24,20 +24,29 @@ const W = parseInt(process.env.WIDTH ?? '1280', 10);
 const H = parseInt(process.env.HEIGHT ?? '720', 10);
 const FPS = parseInt(process.env.FPS ?? '24', 10);
 const SECONDI_PER_VH = parseFloat(process.env.SECONDI_PER_VH ?? '2.5');
+// VIDEO=1 registra il viaggio col girato reale invece del 3D.
+const VIDEO = process.env.VIDEO === '1';
 
-// La durata viene dalla tabella delle scene, mai ricopiata a mano.
-const scene = [...readFileSync(new URL('../lib/scenes.ts', import.meta.url), 'utf8')
-  .matchAll(/\{\s*id:\s*'(s\d+)',\s*vh:\s*([\d.]+)/g)];
-const TOTALE_VH = scene.reduce((s, [, , vh]) => s + parseFloat(vh), 0);
-const durata = TOTALE_VH * SECONDI_PER_VH;
+// La durata viene dai dati, mai ricopiata a mano: dalla tabella delle scene
+// per il 3D, dalla somma delle clip per il girato reale.
+let durata;
+if (VIDEO) {
+  const clip = [...readFileSync(new URL('../content/viaggio.ts', import.meta.url), 'utf8')
+    .matchAll(/durata:\s*(\d+(?:\.\d+)?)/g)];
+  durata = clip.reduce((s, [, d]) => s + parseFloat(d), 0);
+} else {
+  const scene = [...readFileSync(new URL('../lib/scenes.ts', import.meta.url), 'utf8')
+    .matchAll(/\{\s*id:\s*'(s\d+)',\s*vh:\s*([\d.]+)/g)];
+  durata = scene.reduce((s, [, , vh]) => s + parseFloat(vh), 0) * SECONDI_PER_VH;
+}
 const nFrame = Math.round(durata * FPS);
 
 const TMP = new URL('../previz/.demo-frames/', import.meta.url).pathname;
-const OUT = new URL('../previz/demo.mp4', import.meta.url).pathname;
+const OUT = new URL(`../previz/demo${VIDEO ? '-reale' : ''}.mp4`, import.meta.url).pathname;
 rmSync(TMP, { recursive: true, force: true });
 mkdirSync(TMP, { recursive: true });
 
-console.log(`demo: ${TOTALE_VH}vh × ${SECONDI_PER_VH}s = ${durata}s, ${nFrame} fotogrammi a ${FPS}fps`);
+console.log(`demo${VIDEO ? ' (girato reale)' : ' (3D)'}: ${durata}s, ${nFrame} fotogrammi a ${FPS}fps`);
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 // still=1 per l'aggancio __setP; l'interfaccia resta visibile: la demo deve
@@ -46,9 +55,9 @@ const page = await browser.newPage({ viewport: { width: W, height: H } });
 const errori = [];
 page.on('pageerror', (e) => errori.push(String(e)));
 
-await page.goto(`${ORIGIN}/?p=0&still=1`, { waitUntil: 'networkidle' });
+await page.goto(`${ORIGIN}/?p=0&still=1${VIDEO ? '&video=1' : ''}`, { waitUntil: 'domcontentloaded' });
 await page.waitForFunction(() => typeof window.__setP === 'function', null, { timeout: 30000 });
-await page.waitForTimeout(3500);
+await page.waitForTimeout(VIDEO ? 6000 : 3500);
 
 // Piccola rampa dolce ai due estremi: un utente non parte mai a velocità
 // piena né si ferma di colpo. In mezzo, velocità costante di progetto.
@@ -66,6 +75,20 @@ function pDi(t) { // t 0..1 tempo → p 0..1 progresso
 for (let f = 0; f < nFrame; f++) {
   const p = pDi(nFrame === 1 ? 0 : f / (nFrame - 1));
   await page.evaluate((v) => window.__setP(v), p);
+  if (VIDEO) {
+    // Con le clip non basta un giro di rAF: impostare currentTime avvia una
+    // ricerca asincrona, e senza aspettarla si fotograferebbe il fotogramma
+    // precedente. Si attende che la clip visibile abbia finito di cercare.
+    await page.evaluate(() => new Promise((ok) => {
+      const v = [...document.querySelectorAll('.vj-clip')]
+        .find((el) => el.style.opacity === '1');
+      if (!v || v.readyState < 2) return ok();
+      if (!v.seeking) return requestAnimationFrame(() => requestAnimationFrame(ok));
+      const fine = () => { v.removeEventListener('seeked', fine); requestAnimationFrame(ok); };
+      v.addEventListener('seeked', fine);
+      setTimeout(ok, 400); // rete locale: se non arriva, non si blocca la resa
+    }));
+  }
   await page.evaluate(() => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok))));
   await page.screenshot({ path: `${TMP}${String(f).padStart(5, '0')}.jpg`, type: 'jpeg', quality: 85 });
   if (f % FPS === 0) process.stdout.write(`  ${Math.round((f / nFrame) * 100)}%\r`);

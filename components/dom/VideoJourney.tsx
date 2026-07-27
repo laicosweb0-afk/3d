@@ -65,6 +65,11 @@ export function VideoJourney() {
   return (
     <div className="vj" aria-hidden="true">
       {CLIPS.map((c, k) => (
+        // Due codifiche come per gli altri video del sito: webm dove c'è
+        // (Chromium, Firefox), mp4 altrove (Safari). Entrambe hanno i
+        // fotogrammi-chiave fitti, che è ciò che rende lo scrubbing fluido:
+        // con GOP lungo il browser deve decodificare da lontano a ogni salto
+        // e lo scroll singhiozza.
         <video
           key={c.id}
           ref={(el) => { vids.current[k] = el; }}
@@ -72,8 +77,10 @@ export function VideoJourney() {
           muted
           playsInline
           preload="none"
-          src={asset(`/assets/video/viaggio/${c.file}.mp4`)}
-        />
+        >
+          <source src={asset(`/assets/video/viaggio/${c.file}.webm`)} type="video/webm" />
+          <source src={asset(`/assets/video/viaggio/${c.file}.mp4`)} type="video/mp4" />
+        </video>
       ))}
     </div>
   );
