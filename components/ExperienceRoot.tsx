@@ -103,8 +103,13 @@ export function ExperienceRoot() {
   // taglia la casa a metà parete, con tanto di filo del border-top. Il mondo
   // si dissolve sulla stessa curva con cui se ne vanno chrome, metro e testi
   // — quando la sezione arriva non c'è più niente da tagliare.
+  // In modalità video non si dissolve niente: l'ultima clip finisce sul cielo
+  // quasi bianco, e il fondo del sito è lo stesso bianco. Le sezioni scorrono
+  // sopra un fotogramma che è già diventato pagina — la transizione l'ha fatta
+  // la camera uscendo dalla finestra. Dissolvere qui rimetterebbe lo stacco
+  // che tutta la regia serve a evitare.
   useEffect(() => {
-    if (!mounted || reduced || !world.current) return;
+    if (!mounted || reduced || videoMode || !world.current) return;
     const el = world.current;
     const update = () => {
       const out = afterJourney();
@@ -113,7 +118,7 @@ export function ExperienceRoot() {
     };
     gsap.ticker.add(update);
     return () => gsap.ticker.remove(update);
-  }, [mounted, reduced]);
+  }, [mounted, reduced, videoMode]);
 
   // motion: reveal delle sezioni con easing cinematografico
   useEffect(() => {
