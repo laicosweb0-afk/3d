@@ -103,3 +103,23 @@ lavoro.
 - Chiedere piu immagini in una volta (`count: 2`) puo fallire con «ran out of
   credits» **anche con oltre mille credits disponibili**. Il saldo non viene
   intaccato per le richieste rifiutate. Rimedio: una alla volta.
+
+- `media_import_url` **rifiuta gli mp4 serviti da raw.githubusercontent**, che
+  li manda come `application/octet-stream`. Per i video di traiettoria si passa
+  da jsdelivr, che rispetta i tipi:
+
+      https://cdn.jsdelivr.net/gh/laicosweb0-afk/3d@<sha>/previz/traiettorie/<scena>.mp4
+
+  Meglio il SHA del commit che il nome del ramo: il nostro contiene una barra e
+  la cache della CDN e' piu' prevedibile su un riferimento immutabile.
+
+- Il filtro contenuti puo bocciare con esito `nsfw` **una fotografia di
+  cantiere**. E' un falso positivo innescato dal vocabolario, non dall'immagine:
+  parole come *bare* ed *exposed* hanno in inglese un secondo significato.
+  Rimedio: termini da cantiere e basta — *unclad*, *levelled earth*, *no
+  building stands yet*.
+
+- Un `job_id` si puo usare come input di un'altra generazione **solo a
+  lavorazione conclusa**. Passarlo mentre e' `pending` fallisce con
+  «Media input not found», che sembra un errore di identificativo e invece e'
+  solo un problema di tempi.
