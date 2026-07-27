@@ -30,15 +30,20 @@ export function SplitTitle({ text, as: Tag = 'h2', className = '', accent = [] }
     const ctx = gsap.context(() => {
       gsap.fromTo(
         el.querySelectorAll('.mp-char'),
-        { yPercent: 105, rotateX: -78, autoAlpha: 0, z: -60 },
+        // Meno rotazione e meno profondità: il ribaltamento da 78 gradi si
+        // leggeva come uno sfarfallio quando le lettere sono tante, e su un
+        // titolo lungo diventava rumore. Un quarto di quel giro, più lento,
+        // dà lo stesso senso di lettere che si mettono in piano — con la
+        // differenza che si riesce a leggerle mentre lo fanno.
+        { yPercent: 104, rotateX: -34, autoAlpha: 0, z: -24 },
         {
           yPercent: 0,
           rotateX: 0,
           autoAlpha: 1,
           z: 0,
-          duration: 0.85,
+          duration: 1.05,
           ease: 'power3.out',
-          stagger: { each: 0.016, from: 'start' },
+          stagger: { each: 0.021, from: 'start' },
           scrollTrigger: { trigger: el, start: 'top 86%' },
         }
       );

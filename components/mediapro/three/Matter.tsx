@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { scroll } from './scrollState';
 import { blendWorlds } from './worlds';
 
-const COUNT = 17;
+const COUNT = 11;
 const dummy = new THREE.Object3D();
 /** Raggio del corridoio all'altezza del marchio: poco più dell'oggetto. */
 const CLEAR = 2.05;
@@ -144,7 +144,11 @@ function Family({ family, seed }: FamilyProps) {
       // dentro al portale la materia si stira verso la camera: sono le scie
       // di velocità che rendono leggibile l'accelerazione
       const sc = s.size * weight;
-      dummy.scale.set(sc, sc, sc * (1 + scroll.portal * 7));
+      // Lo stiramento era da sette volte: sul confine la materia diventava un
+      // fascio di aghi e, sommato al velo e alla camera, erano tre cose che
+      // scattavano insieme. Ridotto a poco più del doppio si legge ancora come
+      // velocità, ma non prende il sopravvento sulla scena.
+      dummy.scale.set(sc, sc, sc * (1 + scroll.portal * 2.2));
       dummy.updateMatrix();
       mesh.current.setMatrixAt(i, dummy.matrix);
     }
