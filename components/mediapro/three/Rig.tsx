@@ -13,6 +13,8 @@ const HERO_TO = new THREE.Vector3(0, 0.1, 7.6);
 const target = new THREE.Vector3();
 const desired = new THREE.Vector3();
 const orbit = new THREE.Vector3();
+/** Trasversale della camera: serve a spostare il soggetto in orizzontale. */
+const right = new THREE.Vector3();
 
 /**
  * La camera come un dolly unico, dall'inizio alla fine.
@@ -53,7 +55,11 @@ export function Rig() {
       // crollava di quasi cinque unità in mezzo secondo e il movimento si
       // leggeva come uno strappo. Un avvicinamento contenuto, su un tragitto
       // più lungo, fa lo stesso effetto e sembra una macchina su binario.
-      const radius = (w.camRadius - scroll.portal * 1.9) * pull;
+      // Un passo indietro rispetto a prima: spostando il soggetto a destra,
+      // con il raggio di prima gli oggetti larghi — la lastra LOEWE, il
+      // vasetto Woman — uscivano dal bordo. Arretrando entrano interi, e
+      // rimpicciolirsi un po' non è un danno: il protagonista è il titolo.
+      const radius = (w.camRadius + 1.3 - scroll.portal * 1.9) * pull;
       const float = Math.sin(tt * 0.55) * w.camFloat;
       // movimento meccanico: la posizione viene quantizzata a scatti
       const stepped = w.camStep > 0.5 ? Math.round(a * 6) / 6 : a;
@@ -82,6 +88,25 @@ export function Rig() {
     // non si vedrebbe: il testo se lo ritroverebbe di nuovo addosso.
     const after = Math.max(0, scroll.page - 0.16) / 0.84;
     target.set(after * 1.2 * (1 - c), -after * 0.3 * (1 - c), 0);
+
+    // Nel portfolio il soggetto sta a destra, sempre.
+    //
+    // Prima l'oggetto era al centro e la camera gli girava intorno: da certe
+    // angolazioni finiva addosso al testo, e nessuna velatura salva un titolo
+    // che ha un oggetto lucido esattamente sotto. Qui la mira si sposta lungo
+    // la trasversale della camera — cioè il "sinistra" dell'inquadratura, non
+    // quello del mondo — e il soggetto si trova a destra qualunque sia
+    // l'angolo dell'orbita. Il testo ha metà schermo tutta per sé.
+    if (c > 0.001) {
+      right.subVectors(camera.position, target).normalize().cross(camera.up).normalize();
+      // in verticale non c'è spazio per lo scostamento: sarebbe fuori campo
+      // abbastanza da liberare il testo, non tanto da mandare il soggetto
+      // a metà fuori dall'inquadratura
+      const shift = aspect < 1 ? 0.5 : 1.75;
+      // il segno: `right` così calcolato punta alla sinistra dell'inquadratura,
+      // quindi spostare la mira in quella direzione manda il soggetto a destra
+      target.addScaledVector(right, shift * Math.min(1, c));
+    }
     camera.lookAt(target);
   });
 

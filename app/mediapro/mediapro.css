@@ -613,15 +613,20 @@ body.mp-has-cursor .mp textarea {
 }
 /* Velatura sul lato del testo: la materia vola dappertutto e senza questa il
    testo diventa illeggibile appena un oggetto chiaro gli passa dietro. */
+/* La velatura sul lato del testo. Più larga e più opaca di prima: il testo è
+   la cosa che deve restare leggibile sempre, e "quasi sempre leggibile" su un
+   sito che vuole sembrare premium si nota subito. Sfuma lunga verso destra,
+   così non si vede dove finisce. */
 .mp-cases-pin::before {
   content: '';
   position: absolute;
   inset: 0 auto 0 0;
-  width: min(62%, 760px);
+  width: min(78%, 1040px);
   background: linear-gradient(
     90deg,
-    rgba(9, 9, 9, 0.86) 0%,
-    rgba(9, 9, 9, 0.72) 42%,
+    rgba(9, 9, 9, 0.94) 0%,
+    rgba(9, 9, 9, 0.9) 34%,
+    rgba(9, 9, 9, 0.66) 62%,
     transparent 100%
   );
   pointer-events: none;
@@ -642,10 +647,22 @@ body.mp-has-cursor .mp textarea {
    non scorrono via, si sostituiscono. */
 .mp-cases-stack {
   position: relative;
-  max-width: 32em;
-  /* i titoli sono cresciuti: senza questa altezza le schede più lunghe
-     traboccavano su quelle sotto, che sono nello stesso punto */
-  min-height: 420px;
+  /* Poco meno di metà schermo: oltre, le righe del nome diventano lunghe e il
+     titolo smette di leggersi in un colpo d'occhio. */
+  width: min(50vw, 640px);
+  min-height: 540px;
+}
+@media (max-width: 900px) {
+  /* in verticale non c'è una metà da lasciare al 3D: il testo prende tutto,
+     e la scena gli resta dietro */
+  .mp-cases-stack {
+    width: 100%;
+    min-height: 460px;
+  }
+  .mp-case-meta {
+    grid-template-columns: repeat(2, auto);
+    row-gap: 22px;
+  }
 }
 .mp-case {
   position: absolute;
@@ -653,46 +670,61 @@ body.mp-has-cursor .mp textarea {
   will-change: opacity, transform;
   pointer-events: none;
 }
+/* La copertina del progetto.
+   Tre livelli e nient'altro: il nome, la frase, la scheda tecnica. Il nome
+   occupa quanto un titolo di copertina perché è la prima e spesso l'unica cosa
+   che qualcuno legge; la frase sta subito sotto ed è l'unico testo di lettura;
+   il resto scende in fondo, piccolo e distanziato, dove non compete. Fra un
+   livello e l'altro c'è più aria di quanta ne serva: è l'aria a dire quale
+   viene prima. */
 .mp-case-num {
   font-size: 11px;
   letter-spacing: 0.44em;
-  color: rgba(214, 179, 122, 0.8);
+  color: rgba(214, 179, 122, 0.6);
 }
 .mp-case-client {
-  margin-top: 22px;
-  font-size: clamp(38px, 5.6vw, 86px);
+  margin-top: clamp(20px, 2.2vw, 34px);
+  font-size: clamp(46px, 6.6vw, 108px);
   font-weight: 200;
-  line-height: 0.96;
-  letter-spacing: -0.038em;
+  line-height: 0.9;
+  letter-spacing: -0.045em;
 }
-.mp-case-type {
-  margin-top: 18px;
-  font-size: 11px;
+/* La frase: è il secondo sguardo, quindi è grande abbastanza da leggersi
+   subito ma inequivocabilmente più piccola del nome. Chiara, non grigia. */
+.mp-case-line {
+  margin-top: clamp(26px, 2.8vw, 44px);
+  color: rgba(255, 255, 255, 0.86);
+  font-weight: 200;
+  font-size: clamp(17px, 1.6vw, 27px);
+  line-height: 1.42;
+  letter-spacing: -0.015em;
+  max-width: 17em;
+}
+/* La scheda tecnica: in fondo, dietro un filetto, in corpo minuscolo. Serve a
+   chi la cerca e non disturba chi non la cerca. */
+.mp-case-meta {
+  margin-top: clamp(44px, 5vw, 76px);
+  padding-top: clamp(18px, 1.8vw, 26px);
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  /* tre colonne fisse: così la scheda tecnica sta sempre sulla stessa riga e
+     ha lo stesso ingombro su ogni progetto, invece di riordinarsi da sola a
+     seconda di quanto è lungo il testo */
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  justify-content: start;
+  gap: clamp(26px, 3.4vw, 58px);
+}
+.mp-case-meta dt {
+  font-size: 10px;
   letter-spacing: 0.34em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(214, 179, 122, 0.6);
 }
-.mp-case-line {
-  margin-top: 30px;
-  color: var(--text2);
+.mp-case-meta dd {
+  margin-top: 8px;
+  font-size: 13px;
   font-weight: 300;
-  font-size: clamp(14px, 1.02vw, 16.5px);
-  line-height: 1.85;
-  max-width: 24em;
-}
-.mp-case-matter {
-  margin-top: 34px;
-  font-size: 12.5px;
-  color: rgba(255, 255, 255, 0.5);
-  font-weight: 300;
-}
-.mp-case-matter span {
-  display: inline-block;
-  margin-right: 10px;
-  font-size: 11px;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: rgba(214, 179, 122, 0.75);
+  color: rgba(255, 255, 255, 0.55);
 }
 
 /* Firma tipografica del progetto: filigrana in basso a destra, sopra la scena

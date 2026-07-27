@@ -176,7 +176,9 @@ export const WORLDS: World[] = [
     gravity: 0.08,
     wind: 0.5,
     turbulence: 0.06,
-    camRadius: 8.8,
+    // la lastra è l'oggetto più largo della serie: da più vicino, spostata a
+    // destra, usciva dal bordo destro dell'inquadratura
+    camRadius: 10.2,
     camHeight: 0.35,
     camFloat: 0.55,
     camLag: 1.5,
