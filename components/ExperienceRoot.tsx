@@ -13,7 +13,7 @@ import { TimelineMetro } from './dom/TimelineMetro';
 import { VideoJourney } from './dom/VideoJourney';
 import { initScroll } from '@/lib/scroll';
 import { TOTAL_VH } from '@/lib/scenes';
-import { VIAGGIO_VH, progresso3D, subentroVideo } from '@/content/viaggio';
+import { VIAGGIO_VH, progresso3D, subentroVideo, veloBianco } from '@/content/viaggio';
 import { progress, debugState, setMappa3D } from '@/lib/progress';
 import { setAudioEnabled, updateAudio } from '@/lib/audio';
 import { useApp } from '@/lib/store';
@@ -49,6 +49,7 @@ export function ExperienceRoot() {
   const [videoMode, setVideoMode] = useState(false);
   const spacer = useRef<HTMLDivElement>(null);
   const world = useRef<HTMLDivElement>(null);
+  const velo = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // modalità fotogramma per still di produzione/QA
@@ -139,6 +140,21 @@ export function ExperienceRoot() {
     return () => gsap.ticker.remove(update);
   }, [mounted, reduced, videoMode]);
 
+  // Il velo bianco sulla soglia (solo ibrido): modello e girato sono due
+  // inquadrature diverse, quindi non si dissolvono l'uno nell'altro — spariscono
+  // entrambi dentro il bianco della porta, e il bianco si ritira sul girato.
+  useEffect(() => {
+    if (!mounted || reduced || !videoMode || !velo.current) return;
+    const el = velo.current;
+    const update = () => {
+      const v = veloBianco(progress.viaggio);
+      el.style.opacity = String(v);
+      el.style.visibility = v <= 0.001 ? 'hidden' : 'visible';
+    };
+    gsap.ticker.add(update);
+    return () => gsap.ticker.remove(update);
+  }, [mounted, reduced, videoMode]);
+
   // motion: reveal delle sezioni con easing cinematografico
   useEffect(() => {
     if (!mounted) return;
@@ -205,6 +221,7 @@ export function ExperienceRoot() {
       <div className="world" aria-hidden="true" ref={world}>
         {mounted && <World />}
       </div>
+      {mounted && videoMode && <div className="velo-bianco" aria-hidden="true" ref={velo} />}
       <div
         className="journey-spacer"
         ref={spacer}

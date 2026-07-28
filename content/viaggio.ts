@@ -74,16 +74,37 @@ export function progressoVideo(viaggio: number): number {
   return Math.min(1, Math.max(0, (viaggio - QUOTA_3D) / (1 - QUOTA_3D)));
 }
 
+// Finestra della soglia: il modello (fuori, vede la porta) e il girato
+// (dentro, vede la stanza) sono due inquadrature diverse — non la stessa
+// ripresa continuata. Sovrapporle in trasparenza per una finestra larga
+// mostra le due immagini insieme, a doppia esposizione: si vede la porta 3D
+// fantasma sopra l'interno vero. La finestra resta stretta apposta: il
+// cambio deve sparire dentro il velo bianco (vedi veloBianco), non essere
+// visibile come dissolvenza.
+const SOGLIA_A = QUOTA_3D - 0.025;
+const SOGLIA_B = QUOTA_3D + 0.02;
+
 /**
- * Quanto il girato ha preso il posto del 3D, 0..1. La dissolvenza comincia
- * poco prima della soglia: il modello sfuma nella fotografia mentre la porta
- * si apre, che è il punto in cui il progetto diventa cantiere vero.
+ * Quanto il girato ha preso il posto del 3D, 0..1.
  */
 export function subentroVideo(viaggio: number): number {
-  const a = QUOTA_3D - 0.06;
-  const b = QUOTA_3D + 0.02;
-  const t = Math.min(1, Math.max(0, (viaggio - a) / (b - a)));
+  const t = Math.min(1, Math.max(0, (viaggio - SOGLIA_A) / (SOGLIA_B - SOGLIA_A)));
   return t * t * (3 - 2 * t);
+}
+
+/**
+ * Velo bianco sulla soglia, 0..1. Il modello e il girato non sono la stessa
+ * inquadratura: invece di mostrarli insieme (doppia esposizione), il primo
+ * sfuma nel bianco e il bianco sfuma nel secondo. La soglia sparisce dentro
+ * la luce della porta — che nel modello e nel girato è già bruciata di luce,
+ * quindi il velo è coerente con l'inquadratura, non un trucco a parte.
+ */
+export function veloBianco(viaggio: number): number {
+  const centro = (SOGLIA_A + SOGLIA_B) / 2;
+  const metaLarghezza = (SOGLIA_B - SOGLIA_A) / 2;
+  const d = Math.abs(viaggio - centro) / metaLarghezza;
+  const t = Math.max(0, 1 - d);
+  return t * t;
 }
 
 export const DURATA_TOTALE = CLIPS.reduce((s, c) => s + c.durata, 0);

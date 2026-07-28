@@ -60,6 +60,15 @@ body {
   z-index: 1;
   pointer-events: none;
 }
+.velo-bianco {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  background: #faf9f7;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+}
 
 /* ---- viaggio in video (modalità reale, ?video=1) ---- */
 .vj {
