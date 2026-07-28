@@ -31,9 +31,15 @@ const VIDEO = process.env.VIDEO === '1';
 // per il 3D, dalla somma delle clip per il girato reale.
 let durata;
 if (VIDEO) {
-  const clip = [...readFileSync(new URL('../content/viaggio.ts', import.meta.url), 'utf8')
-    .matchAll(/durata:\s*(\d+(?:\.\d+)?)/g)];
-  durata = clip.reduce((s, [, d]) => s + parseFloat(d), 0);
+  // Nel viaggio ibrido le clip occupano solo la quota dopo la soglia: il
+  // resto se lo prende il 3D. Dividendo per quella quota la registrazione
+  // scorre alla velocità giusta — altrimenti il girato correrebbe al doppio
+  // per stare dentro una durata calcolata sulle sole clip.
+  const testo = readFileSync(new URL('../content/viaggio.ts', import.meta.url), 'utf8');
+  const clip = [...testo.matchAll(/durata:\s*(\d+(?:\.\d+)?)/g)];
+  const somma = clip.reduce((s, [, d]) => s + parseFloat(d), 0);
+  const quota = parseFloat(/QUOTA_3D\s*=\s*([\d.]+)/.exec(testo)?.[1] ?? '0');
+  durata = somma / (1 - quota);
 } else {
   const scene = [...readFileSync(new URL('../lib/scenes.ts', import.meta.url), 'utf8')
     .matchAll(/\{\s*id:\s*'(s\d+)',\s*vh:\s*([\d.]+)/g)];
