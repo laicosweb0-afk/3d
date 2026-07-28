@@ -13,8 +13,8 @@ import { TimelineMetro } from './dom/TimelineMetro';
 import { VideoJourney } from './dom/VideoJourney';
 import { initScroll } from '@/lib/scroll';
 import { TOTAL_VH } from '@/lib/scenes';
-import { VIAGGIO_VH } from '@/content/viaggio';
-import { progress, debugState } from '@/lib/progress';
+import { VIAGGIO_VH, progresso3D, subentroVideo } from '@/content/viaggio';
+import { progress, debugState, setMappa3D } from '@/lib/progress';
 import { setAudioEnabled, updateAudio } from '@/lib/audio';
 import { useApp } from '@/lib/store';
 import { Monogram } from './dom/Monogram';
@@ -75,11 +75,21 @@ export function ExperienceRoot() {
         const c = Math.min(1, Math.max(0, v));
         debugState.fixedP = c;
         progress.p = c;
-        progress.smoothed = c;
+        progress.viaggio = c;
+        // In ibrido il 3D vede il tratto rimappato; altrimenti coincidono.
+        progress.smoothed = q.get('video') === '1' ? progresso3D(c) : c;
       };
     }
     if (q.get('ui') === '0') document.body.classList.add('no-ui');
-    setVideoMode(q.get('video') === '1');
+    const ibrido = q.get('video') === '1';
+    // Nel viaggio ibrido il 3D deve continuare a ragionare nel suo intervallo
+    // naturale: lo scroll copre due linguaggi, ma la regia non lo deve sapere.
+    setMappa3D(ibrido ? progresso3D : null);
+    if (ibrido && debugState.fixedP !== null) {
+      progress.viaggio = debugState.fixedP;
+      progress.smoothed = progresso3D(debugState.fixedP);
+    }
+    setVideoMode(ibrido);
     setMounted(true);
     setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }, []);
@@ -109,9 +119,18 @@ export function ExperienceRoot() {
   // la camera uscendo dalla finestra. Dissolvere qui rimetterebbe lo stacco
   // che tutta la regia serve a evitare.
   useEffect(() => {
-    if (!mounted || reduced || videoMode || !world.current) return;
+    if (!mounted || reduced || !world.current) return;
     const el = world.current;
     const update = () => {
+      if (videoMode) {
+        // Il modello cede il posto al girato sulla soglia: sfuma mentre la
+        // porta si apre, che è il punto in cui il progetto diventa cantiere
+        // vero. Dopo resta spento — il suo compito è finito.
+        const dentro = subentroVideo(progress.viaggio);
+        el.style.opacity = String(1 - dentro);
+        el.style.visibility = dentro >= 0.999 ? 'hidden' : 'visible';
+        return;
+      }
       const out = afterJourney();
       el.style.opacity = String(1 - out);
       el.style.visibility = out >= 1 ? 'hidden' : 'visible';
@@ -174,8 +193,17 @@ export function ExperienceRoot() {
 
   return (
     <>
+      {/* Viaggio ibrido: il girato sta sotto e il modello sopra. Il modello
+          porta dal foglio bianco fino alla porta che si apre — è lui a tenere
+          il bianco dell'hero senza strappi — poi sfuma e sotto è già pronto il
+          girato, fermo sul suo primo fotogramma. */}
+      {mounted && videoMode && (
+        <div className="world" aria-hidden="true">
+          <VideoJourney />
+        </div>
+      )}
       <div className="world" aria-hidden="true" ref={world}>
-        {mounted && (videoMode ? <VideoJourney /> : <World />)}
+        {mounted && <World />}
       </div>
       <div
         className="journey-spacer"

@@ -34,22 +34,66 @@ export const CLIPS: ClipDef[] = [
   // Della costruzione si tiene solo la seconda metà: si attacca a casa già
   // impostata e la si vede chiudersi. È un taglio di montaggio — niente
   // rigenerazione.
-  { id: 'costruzione', file: '03-costruzione', inizio: 3.6, durata: 4.4, titolo: 'La costruzione' },
-  // Fuori dal viaggio: 04-materia, 05-volo e 06-soglia. Tutte e tre
-  // mostravano la casa GIÀ FINITA — pietra, prato rasato — prima che il
-  // visitatore entrasse, e di là dalla porta lo aspettava ancora il cantiere.
-  // Lo stato dell'edificio deve solo avanzare, mai tornare indietro. Erano
-  // anche i doppioni: dodici secondi di casa finita quasi identici.
-  // I file restano nel repo — semmai serviranno dopo l'uscita, non prima.
-  { id: 'soggiorno',   file: '07-soggiorno',   durata: 8, titolo: 'Il soggiorno' },
-  { id: 'tuffo',       file: '08-tuffo',       durata: 4, titolo: 'Il tuffo' },
-  { id: 'bagno',       file: '09-bagno',       durata: 6, titolo: 'Il bagno' },
-  { id: 'uscita',      file: '10-uscita',      durata: 4, titolo: "L'uscita nel bianco" },
+  // Il girato entra in scena solo DENTRO casa: fuori ci pensa il 3D, che
+  // tiene il bianco dell'hero senza strappi (vedi STRUTTURA.md). Tutte le
+  // clip d'esterno generate — terreno, fondazioni, costruzione, materia,
+  // volo, soglia — restano nel repo ma fuori dal viaggio: avevano angolazioni
+  // diverse fra loro e mostravano la casa finita prima dell'ingresso.
+
+  // Soggiorno e bagno usano le due transizioni già presenti nel repo da prima
+  // di oggi. Sono migliori delle mie: la camera non si sposta di un
+  // millimetro e la stanza si trasforma attorno, quindi non c'è nessuna
+  // deriva d'inquadratura da nascondere.
+  { id: 'soggiorno', file: '07b-soggiorno', durata: 5, titolo: 'Il soggiorno' },
+  { id: 'tuffo',     file: '08-tuffo',      durata: 4, titolo: 'Il tuffo' },
+  { id: 'bagno',     file: '09b-bagno',     durata: 5, titolo: 'Il bagno' },
+  { id: 'uscita',    file: '10-uscita',     durata: 4, titolo: "L'uscita nel bianco" },
 ];
 
+/**
+ * Quota di viaggio che spetta al 3D, prima che cominci il girato.
+ * Il modello porta dal foglio bianco fino alla porta che si apre: è lì che i
+ * due linguaggi si danno il cambio, fuori il progetto e dentro la realtà.
+ */
+export const QUOTA_3D = 0.55;
+/** Punto del viaggio 3D in cui la porta è aperta e si sta per entrare. */
+export const P_SOGLIA_3D = 0.48;
+
+/**
+ * Dal progresso dell'intero viaggio al progresso che deve vedere il 3D.
+ * Dopo la soglia resta fermo sull'ultimo fotogramma: il modello ha finito il
+ * suo compito e sotto è già subentrato il girato.
+ */
+export function progresso3D(viaggio: number): number {
+  const q = Math.min(1, Math.max(0, viaggio / QUOTA_3D));
+  return q * P_SOGLIA_3D;
+}
+
+/** Dal progresso dell'intero viaggio al progresso del girato, 0..1. */
+export function progressoVideo(viaggio: number): number {
+  return Math.min(1, Math.max(0, (viaggio - QUOTA_3D) / (1 - QUOTA_3D)));
+}
+
+/**
+ * Quanto il girato ha preso il posto del 3D, 0..1. La dissolvenza comincia
+ * poco prima della soglia: il modello sfuma nella fotografia mentre la porta
+ * si apre, che è il punto in cui il progetto diventa cantiere vero.
+ */
+export function subentroVideo(viaggio: number): number {
+  const a = QUOTA_3D - 0.06;
+  const b = QUOTA_3D + 0.02;
+  const t = Math.min(1, Math.max(0, (viaggio - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+}
+
 export const DURATA_TOTALE = CLIPS.reduce((s, c) => s + c.durata, 0);
-/** Altezza di scroll del viaggio video, in viewport-height. */
-export const VIAGGIO_VH = DURATA_TOTALE / SECONDI_PER_VH;
+/**
+ * Altezza di scroll dell'intero viaggio, in viewport-height.
+ * Il girato occupa la quota dopo la soglia; il 3D si prende la parte prima, e
+ * ha bisogno del suo spazio perché la casa si costruisca con calma. Da qui
+ * l'altezza totale è quella del girato divisa per la quota che gli spetta.
+ */
+export const VIAGGIO_VH = DURATA_TOTALE / SECONDI_PER_VH / (1 - 0.55);
 
 // Intervalli normalizzati [p0,p1] di ogni clip, derivati dalle durate.
 const range: { p0: number; p1: number }[] = [];

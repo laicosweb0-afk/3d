@@ -16,7 +16,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { progress } from '@/lib/progress';
-import { CLIPS, clipAt, clipRange, estremi } from '@/content/viaggio';
+import { CLIPS, clipAt, clipRange, estremi, progressoVideo } from '@/content/viaggio';
 import { asset } from '@/lib/asset';
 
 export function VideoJourney() {
@@ -25,7 +25,10 @@ export function VideoJourney() {
 
   useEffect(() => {
     const update = () => {
-      const p = progress.smoothed;
+      // Il girato ragiona sul progresso dell'intero viaggio, non su quello
+      // rimappato per il 3D: nel tratto iniziale sta fermo sul suo primo
+      // fotogramma, pronto sotto, mentre sopra il modello costruisce la casa.
+      const p = progressoVideo(progress.viaggio);
       const { i, t } = clipAt(p);
 
       CLIPS.forEach((c, k) => {
