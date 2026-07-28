@@ -51,14 +51,19 @@ Si arriva all'ingresso, la porta si apre, si entra. Senza stacchi.
 Lo spazio si costruisce attorno alla camera fino a diventare il soggiorno
 consegnato — che è **una fotografia vera** di Mondial Service.
 
-### 6. La discesa — non un tuffo
+### 6. Il tuffo — dentro il buco, in avanti
 
-Il pavimento si apre. **La camera NON si infila nel buco.** Resta ferma nella
-sua posizione e **scende verticalmente**, sottoterra, come un ascensore. Poi
-segue le tubazioni e riemerge nel bagno.
+Il pavimento si apre sul radiante. **La camera deve andare avanti e giù ed
+entrare nell'apertura**: il buco cresce fino a riempire lo schermo e ci si
+passa attraverso. Poi si segue la tubazione e si riemerge nel bagno.
 
-Il movimento diagonale "dentro il buco" provato in precedenza è sbagliato: si
-legge come un effetto, non come un movimento.
+Funziona come l'uscita dalla finestra, che riesce proprio per questo: si vede
+l'apertura crescere e la si attraversa.
+
+**Difetto della clip attuale** (`08-tuffo`): il buco resta fermo in basso nel
+quadro per un secondo, la camera non gli si avvicina mai, e poi c'è uno stacco
+secco su un tunnel buio. L'ingresso non si vede — e se non si entra dal buco,
+quel buco non serviva aprirlo.
 
 ### 7. Il bagno e l'uscita — un video solo
 
@@ -98,7 +103,7 @@ solo.
 | pezzo | perché |
 | --- | --- |
 | il passaggio 3D → cantiere reale | non esiste |
-| la discesa verticale sottoterra | `08-tuffo` entra nel buco di sbieco: va rifatto fermo e verticale |
+| il tuffo nel buco del pavimento | `08-tuffo` non ci entra affatto: il buco resta fermo in basso e poi c'è uno stacco secco sul tunnel. Va rifatto con la camera che avanza, scende e attraversa l'apertura |
 | bagno + uscita | vanno fusi in una ripresa sola di ~15 s, angolazione unica |
 
 ## Cosa NON si fa più
