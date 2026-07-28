@@ -16,7 +16,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { progress } from '@/lib/progress';
-import { CLIPS, clipAt, clipRange } from '@/content/viaggio';
+import { CLIPS, clipAt, clipRange, estremi } from '@/content/viaggio';
 import { asset } from '@/lib/asset';
 
 export function VideoJourney() {
@@ -47,11 +47,12 @@ export function VideoJourney() {
         v.style.opacity = k === i ? '1' : '0';
         if (!near) return;
 
+        const { da, a } = estremi(k);
         let target: number;
         if (k === i) target = t;
-        else if (k < i) target = c.durata; // vicina precedente: ferma sull'ultimo
-        else target = 0;                   // vicina successiva: ferma sul primo
-        const dur = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : c.durata;
+        else if (k < i) target = a;  // vicina precedente: ferma sul suo ultimo
+        else target = da;            // vicina successiva: ferma sul suo primo
+        const dur = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : a;
         const clamped = Math.min(target, Math.max(dur - 0.001, 0));
         if (Math.abs(v.currentTime - clamped) > 0.016) {
           v.currentTime = clamped;

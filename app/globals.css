@@ -201,27 +201,34 @@ body {
   padding: 0 1.5rem;
 }
 .hero-logo {
-  /* Il logo è un lockup orizzontale (globo + "MONDIAL SERVICE SRL"):
-     va dimensionato in larghezza, non in altezza, o la scritta diventa
-     illeggibile. L'immagine non è ritoccata: mostrata intera e leggibile. */
-  width: clamp(15rem, 34vw, 27rem);
+  /* Il logo è un lockup orizzontale (globo + "MONDIAL SERVICE SRL"): va
+     dimensionato in larghezza o la scritta diventa illeggibile. Sta più
+     piccolo del titolo e più in alto: in un'apertura di questo tipo il
+     marchio si firma, non urla — a parlare è la frase. */
+  width: clamp(9rem, 17vw, 13.5rem);
   height: auto;
-  margin-bottom: 2.2rem;
+  margin-bottom: clamp(2.5rem, 6vh, 4.5rem);
 }
 .hero-title {
-  font-size: clamp(2.4rem, 7vw, 5.4rem);
-  font-weight: 650;
-  line-height: 1.06;
-  letter-spacing: -0.025em;
+  /* Grande, stretto di spaziatura, sicuro. Il peso sta alto perché su bianco
+     un titolo leggero sembra incerto; la spaziatura negativa cresce con il
+     corpo, altrimenti alle dimensioni maggiori le parole si slegano. */
+  font-size: clamp(2.9rem, 8.4vw, 7rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.038em;
+  max-width: 16em;
 }
 .hero-title span {
   display: block;
 }
 .hero-sub {
-  margin-top: 2rem;
-  font-size: clamp(0.85rem, 1.6vw, 1.05rem);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  /* Sottotitolo quieto: nessun maiuscoletto spaziato, che invecchia e
+     rumoreggia. Una riga sola, piccola, in grigio. */
+  margin-top: clamp(1.6rem, 3.5vh, 2.6rem);
+  font-size: clamp(0.95rem, 1.5vw, 1.2rem);
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--grigio-600);
 }
 .hero-hint {

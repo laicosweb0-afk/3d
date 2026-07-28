@@ -12,17 +12,29 @@ export interface ClipDef {
   id: string;
   /** nome file senza estensione, in /assets/video/viaggio/ */
   file: string;
-  /** durata del girato in secondi (fonte: GIRATO.md) */
+  /** durata usata nel viaggio, in secondi */
   durata: number;
+  /**
+   * Punto d'attacco dentro il file, in secondi. Serve a entrare in una clip
+   * dopo il suo inizio senza rigenerarla: il montaggio costa zero, la
+   * generazione no.
+   */
+  inizio?: number;
   titolo: string;
 }
 
 export const SECONDI_PER_VH = 2.5;
 
 export const CLIPS: ClipDef[] = [
-  { id: 'terreno',     file: '01-terreno',     durata: 4, titolo: 'Il terreno' },
-  { id: 'fondazioni',  file: '02-fondazioni',  durata: 5, titolo: 'Le fondazioni' },
-  { id: 'costruzione', file: '03-costruzione', durata: 8, titolo: 'La costruzione' },
+  // Fuori dal viaggio anche 01-terreno e 02-fondazioni: erano due riprese in
+  // più, con angolazioni e movimenti di macchina diversi fra loro, che
+  // allungavano l'attesa prima che comparisse una casa. Il visitatore non
+  // arriva per vedere dei picchetti.
+  //
+  // Della costruzione si tiene solo la seconda metà: si attacca a casa già
+  // impostata e la si vede chiudersi. È un taglio di montaggio — niente
+  // rigenerazione.
+  { id: 'costruzione', file: '03-costruzione', inizio: 3.6, durata: 4.4, titolo: 'La costruzione' },
   // Fuori dal viaggio: 04-materia, 05-volo e 06-soglia. Tutte e tre
   // mostravano la casa GIÀ FINITA — pietra, prato rasato — prima che il
   // visitatore entrasse, e di là dalla porta lo aspettava ancora il cantiere.
@@ -60,11 +72,20 @@ export function clipAt(p: number): { i: number; t: number } {
   for (let i = 0; i < CLIPS.length; i++) {
     const { p0, p1 } = range[i];
     if (x <= p1 || i === CLIPS.length - 1) {
-      const local = (x - p0) / (p1 - p0);
-      return { i, t: Math.min(1, Math.max(0, local)) * CLIPS[i].durata };
+      const local = Math.min(1, Math.max(0, (x - p0) / (p1 - p0)));
+      const c = CLIPS[i];
+      return { i, t: (c.inizio ?? 0) + local * c.durata };
     }
   }
-  return { i: CLIPS.length - 1, t: CLIPS[CLIPS.length - 1].durata };
+  const u = CLIPS[CLIPS.length - 1];
+  return { i: CLIPS.length - 1, t: (u.inizio ?? 0) + u.durata };
+}
+
+/** Estremi del tratto usato di una clip, in secondi dentro il file. */
+export function estremi(i: number): { da: number; a: number } {
+  const c = CLIPS[i];
+  const da = c.inizio ?? 0;
+  return { da, a: da + c.durata };
 }
 
 export function clipRange(i: number): { p0: number; p1: number } {
