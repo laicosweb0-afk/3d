@@ -1,5 +1,5 @@
 import { ExperienceRoot } from '@/components/ExperienceRoot';
-import { OpereReveal } from '@/components/dom/OpereReveal';
+import { BeforeAfter } from '@/components/dom/BeforeAfter';
 import { MaterialChips } from '@/components/dom/MaterialChips';
 import { Monogram } from '@/components/dom/Monogram';
 import { JOURNEY_COPY } from '@/content/copy';
@@ -56,18 +56,19 @@ export default function Page() {
         </ol>
       </section>
 
-      {/* Le opere — il cantiere che scorre via, sotto la consegna */}
+      {/* Le opere — trascina per confrontare, cantiere reale / consegna reale */}
       <section className="sez sez--scura" id="opere">
         <p className="sez-kicker">Le opere</p>
         <h2 className="sez-title">Dal cantiere alla consegna.</h2>
-        <p className="sez-sub">Continua a scendere: il cantiere scorre via, sotto trovi il risultato.</p>
+        <p className="sez-sub">Trascina il cursore: stessa inquadratura, prima e dopo il nostro lavoro.</p>
         <div className="opere-grid">
           {OPERE.map((o) => (
             <div className="opera" key={o.id}>
-              <OpereReveal
+              <BeforeAfter
                 before={asset(o.before)}
                 after={asset(o.after)}
                 alt={o.titolo}
+                labelBefore="Il cantiere"
               />
               <h3>{o.titolo}</h3>
               <p>{o.sotto}</p>
