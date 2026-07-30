@@ -37,7 +37,10 @@ export const REALITY_WINDOWS: RealityWindow[] = [
   {
     id: 'soggiorno',
     scene: 's07',
-    from: 0.52, to: 0.9,
+    // Finestra estesa a quasi tutta la scena: qui NON si vede il 3D. Si
+    // entra col grezzo e si scorre mentre la stanza si costruisce fino al
+    // reale. Il 3D resta solo riferimento d'inquadratura, fuori campo.
+    from: 0.2, to: 0.9,
     src: '/assets/foto/soggiorno-1.jpg',
     kicker: 'Dal vero',
     caption: 'La zona giorno, nello stile con cui consegniamo.',
@@ -52,7 +55,8 @@ export const REALITY_WINDOWS: RealityWindow[] = [
   {
     id: 'cantiere',
     scene: 's09',
-    from: 0.52, to: 0.85,
+    // le tubazioni: anche qui il reale copre la scena (video in arrivo)
+    from: 0.25, to: 0.88,
     src: '/assets/foto/cantiere.jpg',
     kicker: 'Dal vero',
     caption: 'Questo è un nostro cantiere: radiante a pavimento, prima del massetto.',
@@ -62,7 +66,9 @@ export const REALITY_WINDOWS: RealityWindow[] = [
   {
     id: 'bagno',
     scene: 's10',
-    from: 0.4, to: 0.74,
+    // Come il soggiorno: tutta la scena è reale. Si entra col bagno grezzo
+    // e i pezzi si montano scorrendo, fino al bagno consegnato.
+    from: 0.18, to: 0.9,
     src: '/assets/foto/bagno-reale.jpg',
     kicker: 'Dal vero',
     caption: 'Un nostro bagno consegnato: marquina e calacatta, chiavi in mano.',
