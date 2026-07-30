@@ -23,7 +23,7 @@ const GRADE = 'contrast(1.045) saturate(0.96) brightness(1.005)';
 // quanto presto, in progresso locale di scena, iniziare a scaricare il
 // video: abbastanza in anticipo da essere pronto, non così tanto da
 // competere con gli asset critici (Hero, maquette) al primo carico.
-const PRELOAD_LEAD = 0.2;
+const PRELOAD_LEAD = 0.35;
 // mezza ampiezza della spazzata del portale, in progresso locale di scena.
 // Ampia: il legno deve attraversare il frame con peso, occupando quasi una
 // schermata di scroll. Stretta com'era, passava via in un lampo e lo scambio
@@ -187,9 +187,13 @@ export function RealityWindows() {
               muted
               playsInline
               preload="none"
-              // poster e fallback: la foto reale (ultimo frame). Il
-              // download vero parte lazy (vedi PRELOAD_LEAD sopra).
-              poster={asset(w.src)}
+              // Poster = il VERO primo fotogramma del video (grezzo), non la
+              // foto finita. Con l'errore precedente, se il video non aveva
+              // ancora fatto in tempo a caricare si vedeva per un attimo la
+              // stanza FINITA (poster sbagliato) e subito dopo il video
+              // scrubato già al grezzo: un doppio salto che sembrava un
+              // pasticcio. Il download vero parte lazy (vedi PRELOAD_LEAD).
+              poster={asset(`${w.video}-poster.jpg`)}
             >
               <source src={asset(`${w.video}.webm`)} type="video/webm" />
               <source src={asset(`${w.video}.mp4`)} type="video/mp4" />
