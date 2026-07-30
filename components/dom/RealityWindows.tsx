@@ -150,17 +150,14 @@ export function RealityWindows() {
           img.style.transform = `scale(${push.toFixed(4)})`;
         }
 
-        // il testo entra dopo che siamo nel reale, e si congeda prima
-        // dell'uscita: leggibile, mai a cavallo di un portale
+        // La didascalia semplice è superata dalle card di vetro del viaggio
+        // (Overlays.tsx), che raccontano lo stesso momento con più peso:
+        // numero, titolo grande, corpo, CTA. Mostrarle insieme è ridondanza,
+        // non narrazione. kicker/caption restano nel documento semantico
+        // nascosto (app/page.tsx) per SEO e lettori d'accessibilità.
         const cap = caps.current[i];
         if (cap) {
-          // Il testo vive nella pausa: entra quando la stanza è quasi fatta e
-          // resta fino a ridosso dell'uscita, così c'è davvero il tempo di leggerlo.
-          const ca = realOn
-            ? smooth(span(inside, 0.30, 0.46)) * (1 - smooth(span(inside, 0.88, 0.98)))
-            : 0;
-          cap.style.opacity = String(ca);
-          cap.style.transform = `translateY(${((1 - ca) * 0.7).toFixed(2)}rem)`;
+          cap.style.opacity = '0';
         }
       });
 
