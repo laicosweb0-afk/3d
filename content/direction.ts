@@ -143,7 +143,10 @@ export function windowOpen(p: number): number {
  * nel sito senza accorgersi del passaggio.
  */
 export function whiteout(p: number): number {
-  return smooth(span(p, pAt('s11', 0.88), pAt('s12', 0.12)));
+  // Sale MENTRE il video della finestra è ancora acceso e arriva a pieno
+  // prima che la scena finisca: così il reale si spegne dietro un bianco già
+  // opaco e il 3D non riaffiora mai nel mezzo. Poi resta pieno fino alle sezioni.
+  return smooth(span(p, pAt('s11', 0.7), pAt('s11', 0.96)));
 }
 
 /**

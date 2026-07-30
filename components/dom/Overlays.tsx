@@ -11,10 +11,15 @@ import { JOURNEY_COPY } from '@/content/copy';
 import { whiteout, logoReveal } from '@/content/direction';
 import { asset } from '@/lib/asset';
 
-/** 1 quando il viewport ha superato la fine del viaggio (siamo nelle sezioni). */
+/**
+ * 1 quando il viewport ha superato la fine del viaggio (siamo nelle sezioni).
+ * Il congedo parte alla FINE vera del viaggio, non una schermata prima: se si
+ * ritira troppo presto il velo bianco sparisce mentre le sezioni non hanno
+ * ancora coperto, e per un istante riaffiora il 3D sotto.
+ */
 export function afterJourney(): number {
-  const endY = (TOTAL_VH - 1) * window.innerHeight;
-  return clamp01((window.scrollY - endY) / (window.innerHeight * 0.35));
+  const endY = TOTAL_VH * window.innerHeight;
+  return clamp01((window.scrollY - endY) / (window.innerHeight * 0.5));
 }
 
 export function Overlays() {

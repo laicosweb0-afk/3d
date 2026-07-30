@@ -44,7 +44,7 @@ export const REALITY_WINDOWS: RealityWindow[] = [
     // ANELLO 1 — il soggiorno si costruisce
     id: 'soggiorno',
     scene: 's07',
-    from: 0.2, to: 0.9,
+    from: 0.2, to: 1.0,
     src: '/assets/foto/soggiorno-1.jpg',
     kicker: 'Dal vero',
     caption: 'La zona giorno, nello stile con cui consegniamo.',
@@ -59,7 +59,7 @@ export const REALITY_WINDOWS: RealityWindow[] = [
     // sparisce, diventa il viaggio dentro la struttura.
     id: 'piastrella',
     scene: 's08',
-    from: 0.12, to: 0.92,
+    from: 0.0, to: 1.0,
     src: '/assets/foto/cantiere.jpg',
     kicker: 'La qualità invisibile',
     caption: 'Sotto ogni pavimento, il lavoro che non vedrai mai.',
@@ -72,7 +72,7 @@ export const REALITY_WINDOWS: RealityWindow[] = [
     // ANELLO 3 — dentro le tubazioni fino a sbucare nel bagno grezzo
     id: 'tubazioni',
     scene: 's09',
-    from: 0.1, to: 0.93,
+    from: 0.0, to: 1.0,
     src: '/assets/foto/cantiere.jpg',
     kicker: 'Dal vero',
     caption: 'Impianti e stratigrafie: progettati e posati una volta, bene.',
@@ -83,7 +83,7 @@ export const REALITY_WINDOWS: RealityWindow[] = [
     // ANELLO 4 — il bagno si costruisce
     id: 'bagno',
     scene: 's10',
-    from: 0.1, to: 0.9,
+    from: 0.0, to: 1.0,
     src: '/assets/foto/bagno-reale.jpg',
     kicker: 'Dal vero',
     caption: 'Un nostro bagno consegnato: marquina e calacatta, chiavi in mano.',
@@ -97,7 +97,7 @@ export const REALITY_WINDOWS: RealityWindow[] = [
     scene: 's11',
     // fino in fondo alla scena: il bianco del video non deve mai lasciare
     // spazio al 3D prima che subentri il velo bianco del congedo
-    from: 0.1, to: 0.995,
+    from: 0.0, to: 1.0,
     src: '/assets/foto/bagno-reale.jpg',
     kicker: '',
     caption: '',
