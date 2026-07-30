@@ -263,6 +263,25 @@ body {
   filter: contrast(1.045) saturate(0.96) brightness(1.005);
   transform: scale(1.06);
 }
+/* Il portale architettonico: la superficie della casa che attraversa il
+   frame e nasconde lo scambio 3D→reale. Sta sopra sia il canvas sia la
+   finestra di realtà, così copre il momento del cambio. Nessuna opacità
+   animata: entra, copre, esce — un solo movimento. L'ombra ai bordi le dà
+   spessore, perché legga come materia e non come un rettangolo. */
+.rw-portal {
+  position: fixed;
+  inset: -6%;
+  z-index: 13;
+  visibility: hidden;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  will-change: transform;
+  box-shadow:
+    0 0 90px 34px rgba(18, 17, 15, 0.5),
+    inset 0 0 140px rgba(18, 17, 15, 0.28);
+}
+
 .rw-caption {
   will-change: transform, opacity;
 }
