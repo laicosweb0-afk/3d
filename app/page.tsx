@@ -1,5 +1,5 @@
 import { ExperienceRoot } from '@/components/ExperienceRoot';
-import { BeforeAfter } from '@/components/dom/BeforeAfter';
+import { OpereReveal } from '@/components/dom/OpereReveal';
 import { MaterialChips } from '@/components/dom/MaterialChips';
 import { Monogram } from '@/components/dom/Monogram';
 import { JOURNEY_COPY } from '@/content/copy';
@@ -56,17 +56,17 @@ export default function Page() {
         </ol>
       </section>
 
-      {/* Le opere — prima/dopo dal mondo 3D, stessa camera, due stati */}
+      {/* Le opere — il cantiere che scorre via, sotto la consegna */}
       <section className="sez sez--scura" id="opere">
         <p className="sez-kicker">Le opere</p>
-        <h2 className="sez-title">Dal progetto alla consegna.</h2>
-        <p className="sez-sub">Trascina il cursore: stessa inquadratura, prima e dopo il nostro lavoro.</p>
+        <h2 className="sez-title">Dal cantiere alla consegna.</h2>
+        <p className="sez-sub">Continua a scendere: il cantiere scorre via, sotto trovi il risultato.</p>
         <div className="opere-grid">
           {OPERE.map((o) => (
             <div className="opera" key={o.id}>
-              <BeforeAfter
-                before={asset(`/assets/opere/${o.id}-progetto.jpg`)}
-                after={asset(`/assets/opere/${o.id}-consegna.jpg`)}
+              <OpereReveal
+                before={asset(o.before)}
+                after={asset(o.after)}
                 alt={o.titolo}
               />
               <h3>{o.titolo}</h3>

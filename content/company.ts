@@ -36,25 +36,31 @@ export const SERVICES = [
   },
 ] as const;
 
-// Le Opere: coppie progetto/consegna renderizzate dallo stesso identico
-// punto di camera del mondo 3D (coerenza totale tra le due versioni).
+// Le Opere: cantiere -> consegna. Soggiorno e bagno usano lo stesso fotogramma
+// grezzo che apre i video del viaggio (camera già combaciante con la foto
+// reale finita) — coerenza totale, zero asset nuovi. La villa resta l'unica
+// coppia dal mondo 3D: non abbiamo ancora una foto reale della facciata in
+// cantiere, va sostituita appena disponibile.
 export const OPERE = [
   {
     id: 'esterno',
     titolo: 'La villa',
     sotto: 'Involucro, facciate e serramenti',
-    p: 0.40,
+    before: '/assets/opere/esterno-progetto.jpg',
+    after: '/assets/opere/esterno-consegna.jpg',
   },
   {
     id: 'soggiorno',
     titolo: 'La zona giorno',
     sotto: 'Ristrutturazione completa',
-    p: 0.494,
+    before: '/assets/video/soggiorno-costruzione-poster.jpg',
+    after: '/assets/foto/soggiorno-1.jpg',
   },
   {
     id: 'bagno',
     titolo: 'Il bagno',
     sotto: 'Chiavi in mano, marquina e calacatta',
-    p: 0.8,
+    before: '/assets/video/bagno-costruzione-poster.jpg',
+    after: '/assets/foto/bagno-reale.jpg',
   },
 ] as const;
