@@ -25,9 +25,10 @@ const GRADE = 'contrast(1.045) saturate(0.96) brightness(1.005)';
 // competere con gli asset critici (Hero, maquette) al primo carico.
 const PRELOAD_LEAD = 0.2;
 // mezza ampiezza della spazzata del portale, in progresso locale di scena.
-// Ampia quanto serve perché la materia passi con peso davanti all'obiettivo:
-// più stretta sembrerebbe uno scatto, più larga uno scivolamento.
-const HW = 0.085;
+// Ampia: il legno deve attraversare il frame con peso, occupando quasi una
+// schermata di scroll. Stretta com'era, passava via in un lampo e lo scambio
+// si intravedeva lo stesso.
+const HW = 0.30;
 // quanto lontano viaggia la superficie fuori dal frame (in % di viewport)
 const TRAVEL = 132;
 
@@ -86,12 +87,21 @@ export function RealityWindows() {
         // reale. In più, con la finestra che arriva a 1.0 la spazzata d'uscita
         // non si completerebbe mai (il progresso locale si ferma a 1) e la
         // materia resterebbe incollata a schermo pieno.
-        const sIn = sweepAt(t, w.from);
+        // La spazzata è calcolata sul progresso GLOBALE, non su quello locale
+        // della scena: così può stare a cavallo del confine tra due scene —
+        // metà sul 3D che lasciamo, metà sul reale in cui entriamo. Calcolata
+        // in locale verrebbe tagliata al bordo e non arriverebbe mai a coprire.
+        const spanP = p1 - p0;
+        const centerP = p0 + w.from * spanP;
+        const hwP = HW * spanP;
+        const sIn = clamp01((p - (centerP - hwP)) / (2 * hwP)) * 2 - 1;
         const inFlight = Math.abs(sIn) < 0.999 ? sIn : null;
 
         const port = ports.current[i];
         if (port && w.portal) {
-          if (inFlight === null || !journey || !inScene) {
+          // niente vincolo di scena: il portale DEVE poter comparire prima che
+          // la scena reale cominci, è lì che nasconde lo scambio
+          if (inFlight === null || !journey) {
             port.style.visibility = 'hidden';
           } else {
             const axis = w.portal.axis ?? 'x';

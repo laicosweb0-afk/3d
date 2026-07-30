@@ -44,14 +44,15 @@ export const REALITY_WINDOWS: RealityWindow[] = [
     // ANELLO 1 — il soggiorno si costruisce
     id: 'soggiorno',
     scene: 's07',
-    from: 0.2, to: 1.0,
+    from: 0.0, to: 1.0,
     src: '/assets/foto/soggiorno-1.jpg',
     kicker: 'Dal vero',
     caption: 'La zona giorno, nello stile con cui consegniamo.',
     video: '/assets/video/soggiorno-costruzione',
     videoDuration: 8,
-    // si entra attraversando l'anta in rovere
-    portal: { texture: '/assets/textures/rovere.jpg', axis: 'x', dir: -1 },
+    // Nessun portale: il 3D serve solo per costruire la casa dall'esterno.
+    // Appena si entra, subito il soggiorno grezzo reale — niente da vedere
+    // nel mezzo.
   },
   {
     // ANELLO 2 — si alza la piastrella e appaiono le tubazioni.
