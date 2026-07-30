@@ -14,7 +14,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { progress } from '@/lib/progress';
-import { localT, span, smooth, clamp01 } from '@/lib/scenes';
+import { localT, span, smooth, clamp01, sceneRange } from '@/lib/scenes';
 import { REALITY_WINDOWS } from '@/content/reality';
 import { asset } from '@/lib/asset';
 import { afterJourney } from './Overlays';
@@ -64,6 +64,12 @@ export function RealityWindows() {
         const fig = figs.current[i];
         if (!fig) return;
         const t = localT(p, w.scene);
+        // localT è clampato: fuori dalla scena vale 0 o 1, quindi una
+        // finestra che parte da 0 risulterebbe "accesa" anche prima della
+        // sua scena. Serve sapere se ci siamo davvero dentro — è questo che
+        // permette finestre contigue (0→1) senza buchi tra un anello e l'altro.
+        const { p0, p1 } = sceneRange(w.scene);
+        const inScene = p >= p0 && p < p1;
 
         // caricamento pigro: il video parte a scaricare solo quando la
         // finestra si avvicina, non al mount della pagina
@@ -74,16 +80,18 @@ export function RealityWindows() {
           vidEl.load();
         }
 
-        // --- il portale: due spazzate, una in entrata e una in uscita ---
+        // --- il portale: SOLO in entrata ---
+        // La catena è contigua e i fotogrammi di giunzione coincidono, quindi
+        // un portale in uscita sarebbe una spazzata di troppo in mezzo al
+        // reale. In più, con la finestra che arriva a 1.0 la spazzata d'uscita
+        // non si completerebbe mai (il progresso locale si ferma a 1) e la
+        // materia resterebbe incollata a schermo pieno.
         const sIn = sweepAt(t, w.from);
-        const sOut = sweepAt(t, w.to);
-        const inFlight = Math.abs(sIn) < 0.999 ? sIn
-          : Math.abs(sOut) < 0.999 ? sOut
-          : null;
+        const inFlight = Math.abs(sIn) < 0.999 ? sIn : null;
 
         const port = ports.current[i];
         if (port && w.portal) {
-          if (inFlight === null || !journey) {
+          if (inFlight === null || !journey || !inScene) {
             port.style.visibility = 'hidden';
           } else {
             const axis = w.portal.axis ?? 'x';
@@ -102,7 +110,7 @@ export function RealityWindows() {
         }
 
         // --- lo scambio: istantaneo, nascosto dalla copertura del portale ---
-        const realOn = journey && t >= w.from && t < w.to;
+        const realOn = journey && inScene && t >= w.from && t < w.to;
         if (realOn) realAny = true;
         fig.style.opacity = realOn ? '1' : '0';
         fig.style.visibility = realOn ? 'visible' : 'hidden';
