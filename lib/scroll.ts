@@ -14,8 +14,10 @@ let lenis: Lenis | null = null;
 export function initScroll(spacer: HTMLElement): () => void {
   gsap.registerPlugin(ScrollTrigger);
 
-  // lerp più basso = scroll più "pesante" e cinematico (premium)
-  lenis = new Lenis({ lerp: 0.085, smoothWheel: true });
+  // lerp più basso = scroll più "pesante" e cinematico (premium).
+  // wheelMultiplier < 1 = lo stesso gesto fisico percorre meno strada: rallenta
+  // tutto il viaggio, video inclusi, perché lo scrub segue lo stesso progresso.
+  lenis = new Lenis({ lerp: 0.075, smoothWheel: true, wheelMultiplier: 0.78 });
   lenis.on('scroll', ScrollTrigger.update);
   const raf = (time: number) => lenis?.raf(time * 1000);
   gsap.ticker.add(raf);

@@ -199,7 +199,9 @@ export function Villa() {
       o.visible = s > 0.001;
     });
 
-    if (doorRef.current) doorRef.current.rotation.y = doorOpen(p) * 1.9;
+    // La porta si accosta appena — non deve rivelare l'interno vuoto in 3D.
+    // L'interno lo mostra subito dopo il video reale, non un'apertura in 3D.
+    if (doorRef.current) doorRef.current.rotation.y = doorOpen(p) * 0.5;
     if (windowRef.current) windowRef.current.rotation.y = windowOpen(p) * 1.65;
 
     const w = wallOpen(p);

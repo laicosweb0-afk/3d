@@ -101,9 +101,14 @@ export function contextAmount(p: number): number {
   return on * (1 - off);
 }
 
-/** Porta d'ingresso: 0 chiusa, 1 aperta (~100°). Lo scroll la apre; la casa si richiude nel congedo. */
+/**
+ * Porta d'ingresso: 0 chiusa, 1 accostata (~26° col nuovo moltiplicatore in
+ * Villa.tsx). Si scosta solo nell'ultimo tratto della soglia, appena prima
+ * del taglio al reale — non deve rivelare l'interno vuoto in 3D per gran
+ * parte della scena. La casa si richiude nel congedo.
+ */
 export function doorOpen(p: number): number {
-  const open = smooth(span(p, pAt('s06', 0.55), pAt('s06', 0.98)));
+  const open = smooth(span(p, pAt('s06', 0.85), pAt('s06', 0.99)));
   const close = smooth(span(p, pAt('s12', 0.0), pAt('s12', 0.3)));
   return open * (1 - close);
 }
