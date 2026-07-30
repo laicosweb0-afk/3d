@@ -41,6 +41,10 @@ export function Hero() {
         ))}
       </h1>
       <p className="hero-sub">{HERO.sub}</p>
+      <p className="hero-notice">
+        <span className="hero-notice-dot" aria-hidden="true" />
+        {HERO.notice}
+      </p>
       <p className="hero-hint" aria-hidden="true">{HERO.scrollHint}</p>
     </div>
   );
