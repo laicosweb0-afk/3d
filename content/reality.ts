@@ -1,6 +1,16 @@
-// Le finestre di realtà (Direzione V4): il reale affiora dentro il
-// viaggio, guidato dallo scroll, reversibile. Il 3D compone
-// l'inquadratura, la fotografia la conferma.
+// LA CATENA REALE.
+//
+// Dal soggiorno grezzo fino al bianco finale non si vede più il 3D: si vedono
+// video veri, generati partendo dalle fotografie reali dei lavori. Il 3D resta
+// solo riferimento d'inquadratura, fuori campo.
+//
+// Il trucco della continuità: l'ULTIMO fotogramma di ogni video è il PRIMO del
+// successivo. Le giunzioni non sono transizioni, sono la stessa immagine.
+//
+//   soggiorno grezzo → soggiorno finito → si alza la piastrella →
+//   dentro le tubazioni → bagno grezzo → bagno finito → la finestra si apre → bianco
+//
+// Ogni video è scrubbato dallo scroll: è il visitatore a far costruire la casa.
 
 import type { SceneId } from '@/lib/scenes';
 
@@ -13,8 +23,7 @@ export interface RealityWindow {
   src: string;
   kicker: string;
   caption: string;
-  /** se presente: video-transizione (3D→reale) scrubbato dallo scroll,
-   * al posto del crossfade. L'ultimo frame del video è la foto reale. */
+  /** video-transizione scrubbato dallo scroll; l'ultimo frame è la foto reale */
   video?: string;
   videoDuration?: number;
   /**
@@ -22,9 +31,6 @@ export interface RealityWindow {
    * cui avviene lo scambio 3D→reale. Nessuna dissolvenza — la materia passa
    * davanti all'obiettivo e quando si scopre siamo già nel reale, come un
    * taglio nascosto di un piano sequenza.
-   *  - texture: il materiale della superficie che attraversiamo
-   *  - axis/dir: la direzione della spazzata, che segue il movimento di
-   *    camera di quel momento (avanti = orizzontale, discesa = verticale)
    */
   portal?: {
     texture: string;
@@ -35,49 +41,67 @@ export interface RealityWindow {
 
 export const REALITY_WINDOWS: RealityWindow[] = [
   {
+    // ANELLO 1 — il soggiorno si costruisce
     id: 'soggiorno',
     scene: 's07',
-    // Finestra estesa a quasi tutta la scena: qui NON si vede il 3D. Si
-    // entra col grezzo e si scorre mentre la stanza si costruisce fino al
-    // reale. Il 3D resta solo riferimento d'inquadratura, fuori campo.
     from: 0.2, to: 0.9,
     src: '/assets/foto/soggiorno-1.jpg',
     kicker: 'Dal vero',
     caption: 'La zona giorno, nello stile con cui consegniamo.',
-    // morph costruzione→foto (Seedance): la stessa identica stanza si
-    // costruisce progressivamente fino alla foto reale, stessa prospettiva
-    // e finestre. Scrubbato dallo scroll. .webm (Chromium/FF) / .mp4 (Safari)
-    video: '/assets/video/soggiorno-transizione',
-    videoDuration: 5,
-    // attraversiamo l'anta in rovere: la camera va avanti, il legno passa
+    video: '/assets/video/soggiorno-costruzione',
+    videoDuration: 8,
+    // si entra attraversando l'anta in rovere
     portal: { texture: '/assets/textures/rovere.jpg', axis: 'x', dir: -1 },
   },
   {
-    id: 'cantiere',
-    scene: 's09',
-    // le tubazioni: anche qui il reale copre la scena (video in arrivo)
-    from: 0.25, to: 0.88,
+    // ANELLO 2 — si alza la piastrella e appaiono le tubazioni.
+    // Prende il posto della vecchia scena 3D "dentro la parete": non
+    // sparisce, diventa il viaggio dentro la struttura.
+    id: 'piastrella',
+    scene: 's08',
+    from: 0.12, to: 0.92,
     src: '/assets/foto/cantiere.jpg',
-    kicker: 'Dal vero',
-    caption: 'Questo è un nostro cantiere: radiante a pavimento, prima del massetto.',
-    // scendiamo sotto il pavimento: la stratigrafia scorre verso l'alto
-    portal: { texture: '/assets/textures/marquina.jpg', axis: 'y', dir: -1 },
+    kicker: 'La qualità invisibile',
+    caption: 'Sotto ogni pavimento, il lavoro che non vedrai mai.',
+    video: '/assets/video/piastrella-tubazioni',
+    videoDuration: 8,
+    // nessun portale: arriviamo già dal reale del soggiorno, la continuità
+    // è garantita dal fotogramma condiviso
   },
   {
+    // ANELLO 3 — dentro le tubazioni fino a sbucare nel bagno grezzo
+    id: 'tubazioni',
+    scene: 's09',
+    from: 0.1, to: 0.93,
+    src: '/assets/foto/cantiere.jpg',
+    kicker: 'Dal vero',
+    caption: 'Impianti e stratigrafie: progettati e posati una volta, bene.',
+    video: '/assets/video/dentro-tubazioni',
+    videoDuration: 8,
+  },
+  {
+    // ANELLO 4 — il bagno si costruisce
     id: 'bagno',
     scene: 's10',
-    // Come il soggiorno: tutta la scena è reale. Si entra col bagno grezzo
-    // e i pezzi si montano scorrendo, fino al bagno consegnato.
-    from: 0.18, to: 0.9,
+    from: 0.1, to: 0.9,
     src: '/assets/foto/bagno-reale.jpg',
     kicker: 'Dal vero',
     caption: 'Un nostro bagno consegnato: marquina e calacatta, chiavi in mano.',
-    // morph costruzione→foto (Seedance): lo stesso identico bagno si
-    // finisce progressivamente fino alla foto reale, stessa prospettiva
-    // e finestra. Scrubbato dallo scroll.
-    video: '/assets/video/bagno-transizione',
-    videoDuration: 5,
-    // il marmo della parete riempie lo schermo e diventa il bagno vero
-    portal: { texture: '/assets/textures/calacatta.jpg', axis: 'x', dir: -1 },
+    video: '/assets/video/bagno-costruzione',
+    videoDuration: 8,
+  },
+  {
+    // ANELLO 5 — la finestra si apre e il bianco si prende tutto:
+    // è da qui che si rientra nelle sezioni del sito.
+    id: 'finestra',
+    scene: 's11',
+    // fino in fondo alla scena: il bianco del video non deve mai lasciare
+    // spazio al 3D prima che subentri il velo bianco del congedo
+    from: 0.1, to: 0.995,
+    src: '/assets/foto/bagno-reale.jpg',
+    kicker: '',
+    caption: '',
+    video: '/assets/video/finestra-bianco',
+    videoDuration: 8,
   },
 ];

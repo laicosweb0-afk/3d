@@ -8,7 +8,7 @@ import gsap from 'gsap';
 import { progress } from '@/lib/progress';
 import { localT, span, smooth, clamp01, TOTAL_VH } from '@/lib/scenes';
 import { JOURNEY_COPY } from '@/content/copy';
-import { whiteout } from '@/content/direction';
+import { whiteout, logoReveal } from '@/content/direction';
 import { asset } from '@/lib/asset';
 
 /** 1 quando il viewport ha superato la fine del viaggio (siamo nelle sezioni). */
@@ -38,12 +38,14 @@ export function Overlays() {
       });
       const w = whiteout(p);
       if (white.current) {
-        // Il bianco della chiusura accompagna l'atterraggio, poi si ritira.
-        white.current.style.opacity = String(w * 0.9 * out);
+        // Bianco PIENO: raccoglie il bianco del video della finestra e lo
+        // tiene. Se restasse trasparente si intravedrebbe il 3D sotto e il
+        // passaggio si vedrebbe. Si ritira solo entrando nelle sezioni.
+        white.current.style.opacity = String(w * out);
       }
       if (logo.current) {
         // la casa è tornata foglio bianco: ora è il logo a comparire
-        const lg = smooth(span(w, 0.55, 1)) * out;
+        const lg = logoReveal(p) * out;
         logo.current.style.opacity = String(lg);
         logo.current.style.transform = `translate(-50%, -50%) scale(${0.94 + lg * 0.06})`;
       }

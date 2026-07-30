@@ -34,7 +34,9 @@ export const SCENES: SceneDef[] = [
   { id: 's08', vh: 2.0, capitolo: 3, titolo: 'Dentro la parete' },
   { id: 's09', vh: 2.5, capitolo: 3, titolo: 'Sotto il pavimento' },
   { id: 's10', vh: 2.5, capitolo: 4, titolo: 'Il bagno' },
-  { id: 's11', vh: 1.5, capitolo: 4, titolo: 'La finestra' },
+  // La finestra ha bisogno di respiro: è l'uscita dal bagno verso il bianco,
+  // e con 1.5 schermate il video correva. A 2.5 il gesto si legge.
+  { id: 's11', vh: 2.5, capitolo: 4, titolo: 'La finestra' },
   { id: 's12', vh: 2.0, capitolo: 4, titolo: 'Il congedo' },
 ];
 

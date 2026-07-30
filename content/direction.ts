@@ -136,9 +136,22 @@ export function windowOpen(p: number): number {
   return open * (1 - close);
 }
 
-/** Bianco assoluto della chiusura (fade DOM, non di scena: il mondo resta). */
+/**
+ * Il bianco della chiusura. NON nasce dal nulla: raccoglie il bianco con cui
+ * finisce il video della finestra del bagno (fine S11) e lo tiene fino alle
+ * sezioni. Bianco su bianco: il visitatore esce dalla finestra e si ritrova
+ * nel sito senza accorgersi del passaggio.
+ */
 export function whiteout(p: number): number {
-  return smooth(span(p, pAt('s12', 0.8), pAt('s12', 1.0)));
+  return smooth(span(p, pAt('s11', 0.88), pAt('s12', 0.12)));
+}
+
+/**
+ * Il logo compare dentro il bianco, a viaggio finito — con il suo tempo,
+ * staccato dalla salita del bianco (che ormai è già piena da un pezzo).
+ */
+export function logoReveal(p: number): number {
+  return smooth(span(p, pAt('s12', 0.35), pAt('s12', 0.7)));
 }
 
 export { clamp01 };
