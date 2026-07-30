@@ -60,5 +60,6 @@ export const JOURNEY_COPY: SceneCopy[] = [
 export const HERO = {
   title: 'Trasformiamo spazi\nin case da vivere.',
   sub: 'Ristrutturazioni · Impianti · Servizi',
+  notice: 'Preparati: da qui in poi è un piccolo viaggio',
   scrollHint: 'Scorri',
 };
