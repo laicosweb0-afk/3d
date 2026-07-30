@@ -1,7 +1,10 @@
 'use client';
 
-// I testi del viaggio: entrano solo a camera quasi ferma, ancorati alla
-// finestra di p della propria scena. Aggiornamento via ticker, mai setState.
+// I testi del viaggio: card di vetro sospese, non testo appoggiato sul video.
+// Tre fasi per ogni card — entra, resta ferma (respira), esce — tutte
+// funzione pura di p: scrubbabili, reversibili, mai un tween a tempo fisso.
+// Mentre una card è in scena, lo sfondo 3D perde leggermente fuoco (l'occhio
+// deve leggere senza sforzo); torna nitido quando la card è sparita.
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
@@ -22,25 +25,80 @@ export function afterJourney(): number {
   return clamp01((window.scrollY - endY) / (window.innerHeight * 0.5));
 }
 
+// Curve di entrata/uscita: pure funzioni di un 0..1 di scroll, non del
+// tempo — restano scrubbabili al 100%, ma "sentono" come easeOutExpo /
+// easeIn perché è così che il piano sequenza deve muoversi in tutto il sito.
+function expoOut(x: number): number {
+  const t = clamp01(x);
+  return t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
+}
+function cubicIn(x: number): number {
+  const t = clamp01(x);
+  return t * t * t;
+}
+
+// Alternanza di posizione: il ritmo compositivo che il brief chiede
+// (sinistra/destra/centro/sinistra-bassa...), applicato per indice della
+// card, non per scena — così resta indipendente dal numero di beat.
+const POSITIONS = ['left', 'right', 'center', 'left-low', 'right', 'center'] as const;
+
+// mezza-finestra di entrata/uscita nel progresso locale della SCENA della
+// card (non della finestra from/to): tenuta stretta perché alcune card
+// vivono in finestre corte e devono comunque avere un tratto di sosta.
+const WIN = 0.11;
+
 export function Overlays() {
   const refs = useRef<(HTMLDivElement | null)[]>([]);
   const white = useRef<HTMLDivElement>(null);
   const logo = useRef<HTMLImageElement>(null);
+  const t0 = useRef(Math.random() * 100);
 
   useEffect(() => {
+    // il canvas 3D: lazy, può montare dopo questo effetto
+    let canvas: HTMLElement | null = null;
     const update = () => {
+      if (!canvas) canvas = document.querySelector<HTMLElement>('.world-canvas');
       const p = progress.smoothed;
       const out = 1 - afterJourney(); // tutto il layer del viaggio si congeda
+      const time = t0.current + performance.now() / 1000;
+      let maxA = 0;
+
       JOURNEY_COPY.forEach((c, i) => {
         const el = refs.current[i];
         if (!el) return;
         const t = localT(p, c.scene);
-        const win = 0.14;
-        const a = out * smooth(span(t, c.from, c.from + win)) * (1 - smooth(span(t, c.to - win, c.to)));
+
+        const enterT = expoOut(span(t, c.from, c.from + WIN));
+        const exitT = cubicIn(span(t, c.to - WIN, c.to));
+        const a = out * enterT * (1 - exitT);
+        if (a > maxA) maxA = a;
+
+        // "quanto è ferma": 1 in pausa di lettura, scende durante enter/exit
+        const steady = Math.min(enterT, 1 - exitT);
+        const breathe = steady > 0.985 ? Math.sin(time * 0.55 + i * 1.7) * 0.11 : 0;
+
+        // traslazione: 80px→0 in entrata (≈5rem), poi 0→-70px in uscita (≈4.375rem)
+        const ty = (1 - enterT) * 5 - exitT * 4.375 + breathe;
+        // scala: 0.94→1 in entrata, poi 1→0.97 in uscita
+        const scale = 0.94 + enterT * 0.06 - exitT * 0.03;
+        // blur della card stessa (non il vetro, quello è fisso in CSS):
+        // 10px→0 in entrata, 0→8px in uscita
+        const blurPx = (1 - enterT) * 10 + exitT * 8;
+
         el.style.opacity = String(a);
-        el.style.transform = `translateY(${(1 - a) * 1.2}rem)`;
-        el.style.visibility = a < 0.005 ? 'hidden' : 'visible';
+        el.style.transform = `translateY(${ty.toFixed(3)}rem) scale(${scale.toFixed(4)})`;
+        el.style.filter = blurPx > 0.05 ? `blur(${blurPx.toFixed(2)}px)` : 'none';
+        el.style.visibility = a < 0.004 ? 'hidden' : 'visible';
       });
+
+      // effetto focus: lo sfondo 3D perde leggermente fuoco mentre si legge,
+      // torna nitido quando nessuna card è in scena
+      if (canvas) {
+        canvas.style.filter = maxA > 0.01
+          ? `brightness(${(1 - 0.1 * maxA).toFixed(3)}) contrast(${(1 - 0.08 * maxA).toFixed(3)}) saturate(${(1 - 0.05 * maxA).toFixed(3)}) blur(${(2 * maxA).toFixed(2)}px)`
+          : 'none';
+      }
+
       const w = whiteout(p);
       if (white.current) {
         // Bianco PIENO: raccoglie il bianco del video della finestra e lo
@@ -61,17 +119,27 @@ export function Overlays() {
 
   return (
     <>
-      {JOURNEY_COPY.map((c, i) => (
-        <div
-          key={`${c.scene}-${i}`}
-          className={`scene-copy scene-copy--${c.scene}`}
-          ref={(el) => { refs.current[i] = el; }}
-        >
-          {c.kicker && <p className="scene-copy-kicker">{c.kicker}</p>}
-          <h2 className="scene-copy-title">{c.title}</h2>
-          {c.body && <p className="scene-copy-body">{c.body}</p>}
-        </div>
-      ))}
+      {JOURNEY_COPY.map((c, i) => {
+        const isFinal = c.scene === 's12';
+        const pos = isFinal ? 'center' : POSITIONS[i % POSITIONS.length];
+        return (
+          <div
+            key={`${c.scene}-${i}`}
+            className={`scene-copy scene-copy--${pos}${isFinal ? ' scene-copy--final' : ''}`}
+            ref={(el) => { refs.current[i] = el; }}
+          >
+            {!isFinal && <span className="scene-copy-num">{String(i + 1).padStart(2, '0')}</span>}
+            {c.kicker && <p className="scene-copy-kicker">{c.kicker}</p>}
+            <h2 className="scene-copy-title">{c.title}</h2>
+            {c.body && <p className="scene-copy-body">{c.body}</p>}
+            {!isFinal && (
+              <p className="scene-copy-cta" aria-hidden="true">
+                Continua <span className="scene-copy-arrow">↓</span>
+              </p>
+            )}
+          </div>
+        );
+      })}
       <div className="whiteout" ref={white} aria-hidden="true" />
       <img
         className="whiteout-logo"
