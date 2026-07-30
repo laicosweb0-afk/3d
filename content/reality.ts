@@ -17,6 +17,20 @@ export interface RealityWindow {
    * al posto del crossfade. L'ultimo frame del video è la foto reale. */
   video?: string;
   videoDuration?: number;
+  /**
+   * Il PORTALE: la superficie architettonica che riempie il frame e dentro
+   * cui avviene lo scambio 3D→reale. Nessuna dissolvenza — la materia passa
+   * davanti all'obiettivo e quando si scopre siamo già nel reale, come un
+   * taglio nascosto di un piano sequenza.
+   *  - texture: il materiale della superficie che attraversiamo
+   *  - axis/dir: la direzione della spazzata, che segue il movimento di
+   *    camera di quel momento (avanti = orizzontale, discesa = verticale)
+   */
+  portal?: {
+    texture: string;
+    axis?: 'x' | 'y';
+    dir?: 1 | -1;
+  };
 }
 
 export const REALITY_WINDOWS: RealityWindow[] = [
@@ -32,6 +46,8 @@ export const REALITY_WINDOWS: RealityWindow[] = [
     // e finestre. Scrubbato dallo scroll. .webm (Chromium/FF) / .mp4 (Safari)
     video: '/assets/video/soggiorno-transizione',
     videoDuration: 5,
+    // attraversiamo l'anta in rovere: la camera va avanti, il legno passa
+    portal: { texture: '/assets/textures/rovere.jpg', axis: 'x', dir: -1 },
   },
   {
     id: 'cantiere',
@@ -40,6 +56,8 @@ export const REALITY_WINDOWS: RealityWindow[] = [
     src: '/assets/foto/cantiere.jpg',
     kicker: 'Dal vero',
     caption: 'Questo è un nostro cantiere: radiante a pavimento, prima del massetto.',
+    // scendiamo sotto il pavimento: la stratigrafia scorre verso l'alto
+    portal: { texture: '/assets/textures/marquina.jpg', axis: 'y', dir: -1 },
   },
   {
     id: 'bagno',
@@ -53,5 +71,7 @@ export const REALITY_WINDOWS: RealityWindow[] = [
     // e finestra. Scrubbato dallo scroll.
     video: '/assets/video/bagno-transizione',
     videoDuration: 5,
+    // il marmo della parete riempie lo schermo e diventa il bagno vero
+    portal: { texture: '/assets/textures/calacatta.jpg', axis: 'x', dir: -1 },
   },
 ];
