@@ -554,16 +554,22 @@ body {
   margin-top: 0.2rem;
 }
 
-/* La rivelazione a scroll: il cantiere scorre via da destra a sinistra,
-   sotto compare la consegna. Nessun trascinamento — lo fa lo scroll. */
-.or {
+/* Prima/Dopo a trascinamento: cantiere reale / consegna reale */
+.ba {
   position: relative;
   aspect-ratio: 16 / 10;
   overflow: hidden;
   border-radius: 2px;
+  cursor: ew-resize;
+  user-select: none;
+  touch-action: pan-y;
   background: var(--grigio-100);
 }
-.or-img {
+.ba:focus-visible {
+  outline: 2px solid var(--pietra);
+  outline-offset: 3px;
+}
+.ba-img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -572,21 +578,50 @@ body {
   display: block;
   filter: contrast(1.045) saturate(0.96) brightness(1.005);
 }
-.or-before {
+.ba-clip {
   position: absolute;
   inset: 0;
-  will-change: transform;
 }
-.or-edge {
+.ba-line {
   position: absolute;
   top: 0;
   bottom: 0;
-  right: 0;
   width: 1px;
   background: var(--bianco);
-  box-shadow: 0 0 22px 2px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 0 0.5px rgba(23, 24, 26, 0.4);
+  transform: translateX(-0.5px);
 }
-.or-labels {
+.ba-handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--bianco) 85%, transparent);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--grigio-300);
+}
+.ba-handle::before,
+.ba-handle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-left: 1.5px solid var(--antracite);
+  border-bottom: 1.5px solid var(--antracite);
+}
+.ba-handle::before {
+  left: 6px;
+  transform: translateY(-50%) rotate(45deg);
+}
+.ba-handle::after {
+  right: 6px;
+  transform: translateY(-50%) rotate(225deg);
+}
+.ba-labels {
   position: absolute;
   left: 0.9rem;
   right: 0.9rem;
@@ -597,11 +632,8 @@ body {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--bianco);
-  text-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.35);
   pointer-events: none;
-}
-.or-labels span {
-  will-change: opacity;
 }
 
 /* gli ambienti */
