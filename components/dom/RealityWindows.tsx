@@ -122,7 +122,10 @@ export function RealityWindows() {
 
         const vid = vids.current[i];
         if (vid && w.video) {
-          const morph = clamp01(inside / 0.85);
+          // La trasformazione si completa al 74% della finestra: l'ultimo
+          // quarto è una PAUSA sulla stanza finita. Serve a far respirare il
+          // gesto e a dare tempo di leggere il testo prima di ripartire.
+          const morph = clamp01(inside / 0.74);
           const dur = (w.videoDuration ?? vid.duration) || 2;
           const target = smooth(morph) * Math.max(dur - 0.05, 0.05);
           if (Number.isFinite(target) && Math.abs(vid.currentTime - target) > 0.016) {
@@ -141,8 +144,10 @@ export function RealityWindows() {
         // dell'uscita: leggibile, mai a cavallo di un portale
         const cap = caps.current[i];
         if (cap) {
+          // Il testo vive nella pausa: entra quando la stanza è quasi fatta e
+          // resta fino a ridosso dell'uscita, così c'è davvero il tempo di leggerlo.
           const ca = realOn
-            ? smooth(span(inside, 0.08, 0.26)) * (1 - smooth(span(inside, 0.72, 0.94)))
+            ? smooth(span(inside, 0.30, 0.46)) * (1 - smooth(span(inside, 0.88, 0.98)))
             : 0;
           cap.style.opacity = String(ca);
           cap.style.transform = `translateY(${((1 - ca) * 0.7).toFixed(2)}rem)`;
