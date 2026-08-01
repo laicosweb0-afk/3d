@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './brand-font.css';
 import './globals.css';
 
-const TITLE = 'Mondial Service — Ristrutturazioni, Impianti, Servizi | Mordano (BO)';
+const TITLE = 'Mondial Service Srl — Ristrutturazioni, Impianti, Servizi | Mordano (BO)';
 const DESCRIPTION =
   'Trasformiamo spazi in case da vivere. Ristrutturazioni complete, impianti e bagni chiavi in mano a Mordano (BO) e dintorni. Garanzia, affidabilità, disponibili 24/7.';
 
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     title: TITLE,
     description: DESCRIPTION,
     url: '/',
-    siteName: 'Mondial Service',
+    siteName: 'Mondial Service Srl',
     locale: 'it_IT',
     type: 'website',
     images: [{ url: '/assets/foto/soggiorno-1.jpg', width: 1264, height: 848 }],
