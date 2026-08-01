@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /mediapro
+
+Sitemap: https://www.mondialservicesrl.it/sitemap.xml

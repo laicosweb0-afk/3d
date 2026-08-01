@@ -280,8 +280,20 @@ body {
   text-align: center;
 }
 .scene-copy--final {
-  bottom: 44%;
-  width: clamp(19rem, 38vw, 34rem);
+  /* il congedo vive DENTRO il bianco (.whiteout, z-index 15), alla pari col
+     logo (16): senza questo la card resterebbe sempre coperta dal velo,
+     indipendentemente dai suoi stessi tempi di entrata/uscita. Niente vetro:
+     su bianco pieno una card di vetro sarebbe solo un'ombra inutile — qui è
+     tipografia pura, sotto il logo che l'ha preceduta. */
+  z-index: 16;
+  bottom: 15%;
+  width: clamp(19rem, 38vw, 32rem);
+  background: none;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 0;
 }
 .scene-copy-num {
   display: block;

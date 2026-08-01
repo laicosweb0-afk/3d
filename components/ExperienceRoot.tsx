@@ -142,7 +142,7 @@ export function ExperienceRoot() {
       <header className="chrome">
         <span className="chrome-logo">
           <Monogram className="chrome-mark" />
-          Mondial Service
+          Mondial Service Srl
         </span>
         <div className="chrome-actions">
           <AudioToggle />
