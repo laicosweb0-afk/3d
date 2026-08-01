@@ -21,7 +21,11 @@ export const debugState = {
   still: false,
 };
 
-export function dampProgress(dt: number, lambda = 5): void {
+// lambda alto = il contenuto insegue lo scroll reale quasi subito (poco
+// "vago" al tocco, dove non c'è nessun altro ammorbidimento a monte); troppo
+// alto e si perde la morbidezza cinematica della camera. 14 è il punto in cui
+// il ritardo non si nota più ma il movimento resta fluido, non meccanico.
+export function dampProgress(dt: number, lambda = 14): void {
   const k = 1 - Math.exp(-lambda * dt);
   const prev = progress.smoothed;
   progress.smoothed += (progress.p - progress.smoothed) * k;
