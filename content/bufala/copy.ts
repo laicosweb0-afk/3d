@@ -19,13 +19,20 @@ export interface SceneCopy {
   titolo: string;
   /** Riga di accompagnamento, opzionale. Corpo piccolo, sotto il titolo. */
   nota?: string;
+  /** Solo per la hero: il payoff. Non è un sottotitolo — vive lontano dalla
+   *  headline, in fondo al campo. La distanza è il messaggio: un marchio di
+   *  lusso non ha bisogno di stare attaccato al proprio nome. */
+  payoff?: string;
 }
 
 export const sceneCopy: Record<SceneId, SceneCopy> = {
-  // L'attacco. Non si capisce cosa si sta guardando: il testo non deve
-  // spiegarlo, deve solo invitare a continuare.
+  // La hero. Headline dominante, payoff piccolo e lontanissimo, niente
+  // altro: nessun cliché di categoria (tradizione, artigianale, qualità,
+  // genuinità, passione) — sono le parole che ogni caseificio usa, e sono
+  // esattamente ciò che impedisce di sembrare un marchio internazionale.
   s01: {
-    titolo: 'Latte, caglio, sale.',
+    titolo: 'La semplicità\nrichiede eccellenza.',
+    payoff: 'Mozzarella di Bufala',
     nota: 'Scorri',
   },
 

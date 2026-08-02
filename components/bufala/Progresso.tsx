@@ -10,9 +10,10 @@
 // percorsa), perché il registro è silenzioso: informa, non richiama.
 
 import { useEffect, useRef } from 'react';
-import { CHAPTERS, SCENES, sceneAt, sceneRange } from '@/lib/bufala/scenes';
+import { CHAPTERS, SCENES, sceneAt, sceneRange, smooth, span } from '@/lib/bufala/scenes';
 
 const barra = {
+  radice: null as HTMLDivElement | null,
   percorsa: null as HTMLDivElement | null,
   etichetta: null as HTMLDivElement | null,
 };
@@ -24,20 +25,23 @@ const inizioCapitoli = CHAPTERS.map((_, i) => {
 });
 
 export function Progresso() {
+  const radice = useRef<HTMLDivElement>(null);
   const percorsa = useRef<HTMLDivElement>(null);
   const etichetta = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    barra.radice = radice.current;
     barra.percorsa = percorsa.current;
     barra.etichetta = etichetta.current;
     return () => {
+      barra.radice = null;
       barra.percorsa = null;
       barra.etichetta = null;
     };
   }, []);
 
   return (
-    <div className="bufala-progresso" aria-hidden="true">
+    <div ref={radice} className="bufala-progresso" aria-hidden="true" style={{ opacity: 0 }}>
       <div ref={etichetta} className="micro capitolo">
         {CHAPTERS[0]}
       </div>
@@ -55,7 +59,16 @@ export function Progresso() {
 Progresso.render = function render(p: number): void {
   const barraPercorsa = barra.percorsa;
   const et = barra.etichetta;
-  if (!barraPercorsa || !et) return;
+  const radice = barra.radice;
+  if (!barraPercorsa || !et || !radice) return;
+
+  // Sulla hero l'indicatore non c'è: quella schermata deve restare la
+  // headline e nient'altro. Compare quando il viaggio è già cominciato,
+  // cioè quando serve davvero — orientare chi sta già scorrendo.
+  const inizio = sceneRange(SCENES[0].id).p1;
+  const comparsa = smooth(span(p, inizio * 0.55, inizio));
+  radice.style.opacity = comparsa.toFixed(3);
+  radice.style.visibility = comparsa < 0.01 ? 'hidden' : 'visible';
 
   barraPercorsa.style.transform = `scaleY(${p.toFixed(4)})`;
 

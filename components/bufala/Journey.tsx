@@ -88,16 +88,27 @@ export function Journey() {
       <Progresso />
 
       <div ref={overlayRef} className="bufala-overlay" aria-hidden="true">
-        {SCENES.map((s) => (
-          <div key={s.id} className="scena" data-scena={s.id} style={{ opacity: 0 }}>
-            <h1>{sceneCopy[s.id].titolo}</h1>
-            {sceneCopy[s.id].nota && (
-              <p className="micro" style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-                {sceneCopy[s.id].nota}
-              </p>
-            )}
-          </div>
-        ))}
+        {SCENES.map((s) => {
+          const c = sceneCopy[s.id];
+          // La hero ha una composizione propria: headline in alto, payoff
+          // in fondo al campo. Tutte le altre scene condividono lo stesso
+          // impaginato, perché la ripetizione è ciò che tiene il ritmo.
+          const hero = Boolean(c.payoff);
+          return (
+            <div
+              key={s.id}
+              className={hero ? 'scena scena--hero' : 'scena'}
+              data-scena={s.id}
+              style={{ opacity: 0 }}
+            >
+              <h1>{c.titolo}</h1>
+              {hero && <span aria-hidden="true" />}
+              {c.payoff && <p className="payoff">{c.payoff}</p>}
+              {c.nota && !hero && <p className="micro nota">{c.nota}</p>}
+              {c.nota && hero && <p className="micro invito">{c.nota}</p>}
+            </div>
+          );
+        })}
       </div>
 
       {/* Lo spacer genera lo scroll del viaggio: la sua altezza è la somma

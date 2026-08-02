@@ -142,18 +142,69 @@
 .bufala-overlay {
   position: fixed;
   inset: 0;
+  /* Una sola cella che occupa tutto il campo: le scene ci stanno dentro
+     tutte, e ciascuna decide come disporsi. */
   display: grid;
-  align-content: start;
-  justify-items: center;
-  padding: clamp(3rem, 11vh, 8rem) 6vw 0;
+  grid-template: 1fr / 1fr;
+  padding: clamp(3rem, 11vh, 8rem) 6vw clamp(2rem, 7vh, 4.5rem);
   z-index: 2;
   pointer-events: none;
 }
 
 .bufala-overlay .scena {
   grid-area: 1 / 1;
+  align-self: start;
+  justify-self: center;
   text-align: center;
   will-change: opacity, transform;
+}
+
+.bufala-overlay .nota {
+  margin-top: 1.75rem;
+}
+
+/* — La hero —
+   Headline dominante in alto, payoff minuscolo in fondo al campo. Fra i due
+   c'è tutto il vuoto che il viewport concede: la distanza è la composizione.
+   Un payoff appiccicato sotto il titolo lo trasformerebbe in un
+   sottotitolo — e un sottotitolo è esattamente ciò che i marchi di lusso
+   non hanno. */
+.bufala-overlay .scena--hero {
+  align-self: stretch;
+  justify-self: stretch;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  justify-items: center;
+  width: 100%;
+}
+
+/* La headline della hero respira più di ogni altro titolo del sito. */
+.bufala-overlay .scena--hero h1 {
+  font-weight: 400;           /* il peso pieno grida; a questa scala serve il contrario */
+  letter-spacing: -0.022em;
+  line-height: 1.04;
+  max-width: 16ch;            /* forza il ritorno a capo dove lo vogliamo noi */
+}
+
+/* Il payoff: piccolo, tracciato, in fondo. Non compete mai con la headline. */
+.bufala-overlay .scena--hero .payoff {
+  font-family: var(--font-testo);
+  font-size: clamp(0.68rem, 0.9vw, 0.78rem);
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--latte-70);
+  margin: 0 0 1.5rem;
+  padding-left: 0.34em;       /* compensa il tracking sull'ultima lettera */
+}
+
+/* L'invito a scorrere sta sotto il payoff, ancora più in sordina: è
+   funzionale, non fa parte del messaggio. */
+.bufala-overlay .scena--hero .invito {
+  font-size: 0.6rem;
+  letter-spacing: 0.24em;
+  color: var(--latte-20);
+  padding-left: 0.24em;
 }
 
 /* Velatura sotto la tipografia: nelle scene macro il soggetto riempie il
