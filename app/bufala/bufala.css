@@ -6,6 +6,10 @@
 .bufala {
   /* — Palette (Direzione §3) — */
   --verde-profondo: #0e2018;
+  /* Il verde al centro della scena: più chiaro del profondo, così il fondo
+     si legge come verde e non come nero. È il colore che il visitatore
+     percepisce davvero — il profondo lavora ai bordi. */
+  --verde-alto: #16301f;
   --nero: #0a0a0a;
   --noce-scuro: #2b1d14;
   --ottone: #b08d57;
@@ -29,7 +33,7 @@
   --spazio-sezione: clamp(6rem, 14vh, 12rem);
   --misura-testo: 62ch; /* ~70 caratteri con questa famiglia */
 
-  background: var(--nero);
+  background: var(--verde-profondo);
   color: var(--latte);
   font-family: var(--font-testo);
   font-weight: 400;
@@ -89,9 +93,45 @@
   position: fixed;
   inset: 0;
   overflow: hidden;
-  /* Il fondo non è mai nero piatto: sfumatura verde→nero (Direzione §3). */
+  /* Il fondo non è mai nero piatto (Direzione §3), ma il verde deve anche
+     leggersi *come* verde: la sfumatura tiene il colore pieno per gran parte
+     del campo e scende al nero solo agli angoli. Una caduta più rapida
+     faceva sembrare la scena semplicemente nera. */
   background:
-    radial-gradient(120% 90% at 50% 38%, var(--verde-profondo) 0%, var(--nero) 72%);
+    radial-gradient(140% 110% at 50% 42%,
+      var(--verde-alto) 0%,
+      var(--verde-profondo) 55%,
+      var(--nero) 100%);
+}
+
+/* Il soggetto: segnaposto finché non arrivano gli asset del prodotto.
+   Una forma luminosa e bagnata, centrata — obbedisce già alla regia, così
+   il ritmo si può giudicare prima di generare qualsiasi immagine. */
+.bufala-stage .soggetto {
+  position: absolute;
+  left: 50%;
+  /* Sotto il centro: lascia il terzo superiore alla tipografia. */
+  top: 62%;
+  width: min(44vh, 60vw);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background:
+    radial-gradient(38% 34% at 38% 30%, rgb(246 241 228 / 0.9), transparent 60%),
+    radial-gradient(closest-side, rgb(246 241 228 / 0.28), rgb(246 241 228 / 0.05) 70%, transparent 78%);
+  will-change: transform, opacity;
+}
+
+/* La goccia della transizione-firma: nasce in S01, cade in S06. */
+.bufala-stage .goccia {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 0.5rem;
+  height: 0.72rem;
+  border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
+  background: rgb(246 241 228 / 0.85);
+  will-change: transform, opacity;
 }
 
 .bufala-spacer {
@@ -100,19 +140,23 @@
   pointer-events: none;
 }
 
-/* Gli overlay di testo del viaggio: sopra il palco, sotto le sezioni. */
+/* Gli overlay di testo del viaggio: sopra il palco, sotto le sezioni.
+   I testi vivono nel terzo superiore, il soggetto nei due terzi sotto: la
+   tipografia non tocca mai il prodotto (Direzione §4, stessa regola già
+   adottata su Mondial Service). Ne esce anche l'impaginato da copertina. */
 .bufala-overlay {
   position: fixed;
   inset: 0;
   display: grid;
-  place-items: center;
-  padding: 0 6vw;
+  align-content: start;
+  justify-items: center;
+  padding: clamp(3rem, 11vh, 8rem) 6vw 0;
   z-index: 2;
   pointer-events: none;
 }
 
 .bufala-overlay .scena {
-  position: absolute;
+  grid-area: 1 / 1;
   text-align: center;
   will-change: opacity, transform;
 }
@@ -122,7 +166,9 @@
 .bufala-sezioni {
   position: relative;
   z-index: 3;
-  background: var(--nero);
+  /* Le sezioni non ripartono dal nero: il verde continua sotto il viaggio,
+     così il passaggio dal piano sequenza al documento non è uno stacco. */
+  background: var(--verde-profondo);
   padding: var(--spazio-sezione) 6vw;
   display: grid;
   gap: var(--spazio-sezione);
