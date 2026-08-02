@@ -104,22 +104,17 @@
       var(--nero) 100%);
 }
 
-/* Il soggetto: segnaposto finché non arrivano gli asset del prodotto.
-   Una forma luminosa e bagnata, centrata — obbedisce già alla regia, così
-   il ritmo si può giudicare prima di generare qualsiasi immagine. */
-.bufala-stage .soggetto {
+/* Gli strati del viaggio: una immagine per inquadratura, sovrapposte e
+   incrociate dallo scroll. `cover` perché il palco è a tutto schermo e il
+   formato dello schermo non è quello dell'immagine. */
+.bufala-stage .strato {
   position: absolute;
-  left: 50%;
-  /* Sotto il centro: lascia il terzo superiore alla tipografia. */
-  top: 62%;
-  width: min(44vh, 60vw);
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  border-radius: 50%;
-  background:
-    radial-gradient(38% 34% at 38% 30%, rgb(246 241 228 / 0.9), transparent 60%),
-    radial-gradient(closest-side, rgb(246 241 228 / 0.28), rgb(246 241 228 / 0.05) 70%, transparent 78%);
+  inset: 0;
+  background-position: center 58%;
+  background-size: cover;
+  background-repeat: no-repeat;
   will-change: transform, opacity;
+  transform-origin: center 58%;
 }
 
 /* La goccia della transizione-firma: nasce in S01, cade in S06. */

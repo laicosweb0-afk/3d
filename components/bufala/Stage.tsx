@@ -1,53 +1,81 @@
 'use client';
 
-// Il palco: ciò che si vede dietro i testi. Resta fisso mentre lo spacer
-// scorre, ed è l'unico punto in cui entreranno gli asset del prodotto.
+// Il palco: le immagini del viaggio, dietro i testi. Resta fisso mentre lo
+// spacer scorre.
 //
-// Stato: nessun asset è ancora stato generato, quindi il soggetto è un
-// segnaposto — una forma luminosa che obbedisce alla regia vera
-// (content/bufala/direction.ts). Serve a validare ritmo, distanze e
-// dissolvenze prima di spendere crediti in immagini.
+// Ogni immagine distinta viene montata una volta sola e riusata da tutte le
+// scene che la dichiarano (content/bufala/direction.ts): montarne una per
+// scena significherebbe scaricare due volte lo stesso file, e far
+// ricomparire un'immagine già vista è un mezzo di regia voluto.
 //
-// Quando gli asset arriveranno, cambia solo *cosa* viene disegnato: la
-// regia, i tempi e il resto del sistema restano com'è.
+// La distanza (`zoom`) è continua attraverso i confini di scena, così la
+// camera non scatta mai; l'opacità invece incrocia, così le inquadrature si
+// danno il cambio senza stacchi.
 
-import { useEffect, useRef } from 'react';
-import { SCENES, localT, sceneWeight, smooth, span, sceneRange } from '@/lib/bufala/scenes';
+import { useEffect, useMemo, useRef } from 'react';
+import {
+  SCENES, localT, sceneWeight, smooth, span, sceneRange,
+} from '@/lib/bufala/scenes';
 import { regia, goccia } from '@/content/bufala/direction';
+import { immagini } from '@/content/bufala/assets';
+
+type Chiave = keyof typeof immagini;
 
 const palco = {
-  soggetto: null as HTMLDivElement | null,
+  strati: new Map<Chiave, HTMLDivElement>(),
   goccia: null as HTMLDivElement | null,
 };
 
+/** Le immagini effettivamente usate, senza duplicati. */
+const chiaviUsate = Array.from(
+  new Set(SCENES.map((s) => regia[s.id].immagine)),
+) as Chiave[];
+
 export function Stage() {
-  const soggetto = useRef<HTMLDivElement>(null);
   const drop = useRef<HTMLDivElement>(null);
+  const rifs = useMemo(
+    () => new Map<Chiave, React.RefObject<HTMLDivElement | null>>(
+      chiaviUsate.map((k) => [k, { current: null }]),
+    ),
+    [],
+  );
 
   useEffect(() => {
-    palco.soggetto = soggetto.current;
+    for (const [k, r] of rifs) if (r.current) palco.strati.set(k, r.current);
     palco.goccia = drop.current;
     return () => {
-      palco.soggetto = null;
+      palco.strati.clear();
       palco.goccia = null;
     };
-  }, []);
+  }, [rifs]);
 
   return (
     <div className="bufala-stage" aria-hidden="true">
-      <div ref={soggetto} className="soggetto" />
+      {chiaviUsate.map((k) => (
+        <div
+          key={k}
+          ref={(el) => {
+            const r = rifs.get(k);
+            if (r) r.current = el;
+          }}
+          className="strato"
+          style={{
+            backgroundImage: `url(${immagini[k].src})`,
+            opacity: 0,
+          }}
+        />
+      ))}
       <div ref={drop} className="goccia" />
     </div>
   );
 }
 
-/** Interpola dentro la scena attiva i valori dichiarati nella regia. */
+/** Interpola dentro la scena in cui p ricade i valori dichiarati nella regia.
+ *  Si usa la scena "contenitrice" e non quella di peso maggiore: la distanza
+ *  deve restare continua anche durante le dissolvenze, altrimenti scatta. */
 function valori(p: number) {
-  // La scena "attiva" ai fini della regia è quella in cui p ricade davvero,
-  // non quella col peso maggiore: la distanza deve essere continua anche
-  // durante le dissolvenze incrociate, altrimenti la camera scatta.
   for (const s of SCENES) {
-    const { p0, p1 } = sceneRange(s.id);
+    const { p1 } = sceneRange(s.id);
     if (p <= p1 || s.id === SCENES[SCENES.length - 1].id) {
       const r = regia[s.id];
       const t = smooth(localT(p, s.id));
@@ -61,19 +89,26 @@ function valori(p: number) {
   return { zoom: 1, luce: 1, deriva: 0 };
 }
 
-/**
- * Aggiorna il palco per un dato progresso. Chiamata a ogni frame dal loop
- * di Journey: solo transform e opacità, nessun lavoro di layout.
- */
 Stage.render = function render(p: number): void {
-  const sog = palco.soggetto;
-  if (!sog) return;
-
   const { zoom, luce, deriva } = valori(p);
-  sog.style.transform = `translate3d(0, ${(deriva * 100).toFixed(2)}vh, 0) scale(${zoom.toFixed(3)})`;
-  sog.style.opacity = luce.toFixed(3);
 
-  // La goccia: nasce in S01, resta sospesa, cade in S06.
+  // Il peso di ciascuna immagine è la somma dei pesi delle scene che la
+  // usano: se due scene consecutive condividono l'inquadratura, lo strato
+  // resta pieno attraverso il confine invece di sfumare contro sé stesso.
+  const pesi = new Map<Chiave, number>();
+  for (const s of SCENES) {
+    const k = regia[s.id].immagine;
+    pesi.set(k, (pesi.get(k) ?? 0) + sceneWeight(p, s.id));
+  }
+
+  for (const [k, el] of palco.strati) {
+    const w = Math.min(pesi.get(k) ?? 0, 1);
+    el.style.opacity = (w * luce).toFixed(3);
+    el.style.transform =
+      `translate3d(0, ${(deriva * 100).toFixed(2)}vh, 0) scale(${zoom.toFixed(3)})`;
+    el.style.visibility = w < 0.005 ? 'hidden' : 'visible';
+  }
+
   const g = palco.goccia;
   if (!g) return;
   const nascita = smooth(span(p, sceneRange('s01').p0, sceneRange('s01').p1 * 0.8));
@@ -81,10 +116,9 @@ Stage.render = function render(p: number): void {
   const y = goccia.nascita.da
     + (goccia.nascita.a - goccia.nascita.da) * nascita
     + (goccia.caduta - goccia.nascita.a) * cade;
-  // Sparisce col congedo, come tutto il resto.
   const viva = 1 - smooth(span(p, sceneRange('s08').p0, sceneRange('s08').p1));
   g.style.transform = `translate3d(-50%, ${(y * 100).toFixed(2)}vh, 0)`;
-  g.style.opacity = (nascita * viva * 0.9).toFixed(3);
+  g.style.opacity = (nascita * viva * 0.85).toFixed(3);
 };
 
 /** Esposto per QA: cosa fa la regia a un dato p. */
@@ -92,8 +126,8 @@ export function statoScene(p: number) {
   return SCENES.map((s) => ({
     id: s.id,
     titolo: s.titolo,
+    immagine: regia[s.id].immagine,
     t: Number(localT(p, s.id).toFixed(3)),
     peso: Number(sceneWeight(p, s.id).toFixed(3)),
-    nota: regia[s.id].nota,
   }));
 }

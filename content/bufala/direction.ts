@@ -7,8 +7,13 @@
 // distanza, e `zoom` è il parametro che conta. Tutto il resto è contorno.
 
 import type { SceneId } from '@/lib/bufala/scenes';
+import { immagini } from './assets';
 
 export interface Regia {
+  /** L'immagine che occupa il palco in questa scena. Scene diverse possono
+   *  condividere la stessa: il ritorno di un'inquadratura è un mezzo di
+   *  regia, non una ripetizione — è ciò che tiene insieme il viaggio. */
+  immagine: keyof typeof immagini;
   /** Distanza dal soggetto, da inizio a fine scena. 1 = inquadratura piena;
    *  sopra 1 si è dentro il dettaglio, sotto 1 si è lontani. */
   zoom: [number, number];
@@ -27,6 +32,7 @@ export const regia: Record<SceneId, Regia> = {
   // sia. Il movimento è quasi fermo — deve sembrare un fermo immagine che
   // respira, così il primo scroll sorprende.
   s01: {
+    immagine: 'macro',
     zoom: [2.6, 2.35],
     luce: [0.55, 0.7],
     nota: 'Macro illeggibile. Immobile: il movimento arriva dopo, ed è il ritiro.',
@@ -35,6 +41,7 @@ export const regia: Record<SceneId, Regia> = {
   // Il ritiro: è la transizione-firma del sito. Nessun taglio, solo
   // distanza che cresce finché la forma si dichiara.
   s02: {
+    immagine: 'intera',
     zoom: [2.35, 1.0],
     luce: [0.7, 1.0],
     nota: 'Il ritiro. La stessa inquadratura passa da astratta a riconoscibile.',
@@ -42,6 +49,7 @@ export const regia: Record<SceneId, Regia> = {
 
   // Si torna dentro, ma ora sapendo cosa si guarda: è un'altra cosa.
   s03: {
+    immagine: 'macro',
     zoom: [1.0, 2.1],
     luce: [1.0, 0.85],
     nota: 'Ritorno in macro, con lo sguardo informato: la materia, non l’enigma.',
@@ -50,6 +58,7 @@ export const regia: Record<SceneId, Regia> = {
   // Le mani: prima scala umana. La camera indietreggia per farci stare
   // il gesto, e per la prima volta il soggetto non è solo.
   s04: {
+    immagine: 'mani',
     zoom: [2.1, 0.95],
     luce: [0.85, 0.95],
     deriva: [0, -0.02],
@@ -59,6 +68,7 @@ export const regia: Record<SceneId, Regia> = {
   // Il taglio: il movimento più lento di tutto il sito. Avvicinamento
   // minimo su una scena lunga — è la lentezza a dare peso, non l'ampiezza.
   s05: {
+    immagine: 'taglio',
     zoom: [0.95, 1.35],
     luce: [0.95, 1.0],
     nota: 'Il clou. Scena lunga, movimento corto: il tempo fa il lavoro.',
@@ -67,6 +77,7 @@ export const regia: Record<SceneId, Regia> = {
   // Il tempo: la luce cambia e la goccia dell'apertura finisce di cadere.
   // La distanza resta ferma — qui non ci si muove, si aspetta.
   s06: {
+    immagine: 'intera',
     // La distanza finale deve combaciare con l'inizio di S07: il rig non
     // fa mai uno scatto tra due scene, anche quando il movimento primario
     // è un altro (qui la luce).
@@ -78,6 +89,7 @@ export const regia: Record<SceneId, Regia> = {
   // Gli altri prodotti, uno alla volta, alla stessa distanza: la ripetizione
   // dell'inquadratura è ciò che li fa leggere come una famiglia.
   s07: {
+    immagine: 'famiglia',
     zoom: [1.0, 1.0],
     luce: [0.6, 0.9],
     nota: 'Inquadratura fissa, soggetti che si danno il cambio: sono una famiglia.',
@@ -85,6 +97,7 @@ export const regia: Record<SceneId, Regia> = {
 
   // Il congedo: tutto si allontana e si spegne, resta la firma.
   s08: {
+    immagine: 'intera',
     zoom: [1.0, 0.75],
     luce: [0.9, 0.25],
     nota: 'Si arretra e si spegne. La pagina prende il posto del piano sequenza.',
