@@ -31,20 +31,23 @@ export const immagini = {
     src: `${BASE}/intera.webp`,
     alt: 'Una mozzarella di bufala intera su una lastra di ardesia',
   },
+  /** Le mani che la sostengono: la prima scala umana del viaggio. */
+  mani: {
+    src: `${BASE}/mani.webp`,
+    alt: 'Due mani sostengono una mozzarella di bufala sopra una lastra di ardesia',
+  },
+  /** Il taglio: la pasta aperta, i filamenti, il latte sull'ardesia.
+   *  È il culmine del viaggio — la scena per cui si è scorso fin lì. */
+  taglio: {
+    src: `${BASE}/taglio.webp`,
+    alt: 'Una mozzarella di bufala aperta, con il cuore filante e il latte che cola',
+  },
   /** Gli altri prodotti del banco, stessa luce e stessa ardesia. */
   famiglia: {
     src: `${BASE}/famiglia.webp`,
     alt: 'Treccia, bocconcini, burrata e ricotta di bufala su ardesia',
   },
 } as const satisfies Record<string, Asset>;
-
-/** ⚠️ ANCORA DA PRODURRE — le due scene mancanti della scaletta:
- *  - `taglio`: la mozzarella aperta, il cuore filante. È il culmine del
- *    viaggio (SCALETTA_BUFALA.md §2, S05): finché manca, la scena più
- *    importante del sito gira su un'altra immagine.
- *  - `mani`: il gesto di presentazione (S04).
- *  Quando arrivano: metterle in public/assets/bufala/ come taglio.webp e
- *  mani.webp, aggiungerle qui sopra, e puntarci le scene in direction.ts. */
 
 /** Lo scatto di riferimento da cui è stato ricavato il modello 3D.
  *  Non è usato nel sito: serve a poter rigenerare il 3D senza ripartire da

@@ -58,7 +58,7 @@ export const regia: Record<SceneId, Regia> = {
   // Le mani: prima scala umana. La camera indietreggia per farci stare
   // il gesto, e per la prima volta il soggetto non è solo.
   s04: {
-    immagine: 'intera', // ⚠️ ripiego: manca l'immagine delle mani
+    immagine: 'mani',
     zoom: [2.1, 0.95],
     luce: [0.85, 0.95],
     deriva: [0, -0.02],
@@ -68,7 +68,7 @@ export const regia: Record<SceneId, Regia> = {
   // Il taglio: il movimento più lento di tutto il sito. Avvicinamento
   // minimo su una scena lunga — è la lentezza a dare peso, non l'ampiezza.
   s05: {
-    immagine: 'macro', // ⚠️ ripiego: manca l'immagine del taglio, la scena clou
+    immagine: 'taglio',
     zoom: [0.95, 1.35],
     luce: [0.95, 1.0],
     nota: 'Il clou. Scena lunga, movimento corto: il tempo fa il lavoro.',
