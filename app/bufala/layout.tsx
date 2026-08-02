@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import './bufala-font.css';
 import './bufala.css';
 import { company, indirizzoPuntoVendita } from '@/content/bufala/company';
 

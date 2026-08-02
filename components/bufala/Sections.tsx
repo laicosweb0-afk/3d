@@ -12,16 +12,20 @@ export function Sections() {
     <div className="bufala-sezioni">
       <section className="bufala-sezione">
         <p className="micro">{sezioni.banco.titolo}</p>
-        <h2>Si entra, si guarda, si chiede.</h2>
+        <h2>{sezioni.banco.frase}</h2>
         <p>{sezioni.banco.testo}</p>
       </section>
 
       {/* La sezione prodotti resta fuori finché il cliente non fornisce
           l'elenco reale (SCALETTA_BUFALA.md §5). */}
-      {sezioni.prodotti.testo && (
+      {sezioni.prodotti.elenco && (
         <section className="bufala-sezione">
           <p className="micro">{sezioni.prodotti.titolo}</p>
-          <p>{sezioni.prodotti.testo}</p>
+          <ul className="bufala-elenco">
+            {sezioni.prodotti.elenco.map((v) => (
+              <li key={v}>{v}</li>
+            ))}
+          </ul>
         </section>
       )}
 
