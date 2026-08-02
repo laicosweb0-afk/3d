@@ -148,18 +148,25 @@
   border-color: var(--ottone);
 }
 
-/* Il logo storico appare solo qui e nel congedo, sul suo atterraggio in
-   noce scuro (Direzione §2). */
-.bufala-logo-atterraggio {
-  background: var(--noce-scuro);
-  padding: clamp(2rem, 5vw, 3.5rem);
-  border-radius: 2px;
-  display: grid;
-  place-items: center;
+/* La firma: marchio a colori sopra, scritta del logo sotto. Nessun riquadro
+   e nessun fondo proprio — vivono direttamente sul verde del sito
+   (Direzione §2: la targhetta di legno dell'originale resta fuori). */
+.bufala-firma {
+  justify-items: center;
+  text-align: center;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  padding: clamp(3rem, 8vh, 6rem) 0;
 }
 
-.bufala-logo-atterraggio img {
-  width: min(28rem, 100%);
+.bufala-firma .marchio {
+  width: min(11rem, 42vw);
+  height: auto;
+}
+
+/* La scritta è già nel latte della palette: il PNG a 4x pesa un decimo
+   dell'SVG (le lettere sono un tracciato con migliaia di punti). */
+.bufala-firma .wordmark {
+  width: min(30rem, 82vw);
   height: auto;
 }
 

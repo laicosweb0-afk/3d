@@ -21,15 +21,19 @@ Il cliente ha fornito il logo storico: bufalo araldico in salto (tratto verde/ro
 **Decisione del cliente, con lo stesso precedente già adottato su Mondial Service** (§2.1 di [ART_DIRECTION.md](./ART_DIRECTION.md), dove i colori navy/oro del logo restavano confinati al logo stesso): il **logo resta esattamente com'è**, mostrato integro solo nei punti in cui deve essere riconoscibile come marchio (apertura, footer, eventuale congedo). Non genera il sistema grafico del resto del sito.
 
 - Il **verde** del logo è il riferimento reale che ha guidato `--verde-profondo` (§3) — non è un'invenzione, è calibrato (scurito/desaturato) su quel verde.
-- Il **rosso**, il **legno chiaro** e il **corsivo** del lockup restano fuori dalla UI: non generano token, non si ripetono altrove nel sito.
-- Per dare al logo un "atterraggio" naturale nei punti in cui appare — invece di sembrare un corpo estraneo calato in un mondo più freddo — il sito adotta un marrone scuro da legno/noce (§3) come materiale secondario, usato in superfici d'appoggio e nei momenti di transizione verso/dal logo.
-- ~~Il file ricevuto è un raster~~ — **risolto**: il cliente ha fornito il sorgente vettoriale ufficiale (PDF). Salvato in `public/assets/brand-bufala/`: `logo-vettoriale.pdf` (sorgente), `logo-full.png` (render 4x, 2497×1795, per uso rapido), `logo-full.svg` (estratto dal PDF). Nota tecnica: l'SVG estratto è pesante (~1.4 MB, probabilmente per via del dettaglio delle venature del legno vettorializzate) — da ottimizzare/semplificare prima dell'uso in produzione (favicon, header a piccola dimensione), non usare così com'è per quei contesti.
+- Il **rosso** resta confinato al marchio: non genera token, non si ripete altrove nel sito.
+- **La targhetta di legno esce dal progetto** (decisione del cliente, dopo averla vista a video): il marrone chiaro e la texture del legno inciso sono fuori contesto rispetto al resto. Il logo che il sito usa è quindi in due pezzi, entrambi estratti dal vettoriale ufficiale:
+  - `logo-marchio` — il bufalo e il claim "prodotti tipici italiani", a colori originali;
+  - `logo-wordmark` — la scritta "Quelli della bufala" **con le lettere originali del marchio**, senza la tavola, ripulita dai graffi che simulavano il legno e ricolorata nel latte della palette. Non è un font simile scelto a caso: sono esattamente quelle lettere.
+- ~~Il sito adotta un marrone scuro da legno/noce come materiale secondario~~ — **rientrato**: senza la targhetta non c'è più niente da far "atterrare", e il cliente ha confermato di voler restare sul verde profondo. Il token `--noce-scuro` resta definito ma inutilizzato; da rimuovere se non trova un impiego reale.
+- La rigenerazione dei due pezzi è automatica: `node tools/bufala-logo.mjs`. Lo strumento documenta quali tracciati del PDF sono cosa, e come vengono separati i graffi dalle lettere.
+- ~~Il file ricevuto è un raster~~ — **risolto**: il cliente ha fornito il sorgente vettoriale ufficiale. In `public/assets/brand-bufala/`: `logo-vettoriale.pdf` (sorgente), `logo-full.png` (logo originale completo, per riferimento), e i due pezzi in uso — `logo-marchio` e `logo-wordmark`, in SVG (sorgente) e PNG a 4x. **Il sito carica i PNG**: le lettere sono un tracciato con migliaia di punti e l'SVG pesa quasi dieci volte tanto a parità di resa (303 KB contro 88 KB).
 
 ---
 
 ## 3. Design tokens v1 — bozza da validare su asset reali del cliente
 
-**Principio.** Il colore fa il lavoro che in Mondial Service faceva la neutralità: qui il fondo scuro e saturo *è* il segnale di pregio, il prodotto (sempre il tono più chiaro della scena) resta l'unico punto luminoso. Nessun oro pieno, nessun gradiente decorativo — l'accento caldo è un filo, mai una superficie. Il verde profondo resta il colore dominante del sito (confermato dal cliente su questa V1); il marrone entra solo come materiale secondario, mai in sostituzione del verde.
+**Principio.** Il colore fa il lavoro che in Mondial Service faceva la neutralità: qui il fondo scuro e saturo *è* il segnale di pregio, il prodotto (sempre il tono più chiaro della scena) resta l'unico punto luminoso. Nessun oro pieno, nessun gradiente decorativo — l'accento caldo è un filo, mai una superficie. Il verde profondo è il colore dominante del sito, confermato due volte dal cliente: nessun marrone, nessun legno.
 
 **Palette UI**
 
@@ -37,14 +41,14 @@ Il cliente ha fornito il logo storico: bufalo araldico in salto (tratto verde/ro
 |---|---|---|
 | `--verde-profondo` | #0E2018 (verde quasi nero) | fondo dominante di tutto il viaggio, calibrato sul verde reale del logo |
 | `--nero` | #0A0A0A | momenti di massimo contrasto: apertura, congedo, stacchi tra scene |
-| `--noce-scuro` | #2B1D14 (marrone legno/noce scuro, quasi espresso — non il marrone miele del logo) | materiale secondario: superfici d'appoggio, punti di transizione verso/dal logo reale (§2). Mai come fondo dominante |
+| `--noce-scuro` | #2B1D14 (marrone legno/noce scuro) | **non più in uso**: serviva a far atterrare la targhetta di legno, uscita dal progetto (§2). Resta definito in attesa di un impiego reale, altrimenti va rimosso |
 | `--ottone` | #B08D57 (bronzo/ottone caldo, desaturato — non oro lucido) | accento minimo: hairline, dettagli tipografici, stato attivo della timeline. Mai su superfici ampie |
 | `--latte` | #F6F1E4 (bianco caldo "latte", mai #FFF puro) | tipografia primaria e — soprattutto — riflesso/superficie del prodotto: deve restare sempre il tono più chiaro in scena |
 | `--terracotta` | #A34A34 | accento secondario opzionale, dose minima — da confermare su asset reali del brand, non da inventare |
 
 **Regole d'uso**
 - Il prodotto è sempre più chiaro dello sfondo: se una scena rischia di pareggiare i toni, si scurisce il fondo, mai si smorza il prodotto.
-- `--verde-profondo` resta il colore che definisce il "mondo" del sito; `--noce-scuro` compare solo localmente, mai su un intero fondo di sezione.
+- `--verde-profondo` resta il colore che definisce il "mondo" del sito: nessun altro colore compete con lui su superfici ampie.
 - `--ottone` non riempie mai forme: solo linee sottili, numerali, la tacca attiva di un'eventuale timeline.
 - Sfondo mai nero piatto senza sfumatura: `--verde-profondo` → `--nero` in gradiente, come nei riferimenti forniti dal cliente.
 - `--terracotta` resta in attesa di conferma sugli asset reali del brand (etichette, insegna) prima di essere promosso a token attivo.

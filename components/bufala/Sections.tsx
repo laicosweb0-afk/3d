@@ -50,17 +50,25 @@ export function Sections() {
         </p>
       </section>
 
-      {/* Il logo storico, intero, sul suo atterraggio in noce scuro:
-          è l'unico punto della pagina in cui appare pieno (Direzione §2). */}
-      <section className="bufala-sezione">
-        <div className="bufala-logo-atterraggio">
-          <img
-            src="/assets/brand-bufala/logo-full.png"
-            alt={company.brand}
-            width={2497}
-            height={1795}
-          />
-        </div>
+      {/* La firma: il marchio storico a colori e la scritta originale del
+          logo, senza la targhetta di legno. Restano sul verde del sito —
+          niente riquadro marrone (Direzione §2). */}
+      <section className="bufala-sezione bufala-firma">
+        <img
+          className="marchio"
+          src="/assets/brand-bufala/logo-marchio.png"
+          alt=""
+          aria-hidden="true"
+          width={1242}
+          height={970}
+        />
+        <img
+          className="wordmark"
+          src="/assets/brand-bufala/logo-wordmark.png"
+          alt={company.brand}
+          width={2328}
+          height={426}
+        />
       </section>
 
       <footer className="bufala-sezione bufala-piede">
