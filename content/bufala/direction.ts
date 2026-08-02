@@ -88,14 +88,15 @@ export const regia: Record<SceneId, Regia> = {
 
   // Gli altri prodotti, uno alla volta, alla stessa distanza: la ripetizione
   // dell'inquadratura è ciò che li fa leggere come una famiglia.
-  // Qui il soggetto non è un'immagine di fondo ma la vetrina dei prodotti
-  // reali, che scorre lateralmente. Il fondo resta scuro e fermo perché non
-  // deve competere: la fila di oggetti è già il movimento della scena.
+  // Gli altri prodotti del banco, alla stessa distanza delle altre scene.
+  // ⚠️ L'immagine attuale (quattro tipi di mozzarella, generata) è stata
+  // scartata dal cliente: attende il suo scatto sostitutivo. Il resto della
+  // scena è già tarato e non va toccato quando arriva la foto nuova.
   s07: {
     immagine: 'famiglia',
     zoom: [1.0, 1.0],
-    luce: [0.14, 0.1],
-    nota: 'La vetrina scorre: i prodotti passano davanti, il fondo sta fermo.',
+    luce: [0.6, 0.9],
+    nota: 'Inquadratura ferma: sono i soggetti a cambiare, non la camera.',
   },
 
   // Il congedo: tutto si allontana e si spegne, resta la firma.

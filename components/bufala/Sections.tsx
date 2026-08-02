@@ -23,7 +23,7 @@ export function Sections() {
       <section className="bufala-sezione" id="prodotti">
         <p className="micro">{sezioni.prodotti.titolo}</p>
         <h2>{sezioni.prodotti.frase}</h2>
-        <div className="bufala-griglia">
+        <div className="bufala-fila">
           {prodotti.map((p) => (
             <img key={p.src} src={p.src} alt={p.alt} width={824} height={900} loading="lazy" />
           ))}

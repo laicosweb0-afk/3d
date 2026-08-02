@@ -354,6 +354,277 @@
   }
 }
 
+/* I prodotti nella sezione: una fila sola, non una griglia. Con cinque
+   scatti una griglia lascia un orfano sulla seconda riga — il difetto che
+   rendeva brutta questa sezione. In fila si leggono come uno scaffale, che
+   è poi quello che sono. Su schermi stretti scorre lateralmente invece di
+   spezzarsi. */
+.bufala-fila {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: clamp(0.75rem, 1.6vw, 1.5rem);
+  width: 100%;
+}
+
+.bufala-fila img {
+  width: 100%;
+  height: auto;
+  border-radius: 2px;
+}
+
+@media (max-width: 860px) {
+  .bufala-fila {
+    grid-auto-columns: 62vw;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    /* Sporge oltre il padding della sezione: lo scorrimento parte dal bordo
+       dello schermo, non da un margine — così si capisce che continua. */
+    margin: 0 -6vw;
+    padding: 0 6vw;
+    scrollbar-width: none;
+  }
+  .bufala-fila::-webkit-scrollbar { display: none; }
+  .bufala-fila img { scroll-snap-align: center; }
+}
+
+.bufala-spacer {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Gli overlay di testo del viaggio: sopra il palco, sotto le sezioni.
+   I testi vivono nel terzo superiore, il soggetto nei due terzi sotto: la
+   tipografia non tocca mai il prodotto (Direzione §4, stessa regola già
+   adottata su Mondial Service). Ne esce anche l'impaginato da copertina. */
+.bufala-overlay {
+  position: fixed;
+  inset: 0;
+  /* Una sola cella che occupa tutto il campo: le scene ci stanno dentro
+     tutte, e ciascuna decide come disporsi. */
+  display: grid;
+  grid-template: 1fr / 1fr;
+  padding: clamp(3rem, 11vh, 8rem) 6vw clamp(2rem, 7vh, 4.5rem);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.bufala-overlay .scena {
+  grid-area: 1 / 1;
+  align-self: start;
+  justify-self: center;
+  text-align: center;
+  will-change: opacity, transform;
+}
+
+.bufala-overlay .nota {
+  margin-top: 1.75rem;
+}
+
+/* — La hero —
+   Headline dominante in alto, payoff minuscolo in fondo al campo. Fra i due
+   c'è tutto il vuoto che il viewport concede: la distanza è la composizione.
+   Un payoff appiccicato sotto il titolo lo trasformerebbe in un
+   sottotitolo — e un sottotitolo è esattamente ciò che i marchi di lusso
+   non hanno. */
+.bufala-overlay .scena--hero {
+  align-self: stretch;
+  justify-self: stretch;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  justify-items: center;
+  width: 100%;
+}
+
+/* La headline della hero respira più di ogni altro titolo del sito. */
+.bufala-overlay .scena--hero h1 {
+  font-weight: 400;           /* il peso pieno grida; a questa scala serve il contrario */
+  letter-spacing: -0.022em;
+  line-height: 1.04;
+  max-width: 16ch;            /* forza il ritorno a capo dove lo vogliamo noi */
+}
+
+/* Il payoff: piccolo, tracciato, in fondo. Non compete mai con la headline. */
+.bufala-overlay .scena--hero .payoff {
+  font-family: var(--font-testo);
+  font-size: clamp(0.68rem, 0.9vw, 0.78rem);
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--latte-70);
+  margin: 0 0 1.5rem;
+  padding-left: 0.34em;       /* compensa il tracking sull'ultima lettera */
+}
+
+/* L'invito a scorrere sta sotto il payoff, ancora più in sordina: è
+   funzionale, non fa parte del messaggio. */
+.bufala-overlay .scena--hero .invito {
+  font-size: 0.6rem;
+  letter-spacing: 0.24em;
+  color: var(--latte-20);
+  padding-left: 0.24em;
+}
+
+/* Velatura sotto la tipografia: nelle scene macro il soggetto riempie il
+   campo ed è chiaro quanto il testo, quindi il titolo ci si perdeva sopra.
+   È il "scrim" del cinema — impercettibile sul fondo, sufficiente a tenere
+   il contrasto in ogni fotogramma. Sta nel palco, non nell'overlay, così
+   non entra mai in dissolvenza con i testi. */
+.bufala-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 52%;
+  background: linear-gradient(to bottom, rgb(6 18 12 / 0.55), transparent);
+  pointer-events: none;
+}
+
+/* L'indicatore di avanzamento: hairline sul bordo destro, ottone solo sulla
+   parte percorsa. Informa senza richiamare (Direzione §3: l'ottone non
+   riempie mai forme, solo linee sottili). */
+.bufala-progresso {
+  position: fixed;
+  right: clamp(1.25rem, 3.5vw, 3rem);
+  top: 50%;
+  translate: 0 -50%;
+  z-index: 4;
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+  pointer-events: none;
+}
+
+.bufala-progresso .capitolo {
+  writing-mode: vertical-rl;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  color: var(--latte-45);
+  white-space: nowrap;
+}
+
+.bufala-progresso .riga {
+  position: relative;
+  width: 1px;
+  height: clamp(6rem, 18vh, 11rem);
+  background: var(--latte-20);
+}
+
+.bufala-progresso .percorsa {
+  position: absolute;
+  inset: 0;
+  background: var(--ottone);
+  transform-origin: top;
+  transform: scaleY(0);
+  will-change: transform;
+}
+
+/* Le tacche dei capitoli: appena percepibili, servono a dare misura. */
+.bufala-progresso .tacca {
+  position: absolute;
+  left: -2px;
+  width: 5px;
+  height: 1px;
+  background: var(--latte-45);
+}
+
+/* Su schermi stretti l'indicatore ruba spazio al racconto: resta la riga,
+   sparisce il nome del capitolo. */
+@media (max-width: 640px) {
+  .bufala-progresso .capitolo {
+    display: none;
+  }
+}
+
+/* — Le sezioni dopo il viaggio — */
+
+.bufala-sezioni {
+  position: relative;
+  z-index: 3;
+  /* Le sezioni non ripartono dal nero: il verde continua sotto il viaggio,
+     così il passaggio dal piano sequenza al documento non è uno stacco. */
+  background: var(--verde-profondo);
+  padding: var(--spazio-sezione) 6vw;
+  display: grid;
+  gap: var(--spazio-sezione);
+}
+
+.bufala-sezione {
+  display: grid;
+  gap: 1.75rem;
+  max-width: 68rem;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.bufala-sezione a {
+  color: var(--latte);
+  text-decoration: none;
+  border-bottom: 1px solid var(--latte-20);
+  padding-bottom: 0.1em;
+  transition: border-color 0.4s ease;
+}
+
+.bufala-sezione a:hover {
+  border-color: var(--ottone);
+}
+
+/* La firma: marchio a colori sopra, scritta del logo sotto. Nessun riquadro
+   e nessun fondo proprio — vivono direttamente sul verde del sito
+   (Direzione §2: la targhetta di legno dell'originale resta fuori). */
+.bufala-firma {
+  justify-items: center;
+  text-align: center;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  padding: clamp(3rem, 8vh, 6rem) 0;
+}
+
+.bufala-firma .marchio {
+  width: min(11rem, 42vw);
+  height: auto;
+}
+
+/* La scritta è già nel latte della palette: il PNG a 4x pesa un decimo
+   dell'SVG (le lettere sono un tracciato con migliaia di punti). */
+.bufala-firma .wordmark {
+  width: min(30rem, 82vw);
+  height: auto;
+}
+
+.bufala-piede {
+  border-top: 1px solid var(--latte-20);
+  padding-top: 2rem;
+  color: var(--latte-45);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+/* — Accessibilità: senza movimento il documento resta intero — */
+@media (prefers-reduced-motion: reduce) {
+  /* Niente palco fisso, niente scroll finto: il viaggio si legge come un
+     documento. Le scene NON possono restare nella stessa cella di griglia
+     (si sovrapporrebbero tutte e otto): tornano a impilarsi nel flusso. */
+  .bufala-stage,
+  .bufala-progresso {
+    display: none;
+  }
+  .bufala-spacer {
+    display: none;
+  }
+  .bufala-overlay {
+    position: relative;
+    display: grid;
+    gap: var(--spazio-sezione);
+    padding: var(--spazio-sezione) 6vw;
+  }
+  .bufala-overlay .scena {
+    grid-area: auto;
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+  }
+}
+
 /* La griglia dei prodotti nella sezione: le foto sono già composte sullo
    stesso set, quindi non serve nessuna cornice — basta allinearle e
    lasciarle respirare. */
@@ -370,42 +641,4 @@
   border-radius: 2px;
 }
 
-/* La vetrina dei prodotti reali (S07): una fila che passa davanti alla
-   camera. Sta nel palco, dietro la tipografia, come tutto il resto. */
-.bufala-stage .vetrina {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  /* In basso, non al centro: il terzo superiore resta alla tipografia come
-     in ogni altra scena del viaggio. */
-  align-items: flex-end;
-  justify-content: center;
-  gap: clamp(1rem, 2.2vw, 2.25rem);
-  padding: 0 6vw clamp(2rem, 6vh, 4rem);
-  will-change: transform, opacity;
-}
 
-.bufala-stage .vetrina img {
-  height: min(46vh, 40vw);
-  width: auto;
-  flex: 0 0 auto;
-  /* Ogni scatto porta con sé il proprio fondo verde: senza sfumatura ai
-     bordi si leggerebbero come rettangoli incollati sul palco. La maschera
-     li fonde nella scena — restano fotografie, non schede di catalogo. */
-  -webkit-mask-image:
-    linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent),
-    linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
-  -webkit-mask-composite: source-in;
-  mask-image:
-    linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent),
-    linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
-  mask-composite: intersect;
-}
-
-/* Su schermi stretti la fila non ci sta: se ne vedono meno, più grandi,
-   invece di cinque francobolli. */
-@media (max-width: 760px) {
-  .bufala-stage .vetrina img {
-    height: 34vh;
-  }
-}

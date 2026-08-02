@@ -12,18 +12,17 @@
 // camera non scatta mai; l'opacità invece incrocia, così le inquadrature si
 // danno il cambio senza stacchi.
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   SCENES, localT, sceneWeight, smooth, sceneRange,
 } from '@/lib/bufala/scenes';
 import { regia } from '@/content/bufala/direction';
-import { immagini, prodotti } from '@/content/bufala/assets';
+import { immagini } from '@/content/bufala/assets';
 
 type Chiave = keyof typeof immagini;
 
 const palco = {
   strati: new Map<Chiave, HTMLDivElement>(),
-  vetrina: null as HTMLDivElement | null,
 };
 
 /** Le immagini effettivamente usate, senza duplicati. */
@@ -39,14 +38,10 @@ export function Stage() {
     [],
   );
 
-  const vetrina = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     for (const [k, r] of rifs) if (r.current) palco.strati.set(k, r.current);
-    palco.vetrina = vetrina.current;
     return () => {
       palco.strati.clear();
-      palco.vetrina = null;
     };
   }, [rifs]);
 
@@ -67,14 +62,6 @@ export function Stage() {
         />
       ))}
 
-      {/* La vetrina dei prodotti reali: scorre lateralmente durante S07.
-          Non è un carosello da e-commerce — è un carrello che passa davanti
-          a una fila di oggetti, coerente con la camera del resto del sito. */}
-      <div ref={vetrina} className="vetrina" style={{ opacity: 0 }}>
-        {prodotti.map((p) => (
-          <img key={p.src} src={p.src} alt="" width={824} height={900} />
-        ))}
-      </div>
     </div>
   );
 }
@@ -118,16 +105,6 @@ Stage.render = function render(p: number): void {
     el.style.visibility = w < 0.005 ? 'hidden' : 'visible';
   }
 
-  // La vetrina vive solo dentro S07 e trasla mentre la scena avanza: la
-  // fila di prodotti passa davanti alla camera invece di comparire tutta
-  // insieme, così mantiene il movimento continuo del resto del viaggio.
-  const v = palco.vetrina;
-  if (!v) return;
-  const peso = sceneWeight(p, 's07');
-  v.style.opacity = peso.toFixed(3);
-  v.style.visibility = peso < 0.005 ? 'hidden' : 'visible';
-  const t = localT(p, 's07');
-  v.style.transform = `translate3d(${(8 - t * 16).toFixed(2)}vw, 0, 0)`;
 };
 
 /** Esposto per QA: cosa fa la regia a un dato p. */
