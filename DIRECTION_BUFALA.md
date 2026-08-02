@@ -85,5 +85,6 @@ Stessa architettura tecnica già validata su Mondial Service — tutto funzione 
 - Versione vettoriale del logo, o approvazione del ridisegno fedele (§2) — il file ricevuto è un raster.
 - Conferma se `--terracotta` ha un riferimento reale nel brand (etichetta, insegna) o va escluso.
 - Materiale fotografico/video definitivo del prodotto e del banco da usare come base per le generazioni (le foto finora condivise sono riferimenti di stile, non ancora asset finali).
-- Dati aziendali reali (ragione sociale, indirizzo, contatti, eventuale certificazione) per le sezioni finali del sito.
+- ~~Dati aziendali reali (ragione sociale, indirizzo, contatti)~~ — **ricevuti** (biglietto da visita): ragione sociale FOOD SERVICE S.A.S. di Marra Salvatore & C., sede legale Via Fondovalle Rubicone 11, 47030 Borghi (FC); sede operativa/vendita ingrosso e dettaglio presso C.A.R.R. di Rimini, Via Emilia Vecchia 75, 47923 Rimini (RN); tel. +39 392 0220924; email info@quellidellabufala.it; sito www.quellidellabufala.it. Resta da chiarire se questa sede coincide con il punto vendita al banco già mostrato in foto, o se sono due indirizzi diversi — necessario per scegliere l'indirizzo giusto nella sezione contatti del sito.
+- Eventuale certificazione di prodotto (es. DOP) — ancora da confermare, non presente sul materiale ricevuto finora.
 - Decisione sulla collocazione tecnica del progetto (repo dedicata vs. nuova route in questo stesso repository) — ancora aperta.
