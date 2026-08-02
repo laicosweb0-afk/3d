@@ -55,12 +55,29 @@ Il cliente ha fornito il logo storico: bufalo araldico in salto (tratto verde/ro
 
 ## 4. Tipografia
 
-- **Serif classico** per i titoli — pedigree, tradizione, coerente col registro "manifattura di pregio".
-- **Sans-serif neutro** per corpo testo e UI — leggibilità, contemporaneità, evita l'effetto "menù da trattoria".
+**Font pairing definito** (sostituisce il precedente "input mancante" — restano al massimo due famiglie in tutto il sito, mai di più).
+
+| Ruolo | Font | Fallback |
+|---|---|---|
+| Display/titoli | **Canela** | Fraunces |
+| Corpo/UI | **Neue Haas Grotesk** | Inter |
+
+Nota pratica: Canela e Neue Haas Grotesk sono font commerciali a licenza — da verificare se il cliente possiede già la licenza o va acquistata prima del build. Fraunces e Inter sono i fallback gratuiti (Google Fonts, self-hostabili) da usare in sviluppo finché la licenza non è confermata — **non si assume l'acquisto senza conferma**.
+
+**Regole d'uso per elemento**
+
+- **Hero (H1)**: Canela, peso medium, letter-spacing da −1% a −2%, line-height 90–95%, massimo 6–8 parole per riga — deve avere l'impatto di una copertina di rivista.
+- **Titoli di sezione (H2)**: Canela, più piccolo dell'hero, mai bold, molto spazio intorno.
+- **Sottotitoli (H3)**: Neue Haas Grotesk peso 500, pulito, minimale.
+- **Corpo testo**: Neue Haas Grotesk peso 400, larghezza massima ~70 caratteri per riga, line-height generoso.
+- **Bottoni**: Neue Haas Grotesk peso 500, niente maiuscolo automatico, molto discreti — un brand di lusso non urla mai.
+- **Navigazione**: Neue Haas Grotesk peso 500, corpo piccolo, spaziatura ampia tra le voci.
+- **Numerali**: Neue Haas Grotesk medium.
 - Da evitare categoricamente: corsivi decorativi, font "rustici" a mano libera — rompono la percezione premium nello stesso modo in cui l'oro pieno la rompeva in Mondial Service. Il corsivo del logo (§2) è l'unica eccezione ammessa, e resta confinato al logo.
-- **Wordmark/titoli ampi e tagliati ai bordi del frame** (rif. Loewe): tecnica tipografica, non di palette — resta valida anche sul fondo scuro della nostra direzione, rende un titolo editoriale invece che da e-commerce.
-- **Microtesto/nav in sans tracciato, maiuscolo, corpo piccolo** (rif. Bang & Olufsen): per navigazione e didascalie — tocco tecnico e silenzioso, coerente col registro scelto.
-- Font ufficiale: **input mancante** (vedi §7) — i requisiti restano gli stessi impostati per Mondial Service (buona resa numerali, variable font per peso animabile).
+- **Wordmark/titoli ampi e tagliati ai bordi del frame** (rif. Loewe): coerente con la regola hero sopra — tecnica tipografica, non di palette, resta valida anche sul fondo scuro della nostra direzione.
+- **Microtesto/nav in sans tracciato, maiuscolo, corpo piccolo** (rif. Bang & Olufsen): confermato dalla regola di navigazione sopra.
+
+**Filosofia**: la tipografia è parte della narrazione, non un'etichetta — titoli editoriali larghi, spazio bianco generoso, mai sezioni compresse. Ogni sezione deve leggersi come una pagina di rivista di lusso stampata. La gerarchia si costruisce con dimensione, peso, spaziatura e layout — mai cambiando famiglia di font a ogni elemento.
 
 ---
 
@@ -83,7 +100,7 @@ Stessa architettura tecnica già validata su Mondial Service — tutto funzione 
 
 ## 7. Input ancora mancanti (da NON inventare)
 
-- Font ufficiale del brand, o mandato a proporne uno.
+- ~~Font ufficiale del brand~~ — **definito** (§4): Canela (display) + Neue Haas Grotesk (corpo/UI), fallback gratuiti Fraunces + Inter. Da verificare: possesso della licenza commerciale dei font primari prima del build finale.
 - Versione vettoriale del logo, o approvazione del ridisegno fedele (§2) — il file ricevuto è un raster.
 - Conferma se `--terracotta` ha un riferimento reale nel brand (etichetta, insegna) o va escluso.
 - Materiale fotografico/video definitivo del prodotto e del banco da usare come base per le generazioni (le foto finora condivise sono riferimenti di stile, non ancora asset finali).
