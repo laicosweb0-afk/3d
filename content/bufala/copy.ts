@@ -67,10 +67,11 @@ export const sceneCopy: Record<SceneId, SceneCopy> = {
     titolo: 'Una mozzarella\nsi misura in ore.',
   },
 
-  // Gli altri prodotti. ⚠️ L'elenco è quello raffigurato nell'immagine
-  // generata: va sostituito con i prodotti che il cliente vende davvero.
+  // I prodotti reali del banco. Non solo la mozzarella prodotta da loro:
+  // anche le specialità italiane che selezionano, come dice il claim del
+  // loro stesso logo ("prodotti tipici italiani").
   s07: {
-    titolo: 'E tutto\nquello che segue.',
+    titolo: "L'eccellenza,\nsenza compromessi.",
   },
 
   // Il congedo: si passa il testimone al documento.
@@ -88,11 +89,11 @@ export const sezioni = {
       'Il punto vendita è aperto a grossisti e privati senza distinzione: si entra, si assaggia, si porta via quello che serve.',
   },
   prodotti: {
-    titolo: 'I prodotti',
-    // ⚠️ L'elenco reale non è ancora stato fornito dal cliente. Finché non
-    // arriva, la sezione resta fuori: meglio una sezione in meno che una
-    // sezione inventata (regola non negoziabile del progetto).
-    elenco: null as string[] | null,
+    titolo: 'Al banco',
+    frase: 'La nostra mozzarella, e una selezione che le sta accanto.',
+    // Nessun elenco scritto: i prodotti si mostrano, non si elencano. Le
+    // foto sono quelle reali del cliente, con i marchi dei produttori che
+    // seleziona — è più credibile di qualsiasi lista.
   },
   dove: { titolo: 'Dove siamo' },
   contatti: { titolo: 'Contatti' },

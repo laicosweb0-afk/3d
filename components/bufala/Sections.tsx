@@ -4,6 +4,7 @@
 
 import { company, indirizzoPuntoVendita } from '@/content/bufala/company';
 import { sezioni } from '@/content/bufala/copy';
+import { prodotti } from '@/content/bufala/assets';
 
 const pv = company.puntoVendita;
 
@@ -16,18 +17,18 @@ export function Sections() {
         <p>{sezioni.banco.testo}</p>
       </section>
 
-      {/* La sezione prodotti resta fuori finché il cliente non fornisce
-          l'elenco reale (SCALETTA_BUFALA.md §5). */}
-      {sezioni.prodotti.elenco && (
-        <section className="bufala-sezione">
-          <p className="micro">{sezioni.prodotti.titolo}</p>
-          <ul className="bufala-elenco">
-            {sezioni.prodotti.elenco.map((v) => (
-              <li key={v}>{v}</li>
-            ))}
-          </ul>
-        </section>
-      )}
+      {/* I prodotti: le foto reali del cliente, non un elenco. Una lista di
+          nomi non dice niente; questi scatti dicono tutto — compreso che
+          dietro il banco c'è una selezione, non un assortimento a caso. */}
+      <section className="bufala-sezione" id="prodotti">
+        <p className="micro">{sezioni.prodotti.titolo}</p>
+        <h2>{sezioni.prodotti.frase}</h2>
+        <div className="bufala-griglia">
+          {prodotti.map((p) => (
+            <img key={p.src} src={p.src} alt={p.alt} width={824} height={900} loading="lazy" />
+          ))}
+        </div>
+      </section>
 
       <section className="bufala-sezione" id="dove">
         <p className="micro">{sezioni.dove.titolo}</p>

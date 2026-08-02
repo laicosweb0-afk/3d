@@ -354,23 +354,58 @@
   }
 }
 
-/* Elenco dei prodotti: nessun punto elenco, solo aria e una hairline —
-   una lista della spesa non appartiene a questo registro. */
-.bufala-elenco {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+/* La griglia dei prodotti nella sezione: le foto sono già composte sullo
+   stesso set, quindi non serve nessuna cornice — basta allinearle e
+   lasciarle respirare. */
+.bufala-griglia {
   display: grid;
-  gap: 0;
-  max-width: 34rem;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: clamp(1rem, 2.5vw, 2rem);
+  width: 100%;
 }
 
-.bufala-elenco li {
-  padding: 1.1rem 0;
-  border-bottom: 1px solid var(--latte-20);
-  font-size: 1.05rem;
+.bufala-griglia img {
+  width: 100%;
+  height: auto;
+  border-radius: 2px;
 }
 
-.bufala-elenco li:first-child {
-  border-top: 1px solid var(--latte-20);
+/* La vetrina dei prodotti reali (S07): una fila che passa davanti alla
+   camera. Sta nel palco, dietro la tipografia, come tutto il resto. */
+.bufala-stage .vetrina {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  /* In basso, non al centro: il terzo superiore resta alla tipografia come
+     in ogni altra scena del viaggio. */
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(1rem, 2.2vw, 2.25rem);
+  padding: 0 6vw clamp(2rem, 6vh, 4rem);
+  will-change: transform, opacity;
+}
+
+.bufala-stage .vetrina img {
+  height: min(46vh, 40vw);
+  width: auto;
+  flex: 0 0 auto;
+  /* Ogni scatto porta con sé il proprio fondo verde: senza sfumatura ai
+     bordi si leggerebbero come rettangoli incollati sul palco. La maschera
+     li fonde nella scena — restano fotografie, non schede di catalogo. */
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent),
+    linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent),
+    linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  mask-composite: intersect;
+}
+
+/* Su schermi stretti la fila non ci sta: se ne vedono meno, più grandi,
+   invece di cinque francobolli. */
+@media (max-width: 760px) {
+  .bufala-stage .vetrina img {
+    height: 34vh;
+  }
 }

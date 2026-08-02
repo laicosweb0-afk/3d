@@ -49,6 +49,25 @@ export const immagini = {
   },
 } as const satisfies Record<string, Asset>;
 
+/** I prodotti reali del banco, fotografati dal cliente sullo stesso set
+ *  (fondo verde, basilico, olio, ardesia) delle scene del viaggio: la
+ *  coerenza non è nostra, è già nel loro materiale.
+ *
+ *  Sono in formato ritratto — vanno in fila, non a tutto schermo: un
+ *  ritratto dentro un'inquadratura panoramica si taglierebbe male.
+ *
+ *  Nota: portano i marchi dei produttori (Moncalo, La Campagnola, Corte
+ *  Poderi, Luliva). Non è un problema, è il racconto giusto — "Quelli della
+ *  bufala" produce la propria mozzarella e seleziona specialità italiane,
+ *  come dice il claim del loro stesso logo. */
+export const prodotti = [
+  { src: `${BASE}/p-caprino.webp`, alt: 'Formaggio di capra' },
+  { src: `${BASE}/p-prataiola.webp`, alt: 'Prataiola alla rucola, formaggio di pecora' },
+  { src: `${BASE}/p-prosciutto.webp`, alt: 'Prosciutto stagionato' },
+  { src: `${BASE}/p-friarielli.webp`, alt: "Friarielli all'olio" },
+  { src: `${BASE}/p-olive.webp`, alt: 'Olive verdi Bella di Cerignola' },
+] as const;
+
 /** Lo scatto di riferimento da cui è stato ricavato il modello 3D.
  *  Non è usato nel sito: serve a poter rigenerare il 3D senza ripartire da
  *  una nuova generazione. */
