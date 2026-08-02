@@ -14,22 +14,37 @@ Correzione rispetto alla prima ipotesi puramente astratta: due riferimenti forni
 
 ---
 
-## 2. Design tokens v1 — bozza da validare su asset reali del cliente
+## 2. Il logo reale — confinamento
 
-**Principio.** Il colore fa il lavoro che in Mondial Service faceva la neutralità: qui il fondo scuro e saturo *è* il segnale di pregio, il prodotto (sempre il tono più chiaro della scena) resta l'unico punto luminoso. Nessun oro pieno, nessun gradiente decorativo — l'accento caldo è un filo, mai una superficie.
+Il cliente ha fornito il logo storico: bufalo araldico in salto (tratto verde/rosso), claim "prodotti tipici italiani" tricolore, e un lockup su tavola di legno con scritta corsiva incisa "Quelli della bufala". È un logo dichiaratamente rustico/tradizionale — in tensione diretta con la direzione premium/minimale scelta per il sito (corsivo decorativo, legno chiaro, rosso pieno: tutti elementi che §3 e §4 di questo documento indicano esplicitamente da evitare nel resto del sito).
+
+**Decisione del cliente, con lo stesso precedente già adottato su Mondial Service** (§2.1 di [ART_DIRECTION.md](./ART_DIRECTION.md), dove i colori navy/oro del logo restavano confinati al logo stesso): il **logo resta esattamente com'è**, mostrato integro solo nei punti in cui deve essere riconoscibile come marchio (apertura, footer, eventuale congedo). Non genera il sistema grafico del resto del sito.
+
+- Il **verde** del logo è il riferimento reale che ha guidato `--verde-profondo` (§3) — non è un'invenzione, è calibrato (scurito/desaturato) su quel verde.
+- Il **rosso**, il **legno chiaro** e il **corsivo** del lockup restano fuori dalla UI: non generano token, non si ripetono altrove nel sito.
+- Per dare al logo un "atterraggio" naturale nei punti in cui appare — invece di sembrare un corpo estraneo calato in un mondo più freddo — il sito adotta un marrone scuro da legno/noce (§3) come materiale secondario, usato in superfici d'appoggio e nei momenti di transizione verso/dal logo.
+- Il file ricevuto è un **raster** (fotografia/rendering del cartello fisico), non un sorgente vettoriale: per un uso pulito in UI (favicon, header a piccola dimensione) servirà valutare con il cliente se esiste un vettoriale originale o se va ridisegnato fedelmente — stessa criticità già gestita per Mondial Service (§2.2 di ART_DIRECTION.md).
+
+---
+
+## 3. Design tokens v1 — bozza da validare su asset reali del cliente
+
+**Principio.** Il colore fa il lavoro che in Mondial Service faceva la neutralità: qui il fondo scuro e saturo *è* il segnale di pregio, il prodotto (sempre il tono più chiaro della scena) resta l'unico punto luminoso. Nessun oro pieno, nessun gradiente decorativo — l'accento caldo è un filo, mai una superficie. Il verde profondo resta il colore dominante del sito (confermato dal cliente su questa V1); il marrone entra solo come materiale secondario, mai in sostituzione del verde.
 
 **Palette UI**
 
 | Token | Valore indicativo | Uso |
 |---|---|---|
-| `--verde-profondo` | #0E2018 (verde quasi nero) | fondo dominante di tutto il viaggio, coerente col verde già presente nel logo reale del cliente |
+| `--verde-profondo` | #0E2018 (verde quasi nero) | fondo dominante di tutto il viaggio, calibrato sul verde reale del logo |
 | `--nero` | #0A0A0A | momenti di massimo contrasto: apertura, congedo, stacchi tra scene |
+| `--noce-scuro` | #2B1D14 (marrone legno/noce scuro, quasi espresso — non il marrone miele del logo) | materiale secondario: superfici d'appoggio, punti di transizione verso/dal logo reale (§2). Mai come fondo dominante |
 | `--ottone` | #B08D57 (bronzo/ottone caldo, desaturato — non oro lucido) | accento minimo: hairline, dettagli tipografici, stato attivo della timeline. Mai su superfici ampie |
 | `--latte` | #F6F1E4 (bianco caldo "latte", mai #FFF puro) | tipografia primaria e — soprattutto — riflesso/superficie del prodotto: deve restare sempre il tono più chiaro in scena |
-| `--terracotta` | #A34A34 | accento secondario opzionale, dose minima, da un elemento reale del brand del cliente (packaging/etichetta) se pertinente — da confermare su asset reali, non da inventare |
+| `--terracotta` | #A34A34 | accento secondario opzionale, dose minima — da confermare su asset reali del brand, non da inventare |
 
 **Regole d'uso**
 - Il prodotto è sempre più chiaro dello sfondo: se una scena rischia di pareggiare i toni, si scurisce il fondo, mai si smorza il prodotto.
+- `--verde-profondo` resta il colore che definisce il "mondo" del sito; `--noce-scuro` compare solo localmente, mai su un intero fondo di sezione.
 - `--ottone` non riempie mai forme: solo linee sottili, numerali, la tacca attiva di un'eventuale timeline.
 - Sfondo mai nero piatto senza sfumatura: `--verde-profondo` → `--nero` in gradiente, come nei riferimenti forniti dal cliente.
 - `--terracotta` resta in attesa di conferma sugli asset reali del brand (etichette, insegna) prima di essere promosso a token attivo.
@@ -38,16 +53,16 @@ Correzione rispetto alla prima ipotesi puramente astratta: due riferimenti forni
 
 ---
 
-## 3. Tipografia
+## 4. Tipografia
 
 - **Serif classico** per i titoli — pedigree, tradizione, coerente col registro "manifattura di pregio".
 - **Sans-serif neutro** per corpo testo e UI — leggibilità, contemporaneità, evita l'effetto "menù da trattoria".
-- Da evitare categoricamente: corsivi decorativi, font "rustici" a mano libera — rompono la percezione premium nello stesso modo in cui l'oro pieno la rompeva in Mondial Service.
-- Font ufficiale: **input mancante** (vedi §6) — i requisiti restano gli stessi impostati per Mondial Service (buona resa numerali, variable font per peso animabile).
+- Da evitare categoricamente: corsivi decorativi, font "rustici" a mano libera — rompono la percezione premium nello stesso modo in cui l'oro pieno la rompeva in Mondial Service. Il corsivo del logo (§2) è l'unica eccezione ammessa, e resta confinato al logo.
+- Font ufficiale: **input mancante** (vedi §7) — i requisiti restano gli stessi impostati per Mondial Service (buona resa numerali, variable font per peso animabile).
 
 ---
 
-## 4. Fotografia e materia
+## 5. Fotografia e materia
 
 - Luce singola drammatica, laterale, non frontale piatta.
 - Sfondo scuro saturo con leggera sfumatura, mai nero uniforme.
@@ -58,16 +73,16 @@ Correzione rispetto alla prima ipotesi puramente astratta: due riferimenti forni
 
 ---
 
-## 5. Movimento
+## 6. Movimento
 
 Stessa architettura tecnica già validata su Mondial Service — tutto funzione pura del progresso di scroll `p ∈ [0,1]`, camera/testi/eventi che campionano la stessa timeline, reversibile per costruzione. Calibrazione diversa nel ritmo: **più lento e cerimonioso**, un solo elemento in movimento per volta, dissolvenze minime — meno "cantiere in accelerazione", più "presentazione di un pezzo unico".
 
 ---
 
-## 6. Input ancora mancanti (da NON inventare)
+## 7. Input ancora mancanti (da NON inventare)
 
 - Font ufficiale del brand, o mandato a proporne uno.
-- Logo vettoriale ufficiale (quello visto in foto sul punto vendita è un cartello fisico, non un file sorgente).
+- Versione vettoriale del logo, o approvazione del ridisegno fedele (§2) — il file ricevuto è un raster.
 - Conferma se `--terracotta` ha un riferimento reale nel brand (etichetta, insegna) o va escluso.
 - Materiale fotografico/video definitivo del prodotto e del banco da usare come base per le generazioni (le foto finora condivise sono riferimenti di stile, non ancora asset finali).
 - Dati aziendali reali (ragione sociale, indirizzo, contatti, eventuale certificazione) per le sezioni finali del sito.
