@@ -8,7 +8,9 @@
 import { useEffect, useRef } from 'react';
 import { SCENES, TOTAL_VH, sceneWeight, localT } from '@/lib/bufala/scenes';
 import { sceneCopy } from '@/content/bufala/copy';
+import { initScroll } from '@/lib/bufala/scroll';
 import { Stage } from './Stage';
+import { Progresso } from './Progresso';
 
 export function Journey() {
   const spacerRef = useRef<HTMLDivElement>(null);
@@ -24,6 +26,10 @@ export function Journey() {
 
     const ridotto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (ridotto) return; // il CSS mostra già tutto, senza animazione
+
+    // Lo scroll morbido è parte della regia, non un effetto: senza, il
+    // ritmo cerimonioso di DIRECTION_BUFALA.md §6 non esiste.
+    const fermaScroll = initScroll();
 
     const scene = Array.from(
       overlay.querySelectorAll<HTMLElement>('[data-scena]'),
@@ -59,6 +65,7 @@ export function Journey() {
       }
 
       Stage.render(smoothed);
+      Progresso.render(smoothed);
       raf = requestAnimationFrame(frame);
     };
 
@@ -71,12 +78,14 @@ export function Journey() {
       cancelAnimationFrame(raf);
       window.removeEventListener('scroll', leggiScroll);
       window.removeEventListener('resize', leggiScroll);
+      fermaScroll();
     };
   }, []);
 
   return (
     <>
       <Stage />
+      <Progresso />
 
       <div ref={overlayRef} className="bufala-overlay" aria-hidden="true">
         {SCENES.map((s) => (

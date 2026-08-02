@@ -161,6 +161,76 @@
   will-change: opacity, transform;
 }
 
+/* Velatura sotto la tipografia: nelle scene macro il soggetto riempie il
+   campo ed è chiaro quanto il testo, quindi il titolo ci si perdeva sopra.
+   È il "scrim" del cinema — impercettibile sul fondo, sufficiente a tenere
+   il contrasto in ogni fotogramma. Sta nel palco, non nell'overlay, così
+   non entra mai in dissolvenza con i testi. */
+.bufala-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 52%;
+  background: linear-gradient(to bottom, rgb(6 18 12 / 0.55), transparent);
+  pointer-events: none;
+}
+
+/* L'indicatore di avanzamento: hairline sul bordo destro, ottone solo sulla
+   parte percorsa. Informa senza richiamare (Direzione §3: l'ottone non
+   riempie mai forme, solo linee sottili). */
+.bufala-progresso {
+  position: fixed;
+  right: clamp(1.25rem, 3.5vw, 3rem);
+  top: 50%;
+  translate: 0 -50%;
+  z-index: 4;
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+  pointer-events: none;
+}
+
+.bufala-progresso .capitolo {
+  writing-mode: vertical-rl;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  color: var(--latte-45);
+  white-space: nowrap;
+}
+
+.bufala-progresso .riga {
+  position: relative;
+  width: 1px;
+  height: clamp(6rem, 18vh, 11rem);
+  background: var(--latte-20);
+}
+
+.bufala-progresso .percorsa {
+  position: absolute;
+  inset: 0;
+  background: var(--ottone);
+  transform-origin: top;
+  transform: scaleY(0);
+  will-change: transform;
+}
+
+/* Le tacche dei capitoli: appena percepibili, servono a dare misura. */
+.bufala-progresso .tacca {
+  position: absolute;
+  left: -2px;
+  width: 5px;
+  height: 1px;
+  background: var(--latte-45);
+}
+
+/* Su schermi stretti l'indicatore ruba spazio al racconto: resta la riga,
+   sparisce il nome del capitolo. */
+@media (max-width: 640px) {
+  .bufala-progresso .capitolo {
+    display: none;
+  }
+}
+
 /* — Le sezioni dopo il viaggio — */
 
 .bufala-sezioni {
@@ -226,16 +296,26 @@
 
 /* — Accessibilità: senza movimento il documento resta intero — */
 @media (prefers-reduced-motion: reduce) {
+  /* Niente palco fisso, niente scroll finto: il viaggio si legge come un
+     documento. Le scene NON possono restare nella stessa cella di griglia
+     (si sovrapporrebbero tutte e otto): tornano a impilarsi nel flusso. */
   .bufala-stage,
-  .bufala-overlay {
-    position: relative;
+  .bufala-progresso {
+    display: none;
   }
   .bufala-spacer {
     display: none;
   }
-  .bufala-overlay .scena {
+  .bufala-overlay {
     position: relative;
+    display: grid;
+    gap: var(--spazio-sezione);
+    padding: var(--spazio-sezione) 6vw;
+  }
+  .bufala-overlay .scena {
+    grid-area: auto;
     opacity: 1 !important;
     transform: none !important;
+    visibility: visible !important;
   }
 }
