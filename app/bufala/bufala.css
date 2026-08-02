@@ -117,18 +117,6 @@
   transform-origin: center 58%;
 }
 
-/* La goccia della transizione-firma: nasce in S01, cade in S06. */
-.bufala-stage .goccia {
-  position: absolute;
-  left: 50%;
-  top: 46%;
-  width: 0.5rem;
-  height: 0.72rem;
-  border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
-  background: rgb(246 241 228 / 0.85);
-  will-change: transform, opacity;
-}
-
 .bufala-spacer {
   position: relative;
   z-index: 1;

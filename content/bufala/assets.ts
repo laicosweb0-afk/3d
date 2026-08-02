@@ -1,56 +1,58 @@
 // Gli asset visivi del viaggio.
 //
-// ⚠️ PROVVISORIO — DA LOCALIZZARE PRIMA DELLA PUBBLICAZIONE.
-// Le immagini puntano al CDN di Higgsfield perché la sessione che le ha
-// generate non poteva scaricarle (la policy di rete blocca quel dominio).
-// Funzionano nel browser, ma prima di andare online vanno scaricate e
-// messe in `public/assets/bufala/`, sostituendo qui gli URL con i percorsi
-// locali: un sito di produzione non deve dipendere dal CDN di un fornitore
-// di generazione, che può cambiare o scadere.
+// I file vivono nel progetto, in `public/assets/bufala/`: un sito di
+// produzione non dipende dal CDN di un fornitore di generazione, che può
+// cambiare gli indirizzi o scadere.
 //
-// Sostituzione: scaricare i file, metterli in public/assets/bufala/ con i
-// nomi già usati come chiave qui sotto, e cambiare BASE in '/assets/bufala'.
+// Formato WebP a qualità 84: le foto originali pesavano 4,6 MB in tutto,
+// ora ne pesano 134 KB — con una differenza non percepibile (PSNR sopra i
+// 40 dB su tutte). Su un sito che si vuole premium la lentezza si nota
+// quanto un dettaglio grafico sbagliato.
 
-const CDN =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_3EzPcrBGp32RbeIR79HWLyATCBp';
+const BASE = '/assets/bufala';
 
 export interface Asset {
   src: string;
-  /** Descrizione per chi non vede l'immagine. Il viaggio è decorativo — il
-   *  contenuto vero sta nei titoli — ma le sezioni sotto no. */
+  /** Descrizione per chi non vede l'immagine. */
   alt: string;
 }
 
 export const immagini = {
-  /** Macro estrema, superficie illeggibile: l'attacco. */
+  /** Macro sulla superficie bagnata, con la goccia sospesa: l'attacco.
+   *  La goccia nella foto coincide con la transizione-firma della scaletta
+   *  (§4) — non era previsto, ma è il motivo per cui questa è la hero. */
   macro: {
-    src: `${CDN}/hf_20260802_191801_ac2d8436-c2d0-4958-a4ee-d44d77f66614.png`,
-    alt: 'La superficie bagnata della mozzarella, in macro',
+    src: `${BASE}/macro.webp`,
+    alt: 'La superficie bagnata della mozzarella in macro, con una goccia di siero',
   },
-  /** La forma intera sull'ardesia. */
+  /** La forma intera sull'ardesia, soggetto a sinistra: lo spazio vuoto a
+   *  destra è dove si impagina la tipografia. */
   intera: {
-    src: `${CDN}/hf_20260802_191808_f52a71dc-7efe-4fef-a399-2785e9d51d1e.png`,
+    src: `${BASE}/intera.webp`,
     alt: 'Una mozzarella di bufala intera su una lastra di ardesia',
   },
-  /** Le mani che la presentano. */
-  mani: {
-    src: `${CDN}/hf_20260802_191834_aabc7899-8571-46ff-93ac-832e06b009ac.png`,
-    alt: 'Due mani presentano una mozzarella di bufala',
-  },
-  /** Il taglio: il cuore che si apre. Il culmine del viaggio. */
-  taglio: {
-    src: `${CDN}/hf_20260802_191818_7da50b9b-4554-4f36-b64e-ab828f9d2fe4.png`,
-    alt: 'Una mozzarella di bufala tagliata, con il cuore filante e il latte',
-  },
-  /** Gli altri prodotti del banco. */
+  /** Gli altri prodotti del banco, stessa luce e stessa ardesia. */
   famiglia: {
-    src: `${CDN}/hf_20260802_191844_63c3f9a6-268e-4d2b-ba4b-670b284d5fa8.png`,
+    src: `${BASE}/famiglia.webp`,
     alt: 'Treccia, bocconcini, burrata e ricotta di bufala su ardesia',
   },
 } as const satisfies Record<string, Asset>;
 
-/** Il modello 3D della mozzarella, generato dall'immagine di riferimento.
- *  Non ancora in uso: va prima scaricato, ottimizzato e messo in scena.
- *  Tenuto qui perché è l'asset su cui si costruirà la versione navigabile. */
+/** ⚠️ ANCORA DA PRODURRE — le due scene mancanti della scaletta:
+ *  - `taglio`: la mozzarella aperta, il cuore filante. È il culmine del
+ *    viaggio (SCALETTA_BUFALA.md §2, S05): finché manca, la scena più
+ *    importante del sito gira su un'altra immagine.
+ *  - `mani`: il gesto di presentazione (S04).
+ *  Quando arrivano: metterle in public/assets/bufala/ come taglio.webp e
+ *  mani.webp, aggiungerle qui sopra, e puntarci le scene in direction.ts. */
+
+/** Lo scatto di riferimento da cui è stato ricavato il modello 3D.
+ *  Non è usato nel sito: serve a poter rigenerare il 3D senza ripartire da
+ *  una nuova generazione. */
+export const riferimento3D = `${BASE}/riferimento-3d.webp`;
+
+/** Il modello 3D della mozzarella. Non ancora montato: va scaricato,
+ *  ottimizzato e illuminato in scena. È l'asset su cui si costruirà la
+ *  versione in cui l'oggetto accompagna tutto il sito. */
 export const modello3D =
   'https://d3u0tzju9qaucj.cloudfront.net/7d051b5a-7bfe-49fe-a484-24e7b3a9458a/90720880-daa4-499e-8727-4d6905405586.glb';

@@ -12,18 +12,17 @@
 // camera non scatta mai; l'opacità invece incrocia, così le inquadrature si
 // danno il cambio senza stacchi.
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
-  SCENES, localT, sceneWeight, smooth, span, sceneRange,
+  SCENES, localT, sceneWeight, smooth, sceneRange,
 } from '@/lib/bufala/scenes';
-import { regia, goccia } from '@/content/bufala/direction';
+import { regia } from '@/content/bufala/direction';
 import { immagini } from '@/content/bufala/assets';
 
 type Chiave = keyof typeof immagini;
 
 const palco = {
   strati: new Map<Chiave, HTMLDivElement>(),
-  goccia: null as HTMLDivElement | null,
 };
 
 /** Le immagini effettivamente usate, senza duplicati. */
@@ -32,7 +31,6 @@ const chiaviUsate = Array.from(
 ) as Chiave[];
 
 export function Stage() {
-  const drop = useRef<HTMLDivElement>(null);
   const rifs = useMemo(
     () => new Map<Chiave, React.RefObject<HTMLDivElement | null>>(
       chiaviUsate.map((k) => [k, { current: null }]),
@@ -42,10 +40,8 @@ export function Stage() {
 
   useEffect(() => {
     for (const [k, r] of rifs) if (r.current) palco.strati.set(k, r.current);
-    palco.goccia = drop.current;
     return () => {
       palco.strati.clear();
-      palco.goccia = null;
     };
   }, [rifs]);
 
@@ -65,7 +61,6 @@ export function Stage() {
           }}
         />
       ))}
-      <div ref={drop} className="goccia" />
     </div>
   );
 }
@@ -109,16 +104,6 @@ Stage.render = function render(p: number): void {
     el.style.visibility = w < 0.005 ? 'hidden' : 'visible';
   }
 
-  const g = palco.goccia;
-  if (!g) return;
-  const nascita = smooth(span(p, sceneRange('s01').p0, sceneRange('s01').p1 * 0.8));
-  const cade = smooth(span(p, sceneRange('s06').p0, sceneRange('s06').p1));
-  const y = goccia.nascita.da
-    + (goccia.nascita.a - goccia.nascita.da) * nascita
-    + (goccia.caduta - goccia.nascita.a) * cade;
-  const viva = 1 - smooth(span(p, sceneRange('s08').p0, sceneRange('s08').p1));
-  g.style.transform = `translate3d(-50%, ${(y * 100).toFixed(2)}vh, 0)`;
-  g.style.opacity = (nascita * viva * 0.85).toFixed(3);
 };
 
 /** Esposto per QA: cosa fa la regia a un dato p. */
