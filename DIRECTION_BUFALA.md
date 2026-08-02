@@ -23,7 +23,7 @@ Il cliente ha fornito il logo storico: bufalo araldico in salto (tratto verde/ro
 - Il **verde** del logo è il riferimento reale che ha guidato `--verde-profondo` (§3) — non è un'invenzione, è calibrato (scurito/desaturato) su quel verde.
 - Il **rosso**, il **legno chiaro** e il **corsivo** del lockup restano fuori dalla UI: non generano token, non si ripetono altrove nel sito.
 - Per dare al logo un "atterraggio" naturale nei punti in cui appare — invece di sembrare un corpo estraneo calato in un mondo più freddo — il sito adotta un marrone scuro da legno/noce (§3) come materiale secondario, usato in superfici d'appoggio e nei momenti di transizione verso/dal logo.
-- Il file ricevuto è un **raster** (fotografia/rendering del cartello fisico), non un sorgente vettoriale: per un uso pulito in UI (favicon, header a piccola dimensione) servirà valutare con il cliente se esiste un vettoriale originale o se va ridisegnato fedelmente — stessa criticità già gestita per Mondial Service (§2.2 di ART_DIRECTION.md).
+- ~~Il file ricevuto è un raster~~ — **risolto**: il cliente ha fornito il sorgente vettoriale ufficiale (PDF). Salvato in `public/assets/brand-bufala/`: `logo-vettoriale.pdf` (sorgente), `logo-full.png` (render 4x, 2497×1795, per uso rapido), `logo-full.svg` (estratto dal PDF). Nota tecnica: l'SVG estratto è pesante (~1.4 MB, probabilmente per via del dettaglio delle venature del legno vettorializzate) — da ottimizzare/semplificare prima dell'uso in produzione (favicon, header a piccola dimensione), non usare così com'è per quei contesti.
 
 ---
 
@@ -101,7 +101,7 @@ Stessa architettura tecnica già validata su Mondial Service — tutto funzione 
 ## 7. Input ancora mancanti (da NON inventare)
 
 - ~~Font ufficiale del brand~~ — **definito** (§4): Canela (display) + Neue Haas Grotesk (corpo/UI), fallback gratuiti Fraunces + Inter. Da verificare: possesso della licenza commerciale dei font primari prima del build finale.
-- Versione vettoriale del logo, o approvazione del ridisegno fedele (§2) — il file ricevuto è un raster.
+- ~~Versione vettoriale del logo~~ — **ricevuta** (§2): PDF sorgente + PNG + SVG salvati in `public/assets/brand-bufala/`.
 - Conferma se `--terracotta` ha un riferimento reale nel brand (etichetta, insegna) o va escluso.
 - Materiale fotografico/video definitivo del prodotto e del banco da usare come base per le generazioni (le foto finora condivise sono riferimenti di stile, non ancora asset finali).
 - ~~Dati aziendali reali (ragione sociale, indirizzo, contatti)~~ — **ricevuti** (biglietto da visita): ragione sociale FOOD SERVICE S.A.S. di Marra Salvatore & C., sede legale Via Fondovalle Rubicone 11, 47030 Borghi (FC); sede operativa/vendita ingrosso e dettaglio presso C.A.R.R. di Rimini, Via Emilia Vecchia 75, 47923 Rimini (RN); tel. +39 392 0220924; email info@quellidellabufala.it; sito www.quellidellabufala.it. **Confermato**: è lo stesso posto del punto vendita al banco già mostrato in foto — quell'indirizzo è l'unico da usare nella sezione contatti del sito. La foto del banco però resta esclusa dagli asset (§5, decisione già presa: inquadratura troppo larga/statica per lo scrollytelling) — servirà materiale più ravvicinato dello stesso punto vendita se si vuole un reality-window sul negozio reale.
