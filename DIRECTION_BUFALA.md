@@ -58,6 +58,8 @@ Il cliente ha fornito il logo storico: bufalo araldico in salto (tratto verde/ro
 - **Serif classico** per i titoli — pedigree, tradizione, coerente col registro "manifattura di pregio".
 - **Sans-serif neutro** per corpo testo e UI — leggibilità, contemporaneità, evita l'effetto "menù da trattoria".
 - Da evitare categoricamente: corsivi decorativi, font "rustici" a mano libera — rompono la percezione premium nello stesso modo in cui l'oro pieno la rompeva in Mondial Service. Il corsivo del logo (§2) è l'unica eccezione ammessa, e resta confinato al logo.
+- **Wordmark/titoli ampi e tagliati ai bordi del frame** (rif. Loewe): tecnica tipografica, non di palette — resta valida anche sul fondo scuro della nostra direzione, rende un titolo editoriale invece che da e-commerce.
+- **Microtesto/nav in sans tracciato, maiuscolo, corpo piccolo** (rif. Bang & Olufsen): per navigazione e didascalie — tocco tecnico e silenzioso, coerente col registro scelto.
 - Font ufficiale: **input mancante** (vedi §7) — i requisiti restano gli stessi impostati per Mondial Service (buona resa numerali, variable font per peso animabile).
 
 ---
