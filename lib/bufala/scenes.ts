@@ -86,22 +86,44 @@ export function sceneAt(p: number): SceneDef {
   return SCENES[SCENES.length - 1];
 }
 
-/** Finestra di visibilità di una scena, con dissolvenza in entrata e uscita.
- *  Restituisce 0..1: è l'opacità/peso con cui la scena partecipa al frame.
+/** Semiampiezza (in p globale) della dissolvenza incrociata a ogni confine
+ *  tra scene. Deve restare sotto metà della durata della scena più corta
+ *  (2.0vh su 18.5vh totali, cioè 0.054), altrimenti le due dissolvenze di
+ *  una stessa scena si sovrapporrebbero fra loro invece che coi vicini.
+ *
+ *  Ma il vincolo vero è un altro, trovato solo guardando lo scroll reale:
+ *  un valore largo (provato: 0.035, cioè ~1,3 viewport di scroll) garantisce
+ *  sì "niente vuoti", ma per farlo tiene DUE titoli diversi sovrapposti e
+ *  leggibili insieme per un tratto lungo — illeggibile, peggio del vuoto
+ *  che doveva risolvere. 0.010 (~0,2 viewport) mantiene la stessa garanzia
+ *  matematica (la somma resta sempre 1, per costruzione) ma la rende un
+ *  dissolvenza rapida e pulita invece di una doppia esposizione prolungata. */
+const CROSSFADE = 0.01;
+
+/** Peso 0..1 con cui una scena partecipa al frame, con dissolvenza
+ *  incrociata vera ai confini: usando lo stesso smoothstep e la stessa
+ *  finestra su entrambi i lati di un confine, la scena che esce e quella
+ *  che entra sommano sempre a 1 per costruzione (proprietà dello
+ *  smoothstep cubico: smooth(t) + smooth(1-t) = 1). Il viaggio non ha mai
+ *  un istante in cui non c'è nulla in vista — l'utente non "esce" mai dalla
+ *  scena in corso finché non è già dentro la successiva.
  *
  *  Le due scene di confine non sfumano dal lato esterno: la prima è già
  *  presente al caricamento (una hero invisibile finché non si scorre è un
  *  difetto, non una scelta) e l'ultima resta piena fino alla fine del
  *  viaggio, dove il documento prende il posto del piano sequenza. */
-export function sceneWeight(p: number, id: SceneId, fade = 0.25): number {
-  const t = localT(p, id);
+export function sceneWeight(p: number, id: SceneId): number {
+  const { p0, p1 } = sceneRange(id);
   const prima = id === SCENES[0].id;
   const ultima = id === SCENES[SCENES.length - 1].id;
 
-  if (t <= 0) return prima ? 1 : 0;
-  if (t >= 1) return ultima ? 1 : 0;
-
-  const entrata = prima ? 1 : smooth(Math.min(t / fade, 1));
-  const uscita = ultima ? 1 : smooth(Math.min((1 - t) / fade, 1));
-  return entrata * uscita;
+  // La rampa vive nella finestra [confine-CROSSFADE, confine+CROSSFADE],
+  // quindi si estende anche oltre i propri p0/p1: è lì, nel territorio
+  // condiviso col vicino, che le due rampe si sovrappongono e sommano a 1.
+  // Ritagliare la finestra sui propri confini (come in una prima versione
+  // di questa funzione) è l'errore che riporta il buco: a p0 esatto la
+  // rampa vale 0.5 per costruzione, non 0 — deve poter continuare a salire.
+  const entrata = prima ? 1 : smooth((p - (p0 - CROSSFADE)) / (2 * CROSSFADE));
+  const uscita = ultima ? 1 : smooth(((p1 + CROSSFADE) - p) / (2 * CROSSFADE));
+  return clamp01(entrata) * clamp01(uscita);
 }

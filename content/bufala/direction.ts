@@ -67,7 +67,10 @@ export const regia: Record<SceneId, Regia> = {
   // Il tempo: la luce cambia e la goccia dell'apertura finisce di cadere.
   // La distanza resta ferma — qui non ci si muove, si aspetta.
   s06: {
-    zoom: [1.35, 1.3],
+    // La distanza finale deve combaciare con l'inizio di S07: il rig non
+    // fa mai uno scatto tra due scene, anche quando il movimento primario
+    // è un altro (qui la luce).
+    zoom: [1.35, 1.0],
     luce: [1.0, 0.6],
     nota: 'Nessun avvicinamento: cambia solo la luce. È la scena dell’attesa.',
   },
