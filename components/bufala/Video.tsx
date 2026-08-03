@@ -16,6 +16,8 @@
 //    qualsiasi costa troppo e lo scrub singhiozza (vedi tools/bufala-video.mjs).
 
 import { useEffect, useRef } from 'react';
+import { SCENES } from '@/lib/bufala/scenes';
+import { regia } from '@/content/bufala/direction';
 
 const player = {
   el: null as HTMLVideoElement | null,
@@ -68,7 +70,12 @@ export function Video({ webm, mp4, poster }: VideoProps) {
       // Mai `autoplay`: il video non deve mai avanzare da solo, il suo
       // tempo appartiene allo scroll.
       aria-hidden="true"
-      style={{ opacity: 0 }}
+      // Parte già alla luce che avrà a inizio viaggio (la `luce` iniziale
+      // della prima scena in direction.ts), non a zero: così il primo
+      // fotogramma — o il poster, finché il filmato non è pronto — si vede
+      // anche prima che il JavaScript prenda il comando, e quando lo prende
+      // non c'è nessuno scatto di luminosità.
+      style={{ opacity: regia[SCENES[0].id].luce[0] }}
     >
       <source src={webm} type="video/webm" />
       <source src={mp4} type="video/mp4" />

@@ -99,7 +99,19 @@ export function Journey() {
               key={s.id}
               className={hero ? 'scena scena--hero' : 'scena'}
               data-scena={s.id}
-              style={{ opacity: 0 }}
+              // La hero parte visibile, tutte le altre scene no.
+              //
+              // Sembra un dettaglio e non lo è: finché anche la hero partiva
+              // da zero, l'HTML servito conteneva *dodici* elementi tutti a
+              // opacità zero, e bastava che il JavaScript non partisse —
+              // un chunk non trovato perché il browser teneva in cache una
+              // pagina di un deploy precedente, una connessione che cade, un
+              // errore qualsiasi — perché il sito fosse una schermata verde
+              // vuota. Nessun messaggio, nessun contenuto: niente.
+              //
+              // Il movimento è un miglioramento progressivo; la prima
+              // schermata no, quella deve esserci comunque.
+              style={{ opacity: hero ? 1 : 0 }}
             >
               <h1>{c.titolo}</h1>
               {hero && <span aria-hidden="true" />}

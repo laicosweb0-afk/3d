@@ -76,18 +76,28 @@ export const immagini: Record<Inquadratura, Asset> = {
 
 /** Il video legato allo scroll: è questo il "3D" del sito.
  *
- *  Un unico piano da 15 secondi che contiene tre movimenti — la mozzarella
- *  scende, resta ferma e ruota appena, poi una lama la taglia netta e il
- *  latte cola. Girato in una sola generazione invece che in tre clip da
- *  attaccare: le giunzioni fra clip separate si vedono sempre, e qui il
- *  gesto deve essere continuo perché è lo scroll a comandarlo.
+ *  Un unico piano da 10 secondi: la mozzarella scende dall'alto, resta
+ *  sospesa in aria e gira su sé stessa, poi una lama scende dall'alto e la
+ *  taglia netta a mezz'aria mentre il latte cola. Girato in una sola
+ *  generazione invece che in tre clip da attaccare: le giunzioni fra clip
+ *  separate si vedono sempre, e qui il gesto deve essere continuo perché è
+ *  lo scroll a comandarlo.
  *
- *  Ricodificato da tools/bufala-video.mjs con fotogrammi chiave ravvicinati,
- *  senza i quali lo scrub singhiozza. */
+ *  Ripulito dal filo di sospensione con tools/bufala-filo.mjs, e ricodificato
+ *  da tools/bufala-video.mjs con fotogrammi chiave ravvicinati, senza i quali
+ *  lo scrub singhiozza.
+ *
+ *  ⚠️ Il numero nel nome è una versione, e va aumentato ogni volta che il
+ *  filmato cambia. Sostituire il contenuto lasciando lo stesso nome non
+ *  basta: i browser tengono i file in cache per URL, e chi ha già visitato
+ *  il sito continua a vedere il filmato vecchio finché la cache non scade —
+ *  senza nessun modo, per lui, di accorgersene o di forzarla (su iPhone il
+ *  ricaricamento forzato non esiste). Un nome nuovo è un URL nuovo, e un URL
+ *  nuovo non può essere servito da una cache. */
 export const video = {
-  webm: `${BASE}/mozzarella.webm`,
-  mp4: `${BASE}/mozzarella.mp4`,
-  poster: `${BASE}/mozzarella-poster.webp`,
+  webm: `${BASE}/mozzarella-2.webm`,
+  mp4: `${BASE}/mozzarella-2.mp4`,
+  poster: `${BASE}/mozzarella-2-poster.webp`,
 };
 
 /** I prodotti reali del banco, fotografati dal cliente sullo stesso set
