@@ -48,12 +48,47 @@ export function Video({ webm, mp4, poster }: VideoProps) {
       player.pronto = true;
     };
     v.addEventListener('loadedmetadata', pronto);
+    v.addEventListener('loadeddata', pronto);
+    v.addEventListener('canplay', pronto);
     // Alcuni browser non emettono `loadedmetadata` se il video è già in
     // cache: se la durata c'è già, siamo pronti comunque.
     if (v.readyState >= 1) pronto();
 
+    // Lo sblocco per iPhone.
+    //
+    // Safari su iOS non scarica un video finché l'utente non ha interagito
+    // con la pagina, e su rete cellulare lo fa ancora meno: `preload="auto"`
+    // viene semplicemente ignorato. Il risultato è che i metadati non
+    // arrivano mai, la durata resta NaN, `render` esce subito e il filmato
+    // non si muove di un fotogramma — chi guarda vede solo il poster e
+    // conclude, giustamente, che il video non c'è.
+    //
+    // Un play seguito subito da un pause al primo tocco autorizza l'elemento
+    // a scaricare e a spostarsi nel tempo. Il video non parte davvero: viene
+    // fermato nello stesso istante, e da lì in poi il suo tempo torna a
+    // essere solo lo scroll. È muto e `playsInline`, quindi iOS lo consente
+    // senza chiedere niente e senza aprire il lettore a tutto schermo.
+    const sblocca = () => {
+      v.load();
+      const avvio = v.play();
+      if (avvio && typeof avvio.then === 'function') {
+        avvio.then(() => v.pause()).catch(() => {});
+      } else {
+        v.pause();
+      }
+    };
+    const opzioni = { once: true, passive: true } as const;
+    window.addEventListener('touchstart', sblocca, opzioni);
+    window.addEventListener('pointerdown', sblocca, opzioni);
+    window.addEventListener('scroll', sblocca, opzioni);
+
     return () => {
       v.removeEventListener('loadedmetadata', pronto);
+      v.removeEventListener('loadeddata', pronto);
+      v.removeEventListener('canplay', pronto);
+      window.removeEventListener('touchstart', sblocca);
+      window.removeEventListener('pointerdown', sblocca);
+      window.removeEventListener('scroll', sblocca);
       player.el = null;
       player.pronto = false;
     };
