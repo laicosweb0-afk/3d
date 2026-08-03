@@ -31,6 +31,17 @@ export const VETRINA_VH = 10;
  *  gesto corre più del dito e sembra scivoloso. */
 const TRASCINAMENTO = 1.15;
 
+/** Semiampiezza della dissolvenza fra un nome e il successivo, in secondi di
+ *  filmato. Stretta: l'incrocio deve essere un cambio, non una doppia
+ *  esposizione. */
+const MEZZA = 0.35;
+
+/** Smoothstep: la curva di dissolvenza usata in tutto il sito. */
+function lisci(x: number): number {
+  const t = x < 0 ? 0 : x > 1 ? 1 : x;
+  return t * t * (3 - 2 * t);
+}
+
 export function Vetrina() {
   const sezione = useRef<HTMLElement>(null);
   const video = useRef<HTMLVideoElement>(null);
@@ -96,19 +107,29 @@ export function Vetrina() {
         if (Math.abs(v.currentTime - t) > 1 / 60) v.currentTime = t;
       }
 
-      // Il nome del prodotto più vicino al centro in questo istante. Compare
-      // e sparisce con la distanza dal proprio momento, così le schede non si
-      // accavallano mai e non c'è un istante senza nessun nome.
+      // Il nome del prodotto in campo. Ogni tappa possiede una regione di
+      // tempo che arriva a metà strada dalle vicine, ed è piena per tutta la
+      // regione: si dissolve solo vicino ai confini, dove la vicina sta già
+      // salendo. Le due rampe usano la stessa curva e la stessa finestra,
+      // quindi sommano sempre a uno — è la proprietà dello smoothstep cubico
+      // già sfruttata per i titoli del viaggio.
+      //
+      // Una dissolvenza proporzionale alla distanza, che era il primo
+      // tentativo, tiene invece due nomi leggibili insieme per un tratto
+      // lungo: sotto il prodotto giusto si legge in trasparenza il nome di
+      // quello dopo.
       const durata = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : 15;
       const adesso = q * durata;
       const elenco = nomi.current;
       if (elenco) {
-        const passo = durata / Math.max(tappe.length, 1);
         for (const [i, el] of Array.from(elenco.children).entries()) {
-          const d = Math.abs(adesso - tappe[i].secondo) / passo;
-          const peso = Math.max(0, 1 - d * 1.6);
+          const prima = i > 0 ? (tappe[i - 1].secondo + tappe[i].secondo) / 2 : -Infinity;
+          const dopo = i < tappe.length - 1 ? (tappe[i].secondo + tappe[i + 1].secondo) / 2 : Infinity;
+          const entrata = prima === -Infinity ? 1 : lisci((adesso - (prima - MEZZA)) / (2 * MEZZA));
+          const uscita = dopo === Infinity ? 1 : lisci(((dopo + MEZZA) - adesso) / (2 * MEZZA));
+          const peso = Math.max(0, Math.min(1, entrata)) * Math.max(0, Math.min(1, uscita));
           (el as HTMLElement).style.opacity = peso.toFixed(3);
-          (el as HTMLElement).style.transform = `translate3d(0, ${((1 - peso) * 0.6).toFixed(2)}rem, 0)`;
+          (el as HTMLElement).style.transform = `translate3d(0, ${((1 - peso) * 0.5).toFixed(2)}rem, 0)`;
         }
       }
 

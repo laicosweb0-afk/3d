@@ -39,15 +39,17 @@ export interface Tappa {
   secondo: number;
 }
 
-/** Le cinque tappe della processione.
+/** Le cinque tappe della processione, con gli istanti letti sul filmato
+ *  consegnato — non quelli chiesti nel prompt, che il modello sposta sempre.
  *
- *  ⚠️ I secondi qui sotto sono provvisori — la spartizione teorica in cinque
- *  parti uguali. Vanno sostituiti con gli istanti misurati sul filmato
- *  consegnato, esattamente come è stato fatto per il viaggio. */
+ *  La spartizione teorica in cinque parti uguali avrebbe messo i nomi a 1,5 /
+ *  4,5 / 7,5 / 10,5 / 13,5 s: fino a un secondo e mezzo di scarto dal
+ *  prodotto a cui si riferiscono, cioè un nome sbagliato sotto un prodotto
+ *  giusto. */
 export const tappe: Tappa[] = [
-  { nome: 'Prataiola alla rucola', produttore: 'Moncalo', secondo: 1.5 },
-  { nome: 'Formaggio di capra', secondo: 4.5 },
-  { nome: 'Prosciutto stagionato', secondo: 7.5 },
-  { nome: "Friarielli all'olio", secondo: 10.5 },
-  { nome: 'Olive Bella di Cerignola', secondo: 13.5 },
+  { nome: 'Prataiola alla rucola', produttore: 'Moncalo', secondo: 2.0 },
+  { nome: 'Formaggio di capra', secondo: 5.6 },
+  { nome: 'Prosciutto stagionato', secondo: 7.3 },
+  { nome: "Friarielli all'olio", secondo: 9.2 },
+  { nome: 'Olive Bella di Cerignola', produttore: 'Luliv', secondo: 11.6 },
 ];
