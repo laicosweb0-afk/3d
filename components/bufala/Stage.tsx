@@ -100,11 +100,12 @@ function valori(p: number) {
 
 /** L'istante del filmato che corrisponde a p, in secondi.
  *
- *  L'avanzamento dentro la scena è lineare, non smorzato: lo smoothstep usato
- *  per la camera qui sarebbe un difetto: rallenterebbe il filmato all'inizio
- *  e alla fine di *ogni* scena, e a ogni confine si vedrebbe il gesto
- *  rallentare e ripartire senza motivo. Il ritmo si detta con i `tempo`
- *  della regia, non con una curva.
+ *  L'avanzamento dentro la scena è lineare per difetto: smorzare *ogni*
+ *  scena farebbe rallentare e ripartire il gesto a ogni confine, senza
+ *  motivo. Lo smorzamento si chiede scena per scena (`curva: 'dolce'`), e
+ *  serve solo dove due scene vicine hanno velocità molto diverse — lì il
+ *  gradino di velocità si vede, ed è quello che faceva "sobbalzare"
+ *  l'ingresso della mozzarella.
  *
  *  Fuori dall'arco del video si restituisce l'estremo più vicino: prima
  *  dell'inizio il primo fotogramma, dopo la fine l'ultimo. */
@@ -112,7 +113,8 @@ function secondiVideo(p: number): number {
   const s = scenaContenitrice(p);
   const r = regia[s.id];
   if (r.tempo) {
-    const t = localT(p, s.id);
+    const grezzo = localT(p, s.id);
+    const t = r.curva === 'dolce' ? smooth(grezzo) : grezzo;
     return r.tempo[0] + (r.tempo[1] - r.tempo[0]) * t;
   }
   const primo = sceneVideo[0];

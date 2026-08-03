@@ -324,9 +324,9 @@
 .bufala-sezioni {
   position: relative;
   z-index: 3;
-  /* Le sezioni non ripartono dal nero: il verde continua sotto il viaggio,
-     così il passaggio dal piano sequenza al documento non è uno stacco. */
-  background: var(--verde-profondo);
+  /* Il fondo lo porta il velo di latte, che il viaggio ha appena aperto:
+     le sezioni ci si appoggiano sopra senza stacco. */
+  background: var(--latte);
   padding: var(--spazio-sezione) 6vw;
   display: grid;
   gap: var(--spazio-sezione);
@@ -537,4 +537,75 @@
   height: 100%;
   object-fit: cover;
   object-position: center 58%;
+}
+
+/* — Il velo di latte —
+   Il cerchio che si allarga dal punto in cui cadeva il latte e apre la
+   seconda metà del sito. Sta sopra il palco e sopra i testi del viaggio, ma
+   sotto la navigazione: quando ha finito, è lui il fondo su cui si legge il
+   documento.
+
+   È un disco molto più grande dello schermo che viene ingrandito, non un
+   `clip-path` che si allarga: il ritaglio netto ha un bordo tagliato col
+   righello e si legge come una maschera, mentre un gradiente radiale ha un
+   bordo morbido e si legge come liquido. In più la scala si anima sul
+   compositore, senza ridisegnare niente a ogni fotogramma.
+
+   Il centro sta al 44% dell'altezza, dove il taglio lascia cadere il latte:
+   la goccia si allarga da dove è caduta, non dal centro geometrico. */
+.velo-latte {
+  position: fixed;
+  left: 50%;
+  top: 44%;
+  width: 260vmax;
+  height: 260vmax;
+  margin: -130vmax 0 0 -130vmax;
+  /* Sopra il palco e i testi del viaggio (1 e 2), sotto il documento (3):
+     il velo prepara il fondo chiaro, e le sezioni ci arrivano sopra. Se
+     stesse sopra il documento resterebbe fisso a coprirlo per sempre. */
+  z-index: 2;
+  background: radial-gradient(circle closest-side,
+    var(--latte) 0 52%,
+    rgb(246 241 228 / 0.86) 62%,
+    rgb(246 241 228 / 0) 74%);
+  transform: scale(0);
+  visibility: hidden;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Il documento, sul latte. Il viaggio è scuro, la pagina è chiara: è il
+   distacco che il velo prepara. Tutti i colori del testo si ribaltano — un
+   testo latte su fondo latte sarebbe invisibile, ed è l'errore facile qui. */
+.bufala-sezioni {
+  background: var(--latte);
+  color: var(--verde-profondo);
+}
+
+.bufala-sezione .micro,
+.bufala-piede p {
+  color: rgb(14 32 24 / 0.55);
+}
+
+.bufala-sezione a {
+  color: var(--verde-profondo);
+  border-bottom-color: rgb(14 32 24 / 0.25);
+}
+
+.bufala-sezione a:hover {
+  border-bottom-color: var(--ottone);
+}
+
+/* La firma: il marchio è nato per fondi chiari, quindi qui torna al suo
+   contrasto naturale. */
+.bufala-firma {
+  background: var(--latte);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Senza movimento non c'è nessuna goccia da seguire: il velo sparisce e
+     il documento resta chiaro comunque. */
+  .velo-latte {
+    display: none;
+  }
 }

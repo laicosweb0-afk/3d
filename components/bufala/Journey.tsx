@@ -6,7 +6,7 @@
 // Mondial Service, TECH_ARCHITECTURE.md §1).
 
 import { useEffect, useRef } from 'react';
-import { SCENES, TOTAL_VH, sceneWeight, localT } from '@/lib/bufala/scenes';
+import { SCENES, TOTAL_VH, sceneWeight, localT, span, smooth, pAt } from '@/lib/bufala/scenes';
 import { sceneCopy } from '@/content/bufala/copy';
 import { initScroll } from '@/lib/bufala/scroll';
 import { Stage } from './Stage';
@@ -15,6 +15,7 @@ import { Progresso } from './Progresso';
 export function Journey() {
   const spacerRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const veloRef = useRef<HTMLDivElement>(null);
   /** Progresso master, fuori da React: si aggiorna a ogni frame senza
    *  rerender (un setState per frame ucciderebbe il frame budget). */
   const p = useRef(0);
@@ -54,6 +55,8 @@ export function Journey() {
       // Smorzamento esponenziale, indipendente dal frame rate.
       smoothed += (p.current - smoothed) * (1 - Math.exp(-9 * dt));
 
+      const velo = veloRef.current;
+      const overlay = overlayRef.current;
       for (const el of scene) {
         const id = el.dataset.scena as (typeof SCENES)[number]['id'];
         const peso = sceneWeight(smoothed, id);
@@ -63,6 +66,20 @@ export function Journey() {
         el.style.transform = `translate3d(0, ${(0.5 - t) * 2.5}rem, 0)`;
         el.style.visibility = peso < 0.01 ? 'hidden' : 'visible';
       }
+
+      // Il velo: fermo a zero per tutto il viaggio, si allarga nell'ultima
+      // scena. Il raggio arriva oltre il 100% perché un cerchio deve coprire
+      // anche gli angoli, che stanno più lontani del bordo.
+      // Il velo: fermo per tutto il viaggio, si allarga nell'ultima scena.
+      // Il testo del viaggio si ritira mentre il latte avanza — senza,
+      // l'ultimo titolo resterebbe tagliato a metà dal bordo del velo, e
+      // sopra il latte sarebbe comunque illeggibile (è latte su latte).
+      const q = smooth(span(smoothed, pAt('s08', 0.12), 1));
+      if (velo) {
+        velo.style.transform = `scale(${q.toFixed(4)})`;
+        velo.style.visibility = q < 0.002 ? 'hidden' : 'visible';
+      }
+      if (overlay) overlay.style.opacity = (1 - smooth(span(smoothed, pAt('s08', 0.12), pAt('s08', 0.55)))).toFixed(3);
 
       Stage.render(smoothed);
       Progresso.render(smoothed);
@@ -86,6 +103,20 @@ export function Journey() {
     <>
       <Stage />
       <Progresso />
+
+      {/* Il velo di latte.
+
+          La ripresa finisce con il latte che cola dal taglio. Invece di
+          spegnere la scena sul verde e ricominciare da capo con il
+          documento, è il latte stesso ad aprirlo: una goccia si allarga dal
+          punto in cui cadeva finché non riempie lo schermo, e quello che
+          resta è la pagina chiara. Il distacco fra le due metà del sito non
+          è uno stacco, è una conseguenza.
+
+          Cresce come cerchio e non come dissolvenza perché una dissolvenza
+          si legge come "cambio pagina", mentre un cerchio che si allarga da
+          un punto preciso si legge come una cosa che è appena successa. */}
+      <div ref={veloRef} className="velo-latte" aria-hidden="true" />
 
       <div ref={overlayRef} className="bufala-overlay" aria-hidden="true">
         {SCENES.map((s) => {

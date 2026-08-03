@@ -54,28 +54,32 @@ export const sceneCopy: Record<SceneId, SceneCopy> = {
 
   // La materia, mentre il soggetto ruota appena: si parla della superficie,
   // non del sapore.
+  // Da qui in poi il testo non racconta più il filmato.
+  //
+  // Prima diceva "La pelle trattiene il siero", "Una lama. Nient'altro.",
+  // "Poi si apre": didascalie di quello che si stava già vedendo. Un titolo
+  // che descrive l'immagine sotto non aggiunge niente e consuma l'unica
+  // occasione che il sito ha di dire chi è. E lega il testo al filmato: se
+  // un giorno si cambia ripresa, il copy diventa falso.
+  //
+  // Le frasi parlano invece del progetto: la bufala, il caseificio, il
+  // banco. Restano vere anche se il filmato cambia.
   s03: {
-    titolo: 'La pelle\ntrattiene il siero.',
+    titolo: 'Un latte solo:\nquello di bufala.',
   },
 
-  // Entra la lama. Il testo segue quello che il video mostra davvero: qui
-  // non ci sono più mani che la sostengono, c'è un coltello che scende.
-  // Nessun numero, nessun dettaglio di lavorazione: non li conosciamo, e
-  // inventarli sarebbe il modo più veloce di perdere la credibilità che
-  // questa scena serve a costruire.
+  // Il vero elemento di distinzione: non rivendono, producono. È un dato
+  // confermato dal cliente, e non nomina nessun luogo (vincolo esplicito).
   s04: {
-    titolo: 'Una lama.\nNient’altro.',
+    titolo: 'Dietro, un caseificio.\nNon un magazzino.',
   },
 
-  // Il culmine. La frase più corta del sito, perché l'immagine parla da sé.
+  // La frase più corta del sito, dove il filmato è più forte: qui le parole
+  // devono togliersi di mezzo.
   s05: {
-    titolo: 'Poi si apre.',
+    titolo: 'Nessuna scorciatoia.',
   },
 
-  // La freschezza. Che una mozzarella si misuri in ore è una proprietà del
-  // prodotto, non un vanto sui tempi di questa azienda: quelli non li
-  // conosciamo. ⚠️ Se il cliente conferma i tempi reali, questa è la scena
-  // dove dirli — è il suo argomento di vendita più forte.
   s06: {
     titolo: 'Una mozzarella\nsi misura in ore.',
   },

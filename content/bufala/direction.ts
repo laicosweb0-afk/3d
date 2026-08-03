@@ -46,6 +46,20 @@ export interface Regia {
    *  due scene vicine hanno rapporti molto diversi, al confine si sente uno
    *  scarto di velocità. */
   tempo?: [number, number];
+
+  /** Come il filmato avanza dentro la scena.
+   *
+   *  `lineare` (predefinito) tiene una velocità costante: giusto quando le
+   *  scene vicine hanno rapporti secondi/vh simili.
+   *
+   *  `dolce` parte e finisce ferma, accelerando in mezzo. Serve dove due
+   *  scene vicine hanno velocità molto diverse: la hero tiene il filmato
+   *  quasi immobile (0,17 s per viewport) e la discesa lo fa correre cinque
+   *  volte tanto, e al confine quello scatto si vede — la mozzarella non
+   *  entra, sobbalza. Con `dolce` su entrambe le scene la velocità arriva a
+   *  zero da una parte e riparte da zero dall'altra: il passaggio non ha
+   *  gradino. */
+  curva?: 'lineare' | 'dolce';
   /** Nota di regia: perché la scena si muove così. Non è decorazione,
    *  è il contratto con chi ritarerà i numeri dopo di me. */
   nota: string;
@@ -69,6 +83,7 @@ export const regia: Record<SceneId, Regia> = {
     // fascia alta, dove vive la headline. Il numero non è scelto a occhio,
     // è il fotogramma in cui la misura passa da "fondo scuro" a "occupato".
     tempo: [0, 0.35],
+    curva: 'dolce',
     zoom: [1.08, 1.02],
     luce: [0.55, 0.95],
     nota: 'Il campo vuoto e la frase. Il soggetto non c’è ancora: sta arrivando.',
@@ -80,6 +95,7 @@ export const regia: Record<SceneId, Regia> = {
     video: true,
     immagine: 'intera',
     tempo: [0.35, 1.6],
+    curva: 'dolce',
     zoom: [1.02, 1.0],
     luce: [0.95, 1.0],
     nota: 'La discesa. Il movimento è del soggetto, non della camera.',
