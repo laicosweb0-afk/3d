@@ -36,10 +36,20 @@ export const sceneCopy: Record<SceneId, SceneCopy> = {
     nota: 'Scorri',
   },
 
-  // Il ritiro: la forma si dichiara. Qui si può dire cos'è, ma senza enfasi.
+  // La discesa: l'oggetto entra in campo e il sito dice di chi è.
+  //
+  // Qui prima c'era "Mozzarella di bufala." — le stesse identiche parole del
+  // payoff della hero, che la precede di due secondi. Con i titoli tutti
+  // nella fascia bassa le due righe si incrociavano nello stesso punto dello
+  // schermo, e per un tratto di scroll si leggevano sovrapposte: la
+  // ripetizione, che era già un difetto del testo, diventava un difetto
+  // visibile. Dirlo due volte non lo rende più vero.
+  //
+  // Al suo posto l'unica cosa che nessun concorrente può copiare: che la
+  // mozzarella è loro. È un dato confermato dal cliente — la produce lui —
+  // e non nomina nessun luogo, come da vincolo.
   s02: {
-    titolo: 'Mozzarella\ndi bufala.',
-    nota: 'La produciamo noi',
+    titolo: 'La produciamo\nnoi.',
   },
 
   // La materia, mentre il soggetto ruota appena: si parla della superficie,

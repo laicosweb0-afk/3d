@@ -59,13 +59,16 @@ export const regia: Record<SceneId, Regia> = {
   // sito si apriva "uscendo da uno zoom": un movimento che è solo un
   // movimento, senza un fatto dentro. Ora l'apertura è il primo fotogramma
   // del filmato, e il fatto arriva scorrendo — la mozzarella entra dall'alto
-  // nel campo vuoto. Il video avanza pochissimo (0,8 s su 2 viewport):
+  // nel campo vuoto. Il video avanza pochissimo (0,35 s su 2 viewport):
   // quanto basta perché alla fine della hero si intraveda il soggetto
   // affacciarsi dal bordo alto, che è l'invito a continuare.
   s01: {
     video: true,
     immagine: 'macro',
-    tempo: [0, 0.8],
+    // Finisce a 0,35 s e non oltre: a 0,5 s il soggetto è già entrato nella
+    // fascia alta, dove vive la headline. Il numero non è scelto a occhio,
+    // è il fotogramma in cui la misura passa da "fondo scuro" a "occupato".
+    tempo: [0, 0.35],
     zoom: [1.08, 1.02],
     luce: [0.55, 0.95],
     nota: 'Il campo vuoto e la frase. Il soggetto non c’è ancora: sta arrivando.',
@@ -76,7 +79,7 @@ export const regia: Record<SceneId, Regia> = {
   s02: {
     video: true,
     immagine: 'intera',
-    tempo: [0.8, 3.0],
+    tempo: [0.35, 1.6],
     zoom: [1.02, 1.0],
     luce: [0.95, 1.0],
     nota: 'La discesa. Il movimento è del soggetto, non della camera.',
@@ -88,7 +91,7 @@ export const regia: Record<SceneId, Regia> = {
   s03: {
     video: true,
     immagine: 'macro',
-    tempo: [3.0, 6.0],
+    tempo: [1.6, 4.8],
     zoom: [1.0, 1.08],
     luce: [1.0, 1.0],
     nota: 'La sospensione: gira su sé stessa mentre la camera si avvicina di un soffio.',
@@ -99,19 +102,25 @@ export const regia: Record<SceneId, Regia> = {
   s04: {
     video: true,
     immagine: 'mani',
-    tempo: [6.0, 8.0],
+    tempo: [4.8, 6.8],
     zoom: [1.08, 1.02],
     luce: [1.0, 1.0],
     nota: 'Entra la lama: la camera arretra quel tanto che serve al gesto.',
   },
 
-  // Il taglio. Due secondi di filmato distribuiti su due viewport e mezzo:
-  // è il tratto riprodotto più lentamente di tutto il viaggio, ed è
-  // voluto — qui la lentezza è il peso.
+  // Il taglio. Due secondi di filmato distribuiti su tre viewport: è il
+  // tratto riprodotto più lentamente del viaggio, ed è voluto — qui la
+  // lentezza è il peso.
+  //
+  // Finisce a 8,8 s e non a 10: negli ultimi 1,2 secondi le due metà
+  // restano sospese ciascuna su un filo di latte verticale, e leggono come
+  // due gambe sottili invece che come latte che cola. La ripresa si taglia
+  // dov'è più forte — è un secondo numero da cambiare, se si preferisce
+  // tenerla intera.
   s05: {
     video: true,
     immagine: 'taglio',
-    tempo: [8.0, 10.0],
+    tempo: [6.8, 8.8],
     zoom: [1.02, 1.12],
     luce: [1.0, 1.0],
     nota: 'Il clou. Le due metà si separano e il latte cade.',
@@ -127,7 +136,7 @@ export const regia: Record<SceneId, Regia> = {
   s06: {
     video: true,
     immagine: 'intera',
-    tempo: [10.0, 10.0],
+    tempo: [8.8, 8.8],
     // La distanza finale deve combaciare con l'inizio di S07: il rig non
     // fa mai uno scatto tra due scene, anche quando il movimento primario
     // è un altro (qui la luce).

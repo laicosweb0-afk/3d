@@ -134,9 +134,18 @@
 }
 
 /* Gli overlay di testo del viaggio: sopra il palco, sotto le sezioni.
-   I testi vivono nel terzo superiore, il soggetto nei due terzi sotto: la
-   tipografia non tocca mai il prodotto (Direzione §4, stessa regola già
-   adottata su Mondial Service). Ne esce anche l'impaginato da copertina. */
+
+   I titoli del viaggio vivono TUTTI nella fascia bassa, una posizione sola
+   per tutta la ripresa. Non è una preferenza estetica, è una misura: il
+   soggetto attraversa la fascia alta durante la discesa e la occupa con
+   mano e lama dal quinto secondo in poi, mentre la fascia bassa resta
+   sgombra dal primo all'ultimo fotogramma. Prima i titoli stavano in alto
+   e finivano addosso al prodotto — è il difetto visibile in anteprima.
+
+   Una posizione fissa vale più di una posizione ottimale scena per scena:
+   il testo che salta da un bordo all'altro mentre si scorre si nota, e
+   quello che si nota in un sito così non è mai un pregio. L'unica eccezione
+   è la hero, che è una copertina e non un fotogramma del film. */
 .bufala-overlay {
   position: fixed;
   inset: 0;
@@ -144,14 +153,14 @@
      tutte, e ciascuna decide come disporsi. */
   display: grid;
   grid-template: 1fr / 1fr;
-  padding: clamp(3rem, 11vh, 8rem) 6vw clamp(2rem, 7vh, 4.5rem);
+  padding: clamp(3rem, 11vh, 8rem) 6vw clamp(2.5rem, 9vh, 5.5rem);
   z-index: 2;
   pointer-events: none;
 }
 
 .bufala-overlay .scena {
   grid-area: 1 / 1;
-  align-self: start;
+  align-self: end;
   justify-self: center;
   text-align: center;
   will-change: opacity, transform;
@@ -159,6 +168,25 @@
 
 .bufala-overlay .nota {
   margin-top: 1.75rem;
+}
+
+/* Sugli schermi larghi il titolo del viaggio deve farsi più piccolo e stare
+   più in basso. Non è una preferenza: il filmato mostra sempre tutta la
+   propria altezza (il ritaglio di `cover` toglie ai lati, mai sopra e
+   sotto), quindi il soggetto arriva sempre attorno al 69% dell'altezza —
+   mentre il titolo di display cresce con la larghezza della finestra. Su
+   1440 px due righe occupavano 235 px e finivano addosso alla mozzarella.
+   Qui rientrano sotto con margine.
+
+   La hero non è toccata: ha la sua composizione, headline in alto e payoff
+   in fondo, e nel suo tratto di filmato il campo è ancora vuoto. */
+@media (min-aspect-ratio: 1/1) {
+  .bufala-overlay {
+    padding-bottom: clamp(1.5rem, 3.5vh, 2.75rem);
+  }
+  .bufala-overlay .scena h2 {
+    font-size: clamp(1.8rem, 3.1vw, 2.9rem);
+  }
 }
 
 /* — La hero —
@@ -205,18 +233,34 @@
   padding-left: 0.24em;
 }
 
-/* Velatura sotto la tipografia: nelle scene macro il soggetto riempie il
-   campo ed è chiaro quanto il testo, quindi il titolo ci si perdeva sopra.
-   È il "scrim" del cinema — impercettibile sul fondo, sufficiente a tenere
-   il contrasto in ogni fotogramma. Sta nel palco, non nell'overlay, così
-   non entra mai in dissolvenza con i testi. */
+/* Velatura sotto la tipografia — il "scrim" del cinema: impercettibile sul
+   fondo, sufficiente a tenere il contrasto in ogni fotogramma. Sta nel
+   palco, non nell'overlay, così non entra mai in dissolvenza con i testi.
+
+   Sta in basso perché è lì che vivono i titoli del viaggio, e sta in basso
+   *perché* è lì che vivono: misurando il filmato fotogramma per fotogramma,
+   la fascia alta è libera solo nella hero e nella sospensione — durante la
+   discesa il soggetto la attraversa, e dal momento in cui entra la lama ci
+   stanno mano e coltello. La fascia bassa è l'unica sgombra dal primo
+   all'ultimo fotogramma. Una velatura più tenue resta in alto per la sola
+   hero, dove la headline vive nel campo vuoto. */
 .bufala-stage::after {
   content: '';
   position: absolute;
-  inset: 0 0 auto;
-  height: 52%;
-  background: linear-gradient(to bottom, rgb(6 18 12 / 0.55), transparent);
+  inset: auto 0 0;
+  height: 46%;
+  background: linear-gradient(to top, rgb(6 18 12 / 0.72), rgb(6 18 12 / 0.28) 45%, transparent);
   pointer-events: none;
+}
+
+.bufala-stage::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 34%;
+  background: linear-gradient(to bottom, rgb(6 18 12 / 0.42), transparent);
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* L'indicatore di avanzamento: hairline sul bordo destro, ottone solo sulla
