@@ -5,12 +5,14 @@
 import { asset } from '@/lib/asset';
 import { company, indirizzoPuntoVendita } from '@/content/bufala/company';
 import { sezioni } from '@/content/bufala/copy';
-import { prodotti } from '@/content/bufala/assets';
+import { Prodotti } from './Prodotti';
 
 const pv = company.puntoVendita;
 
 export function Sections() {
   return (
+    <>
+    {/* La meta' chiara: solo le informazioni che devono essere leggibili. */}
     <div className="bufala-sezioni">
       {/* L'apertura: una frase sola, tanto spazio intorno. È il primo
           respiro dopo il viaggio, e la prima cosa che si legge sul chiaro. */}
@@ -24,6 +26,25 @@ export function Sections() {
         <p>{sezioni.banco.testo}</p>
       </section>
 
+    </div>
+
+    {/* Il rientro nel buio.
+
+        La parte chiara serve a una cosa sola: le informazioni che devono
+        essere leggibili. Finita quella si torna nel verde e non se ne esce
+        piu', perche' i prodotti sono fotografati su quel fondo — mostrarli
+        sul chiaro vorrebbe dire cinque rettangoli scuri su una pagina crema,
+        che e' esattamente il collage che avevamo scartato.
+
+        Il verde risale con un bordo curvo come il latte era sceso: la
+        simmetria fa leggere le due meta' del sito come un respiro, non come
+        due pagine attaccate. E' un contenitore unico, non un fondo per
+        sezione — dandolo alle singole sezioni si ottengono scatole scure su
+        pagina crema, con i vuoti in mezzo. */}
+    <div className="bufala-eclisse" aria-hidden="true" />
+
+    <div className="bufala-sezioni bufala-buio">
+
       {/* I prodotti: le foto reali del cliente, non un elenco. Una lista di
           nomi non dice niente; questi scatti dicono tutto — compreso che
           dietro il banco c'è una selezione, non un assortimento a caso. */}
@@ -31,11 +52,7 @@ export function Sections() {
         <p className="micro">{sezioni.prodotti.titolo}</p>
         <h2>{sezioni.prodotti.frase}</h2>
         <p>{sezioni.prodotti.testo}</p>
-        <div className="bufala-fila">
-          {prodotti.map((p) => (
-            <img key={p.src} src={p.src} alt={p.alt} width={824} height={900} loading="lazy" />
-          ))}
-        </div>
+        <Prodotti />
       </section>
 
       <section className="bufala-sezione" id="dove">
@@ -101,5 +118,6 @@ export function Sections() {
         </p>
       </footer>
     </div>
+    </>
   );
 }

@@ -578,6 +578,9 @@
    distacco che il velo prepara. Tutti i colori del testo si ribaltano — un
    testo latte su fondo latte sarebbe invisibile, ed è l'errore facile qui. */
 .bufala-sezioni {
+  /* Il documento comincia chiaro — il velo di latte gli consegna il fondo —
+     e torna scuro dopo l'eclisse. Le due meta' non sono due pagine: sono lo
+     stesso documento che respira. */
   background: var(--latte);
   color: var(--verde-profondo);
 }
@@ -665,4 +668,63 @@
   font-weight: 500;
   letter-spacing: -0.005em;
   line-height: 1.2;
+}
+
+/* — L'eclisse: il rientro nel buio —
+   Il verde risale dal basso con un bordo curvo e morbido, come il latte era
+   sceso dall'alto. Non e' un'animazione: e' una forma che entra in pagina
+   scorrendo, quindi non costa niente al browser e funziona anche senza
+   JavaScript. Da qui in giu' il sito resta scuro. */
+.bufala-eclisse {
+  height: 44vh;
+  /* Due gradienti sovrapposti: il radiale fa salire la curva dal centro, il
+     lineare garantisce che il bordo basso sia pieno su tutta la larghezza.
+     Senza il secondo, agli angoli in basso resterebbe la crema e si vedrebbe
+     una cucitura contro il verde della meta' sotto. */
+  background:
+    linear-gradient(to bottom, rgb(14 32 24 / 0) 52%, var(--verde-profondo) 100%),
+    radial-gradient(130% 92% at 50% 100%,
+      var(--verde-profondo) 0 46%,
+      rgb(14 32 24 / 0.5) 68%,
+      rgb(14 32 24 / 0) 84%);
+}
+
+/* Da qui in poi il documento torna scuro. */
+.bufala-buio {
+  background: var(--verde-profondo);
+  color: var(--latte);
+  padding-top: 0;
+}
+
+.bufala-buio .micro {
+  color: var(--latte-45);
+}
+
+.bufala-buio a {
+  color: var(--latte);
+  border-bottom-color: var(--latte-20);
+}
+
+/* — I prodotti: struttura ferma, cambia solo il prodotto —
+   La cornice non si muove mai. E' la ripetizione a farli leggere come una
+   famiglia: se ogni scheda avesse una sua misura sembrerebbero cinque
+   prodotti scollegati invece di una selezione. */
+.bufala-scheda {
+  margin: 0;
+  /* Nessuna transizione: la trasformazione la detta la posizione dello
+     scorrimento, fotogramma per fotogramma. Una transizione qui farebbe
+     inseguire il dito con un ritardo, ed e' esattamente cio' che fa
+     sembrare finto un movimento che dovrebbe essere il tuo. */
+  will-change: transform, opacity;
+  transform-origin: 50% 50%;
+}
+
+.bufala-scheda img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 824 / 900;
+  object-fit: cover;
+  border-radius: 2px;
+  display: block;
+  backface-visibility: hidden;
 }
