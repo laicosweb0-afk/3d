@@ -99,9 +99,9 @@ export const immagini: Record<Inquadratura, Asset> = {
  *  ricaricamento forzato non esiste). Un nome nuovo è un URL nuovo, e un URL
  *  nuovo non può essere servito da una cache. */
 export const video = {
-  webm: `${BASE}/mozzarella-3.webm`,
-  mp4: `${BASE}/mozzarella-3.mp4`,
-  poster: `${BASE}/mozzarella-3-poster.webp`,
+  webm: `${BASE}/mozzarella-4.webm`,
+  mp4: `${BASE}/mozzarella-4.mp4`,
+  poster: `${BASE}/mozzarella-4-poster.webp`,
 };
 
 /** I prodotti reali del banco, fotografati dal cliente sullo stesso set

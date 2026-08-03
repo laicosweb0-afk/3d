@@ -12,6 +12,12 @@ const pv = company.puntoVendita;
 export function Sections() {
   return (
     <div className="bufala-sezioni">
+      {/* L'apertura: una frase sola, tanto spazio intorno. È il primo
+          respiro dopo il viaggio, e la prima cosa che si legge sul chiaro. */}
+      <section className="bufala-sezione bufala-apertura">
+        <h2>{sezioni.apertura.frase}</h2>
+      </section>
+
       <section className="bufala-sezione">
         <p className="micro">{sezioni.banco.titolo}</p>
         <h2>{sezioni.banco.frase}</h2>
@@ -24,6 +30,7 @@ export function Sections() {
       <section className="bufala-sezione" id="prodotti">
         <p className="micro">{sezioni.prodotti.titolo}</p>
         <h2>{sezioni.prodotti.frase}</h2>
+        <p>{sezioni.prodotti.testo}</p>
         <div className="bufala-fila">
           {prodotti.map((p) => (
             <img key={p.src} src={p.src} alt={p.alt} width={824} height={900} loading="lazy" />
@@ -46,14 +53,22 @@ export function Sections() {
         </p>
       </section>
 
+      {/* I contatti sono dati, non affermazioni: vanno nel carattere di
+          testo, non in quello di display. Un numero di telefono composto in
+          un serif da titolo si legge come uno slogan e si copia peggio —
+          il display serve a dire una cosa, non a elencare un recapito.
+          La gerarchia qui la fanno dimensione e spazio, non la famiglia. */}
       <section className="bufala-sezione" id="contatti">
         <p className="micro">{sezioni.contatti.titolo}</p>
-        <h2>
-          <a href={company.telefonoHref}>{company.telefono}</a>
-        </h2>
-        <p>
-          <a href={`mailto:${company.email}`}>{company.email}</a>
-        </p>
+        <div className="bufala-dati">
+          <a className="dato" href={company.telefonoHref}>{company.telefono}</a>
+          <a className="dato" href={`mailto:${company.email}`}>{company.email}</a>
+        </div>
+      </section>
+
+      {/* Il congedo, dove prima finiva il viaggio. */}
+      <section className="bufala-sezione bufala-apertura">
+        <h2>{sezioni.congedo.frase}</h2>
       </section>
 
       {/* La firma: il marchio storico a colori e la scritta originale del

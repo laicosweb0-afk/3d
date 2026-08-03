@@ -26,79 +26,51 @@ export interface SceneCopy {
 }
 
 export const sceneCopy: Record<SceneId, SceneCopy> = {
-  // La hero. Headline dominante, payoff piccolo e lontanissimo, niente
-  // altro: nessun cliché di categoria (tradizione, artigianale, qualità,
-  // genuinità, passione) — sono le parole che ogni caseificio usa, e sono
-  // esattamente ciò che impedisce di sembrare un marchio internazionale.
+  // La hero: headline dominante, payoff piccolo e lontanissimo.
   s01: {
     titolo: 'La semplicità\nrichiede eccellenza.',
     payoff: 'Mozzarella di Bufala',
     nota: 'Scorri',
   },
 
-  // La discesa: l'oggetto entra in campo e il sito dice di chi è.
-  //
-  // Qui prima c'era "Mozzarella di bufala." — le stesse identiche parole del
-  // payoff della hero, che la precede di due secondi. Con i titoli tutti
-  // nella fascia bassa le due righe si incrociavano nello stesso punto dello
-  // schermo, e per un tratto di scroll si leggevano sovrapposte: la
-  // ripetizione, che era già un difetto del testo, diventava un difetto
-  // visibile. Dirlo due volte non lo rende più vero.
-  //
-  // Al suo posto l'unica cosa che nessun concorrente può copiare: che la
-  // mozzarella è loro. È un dato confermato dal cliente — la produce lui —
-  // e non nomina nessun luogo, come da vincolo.
+  // I titoli non raccontano il filmato: parlano del progetto — la bufala,
+  // il caseificio, il banco. Una didascalia di quello che si sta già
+  // vedendo non aggiunge niente, consuma l'unica occasione che il sito ha
+  // di dire chi è, e diventa falsa il giorno in cui si cambia ripresa.
   s02: {
     titolo: 'La produciamo\nnoi.',
   },
 
-  // La materia, mentre il soggetto ruota appena: si parla della superficie,
-  // non del sapore.
-  // Da qui in poi il testo non racconta più il filmato.
-  //
-  // Prima diceva "La pelle trattiene il siero", "Una lama. Nient'altro.",
-  // "Poi si apre": didascalie di quello che si stava già vedendo. Un titolo
-  // che descrive l'immagine sotto non aggiunge niente e consuma l'unica
-  // occasione che il sito ha di dire chi è. E lega il testo al filmato: se
-  // un giorno si cambia ripresa, il copy diventa falso.
-  //
-  // Le frasi parlano invece del progetto: la bufala, il caseificio, il
-  // banco. Restano vere anche se il filmato cambia.
   s03: {
     titolo: 'Un latte solo:\nquello di bufala.',
   },
 
-  // Il vero elemento di distinzione: non rivendono, producono. È un dato
-  // confermato dal cliente, e non nomina nessun luogo (vincolo esplicito).
+  // Il vero elemento di distinzione: non rivendono, producono. Dato
+  // confermato dal cliente, e non nomina nessun luogo.
   s04: {
     titolo: 'Dietro, un caseificio.\nNon un magazzino.',
   },
 
-  // La frase più corta del sito, dove il filmato è più forte: qui le parole
-  // devono togliersi di mezzo.
   s05: {
     titolo: 'Nessuna scorciatoia.',
   },
 
+  // Nessun titolo: qui il fotogramma diventa bianco, e un testo chiaro su
+  // fondo chiaro sarebbe illeggibile per costruzione. La scena è una
+  // transizione, non una pagina — le parole riprendono sotto, sul documento.
   s06: {
-    titolo: 'Una mozzarella\nsi misura in ore.',
-  },
-
-  // I prodotti reali del banco. Non solo la mozzarella prodotta da loro:
-  // anche le specialità italiane che selezionano, come dice il claim del
-  // loro stesso logo ("prodotti tipici italiani").
-  s07: {
-    titolo: "L'eccellenza,\nsenza compromessi.",
-  },
-
-  // Il congedo: si passa il testimone al documento.
-  s08: {
-    titolo: 'Vi aspettiamo\nal banco.',
+    titolo: '',
   },
 };
 
 /** Le sezioni dopo il viaggio. */
 export const sezioni = {
+  // L'apertura del documento, sul latte. Raccoglie la frase che stava
+  // nell'ultima scena scura del viaggio: quella scena non esiste più, ma la
+  // frase è del progetto e non del filmato, quindi vive benissimo qui.
+  apertura: {
+    frase: 'Una mozzarella si misura in ore.',
+  },
   banco: {
     titolo: 'Il banco',
     frase: 'Si entra, si guarda, si chiede.',
@@ -107,11 +79,11 @@ export const sezioni = {
   },
   prodotti: {
     titolo: 'Al banco',
-    frase: 'La nostra mozzarella, e una selezione che le sta accanto.',
-    // Nessun elenco scritto: i prodotti si mostrano, non si elencano. Le
-    // foto sono quelle reali del cliente, con i marchi dei produttori che
-    // seleziona — è più credibile di qualsiasi lista.
+    frase: "L'eccellenza, senza compromessi.",
+    testo: 'La nostra mozzarella, e una selezione che le sta accanto.',
+    // Nessun elenco scritto: i prodotti si mostrano, non si elencano.
   },
   dove: { titolo: 'Dove siamo' },
   contatti: { titolo: 'Contatti' },
+  congedo: { frase: 'Vi aspettiamo al banco.' },
 } as const;

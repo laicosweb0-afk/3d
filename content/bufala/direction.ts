@@ -66,120 +66,71 @@ export interface Regia {
 }
 
 export const regia: Record<SceneId, Regia> = {
-  // Il campo vuoto. Ardesia, verde profondo, una luce di taglio: non c'è
-  // ancora niente da guardare, e infatti si guarda la frase.
-  //
-  // Prima qui c'era un ingrandimento fortissimo (2.6) su una macro, e il
-  // sito si apriva "uscendo da uno zoom": un movimento che è solo un
-  // movimento, senza un fatto dentro. Ora l'apertura è il primo fotogramma
-  // del filmato, e il fatto arriva scorrendo — la mozzarella entra dall'alto
-  // nel campo vuoto. Il video avanza pochissimo (0,35 s su 2 viewport):
-  // quanto basta perché alla fine della hero si intraveda il soggetto
-  // affacciarsi dal bordo alto, che è l'invito a continuare.
+  // Il campo vuoto attraversato da una goccia. Non c'è ancora niente da
+  // guardare, e infatti si guarda la frase.
   s01: {
     video: true,
     immagine: 'macro',
-    // Finisce a 0,35 s e non oltre: a 0,5 s il soggetto è già entrato nella
-    // fascia alta, dove vive la headline. Il numero non è scelto a occhio,
-    // è il fotogramma in cui la misura passa da "fondo scuro" a "occupato".
     tempo: [0, 1.0],
     curva: 'dolce',
-    zoom: [1.08, 1.02],
-    luce: [0.55, 0.95],
+    zoom: [1.06, 1.0],
+    luce: [0.6, 1.0],
     nota: 'Il campo vuoto e la frase. Il soggetto non c’è ancora: sta arrivando.',
   },
 
-  // La discesa. Il movimento è tutto del soggetto: la camera sta ferma e
-  // lascia che sia lui a entrare.
+  // La discesa: entra veloce, frena, e l'inerzia stacca l'anello di gocce.
   s02: {
     video: true,
     immagine: 'intera',
-    tempo: [1.0, 2.4],
+    tempo: [1.0, 2.6],
     curva: 'dolce',
-    zoom: [1.02, 1.0],
-    luce: [0.95, 1.0],
+    zoom: [1.0, 1.0],
+    luce: [1.0, 1.0],
     nota: 'La discesa. Il movimento è del soggetto, non della camera.',
   },
 
-  // La sospensione: resta in aria e gira. È il tratto più lungo perché è
-  // quello che si guarda più volentieri — e perché la rotazione è la sola
-  // cosa che rende leggibile la superficie senza uno stacco in macro.
+  // La sospensione: gira su sé stessa fra le gocce che derivano. È il tratto
+  // più lungo del viaggio perché è quello che si guarda più volentieri.
   s03: {
     video: true,
     immagine: 'macro',
-    tempo: [2.4, 5.6],
-    zoom: [1.0, 1.08],
+    tempo: [2.6, 5.8],
+    zoom: [1.0, 1.06],
     luce: [1.0, 1.0],
-    nota: 'La sospensione: gira su sé stessa mentre la camera si avvicina di un soffio.',
+    nota: 'La sospensione: gira fra le gocce mentre la camera si avvicina di un soffio.',
   },
 
-  // Scende la lama, dall'alto e al centro. La camera arretra quel tanto che
-  // serve a far stare il gesto in campo.
+  // Scende la lama, dall'alto e al centro.
   s04: {
     video: true,
     immagine: 'mani',
-    tempo: [5.6, 6.9],
-    zoom: [1.08, 1.02],
+    tempo: [5.8, 7.0],
+    zoom: [1.06, 1.0],
     luce: [1.0, 1.0],
     nota: 'Entra la lama: la camera arretra quel tanto che serve al gesto.',
   },
 
-  // Il taglio. Due secondi di filmato distribuiti su tre viewport: è il
-  // tratto riprodotto più lentamente del viaggio, ed è voluto — qui la
-  // lentezza è il peso.
-  //
-  // Finisce a 8,8 s e non a 10: negli ultimi 1,2 secondi le due metà
-  // restano sospese ciascuna su un filo di latte verticale, e leggono come
-  // due gambe sottili invece che come latte che cola. La ripresa si taglia
-  // dov'è più forte — è un secondo numero da cambiare, se si preferisce
-  // tenerla intera.
+  // Il taglio e quello che ne segue.
   s05: {
     video: true,
     immagine: 'taglio',
-    tempo: [6.9, 7.45],
-    zoom: [1.02, 1.12],
+    tempo: [7.0, 9.6],
+    zoom: [1.0, 1.04],
     luce: [1.0, 1.0],
-    nota: 'Il clou. Le due metà si separano e il latte cade.',
+    nota: 'Il clou: la lama apre la forma e il latte esplode.',
   },
 
-  // L'ultimo fotogramma tenuto fermo mentre la luce cala: la ripresa non
-  // viene interrotta da uno stacco, si spegne.
-  //
-  // Prima qui tornava una fotografia della mozzarella *intera*, subito dopo
-  // averla vista tagliare: una contraddizione visiva che nessuna dissolvenza
-  // può salvare. Congelare la coda del filmato costa zero e non contraddice
-  // niente.
+  // Il latte invade il campo fino a coprire l'obiettivo. È la transizione:
+  // il filmato consegna la pagina al documento senza uno stacco, perché
+  // l'ultimo fotogramma è già il fondo su cui il documento si legge.
   s06: {
     video: true,
     immagine: 'intera',
-    tempo: [7.45, 7.45],
-    // La distanza finale deve combaciare con l'inizio di S07: il rig non
-    // fa mai uno scatto tra due scene, anche quando il movimento primario
-    // è un altro (qui la luce).
-    zoom: [1.12, 1.0],
-    luce: [1.0, 0.6],
-    nota: 'Nessun avvicinamento: cambia solo la luce. È la scena dell’attesa.',
-  },
-
-  // Gli altri prodotti, uno alla volta, alla stessa distanza: la ripetizione
-  // dell'inquadratura è ciò che li fa leggere come una famiglia.
-  // La selezione del banco. La fila di prodotti è già composta dentro la
-  // fotografia, quindi la camera non ha bisogno di muoversi: un lentissimo
-  // avvicinamento basta a non far sembrare la scena un fermo immagine.
-  s07: {
-    immagine: 'famiglia',
-    zoom: [1.0, 1.06],
-    luce: [0.6, 0.95],
-    nota: 'La fila è già nella foto: alla camera basta respirare.',
-  },
-
-  // Il congedo: tutto si allontana e si spegne, resta la firma.
-  s08: {
-    immagine: 'intera',
-    // Riparte da dove finisce S07: nessuno scatto ai confini, mai.
-    zoom: [1.06, 0.78],
-    luce: [0.9, 0.25],
-    nota: 'Si arretra e si spegne. La pagina prende il posto del piano sequenza.',
+    tempo: [9.6, 11.98],
+    curva: 'dolce',
+    zoom: [1.04, 1.0],
+    luce: [1.0, 1.0],
+    nota: 'Il latte copre l’obiettivo. Da qui comincia la pagina.',
   },
 };
 

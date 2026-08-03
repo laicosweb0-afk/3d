@@ -609,3 +609,60 @@
     display: none;
   }
 }
+
+/* — Geometria della tipografia del viaggio —
+   Ogni titolo occupa una posizione dichiarata, non "dove capita". Il blocco
+   è ancorato a una frazione fissa dell'altezza dello schermo e ha una misura
+   fissa in caratteri, così su ogni formato il testo va a capo dove decidiamo
+   noi e non dove arriva il bordo. È la differenza fra una composizione e un
+   paragrafo che si adatta. */
+.bufala-overlay .scena h1,
+.bufala-overlay .scena h2 {
+  max-width: 17ch;
+  margin-inline: auto;
+  line-height: 1.06;
+  letter-spacing: -0.018em;
+  text-wrap: balance;
+}
+
+/* Lo spazio fra titolo e riga di accompagnamento è sempre lo stesso, in ogni
+   scena: due righe di corpo. Un valore fisso, non una percentuale, perché
+   deve leggersi come la stessa distanza ovunque. */
+.bufala-overlay .nota {
+  margin-top: 1.5rem;
+}
+
+/* L'apertura e il congedo del documento: una frase sola al centro del campo,
+   con lo stesso respiro delle scene del viaggio. */
+.bufala-apertura {
+  min-height: 62vh;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+}
+
+.bufala-apertura h2 {
+  max-width: 18ch;
+  line-height: 1.06;
+  letter-spacing: -0.018em;
+  text-wrap: balance;
+}
+
+/* I recapiti: carattere di testo, corpo grande ma non da titolo, e tanto
+   spazio fra l'uno e l'altro. Devono leggersi come informazioni chiare —
+   è l'unico posto del sito dove qualcuno deve *agire*, non guardare. */
+.bufala-dati {
+  display: grid;
+  gap: 0.9rem;
+  justify-items: start;
+  margin-top: 1.25rem;
+}
+
+.bufala-dati .dato {
+  font-family: var(--font-testo);
+  font-size: clamp(1.15rem, 2.4vw, 1.6rem);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  line-height: 1.2;
+}

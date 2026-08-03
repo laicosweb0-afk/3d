@@ -4,7 +4,7 @@
 // ritmo si cambiano solo i `vh`, mai il resto del codice.
 
 export type SceneId =
-  | 's01' | 's02' | 's03' | 's04' | 's05' | 's06' | 's07' | 's08';
+  | 's01' | 's02' | 's03' | 's04' | 's05' | 's06';
 
 /** I capitoli formano una frase continua che si completa scorrendo
  *  (SCALETTA_BUFALA.md §3). */
@@ -25,25 +25,30 @@ export interface SceneDef {
 }
 
 export const SCENES: SceneDef[] = [
-  // Le durate delle scene sul video vanno lette insieme ai `tempo` della
-  // regia: il loro rapporto è la velocità di riproduzione. Tenerlo simile
-  // fra scene vicine evita che al confine il gesto cambi passo.
+  // Il viaggio dura esattamente quanto il filmato, e finisce dove il latte
+  // copre l'obiettivo: da lì in poi non c'è più un piano sequenza da
+  // scorrere, c'è una pagina da leggere. Le due scene che stavano dopo —
+  // i prodotti e il congedo — sono passate nel documento chiaro: erano
+  // scene scure messe dopo un fotogramma bianco, e nessuna dissolvenza
+  // avrebbe potuto salvarle.
+  //
+  // Le durate vanno lette insieme ai `tempo` della regia: il loro rapporto
+  // è la velocità di riproduzione, e tenerlo simile fra scene vicine evita
+  // che al confine il gesto cambi passo.
   { id: 's01', vh: 2.0, capitolo: 1, titolo: "L'apparizione" },
-  // La discesa dura poco più di un secondo di filmato: allungarla in vh la
-  // farebbe scorrere al rallentatore rispetto alle scene vicine.
-  { id: 's02', vh: 1.5, capitolo: 1, titolo: 'La forma' },
-  // La sospensione è il tratto più lungo del viaggio: è quello in cui non
-  // succede un fatto nuovo ma si guarda l'oggetto girare, ed è il motivo
-  // per cui si continua a scorrere.
-  { id: 's03', vh: 4.5, capitolo: 2, titolo: 'La pelle' },
-  { id: 's04', vh: 2.5, capitolo: 2, titolo: 'Il peso' },
-  // Il taglio: due secondi di filmato su tre viewport, il rapporto più
-  // lento di tutti. La lentezza qui è il peso (Direzione §6).
-  { id: 's05', vh: 1.5, capitolo: 3, titolo: 'Il taglio' },
-  { id: 's06', vh: 2.0, capitolo: 3, titolo: 'Il tempo' },
-  { id: 's07', vh: 2.5, capitolo: 4, titolo: 'La famiglia' },
-  { id: 's08', vh: 2.0, capitolo: 4, titolo: 'Il congedo' },
+  { id: 's02', vh: 2.0, capitolo: 1, titolo: 'La discesa' },
+  // La sospensione è il tratto più lungo: è quello in cui non succede un
+  // fatto nuovo ma si guarda l'oggetto girare fra le gocce sospese, ed è il
+  // motivo per cui si continua a scorrere.
+  { id: 's03', vh: 4.0, capitolo: 2, titolo: 'La pelle' },
+  { id: 's04', vh: 2.0, capitolo: 2, titolo: 'La lama' },
+  { id: 's05', vh: 3.0, capitolo: 3, titolo: 'Il taglio' },
+  // Il latte invade il campo e copre l'obiettivo. Nessun titolo: è una
+  // transizione, e un testo bianco su un fotogramma che diventa bianco
+  // sarebbe illeggibile per costruzione.
+  { id: 's06', vh: 2.5, capitolo: 4, titolo: 'Il latte' },
 ];
+
 
 export const TOTAL_VH = SCENES.reduce((sum, s) => sum + s.vh, 0);
 

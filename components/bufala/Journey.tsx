@@ -74,12 +74,17 @@ export function Journey() {
       // Il testo del viaggio si ritira mentre il latte avanza — senza,
       // l'ultimo titolo resterebbe tagliato a metà dal bordo del velo, e
       // sopra il latte sarebbe comunque illeggibile (è latte su latte).
-      const q = smooth(span(smoothed, pAt('s08', 0.12), 1));
+      // Il velo raccoglie il bianco del filmato e lo porta al latte della
+      // pagina. Parte a metà dell'ultima scena, quando il latte sta già
+      // invadendo il fotogramma: non è lui a fare la transizione, la
+      // continua — e serve solo perché il bianco della ripresa e il latte
+      // del documento non sono lo stesso bianco, e il salto si vedrebbe.
+      const q = smooth(span(smoothed, pAt('s06', 0.5), 1));
       if (velo) {
         velo.style.transform = `scale(${q.toFixed(4)})`;
         velo.style.visibility = q < 0.002 ? 'hidden' : 'visible';
       }
-      if (overlay) overlay.style.opacity = (1 - smooth(span(smoothed, pAt('s08', 0.12), pAt('s08', 0.55)))).toFixed(3);
+      if (overlay) overlay.style.opacity = (1 - smooth(span(smoothed, pAt('s05', 0.9), pAt('s06', 0.35)))).toFixed(3);
 
       Stage.render(smoothed);
       Progresso.render(smoothed);
