@@ -68,6 +68,21 @@ export const immagini: Record<Inquadratura, Asset> = {
   },
 };
 
+/** Il video legato allo scroll: la mozzarella che si apre.
+ *
+ *  ⚠️ Non ancora presente. Quando il file arriva:
+ *    1. node tools/bufala-video.mjs <sorgente.mp4> taglio
+ *    2. togliere il commento qui sotto
+ *    3. in direction.ts, mettere `video: true` sulla scena s05
+ *
+ *  Il video sostituisce l'immagine solo nella scena del taglio: è lì che
+ *  il gesto vale, ed è l'unico punto in cui vale la pena far scaricare
+ *  qualche centinaio di KB in più. */
+// export const video = {
+//   src: `${BASE}/taglio.mp4`,
+//   poster: `${BASE}/taglio-poster.webp`,
+// };
+
 /** I prodotti reali del banco, fotografati dal cliente sullo stesso set
  *  (fondo verde, basilico, olio, ardesia) delle scene del viaggio: la
  *  coerenza non è nostra, è già nel loro materiale.

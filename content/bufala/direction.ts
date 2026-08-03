@@ -22,6 +22,11 @@ export interface Regia {
   /** Deriva laterale in frazioni di viewport: quasi sempre zero — la camera
    *  si avvicina, non vaga. */
   deriva?: [number, number];
+  /** Se vero, la scena mostra il video legato allo scroll invece
+   *  dell'immagine: il fotogramma segue il progresso, così il gesto lo
+   *  comanda chi scorre. Vale solo per la scena del taglio — altrove il
+   *  peso in più non è ripagato. */
+  video?: boolean;
   /** Nota di regia: perché la scena si muove così. Non è decorazione,
    *  è il contratto con chi ritarerà i numeri dopo di me. */
   nota: string;
