@@ -728,3 +728,92 @@
   display: block;
   backface-visibility: hidden;
 }
+
+/* — La vetrina dei prodotti —
+   Un pannello, non uno schermo pieno. La misura non è estetica: un video a
+   tutto campo su un telefono mostra solo la fascia centrale del 26% della
+   larghezza, e una processione che entra ed esce lateralmente andrebbe quasi
+   tutta perduta. In un pannello si vede tutto su ogni schermo — e la forma
+   incorniciata è anche quello che questa sezione è. */
+.bufala-vetrina {
+  position: relative;
+  background: var(--verde-profondo);
+  /* Il trascinamento laterale comanda lo scorrimento: senza questo il
+     browser interpreta il gesto come una selezione di testo. */
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.vetrina-palco {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: clamp(1.5rem, 4vh, 3rem);
+  padding: 0 6vw;
+}
+
+.vetrina-pannello {
+  width: min(100%, 62rem);
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 3px;
+  /* Il pannello non ha cornice disegnata: è il fondo più scuro intorno a
+     fargli da cornice. Una riga d'ottone qui sarebbe decorazione. */
+  background: #0a0f0c;
+}
+
+.vetrina-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* I nomi: una sola cella, tutte le schede sovrapposte, e l'opacità decide
+   quale si legge. Così non c'è nessuno spostamento di impaginato quando il
+   nome cambia — il blocco resta esattamente dov'è. */
+.vetrina-nomi {
+  display: grid;
+  grid-template: 1fr / 1fr;
+  min-height: 4.5rem;
+  text-align: center;
+}
+
+.vetrina-nome {
+  grid-area: 1 / 1;
+  display: grid;
+  gap: 0.4rem;
+  justify-items: center;
+  will-change: opacity, transform;
+}
+
+.vetrina-nome .nome {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3.4vw, 2.4rem);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Senza movimento la vetrina non ha senso: torna una fila di fotografie. */
+  .bufala-vetrina {
+    height: auto !important;
+  }
+  .vetrina-palco {
+    position: static;
+    height: auto;
+    padding: var(--spazio-sezione) 6vw;
+  }
+  .vetrina-nome {
+    opacity: 1 !important;
+    transform: none !important;
+    position: static;
+  }
+  .vetrina-nomi {
+    grid-template: none;
+    gap: 1rem;
+  }
+}

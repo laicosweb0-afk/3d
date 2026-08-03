@@ -5,7 +5,7 @@
 import { asset } from '@/lib/asset';
 import { company, indirizzoPuntoVendita } from '@/content/bufala/company';
 import { sezioni } from '@/content/bufala/copy';
-import { Prodotti } from './Prodotti';
+import { Vetrina } from './Vetrina';
 
 const pv = company.puntoVendita;
 
@@ -48,12 +48,16 @@ export function Sections() {
       {/* I prodotti: le foto reali del cliente, non un elenco. Una lista di
           nomi non dice niente; questi scatti dicono tutto — compreso che
           dietro il banco c'è una selezione, non un assortimento a caso. */}
-      <section className="bufala-sezione" id="prodotti">
+      <section className="bufala-sezione">
         <p className="micro">{sezioni.prodotti.titolo}</p>
         <h2>{sezioni.prodotti.frase}</h2>
         <p>{sezioni.prodotti.testo}</p>
-        <Prodotti />
       </section>
+
+      {/* La vetrina: il pannello col filmato dei prodotti legato allo
+          scorrimento. Sta fuori da .bufala-sezione perche' ha bisogno
+          dell'intera larghezza e di una propria altezza di scorrimento. */}
+      <Vetrina />
 
       <section className="bufala-sezione" id="dove">
         <p className="micro">{sezioni.dove.titolo}</p>
