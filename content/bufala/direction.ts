@@ -82,7 +82,7 @@ export const regia: Record<SceneId, Regia> = {
     // Finisce a 0,35 s e non oltre: a 0,5 s il soggetto è già entrato nella
     // fascia alta, dove vive la headline. Il numero non è scelto a occhio,
     // è il fotogramma in cui la misura passa da "fondo scuro" a "occupato".
-    tempo: [0, 0.35],
+    tempo: [0, 1.0],
     curva: 'dolce',
     zoom: [1.08, 1.02],
     luce: [0.55, 0.95],
@@ -94,7 +94,7 @@ export const regia: Record<SceneId, Regia> = {
   s02: {
     video: true,
     immagine: 'intera',
-    tempo: [0.35, 1.6],
+    tempo: [1.0, 2.4],
     curva: 'dolce',
     zoom: [1.02, 1.0],
     luce: [0.95, 1.0],
@@ -107,7 +107,7 @@ export const regia: Record<SceneId, Regia> = {
   s03: {
     video: true,
     immagine: 'macro',
-    tempo: [1.6, 4.8],
+    tempo: [2.4, 5.6],
     zoom: [1.0, 1.08],
     luce: [1.0, 1.0],
     nota: 'La sospensione: gira su sé stessa mentre la camera si avvicina di un soffio.',
@@ -118,7 +118,7 @@ export const regia: Record<SceneId, Regia> = {
   s04: {
     video: true,
     immagine: 'mani',
-    tempo: [4.8, 6.8],
+    tempo: [5.6, 6.9],
     zoom: [1.08, 1.02],
     luce: [1.0, 1.0],
     nota: 'Entra la lama: la camera arretra quel tanto che serve al gesto.',
@@ -136,7 +136,7 @@ export const regia: Record<SceneId, Regia> = {
   s05: {
     video: true,
     immagine: 'taglio',
-    tempo: [6.8, 8.8],
+    tempo: [6.9, 7.45],
     zoom: [1.02, 1.12],
     luce: [1.0, 1.0],
     nota: 'Il clou. Le due metà si separano e il latte cade.',
@@ -152,7 +152,7 @@ export const regia: Record<SceneId, Regia> = {
   s06: {
     video: true,
     immagine: 'intera',
-    tempo: [8.8, 8.8],
+    tempo: [7.45, 7.45],
     // La distanza finale deve combaciare con l'inizio di S07: il rig non
     // fa mai uno scatto tra due scene, anche quando il movimento primario
     // è un altro (qui la luce).

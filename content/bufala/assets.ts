@@ -76,12 +76,16 @@ export const immagini: Record<Inquadratura, Asset> = {
 
 /** Il video legato allo scroll: è questo il "3D" del sito.
  *
- *  Un unico piano da 10 secondi: la mozzarella scende dall'alto, resta
- *  sospesa in aria e gira su sé stessa, poi una lama scende dall'alto e la
- *  taglia netta a mezz'aria mentre il latte cola. Girato in una sola
- *  generazione invece che in tre clip da attaccare: le giunzioni fra clip
- *  separate si vedono sempre, e qui il gesto deve essere continuo perché è
- *  lo scroll a comandarlo.
+ *  Un unico piano: campo vuoto attraversato da una goccia, poi la mozzarella
+ *  scende dall'alto e frena in sospensione staccando un anello di goccioline
+ *  che resta sospeso, gira su sé stessa con un bordo di luce che ne segue la
+ *  sagoma, e infine una lama scende dall'alto e la apre.
+ *
+ *  Girato da 12 secondi e tenuto a 7,5: dopo quell'istante il modello perde
+ *  il soggetto — le due metà si appiattiscono in due ali e compare in mezzo
+ *  un terzo oggetto che non è mozzarella. La ripresa si taglia dove è ancora
+ *  vera. L'ultima parte, in cui il latte copriva l'obiettivo di bianco, è
+ *  andata persa con essa: quel passaggio lo fa il velo di latte in CSS.
  *
  *  Ripulito dal filo di sospensione con tools/bufala-filo.mjs, e ricodificato
  *  da tools/bufala-video.mjs con fotogrammi chiave ravvicinati, senza i quali
@@ -95,9 +99,9 @@ export const immagini: Record<Inquadratura, Asset> = {
  *  ricaricamento forzato non esiste). Un nome nuovo è un URL nuovo, e un URL
  *  nuovo non può essere servito da una cache. */
 export const video = {
-  webm: `${BASE}/mozzarella-2.webm`,
-  mp4: `${BASE}/mozzarella-2.mp4`,
-  poster: `${BASE}/mozzarella-2-poster.webp`,
+  webm: `${BASE}/mozzarella-3.webm`,
+  mp4: `${BASE}/mozzarella-3.mp4`,
+  poster: `${BASE}/mozzarella-3-poster.webp`,
 };
 
 /** I prodotti reali del banco, fotografati dal cliente sullo stesso set
