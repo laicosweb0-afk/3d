@@ -117,6 +117,16 @@
   transform-origin: center 58%;
 }
 
+/* Le inquadrature mostrate per intero lasciano due bande sopra e sotto. Il
+   verde del loro fondo non è identico a quello del palco (più oliva contro
+   più freddo), quindi la giunzione si vedeva come una riga netta: una
+   sfumatura sui bordi la fa sparire — la fotografia si dissolve nel campo
+   invece di accostarcisi. */
+.bufala-stage .strato--intero {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent);
+}
+
 .bufala-spacer {
   position: relative;
   z-index: 1;

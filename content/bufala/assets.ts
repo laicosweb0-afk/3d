@@ -15,9 +15,18 @@ export interface Asset {
   src: string;
   /** Descrizione per chi non vede l'immagine. */
   alt: string;
+  /** Come l'immagine riempie il palco.
+   *  `cover` (predefinito) la ingrandisce fino a coprire tutto: giusto per
+   *  le inquadrature con un soggetto solo, dove tagliare i bordi non toglie
+   *  niente. `contain` la mostra intera: serve quando la composizione *è*
+   *  il contenuto — una fila di prodotti tagliata ai lati perde il senso. */
+  adatta?: 'cover' | 'contain';
 }
 
-export const immagini = {
+export type Inquadratura =
+  | 'macro' | 'intera' | 'mani' | 'taglio' | 'famiglia';
+
+export const immagini: Record<Inquadratura, Asset> = {
   /** Macro sulla superficie bagnata, con la goccia sospesa: l'attacco.
    *  La goccia nella foto coincide con la transizione-firma della scaletta
    *  (§4) — non era previsto, ma è il motivo per cui questa è la hero. */
@@ -42,12 +51,22 @@ export const immagini = {
     src: `${BASE}/taglio.webp`,
     alt: 'Una mozzarella di bufala aperta, con il cuore filante e il latte che cola',
   },
-  /** Gli altri prodotti del banco, stessa luce e stessa ardesia. */
+  /** La selezione del banco, in fila sullo stesso set delle altre scene.
+   *  Lo scatto originale del cliente aveva il titolo composto dentro
+   *  l'immagine: è stato ritagliato via, perché il testo del sito deve
+   *  restare vivo — scala su ogni schermo, si seleziona, e si cambia senza
+   *  rigenerare la fotografia. Sotto restano i prodotti con l'aria sopra in
+   *  cui la tipografia si impagina. */
   famiglia: {
     src: `${BASE}/famiglia.webp`,
-    alt: 'Treccia, bocconcini, burrata e ricotta di bufala su ardesia',
+    alt: 'La selezione del banco: formaggi, olive, friarielli e prosciutto stagionato',
+    // Intera, non ritagliata: la fila di prodotti è la composizione, e
+    // tagliata ai lati perderebbe i due prodotti di testa e di coda. Le
+    // bande che restano sopra e sotto non si vedono, perché il fondo dello
+    // scatto è lo stesso verde del palco.
+    adatta: 'contain',
   },
-} as const satisfies Record<string, Asset>;
+};
 
 /** I prodotti reali del banco, fotografati dal cliente sullo stesso set
  *  (fondo verde, basilico, olio, ardesia) delle scene del viaggio: la

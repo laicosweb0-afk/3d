@@ -7,13 +7,13 @@
 // distanza, e `zoom` è il parametro che conta. Tutto il resto è contorno.
 
 import type { SceneId } from '@/lib/bufala/scenes';
-import { immagini } from './assets';
+import type { Inquadratura } from './assets';
 
 export interface Regia {
   /** L'immagine che occupa il palco in questa scena. Scene diverse possono
    *  condividere la stessa: il ritorno di un'inquadratura è un mezzo di
    *  regia, non una ripetizione — è ciò che tiene insieme il viaggio. */
-  immagine: keyof typeof immagini;
+  immagine: Inquadratura;
   /** Distanza dal soggetto, da inizio a fine scena. 1 = inquadratura piena;
    *  sopra 1 si è dentro il dettaglio, sotto 1 si è lontani. */
   zoom: [number, number];
@@ -88,15 +88,14 @@ export const regia: Record<SceneId, Regia> = {
 
   // Gli altri prodotti, uno alla volta, alla stessa distanza: la ripetizione
   // dell'inquadratura è ciò che li fa leggere come una famiglia.
-  // Gli altri prodotti del banco, alla stessa distanza delle altre scene.
-  // ⚠️ L'immagine attuale (quattro tipi di mozzarella, generata) è stata
-  // scartata dal cliente: attende il suo scatto sostitutivo. Il resto della
-  // scena è già tarato e non va toccato quando arriva la foto nuova.
+  // La selezione del banco. La fila di prodotti è già composta dentro la
+  // fotografia, quindi la camera non ha bisogno di muoversi: un lentissimo
+  // avvicinamento basta a non far sembrare la scena un fermo immagine.
   s07: {
     immagine: 'famiglia',
-    zoom: [1.0, 1.0],
-    luce: [0.6, 0.9],
-    nota: 'Inquadratura ferma: sono i soggetti a cambiare, non la camera.',
+    zoom: [1.0, 1.06],
+    luce: [0.6, 0.95],
+    nota: 'La fila è già nella foto: alla camera basta respirare.',
   },
 
   // Il congedo: tutto si allontana e si spegne, resta la firma.

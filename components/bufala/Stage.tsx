@@ -54,9 +54,10 @@ export function Stage() {
             const r = rifs.get(k);
             if (r) r.current = el;
           }}
-          className="strato"
+          className={immagini[k].adatta === 'contain' ? 'strato strato--intero' : 'strato'}
           style={{
             backgroundImage: `url(${immagini[k].src})`,
+            backgroundSize: immagini[k].adatta ?? 'cover',
             opacity: 0,
           }}
         />
