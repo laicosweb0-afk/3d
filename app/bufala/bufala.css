@@ -718,3 +718,17 @@
 .bufala-sezione[id] {
   scroll-margin-top: 6rem;
 }
+
+/* Il video del viaggio: si comporta esattamente come uno strato immagine,
+   stessa inquadratura e stessa trasformazione.
+
+   width/height espliciti: un <video> è un elemento sostituito, e con
+   `inset: 0` ma dimensioni automatiche userebbe la propria risoluzione
+   nativa invece di riempire il palco — lasciando scoperte due strisce sui
+   bordi da cui si intravedeva lo strato sotto. */
+.bufala-stage .strato--video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 58%;
+}

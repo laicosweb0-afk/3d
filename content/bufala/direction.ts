@@ -24,8 +24,10 @@ export interface Regia {
   deriva?: [number, number];
   /** Se vero, la scena mostra il video legato allo scroll invece
    *  dell'immagine: il fotogramma segue il progresso, così il gesto lo
-   *  comanda chi scorre. Vale solo per la scena del taglio — altrove il
-   *  peso in più non è ripagato. */
+   *  comanda chi scorre. Le scene con `video` devono essere consecutive —
+   *  il palco le tratta come un unico arco e ci distribuisce sopra i 15
+   *  secondi del filmato. L'immagine resta dichiarata comunque: serve da
+   *  ripiego se il video non può partire. */
   video?: boolean;
   /** Nota di regia: perché la scena si muove così. Non è decorazione,
    *  è il contratto con chi ritarerà i numeri dopo di me. */
@@ -38,45 +40,54 @@ export const regia: Record<SceneId, Regia> = {
   // respira, così il primo scroll sorprende.
   s01: {
     immagine: 'macro',
-    zoom: [2.6, 2.35],
-    luce: [0.55, 0.7],
-    nota: 'Macro illeggibile. Immobile: il movimento arriva dopo, ed è il ritiro.',
+    // Il ritiro — la transizione-firma della scaletta (§4) — avviene qui
+    // dentro, sotto la headline ferma: si parte dentro la superficie, e
+    // arretrando la si riconosce. Finisce esattamente dove comincia il
+    // video, altrimenti al confine si vedrebbe uno scatto.
+    zoom: [2.6, 1.12],
+    luce: [0.55, 0.9],
+    nota: 'Il ritiro: da superficie illeggibile a forma riconoscibile.',
   },
 
-  // Il ritiro: è la transizione-firma del sito. Nessun taglio, solo
-  // distanza che cresce finché la forma si dichiara.
+  // Qui comincia il video, e con esso il vero "3D" del sito: la mozzarella
+  // scende dall'alto. La camera non ha bisogno di arretrare come faceva
+  // prima — è il soggetto che entra in campo da solo.
   s02: {
+    video: true,
     immagine: 'intera',
-    zoom: [2.35, 1.0],
-    luce: [0.7, 1.0],
-    nota: 'Il ritiro. La stessa inquadratura passa da astratta a riconoscibile.',
+    zoom: [1.12, 1.06],
+    luce: [0.75, 1.0],
+    nota: 'La discesa. Il movimento è del soggetto, non della camera.',
   },
 
-  // Si torna dentro, ma ora sapendo cosa si guarda: è un'altra cosa.
+  // Si è posata. Un avvicinamento appena percettibile mentre ruota: la
+  // materia si legge senza che serva uno stacco in macro.
   s03: {
+    video: true,
     immagine: 'macro',
-    zoom: [1.0, 2.1],
-    luce: [1.0, 0.85],
-    nota: 'Ritorno in macro, con lo sguardo informato: la materia, non l’enigma.',
+    zoom: [1.06, 1.16],
+    luce: [1.0, 1.0],
+    nota: 'La sosta. La camera si avvicina di un soffio mentre il soggetto ruota.',
   },
 
-  // Le mani: prima scala umana. La camera indietreggia per farci stare
-  // il gesto, e per la prima volta il soggetto non è solo.
+  // Entra la mano con la lama. La camera arretra di poco per far stare il
+  // gesto in campo, non per cambiare inquadratura.
   s04: {
+    video: true,
     immagine: 'mani',
-    zoom: [2.1, 0.95],
-    luce: [0.85, 0.95],
-    deriva: [0, -0.02],
-    nota: 'Entra la mano: la camera arretra per fare spazio al gesto.',
+    zoom: [1.16, 1.04],
+    luce: [1.0, 1.0],
+    nota: 'Entra la lama: la camera arretra quel tanto che serve al gesto.',
   },
 
-  // Il taglio: il movimento più lento di tutto il sito. Avvicinamento
-  // minimo su una scena lunga — è la lentezza a dare peso, non l'ampiezza.
+  // Il taglio. Scena lunga e movimento corto: è la lentezza a dare peso.
+  // Alla fine la camera si avvicina appena, sulle due metà e sul latte.
   s05: {
+    video: true,
     immagine: 'taglio',
-    zoom: [0.95, 1.35],
-    luce: [0.95, 1.0],
-    nota: 'Il clou. Scena lunga, movimento corto: il tempo fa il lavoro.',
+    zoom: [1.04, 1.18],
+    luce: [1.0, 1.0],
+    nota: 'Il clou. Il video finisce qui, sulle due metà e sul latte.',
   },
 
   // Il tempo: la luce cambia e la goccia dell'apertura finisce di cadere.
@@ -86,7 +97,7 @@ export const regia: Record<SceneId, Regia> = {
     // La distanza finale deve combaciare con l'inizio di S07: il rig non
     // fa mai uno scatto tra due scene, anche quando il movimento primario
     // è un altro (qui la luce).
-    zoom: [1.35, 1.0],
+    zoom: [1.18, 1.0],
     luce: [1.0, 0.6],
     nota: 'Nessun avvicinamento: cambia solo la luce. È la scena dell’attesa.',
   },
@@ -106,7 +117,8 @@ export const regia: Record<SceneId, Regia> = {
   // Il congedo: tutto si allontana e si spegne, resta la firma.
   s08: {
     immagine: 'intera',
-    zoom: [1.0, 0.75],
+    // Riparte da dove finisce S07: nessuno scatto ai confini, mai.
+    zoom: [1.06, 0.78],
     luce: [0.9, 0.25],
     nota: 'Si arretra e si spegne. La pagina prende il posto del piano sequenza.',
   },

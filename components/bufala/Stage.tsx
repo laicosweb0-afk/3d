@@ -17,7 +17,8 @@ import {
   SCENES, localT, sceneWeight, smooth, sceneRange,
 } from '@/lib/bufala/scenes';
 import { regia } from '@/content/bufala/direction';
-import { immagini } from '@/content/bufala/assets';
+import { immagini, video as clip } from '@/content/bufala/assets';
+import { Video } from './Video';
 
 type Chiave = keyof typeof immagini;
 
@@ -25,9 +26,23 @@ const palco = {
   strati: new Map<Chiave, HTMLDivElement>(),
 };
 
-/** Le immagini effettivamente usate, senza duplicati. */
+/** Le scene coperte dal video, in ordine: formano un unico arco continuo
+ *  su cui si distribuiscono i 15 secondi del filmato. */
+const sceneVideo = SCENES.filter((s) => regia[s.id].video);
+
+/** L'intervallo di scroll occupato dal video. */
+const arcoVideo = sceneVideo.length
+  ? {
+      p0: sceneRange(sceneVideo[0].id).p0,
+      p1: sceneRange(sceneVideo[sceneVideo.length - 1].id).p1,
+    }
+  : null;
+
+/** Le immagini da montare: quelle delle scene *senza* video. Nelle scene
+ *  coperte dal filmato l'immagine non si vede mai, e montarla costerebbe
+ *  un download inutile. */
 const chiaviUsate = Array.from(
-  new Set(SCENES.map((s) => regia[s.id].immagine)),
+  new Set(SCENES.filter((s) => !regia[s.id].video).map((s) => regia[s.id].immagine)),
 ) as Chiave[];
 
 export function Stage() {
@@ -62,7 +77,7 @@ export function Stage() {
           }}
         />
       ))}
-
+      {arcoVideo && <Video webm={clip.webm} mp4={clip.mp4} poster={clip.poster} />}
     </div>
   );
 }
@@ -98,14 +113,27 @@ Stage.render = function render(p: number): void {
     pesi.set(k, (pesi.get(k) ?? 0) + sceneWeight(p, s.id));
   }
 
+  const trasforma =
+    `translate3d(0, ${(deriva * 100).toFixed(2)}vh, 0) scale(${zoom.toFixed(3)})`;
+
   for (const [k, el] of palco.strati) {
     const w = Math.min(pesi.get(k) ?? 0, 1);
     el.style.opacity = (w * luce).toFixed(3);
-    el.style.transform =
-      `translate3d(0, ${(deriva * 100).toFixed(2)}vh, 0) scale(${zoom.toFixed(3)})`;
+    el.style.transform = trasforma;
     el.style.visibility = w < 0.005 ? 'hidden' : 'visible';
   }
 
+  // Il video occupa l'arco delle scene che lo dichiarano: il suo tempo è
+  // la posizione dentro quell'arco, non dentro la singola scena — così i
+  // 15 secondi scorrono continui attraverso i confini invece di ripartire
+  // da capo a ogni scena.
+  if (!arcoVideo) return;
+  const peso = sceneVideo.reduce((acc, s) => acc + sceneWeight(p, s.id), 0);
+  Video.render(
+    (p - arcoVideo.p0) / (arcoVideo.p1 - arcoVideo.p0),
+    Math.min(peso, 1) * luce,
+    trasforma,
+  );
 };
 
 /** Esposto per QA: cosa fa la regia a un dato p. */

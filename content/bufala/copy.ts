@@ -42,16 +42,19 @@ export const sceneCopy: Record<SceneId, SceneCopy> = {
     nota: 'La produciamo noi',
   },
 
-  // La materia. Si parla della superficie, non del sapore.
+  // La materia, mentre il soggetto ruota appena: si parla della superficie,
+  // non del sapore.
   s03: {
     titolo: 'La pelle\ntrattiene il siero.',
   },
 
-  // Le mani. È il momento della fiducia. Nessun numero, nessun dettaglio di
-  // lavorazione: non li conosciamo, e inventarli sarebbe il modo più veloce
-  // di perdere la credibilità che questa scena serve a costruire.
+  // Entra la lama. Il testo segue quello che il video mostra davvero: qui
+  // non ci sono più mani che la sostengono, c'è un coltello che scende.
+  // Nessun numero, nessun dettaglio di lavorazione: non li conosciamo, e
+  // inventarli sarebbe il modo più veloce di perdere la credibilità che
+  // questa scena serve a costruire.
   s04: {
-    titolo: 'Passa di mano\nin mano.',
+    titolo: 'Una lama.\nNient’altro.',
   },
 
   // Il culmine. La frase più corta del sito, perché l'immagine parla da sé.

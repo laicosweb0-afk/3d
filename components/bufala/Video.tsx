@@ -23,13 +23,18 @@ const player = {
 };
 
 export interface VideoProps {
-  src: string;
+  /** WebM/VP9: preferito, pesa meno a parità di resa. */
+  webm: string;
+  /** MP4/H.264: ripiego universale. Serve davvero — Safari su iOS non
+   *  legge VP9 in ogni versione, e senza questo il viaggio resterebbe fermo
+   *  sul poster proprio sui telefoni. */
+  mp4: string;
   /** Poster mostrato finché il video non è pronto: senza, il primo
    *  fotogramma resta nero e si vede lo stacco. */
   poster: string;
 }
 
-export function Video({ src, poster }: VideoProps) {
+export function Video({ webm, mp4, poster }: VideoProps) {
   const rif = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -56,7 +61,6 @@ export function Video({ src, poster }: VideoProps) {
     <video
       ref={rif}
       className="strato strato--video"
-      src={src}
       poster={poster}
       muted
       playsInline
@@ -65,19 +69,25 @@ export function Video({ src, poster }: VideoProps) {
       // tempo appartiene allo scroll.
       aria-hidden="true"
       style={{ opacity: 0 }}
-    />
+    >
+      <source src={webm} type="video/webm" />
+      <source src={mp4} type="video/mp4" />
+    </video>
   );
 }
 
 /**
  * Porta il video al fotogramma corrispondente a `t` (0..1) e ne imposta
- * l'opacità. Chiamata dallo stesso loop del viaggio.
+ * opacità e trasformazione. Chiamata dallo stesso loop del viaggio, con la
+ * stessa trasformazione degli strati immagine: così la camera del sito e
+ * quella del filmato restano lo stesso movimento.
  */
-Video.render = function render(t: number, opacita: number): void {
+Video.render = function render(t: number, opacita: number, trasforma: string): void {
   const v = player.el;
   if (!v) return;
 
   v.style.opacity = opacita.toFixed(3);
+  v.style.transform = trasforma;
   v.style.visibility = opacita < 0.005 ? 'hidden' : 'visible';
   if (!player.pronto || !Number.isFinite(v.duration)) return;
 
