@@ -652,3 +652,69 @@
 }
 
 
+
+/* — La navigazione —
+   Assente sul viaggio, compare col documento. Nessun fondo pieno: una
+   hairline e basta, così non taglia la pagina in due. */
+.bufala-nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: clamp(0.9rem, 2vh, 1.4rem) 6vw;
+  background: color-mix(in srgb, var(--verde-profondo) 88%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--latte-20);
+  /* Nasconde senza toglierla dal flusso di tabulazione quando è chiusa:
+     `visibility` la rende comunque non raggiungibile da tastiera, che è
+     quello che serve mentre non è in campo. */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-100%);
+  transition: opacity 0.5s ease, transform 0.5s ease, visibility 0.5s;
+}
+
+.bufala-nav.visibile {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+.bufala-nav .marchio {
+  display: block;
+  border: 0;
+}
+
+.bufala-nav .marchio img {
+  height: clamp(1.6rem, 3.4vh, 2.2rem);
+  width: auto;
+  display: block;
+}
+
+.bufala-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  /* Spaziatura ampia tra le voci, come chiede la direzione tipografica. */
+  gap: clamp(1.25rem, 3.5vw, 3rem);
+}
+
+.bufala-nav a {
+  color: var(--latte-70);
+  text-decoration: none;
+  border: 0;
+  transition: color 0.3s ease;
+}
+
+.bufala-nav a:hover {
+  color: var(--latte);
+}
+
+/* Le ancore devono fermarsi sotto la barra, non finirci sotto. */
+.bufala-sezione[id] {
+  scroll-margin-top: 6rem;
+}
