@@ -8,6 +8,7 @@
 // poi serve davvero, perché chi è arrivato in fondo vuole i contatti.
 
 import { useEffect, useRef } from 'react';
+import { asset } from '@/lib/asset';
 import { company } from '@/content/bufala/company';
 
 const voci = [
@@ -39,7 +40,7 @@ export function Nav() {
     <nav ref={barra} className="bufala-nav" aria-label="Navigazione principale">
       <a className="marchio" href="#top">
         <img
-          src="/assets/brand-bufala/logo-marchio.png"
+          src={asset("/assets/brand-bufala/logo-marchio.png")}
           alt={company.brand}
           width={1242}
           height={970}

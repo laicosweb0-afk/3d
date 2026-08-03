@@ -9,7 +9,13 @@
 // 40 dB su tutte). Su un sito che si vuole premium la lentezza si nota
 // quanto un dettaglio grafico sbagliato.
 
-const BASE = '/assets/bufala';
+import { BASE_PATH } from '@/lib/asset';
+
+// Il prefisso base viene dall'ambiente: vuoto quando il sito vive alla
+// radice del dominio, "/3d" quando è pubblicato in una sottocartella come
+// l'anteprima su GitHub Pages. Senza, in anteprima non carica *niente* —
+// né foto né video — perché ogni percorso punterebbe alla radice sbagliata.
+const BASE = `${BASE_PATH}/assets/bufala`;
 
 export interface Asset {
   src: string;

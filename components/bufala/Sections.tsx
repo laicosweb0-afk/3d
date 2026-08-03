@@ -2,6 +2,7 @@
 // Solo dati reali (content/bufala/company.ts). Dove il cliente non ha ancora
 // fornito il contenuto, la sezione non compare — nessun segnaposto inventato.
 
+import { asset } from '@/lib/asset';
 import { company, indirizzoPuntoVendita } from '@/content/bufala/company';
 import { sezioni } from '@/content/bufala/copy';
 import { prodotti } from '@/content/bufala/assets';
@@ -61,7 +62,7 @@ export function Sections() {
       <section className="bufala-sezione bufala-firma">
         <img
           className="marchio"
-          src="/assets/brand-bufala/logo-marchio.png"
+          src={asset("/assets/brand-bufala/logo-marchio.png")}
           alt=""
           aria-hidden="true"
           width={1242}
@@ -69,7 +70,7 @@ export function Sections() {
         />
         <img
           className="wordmark"
-          src="/assets/brand-bufala/logo-wordmark.png"
+          src={asset("/assets/brand-bufala/logo-wordmark.png")}
           alt={company.brand}
           width={2328}
           height={426}
