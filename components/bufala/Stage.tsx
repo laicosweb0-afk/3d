@@ -26,17 +26,10 @@ const palco = {
   strati: new Map<Chiave, HTMLDivElement>(),
 };
 
-/** Le scene coperte dal video, in ordine: formano un unico arco continuo
- *  su cui si distribuiscono i 15 secondi del filmato. */
+/** Le scene coperte dal video, in ordine. Ciascuna dichiara quali secondi
+ *  del filmato le appartengono (`tempo` in content/bufala/direction.ts):
+ *  non è più una divisione in parti uguali, è una mappa. */
 const sceneVideo = SCENES.filter((s) => regia[s.id].video);
-
-/** L'intervallo di scroll occupato dal video. */
-const arcoVideo = sceneVideo.length
-  ? {
-      p0: sceneRange(sceneVideo[0].id).p0,
-      p1: sceneRange(sceneVideo[sceneVideo.length - 1].id).p1,
-    }
-  : null;
 
 /** Le immagini da montare: quelle delle scene *senza* video. Nelle scene
  *  coperte dal filmato l'immagine non si vede mai, e montarla costerebbe
@@ -77,28 +70,57 @@ export function Stage() {
           }}
         />
       ))}
-      {arcoVideo && <Video webm={clip.webm} mp4={clip.mp4} poster={clip.poster} />}
+      {sceneVideo.length > 0 && <Video webm={clip.webm} mp4={clip.mp4} poster={clip.poster} />}
     </div>
   );
 }
 
-/** Interpola dentro la scena in cui p ricade i valori dichiarati nella regia.
- *  Si usa la scena "contenitrice" e non quella di peso maggiore: la distanza
- *  deve restare continua anche durante le dissolvenze, altrimenti scatta. */
-function valori(p: number) {
+/** La scena che *contiene* p — non quella di peso maggiore. La distanza e il
+ *  tempo del filmato devono restare continui anche durante le dissolvenze:
+ *  se si scegliesse la scena dominante, a metà dissolvenza scatterebbero
+ *  entrambi. */
+function scenaContenitrice(p: number) {
   for (const s of SCENES) {
-    const { p1 } = sceneRange(s.id);
-    if (p <= p1 || s.id === SCENES[SCENES.length - 1].id) {
-      const r = regia[s.id];
-      const t = smooth(localT(p, s.id));
-      return {
-        zoom: r.zoom[0] + (r.zoom[1] - r.zoom[0]) * t,
-        luce: r.luce[0] + (r.luce[1] - r.luce[0]) * t,
-        deriva: r.deriva ? r.deriva[0] + (r.deriva[1] - r.deriva[0]) * t : 0,
-      };
-    }
+    if (p <= sceneRange(s.id).p1) return s;
   }
-  return { zoom: 1, luce: 1, deriva: 0 };
+  return SCENES[SCENES.length - 1];
+}
+
+/** Interpola dentro la scena contenitrice i valori dichiarati nella regia. */
+function valori(p: number) {
+  const s = scenaContenitrice(p);
+  const r = regia[s.id];
+  const t = smooth(localT(p, s.id));
+  return {
+    zoom: r.zoom[0] + (r.zoom[1] - r.zoom[0]) * t,
+    luce: r.luce[0] + (r.luce[1] - r.luce[0]) * t,
+    deriva: r.deriva ? r.deriva[0] + (r.deriva[1] - r.deriva[0]) * t : 0,
+  };
+}
+
+/** L'istante del filmato che corrisponde a p, in secondi.
+ *
+ *  L'avanzamento dentro la scena è lineare, non smorzato: lo smoothstep usato
+ *  per la camera qui sarebbe un difetto: rallenterebbe il filmato all'inizio
+ *  e alla fine di *ogni* scena, e a ogni confine si vedrebbe il gesto
+ *  rallentare e ripartire senza motivo. Il ritmo si detta con i `tempo`
+ *  della regia, non con una curva.
+ *
+ *  Fuori dall'arco del video si restituisce l'estremo più vicino: prima
+ *  dell'inizio il primo fotogramma, dopo la fine l'ultimo. */
+function secondiVideo(p: number): number {
+  const s = scenaContenitrice(p);
+  const r = regia[s.id];
+  if (r.tempo) {
+    const t = localT(p, s.id);
+    return r.tempo[0] + (r.tempo[1] - r.tempo[0]) * t;
+  }
+  const primo = sceneVideo[0];
+  const ultimo = sceneVideo[sceneVideo.length - 1];
+  if (!primo) return 0;
+  return p < sceneRange(primo.id).p0
+    ? (regia[primo.id].tempo?.[0] ?? 0)
+    : (regia[ultimo.id].tempo?.[1] ?? 0);
 }
 
 Stage.render = function render(p: number): void {
@@ -107,8 +129,18 @@ Stage.render = function render(p: number): void {
   // Il peso di ciascuna immagine è la somma dei pesi delle scene che la
   // usano: se due scene consecutive condividono l'inquadratura, lo strato
   // resta pieno attraverso il confine invece di sfumare contro sé stesso.
+  //
+  // Contano solo le scene *senza* video. Una scena col video dichiara
+  // comunque un'immagine (le serve da ripiego), ma quell'immagine non deve
+  // pesare qui: se pesasse, e se un'altra scena la montasse davvero, la
+  // foto ferma resterebbe disegnata sotto al filmato. Finché il video è
+  // pieno non si nota; appena la sua opacità scende — in dissolvenza o
+  // quando `luce` è sotto 1 — riaffiora come una seconda mozzarella
+  // fantasma dietro quella vera. È esattamente il difetto visto in
+  // anteprima all'ingresso del video.
   const pesi = new Map<Chiave, number>();
   for (const s of SCENES) {
+    if (regia[s.id].video) continue;
     const k = regia[s.id].immagine;
     pesi.set(k, (pesi.get(k) ?? 0) + sceneWeight(p, s.id));
   }
@@ -123,17 +155,13 @@ Stage.render = function render(p: number): void {
     el.style.visibility = w < 0.005 ? 'hidden' : 'visible';
   }
 
-  // Il video occupa l'arco delle scene che lo dichiarano: il suo tempo è
-  // la posizione dentro quell'arco, non dentro la singola scena — così i
-  // 15 secondi scorrono continui attraverso i confini invece di ripartire
-  // da capo a ogni scena.
-  if (!arcoVideo) return;
+  // Il video: ogni scena dell'arco possiede i propri secondi di filmato, e
+  // il fotogramma è la posizione dentro quelli. Scene consecutive con
+  // intervalli combacianti fanno scorrere il gesto senza interruzioni
+  // attraverso i confini.
+  if (!sceneVideo.length) return;
   const peso = sceneVideo.reduce((acc, s) => acc + sceneWeight(p, s.id), 0);
-  Video.render(
-    (p - arcoVideo.p0) / (arcoVideo.p1 - arcoVideo.p0),
-    Math.min(peso, 1) * luce,
-    trasforma,
-  );
+  Video.render(secondiVideo(p), Math.min(peso, 1) * luce, trasforma);
 };
 
 /** Esposto per QA: cosa fa la regia a un dato p. */

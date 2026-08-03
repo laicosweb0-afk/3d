@@ -77,12 +77,17 @@ export function Video({ webm, mp4, poster }: VideoProps) {
 }
 
 /**
- * Porta il video al fotogramma corrispondente a `t` (0..1) e ne imposta
- * opacità e trasformazione. Chiamata dallo stesso loop del viaggio, con la
- * stessa trasformazione degli strati immagine: così la camera del sito e
- * quella del filmato restano lo stesso movimento.
+ * Porta il video al secondo indicato e ne imposta opacità e trasformazione.
+ * Chiamata dallo stesso loop del viaggio, con la stessa trasformazione degli
+ * strati immagine: così la camera del sito e quella del filmato restano lo
+ * stesso movimento.
+ *
+ * `secondi` è un istante assoluto del filmato, non una frazione: gli istanti
+ * li dichiara la regia (content/bufala/direction.ts), che ragiona in secondi
+ * perché è in secondi che si guarda un video e si decide dove mettere un
+ * titolo.
  */
-Video.render = function render(t: number, opacita: number, trasforma: string): void {
+Video.render = function render(secondi: number, opacita: number, trasforma: string): void {
   const v = player.el;
   if (!v) return;
 
@@ -94,7 +99,7 @@ Video.render = function render(t: number, opacita: number, trasforma: string): v
   // Un margine dalla fine: alcuni browser, se si chiede esattamente
   // `duration`, riportano il video a zero invece di restare sull'ultimo
   // fotogramma — e il salto si vede.
-  const target = Math.min(Math.max(t, 0), 0.999) * v.duration;
+  const target = Math.min(Math.max(secondi, 0), v.duration - 0.05);
 
   // Si scrive solo se lo scarto conta: assegnare `currentTime` a ogni frame
   // anche per differenze invisibili fa lavorare il decoder a vuoto e sui

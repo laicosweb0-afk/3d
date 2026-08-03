@@ -24,80 +24,114 @@ export interface Regia {
   deriva?: [number, number];
   /** Se vero, la scena mostra il video legato allo scroll invece
    *  dell'immagine: il fotogramma segue il progresso, così il gesto lo
-   *  comanda chi scorre. Le scene con `video` devono essere consecutive —
-   *  il palco le tratta come un unico arco e ci distribuisce sopra i 15
-   *  secondi del filmato. L'immagine resta dichiarata comunque: serve da
-   *  ripiego se il video non può partire. */
+   *  comanda chi scorre. Le scene con `video` devono essere consecutive.
+   *  L'immagine resta dichiarata comunque: serve da ripiego se il video non
+   *  può partire. */
   video?: boolean;
+
+  /** I secondi del filmato coperti da questa scena, da inizio a fine.
+   *
+   *  È il punto della regia: prima il video veniva spalmato in parti uguali
+   *  sull'arco delle scene, e il risultato era che i titoli non avevano
+   *  niente a che vedere con quello che si vedeva — "Una lama" compariva a
+   *  7,3 s mentre il coltello entrava a 10. Dichiarando qui gli istanti,
+   *  ogni titolo possiede il proprio movimento: il testo cambia quando
+   *  cambia il gesto, non quando è scaduto un conteggio di viewport.
+   *
+   *  Vincoli: gli intervalli di scene consecutive devono combaciare
+   *  (l'uscita di una è l'entrata della successiva), altrimenti il filmato
+   *  salta al confine. Un intervallo con i due estremi uguali congela il
+   *  fotogramma: è come si tiene ferma la fine della ripresa mentre la luce
+   *  si spegne. Il rapporto secondi/vh dà la velocità di riproduzione: se
+   *  due scene vicine hanno rapporti molto diversi, al confine si sente uno
+   *  scarto di velocità. */
+  tempo?: [number, number];
   /** Nota di regia: perché la scena si muove così. Non è decorazione,
    *  è il contratto con chi ritarerà i numeri dopo di me. */
   nota: string;
 }
 
 export const regia: Record<SceneId, Regia> = {
-  // Si parte dentro: la superficie riempie il campo e non si capisce cosa
-  // sia. Il movimento è quasi fermo — deve sembrare un fermo immagine che
-  // respira, così il primo scroll sorprende.
+  // Il campo vuoto. Ardesia, verde profondo, una luce di taglio: non c'è
+  // ancora niente da guardare, e infatti si guarda la frase.
+  //
+  // Prima qui c'era un ingrandimento fortissimo (2.6) su una macro, e il
+  // sito si apriva "uscendo da uno zoom": un movimento che è solo un
+  // movimento, senza un fatto dentro. Ora l'apertura è il primo fotogramma
+  // del filmato, e il fatto arriva scorrendo — la mozzarella entra dall'alto
+  // nel campo vuoto. Il video avanza pochissimo (0,8 s su 2 viewport):
+  // quanto basta perché alla fine della hero si intraveda il soggetto
+  // affacciarsi dal bordo alto, che è l'invito a continuare.
   s01: {
+    video: true,
     immagine: 'macro',
-    // Il ritiro — la transizione-firma della scaletta (§4) — avviene qui
-    // dentro, sotto la headline ferma: si parte dentro la superficie, e
-    // arretrando la si riconosce. Finisce esattamente dove comincia il
-    // video, altrimenti al confine si vedrebbe uno scatto.
-    zoom: [2.6, 1.12],
-    luce: [0.55, 0.9],
-    nota: 'Il ritiro: da superficie illeggibile a forma riconoscibile.',
+    tempo: [0, 0.8],
+    zoom: [1.08, 1.02],
+    luce: [0.55, 0.95],
+    nota: 'Il campo vuoto e la frase. Il soggetto non c’è ancora: sta arrivando.',
   },
 
-  // Qui comincia il video, e con esso il vero "3D" del sito: la mozzarella
-  // scende dall'alto. La camera non ha bisogno di arretrare come faceva
-  // prima — è il soggetto che entra in campo da solo.
+  // La discesa. Il movimento è tutto del soggetto: la camera sta ferma e
+  // lascia che sia lui a entrare.
   s02: {
     video: true,
     immagine: 'intera',
-    zoom: [1.12, 1.06],
-    luce: [0.75, 1.0],
+    tempo: [0.8, 3.0],
+    zoom: [1.02, 1.0],
+    luce: [0.95, 1.0],
     nota: 'La discesa. Il movimento è del soggetto, non della camera.',
   },
 
-  // Si è posata. Un avvicinamento appena percettibile mentre ruota: la
-  // materia si legge senza che serva uno stacco in macro.
+  // La sospensione: resta in aria e gira. È il tratto più lungo perché è
+  // quello che si guarda più volentieri — e perché la rotazione è la sola
+  // cosa che rende leggibile la superficie senza uno stacco in macro.
   s03: {
     video: true,
     immagine: 'macro',
-    zoom: [1.06, 1.16],
+    tempo: [3.0, 6.0],
+    zoom: [1.0, 1.08],
     luce: [1.0, 1.0],
-    nota: 'La sosta. La camera si avvicina di un soffio mentre il soggetto ruota.',
+    nota: 'La sospensione: gira su sé stessa mentre la camera si avvicina di un soffio.',
   },
 
-  // Entra la mano con la lama. La camera arretra di poco per far stare il
-  // gesto in campo, non per cambiare inquadratura.
+  // Scende la lama, dall'alto e al centro. La camera arretra quel tanto che
+  // serve a far stare il gesto in campo.
   s04: {
     video: true,
     immagine: 'mani',
-    zoom: [1.16, 1.04],
+    tempo: [6.0, 8.0],
+    zoom: [1.08, 1.02],
     luce: [1.0, 1.0],
     nota: 'Entra la lama: la camera arretra quel tanto che serve al gesto.',
   },
 
-  // Il taglio. Scena lunga e movimento corto: è la lentezza a dare peso.
-  // Alla fine la camera si avvicina appena, sulle due metà e sul latte.
+  // Il taglio. Due secondi di filmato distribuiti su due viewport e mezzo:
+  // è il tratto riprodotto più lentamente di tutto il viaggio, ed è
+  // voluto — qui la lentezza è il peso.
   s05: {
     video: true,
     immagine: 'taglio',
-    zoom: [1.04, 1.18],
+    tempo: [8.0, 10.0],
+    zoom: [1.02, 1.12],
     luce: [1.0, 1.0],
-    nota: 'Il clou. Il video finisce qui, sulle due metà e sul latte.',
+    nota: 'Il clou. Le due metà si separano e il latte cade.',
   },
 
-  // Il tempo: la luce cambia e la goccia dell'apertura finisce di cadere.
-  // La distanza resta ferma — qui non ci si muove, si aspetta.
+  // L'ultimo fotogramma tenuto fermo mentre la luce cala: la ripresa non
+  // viene interrotta da uno stacco, si spegne.
+  //
+  // Prima qui tornava una fotografia della mozzarella *intera*, subito dopo
+  // averla vista tagliare: una contraddizione visiva che nessuna dissolvenza
+  // può salvare. Congelare la coda del filmato costa zero e non contraddice
+  // niente.
   s06: {
+    video: true,
     immagine: 'intera',
+    tempo: [10.0, 10.0],
     // La distanza finale deve combaciare con l'inizio di S07: il rig non
     // fa mai uno scatto tra due scene, anche quando il movimento primario
     // è un altro (qui la luce).
-    zoom: [1.18, 1.0],
+    zoom: [1.12, 1.0],
     luce: [1.0, 0.6],
     nota: 'Nessun avvicinamento: cambia solo la luce. È la scena dell’attesa.',
   },

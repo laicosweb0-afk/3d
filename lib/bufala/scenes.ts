@@ -25,13 +25,19 @@ export interface SceneDef {
 }
 
 export const SCENES: SceneDef[] = [
+  // Le durate delle scene sul video vanno lette insieme ai `tempo` della
+  // regia: il loro rapporto è la velocità di riproduzione. Tenerlo simile
+  // fra scene vicine evita che al confine il gesto cambi passo.
   { id: 's01', vh: 2.0, capitolo: 1, titolo: "L'apparizione" },
   { id: 's02', vh: 2.5, capitolo: 1, titolo: 'La forma' },
-  { id: 's03', vh: 2.0, capitolo: 2, titolo: 'La pelle' },
-  { id: 's04', vh: 2.5, capitolo: 2, titolo: 'Il peso' },
-  // Il taglio è il momento clou: è la scena più lunga di tutto il viaggio
-  // perché il movimento deve poter essere lentissimo (Direzione §6).
-  { id: 's05', vh: 3.0, capitolo: 3, titolo: 'Il taglio' },
+  // La sospensione è il tratto più lungo del viaggio: è quello in cui non
+  // succede un fatto nuovo ma si guarda l'oggetto girare, ed è il motivo
+  // per cui si continua a scorrere.
+  { id: 's03', vh: 3.0, capitolo: 2, titolo: 'La pelle' },
+  { id: 's04', vh: 2.0, capitolo: 2, titolo: 'Il peso' },
+  // Il taglio: due secondi di filmato su due viewport e mezzo, il rapporto
+  // più lento di tutti. La lentezza qui è il peso (Direzione §6).
+  { id: 's05', vh: 2.5, capitolo: 3, titolo: 'Il taglio' },
   { id: 's06', vh: 2.0, capitolo: 3, titolo: 'Il tempo' },
   { id: 's07', vh: 2.5, capitolo: 4, titolo: 'La famiglia' },
   { id: 's08', vh: 2.0, capitolo: 4, titolo: 'Il congedo' },
