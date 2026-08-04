@@ -38,21 +38,28 @@ export function Sections() {
         <p>{sezioni.apertura.testo}</p>
       </section>
 
-      {/* Movimento 3 · Per chi. I due pubblici con pesi diversi, perche'
-          sono diversi: l'orario del banco dice che chi compra per lavoro
-          viene prima. La colonna minore e' sfalsata, non affiancata pari
-          (Composizione §regola 4).
-
-          Qui c'era la fotografia generata delle mani: l'utente l'ha
-          bocciata — «troppo da IA» — e ha ragione, perche' questo e'
-          il movimento che parla del luogo vero. Il posto della fotografia
-          resta progettato (la colonna sinistra del campo): si riapre il
-          giorno in cui arriva uno scatto REALE del banco. Niente
-          generazioni qui, mai piu': o la realta', o la tipografia. */}
+      {/* Movimento 3 · Per chi. La fotografia VERA del banco — arrivata il
+          04/08, dopo che quella generata era stata bocciata («troppo da
+          IA», con ragione) — scura sulla carta chiara come una stampa
+          impaginata. Accanto, i due pubblici con pesi diversi perche' sono
+          diversi: l'orario dice che chi compra per lavoro viene prima; la
+          colonna minore e' sfalsata, non affiancata pari (Composizione
+          §regola 4). Regola permanente di questo movimento: o la realta',
+          o la tipografia — mai una fotografia sintetica. */}
       <section className="bufala-sezione bufala-perchi" data-rivela>
         <p className="micro">{sezioni.perChi.titolo}</p>
         <h2>{sezioni.perChi.frase}</h2>
         <div className="perchi-campo">
+          <figure className="perchi-foto">
+            <img
+              src={asset('/assets/bufala/banco.webp')}
+              alt="Il banco di Quelli della bufala: formaggi e salumi nel banco frigo, prosciutti appesi alle travi"
+              width={1169}
+              height={914}
+              loading="lazy"
+            />
+            <figcaption className="micro">Il banco, dentro il C.A.R.R. di Rimini</figcaption>
+          </figure>
           <div className="perchi-blocchi">
             <div className="perchi-blocco perchi-blocco--lavoro">
               <h3>{sezioni.perChi.lavoro.nome}</h3>

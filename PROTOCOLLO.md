@@ -192,3 +192,18 @@ Aggiornato a ogni task. Un blocco aperto non si aggira in silenzio.
 
 Responsive e accessibilità **non sono task**: sono condizioni di consegna di
 ognuna, con un collaudo sui dispositivi veri alla fine di ogni fase.
+
+## 10. Registro delle idee (si valutano nella task giusta, non prima)
+
+- **Il puntino della i che cade e diventa la mozzarella** — idea dell'utente,
+  esplicitamente rimandata («questa qui rimane come task da fare»). → Task 11.
+- **Il banco che si compone scorrendo** — idea dell'utente (04/08): mentre si
+  scende, il bancone si compone davanti agli occhi. Due strade, da decidere in
+  Task 11:
+  1. *A costo zero:* la fotografia REALE del banco rivelata a pezzi dallo
+     scroll — maschere e trasformazioni, dentro il budget (B15), i pixel
+     restano quelli veri. Nessun rischio «troppo da IA».
+  2. *A pagamento:* video generato da Higgsfield partendo dalla foto reale.
+     Rischio concreto: l'IA che tocca un luogo vero produce esattamente
+     l'effetto sintetico appena bocciato nel Per chi. Se si sceglie questa
+     strada: prima il costo esatto in crediti, poi il permesso, come sempre.

@@ -1240,9 +1240,31 @@
 }
 
 .perchi-campo {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3rem);
   width: 100%;
   max-width: 62rem;
   margin-top: var(--spazio-blocco);
+}
+
+/* La stampa impaginata: la fotografia vera del banco, scura sulla carta.
+   Il bordo di carbone sottile e' il passe-partout di una stampa, non una
+   card: niente ombra, niente rilievo — sta NELLA pagina. */
+.perchi-foto {
+  margin: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.perchi-foto img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--raggio-piccolo);
+}
+
+.perchi-foto figcaption {
+  letter-spacing: 0.14em;
 }
 
 .perchi-blocchi {
@@ -1282,23 +1304,18 @@
   color: var(--testo-nota);
 }
 
-/* Da tablet in su il movimento diventa a due colonne: titolo a sinistra,
-   pubblici a destra, sfalsati anche in verticale. La larghezza si riempie
-   di composizione, non di decorazione. */
+/* Da tablet in su: la fotografia tiene la colonna maggiore, i pubblici
+   quella minore, sfalsati anche in verticale. */
 @media (min-width: 760px) {
-  .bufala-perchi {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-    column-gap: clamp(2rem, 6vw, 5rem);
-    align-items: start;
+  .perchi-campo {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    align-items: center;
   }
-  .bufala-perchi .micro { grid-column: 1 / -1; }
-  .bufala-perchi h2 { grid-column: 1; }
-  .bufala-perchi .perchi-campo { grid-column: 2; margin-top: 0.4rem; }
-  .bufala-perchi .perchi-nota { grid-column: 1; align-self: end; }
+  .perchi-blocchi {
+    align-content: center;
+  }
   .perchi-blocco--casa {
-    transform: translateX(clamp(1rem, 3vw, 2.5rem));
-    max-width: 90%;
+    transform: translateY(clamp(0.4rem, 1.5vh, 1.1rem));
   }
 }
 
