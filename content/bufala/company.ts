@@ -28,11 +28,18 @@ export const company = {
   /** Sede operativa: vendita ingrosso e dettaglio. È il posto che il
    *  visitatore deve trovare — confermato dal cliente come unico indirizzo
    *  da mostrare nei contatti. */
+  /* L'indirizzo è nella forma della scheda Google del cliente, non del
+     biglietto da visita. Il biglietto diceva «Via Emilia Vecchia 75, 47923
+     Rimini»; Google dice «Via Vecchia Emilia 75, 47922 Santa Giustina».
+     Parole invertite, CAP diverso, località diversa — Santa Giustina è una
+     frazione di Rimini. Vince Google perché la query della mappa la risolve
+     Google: con le sue stringhe il segnaposto cade dove deve, con le nostre
+     poteva cadere altrove. Decisione del cliente, 04/08. */
   puntoVendita: {
     presso: 'C.A.R.R. di Rimini — Centro Agro Alimentare Riminese SpA',
-    via: 'Via Emilia Vecchia, 75',
-    cap: '47923',
-    comune: 'Rimini',
+    via: 'Via Vecchia Emilia, 75',
+    cap: '47922',
+    comune: 'Santa Giustina',
     provincia: 'RN',
     dettaglio: 'Padiglione centrale · Mercato ortofrutticolo · Area Servizi',
     uscita: 'Uscita autostrada Rimini Nord',

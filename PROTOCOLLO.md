@@ -169,7 +169,7 @@ Aggiornato a ogni task. Un blocco aperto non si aggira in silenzio.
 | 4 | Conferma orari | **aperto** — dato acquisito, da riconfermare | cliente |
 | 5 | Approvazione del copy definitivo | **aperto** — ferma la Task 10 | cliente |
 | 6 | Dominio definitivo | **aperto** | cliente |
-| 7 | Modello del tablet | **aperto** — ferma la Task 00 | utente |
+| 7 | ~~Modello del tablet~~ | **chiuso** — succede su tre dispositivi diversi, quindi non è il dispositivo. Misurato: è aritmetica, non hardware (Task 00) | — |
 | 8 | ~~File originale del filmato~~ | **chiuso** — è a 1280×720, cioè la stessa risoluzione della copia in repo: non c'è niente da recuperare | — |
 
 ---
