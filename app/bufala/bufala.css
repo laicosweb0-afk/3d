@@ -5,20 +5,42 @@
 
 .bufala {
   /* — Palette (Direzione §3) — */
-  --verde-profondo: #0e2018;
+  /* Valori presi dal documento di direzione, uno per uno. Non sono
+     ritocchi dei precedenti: sono altri colori, più caldi e meno freddi —
+     il verde profondo di prima virava all'azzurro, questo al bosco. */
+  --verde-profondo: #11281d;   /* Deep Forest */
   /* Il verde al centro della scena: più chiaro del profondo, così il fondo
      si legge come verde e non come nero. È il colore che il visitatore
      percepisce davvero — il profondo lavora ai bordi. */
-  --verde-alto: #16301f;
-  --nero: #0a0a0a;
-  --noce-scuro: #2b1d14;
-  --ottone: #b08d57;
-  --latte: #f6f1e4;
+  --verde-alto: #183328;       /* Bottle Green */
+  --latte: #f7f3ea;            /* Milk White — mai bianco puro */
+  --crema: #efe6d5;            /* Warm Cream */
+  --pietra: #b6b1a6;           /* Stone */
+  --carbone: #20231f;          /* Charcoal — al posto del nero, che non si usa */
+  --ottone: #b89b5e;           /* Gold Accent, solo dettagli */
+
+  /* — Colori del testo sul chiaro (documento di direzione §6) —
+     Mai nero puro: anche il titolo più scuro resta verde. */
+  --testo-titolo: #18261f;
+  --testo-corpo: #38413c;
+  /* La nota è appena piu' scura del valore del documento (§6: #70736F).
+     Misurato: quel grigio sul latte dà 4,45 a 1, e la soglia sotto cui un
+     testo piccolo smette di essere leggibile per chi ha la vista debole è
+     4,5. Mancava per un soffio, e le note qui sono maiuscoletto da undici
+     pixel — il caso peggiore. Questo tono è dello stesso colore, appena
+     più fondo: 5,7 a 1, e a occhio è indistinguibile. */
+  --testo-nota: #5f6360;
 
   /* Derivati per testo secondario: il latte smorzato, mai un grigio freddo. */
-  --latte-70: rgb(246 241 228 / 0.7);
-  --latte-45: rgb(246 241 228 / 0.45);
-  --latte-20: rgb(246 241 228 / 0.2);
+  --latte-70: rgb(247 243 234 / 0.7);
+  /* Il tono del testo secondario sul verde. Il 45% è il grado giusto a
+     occhio, ma su fondo scuro dà 3,6 a 1 e le nostre didascalie sono
+     maiuscoletto da undici pixel: sotto la soglia di 4,5. Il 55% ne dà 5,5
+     ed è indistinguibile dal 45% se non mettendoli uno accanto all'altro.
+     Il 45% resta dov'è decorazione — sopra il filmato, nei filetti. */
+  --latte-55: rgb(247 243 234 / 0.55);
+  --latte-45: rgb(247 243 234 / 0.45);
+  --latte-20: rgb(247 243 234 / 0.2);
 
   /* — Tipografia (Direzione §4) —
      Canela e Neue Haas Grotesk sono font commerciali: finché la licenza non
@@ -54,15 +76,18 @@
      leggono come morbidezza, si leggono come un errore di allineamento —
      l'occhio vede un angolo vivo appena smussato e lo trova sgradevole
      senza sapere perché. */
-  --raggio-piccolo: 8px;   /* immagini in fila, elementi minori */
-  --raggio-medio: 16px;    /* schede e pannelli */
-  --raggio-grande: 30px;   /* contenitori che tengono altri elementi */
+  /* Scala del documento di direzione (§5: radius 18–28). Il gradino
+     piccolo resta sotto la forbice perche' serve a elementi minuti — un
+     pulsante alto tre righe con raggio 18 diventa una pastiglia. */
+  --raggio-piccolo: 12px;  /* pulsanti, immagini in fila */
+  --raggio-medio: 20px;    /* pannelli */
+  --raggio-grande: 28px;   /* contenitori che tengono altri elementi */
 
   /* — Bordi —
      Filo di capello, sempre 1px, sempre a bassissimo contrasto. Un bordo
      che si nota è un bordo sbagliato: serve a definire dove finisce una
      superficie, non a disegnarci intorno una cornice. */
-  --filo-su-scuro: rgb(246 241 228 / 0.09);
+  --filo-su-scuro: rgb(247 243 234 / 0.09);
 
   /* — Elevazione —
      Su fondo scuro un'ombra non produce separazione: nero su verde profondo
@@ -77,7 +102,7 @@
      usato invecchia male e prima o poi qualcuno lo applica a caso. Quando
      arriverà la scheda della mappa, si definirà allora. */
   --alza-su-scuro:
-    inset 0 1px 0 rgb(246 241 228 / 0.07),
+    inset 0 1px 0 rgb(247 243 234 / 0.07),
     0 24px 60px -24px rgb(0 0 0 / 0.7);
 
   background: var(--verde-profondo);
@@ -158,7 +183,7 @@
     radial-gradient(140% 110% at 50% 42%,
       var(--verde-alto) 0%,
       var(--verde-profondo) 55%,
-      var(--nero) 100%);
+      var(--carbone) 100%);
 }
 
 /* Gli strati del viaggio: una immagine per inquadratura, sovrapposte e
@@ -283,10 +308,15 @@
 
 /* L'invito a scorrere sta sotto il payoff, ancora più in sordina: è
    funzionale, non fa parte del messaggio. */
+/* «Scorri» è l'unica istruzione della pagina, e stava al 20% di latte: sul
+   fondo del filmato — misurato, rgb(7,20,13), quasi nero — fa 1,8 a 1. Un
+   invito che non si legge non è un invito discreto, è decorazione. Il 55%
+   ne fa 4,8. A dire il sussurro bastano il corpo minuto e la spaziatura
+   larga: il colore può permettersi di essere leggibile. */
 .bufala-overlay .scena--hero .invito {
   font-size: 0.6rem;
   letter-spacing: 0.24em;
-  color: var(--latte-20);
+  color: var(--latte-55);
   padding-left: 0.24em;
 }
 
@@ -640,8 +670,8 @@
   z-index: 2;
   background: radial-gradient(circle closest-side,
     var(--latte) 0 52%,
-    rgb(246 241 228 / 0.86) 62%,
-    rgb(246 241 228 / 0) 74%);
+    rgb(247 243 234 / 0.86) 62%,
+    rgb(247 243 234 / 0) 74%);
   transform: scale(0);
   visibility: hidden;
   pointer-events: none;
@@ -656,17 +686,35 @@
      e torna scuro dopo l'eclisse. Le due meta' non sono due pagine: sono lo
      stesso documento che respira. */
   background: var(--latte);
-  color: var(--verde-profondo);
+  color: var(--testo-corpo);
 }
 
-.bufala-sezione .micro,
+/* Tre livelli di scuro, mai nero (direzione §6): il titolo quasi verde, il
+   corpo un grigio-verde, la nota piu' chiara. Prima erano tutti lo stesso
+   verde profondo, e un testo lungo composto nel colore di un titolo pesa
+   come un titolo lungo.
+   Solo la metà chiara: questa scala è tarata sul latte, e sul verde profondo
+   il titolo darebbe 1,01 a 1 — un titolo che non c'è. La metà scura eredita
+   il latte da `.bufala-buio`, ed è giusto così. */
+.bufala-sezioni:not(.bufala-buio) h1,
+.bufala-sezioni:not(.bufala-buio) h2,
+.bufala-sezioni:not(.bufala-buio) h3 {
+  color: var(--testo-titolo);
+}
+
+.bufala-sezioni .micro {
+  color: var(--testo-nota);
+}
+
+/* Il piede sta nella metà scura, non in questa: la scala di grigi del
+   documento (§6) è tarata sul latte e qui darebbe 3,5 a 1. */
 .bufala-piede p {
-  color: rgb(14 32 24 / 0.55);
+  color: var(--latte-55);
 }
 
 .bufala-sezione a {
-  color: var(--verde-profondo);
-  border-bottom-color: rgb(14 32 24 / 0.25);
+  color: var(--testo-titolo);
+  border-bottom-color: rgb(17 40 29 / 0.25);
 }
 
 .bufala-sezione a:hover {
@@ -729,7 +777,7 @@
 .bufala-apertura > p:last-child {
   max-width: 44ch;
   margin-top: 0.4rem;
-  color: rgb(14 32 24 / 0.62);
+  color: var(--testo-nota);
 }
 
 .bufala-apertura h2 {
@@ -759,7 +807,7 @@
      discendenti: una sottolineatura che taglia la "g" e la "p" e' il
      dettaglio che distingue un testo composto da uno buttato li'. */
   border-bottom: 1px solid currentColor;
-  border-bottom-color: rgb(246 241 228 / 0.25);
+  border-bottom-color: rgb(247 243 234 / 0.25);
   padding-bottom: 0.15em;
   transition: border-bottom-color 0.35s ease, color 0.35s ease;
 }
@@ -776,7 +824,7 @@
 }
 
 .bufala-buio .micro {
-  color: var(--latte-45);
+  color: var(--latte-55);
 }
 
 .bufala-buio a {
@@ -842,7 +890,7 @@
   aspect-ratio: 4 / 3;
   overflow: hidden;
   border-radius: var(--raggio-medio);
-  background: #0a0f0c;
+  background: #0b1c14;
   /* Il filo di luce e l'ombra profonda: senza, il verde quasi nero del
      filmato e il verde della pagina si toccano e il pannello legge come un
      ritaglio nella pagina invece che come un oggetto appoggiato sopra. */
@@ -942,8 +990,8 @@
    sempre, anche quando sono quasi identici. */
 .bufala-sezioni.bufala-buio {
   background:
-    radial-gradient(120% 70% at 50% 0%, rgb(31 62 45 / 0.55) 0%, rgb(14 32 24 / 0) 62%),
-    linear-gradient(to bottom, var(--verde-profondo) 0%, #0b1a13 100%);
+    radial-gradient(120% 70% at 50% 0%, rgb(31 62 45 / 0.55) 0%, rgb(17 40 29 / 0) 62%),
+    linear-gradient(to bottom, var(--verde-profondo) 0%, #0d2117 100%);
 }
 
 /* ══ Le superfici scure ══
@@ -955,14 +1003,14 @@
    addosso. Separatamente non se ne vede nessuna. */
 .bufala-sezioni.bufala-buio {
   position: relative;
-  /* Nessuna luce in alto: il passaggio finisce esattamente su #0e2018, e
+  /* Nessuna luce in alto: il passaggio finisce esattamente su var(--verde-profondo), e
      una pozza chiara proprio all'inizio di questo contenitore produceva uno
      scalino — sopra piu' scuro, sotto piu' chiaro, con una riga netta in
      mezzo. Era il difetto piu' visibile del sito su telefono. La luce
      morbida resta, ma piu' in basso, dove non tocca nessuna giuntura. */
   background:
-    radial-gradient(120% 52% at 50% 42%, rgb(30 62 44 / 0.42) 0%, rgb(14 32 24 / 0) 62%),
-    radial-gradient(150% 100% at 50% 58%, rgb(14 32 24 / 0) 55%, rgb(6 15 11 / 0.5) 100%),
+    radial-gradient(120% 52% at 50% 42%, rgb(30 62 44 / 0.42) 0%, rgb(17 40 29 / 0) 62%),
+    radial-gradient(150% 100% at 50% 58%, rgb(17 40 29 / 0) 55%, rgb(6 15 11 / 0.5) 100%),
     /* Il primo tratto è trasparente, per la stessa distanza di cui questo
        contenitore risale dentro la fascia: senza, il verde pieno copre di
        colpo la coda della fascia — che lì è ancora chiara — e produce uno
@@ -975,10 +1023,10 @@
          trova sopra la fascia chiara in un tratto e sopra il verde di fondo
          in quello dopo: il salto non e' nel velo, e' in cio' che ha dietro,
          e produce una fascia chiara visibile proprio dietro il titolo. */
-      rgb(14 32 24 / 0) 0,
+      rgb(17 40 29 / 0) 0,
       var(--verde-profondo) calc(var(--spazio-sezione) * 0.9),
       var(--verde-profondo) 16%,
-      #0b1a13 100%);
+      #0d2117 100%);
 }
 
 /* La grana di carta.
@@ -1012,12 +1060,12 @@
   width: 100%;
   max-width: 62rem;
   overflow: hidden;
-  border: 1px solid rgb(246 241 228 / 0.07);
+  border: 1px solid rgb(247 243 234 / 0.07);
   border-radius: var(--raggio-grande);
   background:
-    linear-gradient(to bottom, rgb(246 241 228 / 0.035), rgb(246 241 228 / 0.012));
+    linear-gradient(to bottom, rgb(247 243 234 / 0.035), rgb(247 243 234 / 0.012));
   box-shadow:
-    0 1px 0 rgb(246 241 228 / 0.05) inset,
+    0 1px 0 rgb(247 243 234 / 0.05) inset,
     0 30px 70px -30px rgb(0 0 0 / 0.75);
   /* Lentissima: una transizione che si vede partire è una transizione
      troppo veloce. */
@@ -1034,14 +1082,14 @@
   inset: 0 0 auto;
   height: 22%;
   pointer-events: none;
-  background: linear-gradient(to bottom, rgb(246 241 228 / 0.055), transparent);
+  background: linear-gradient(to bottom, rgb(247 243 234 / 0.055), transparent);
 }
 
 .bufala a.scheda:hover {
   transform: translateY(-2px);
-  border-color: rgb(246 241 228 / 0.13);
+  border-color: rgb(247 243 234 / 0.13);
   box-shadow:
-    0 1px 0 rgb(246 241 228 / 0.07) inset,
+    0 1px 0 rgb(247 243 234 / 0.07) inset,
     0 40px 90px -32px rgb(0 0 0 / 0.8);
 }
 
@@ -1074,9 +1122,9 @@
   translate: -50% 0;
   padding: 0.6rem 1.15rem;
   border-radius: 999px;
-  border: 1px solid rgb(14 32 24 / 0.1);
-  background: rgb(246 241 228 / 0.94);
-  color: #0e2018;
+  border: 1px solid rgb(17 40 29 / 0.1);
+  background: rgb(247 243 234 / 0.94);
+  color: var(--testo-titolo);
   font-size: 0.76rem;
   font-weight: 500;
   letter-spacing: 0.06em;
@@ -1085,7 +1133,8 @@
 }
 
 .bufala a.scheda--mappa:hover .scheda-azione {
-  background: #fff;
+  /* Mai bianco puro (direzione §1): anche l'accento piu' chiaro resta caldo. */
+  background: var(--latte);
 }
 
 /* — I recapiti, impaginati nella pagina —
@@ -1118,7 +1167,7 @@
   font-weight: 500;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--latte-45);
+  color: var(--latte-55);
 }
 
 .recapito-voce dd {
@@ -1240,19 +1289,19 @@
   background:
     radial-gradient(125% 64% at 50% 100%,
       rgb(9 24 17 / 0.5) 0%,
-      rgb(14 32 24 / 0.2) 46%,
-      rgb(14 32 24 / 0) 78%),
+      rgb(17 40 29 / 0.2) 46%,
+      rgb(17 40 29 / 0) 78%),
     linear-gradient(to bottom,
-      #f6f1e4 0%,
-      #f1efe1 11%,
-      #e4e7d9 23%,
-      #ccd7c5 35%,
-      #a9bea7 47%,
-      #7d9a85 59%,
-      #507261 71%,
-      #2b4b38 83%,
-      #163020 93%,
-      #0e2018 100%);
+      var(--latte) 0%,
+      #f2ede1 11%,
+      #e6e2d2 23%,
+      #cdd3c3 35%,
+      #aabaa6 47%,
+      #7e9784 59%,
+      #517062 71%,
+      #2c4a39 83%,
+      #17311f 93%,
+      var(--verde-profondo) 100%);
 }
 
 
@@ -1335,7 +1384,7 @@
   margin-top: 0.72em;
   width: 1.35rem;
   height: 1px;
-  background: rgb(246 241 228 / 0.22);
+  background: rgb(247 243 234 / 0.22);
 }
 
 .guida-icona::after {
@@ -1372,7 +1421,7 @@
   width: min(100%, 54rem);
   height: 1.5px;
   border-radius: 2px;
-  background: rgb(246 241 228 / 0.08);
+  background: rgb(247 243 234 / 0.08);
   overflow: hidden;
 }
 
@@ -1398,9 +1447,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(to left,
-    rgb(246 241 228 / 0) 0%,
-    rgb(246 241 228 / 0.3) 50%,
-    rgb(246 241 228 / 0) 100%);
+    rgb(247 243 234 / 0) 0%,
+    rgb(247 243 234 / 0.3) 50%,
+    rgb(247 243 234 / 0) 100%);
   transform: translateX(100%);
   animation: guida-luce 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
@@ -1455,7 +1504,7 @@
   letter-spacing: 0.005em;
   color: var(--latte);
   text-decoration: none;
-  background: rgb(246 241 228 / 0.04);
+  background: rgb(247 243 234 / 0.04);
   transition:
     background-color 0.5s cubic-bezier(0.16, 1, 0.3, 1),
     border-color 0.5s cubic-bezier(0.16, 1, 0.3, 1),
@@ -1470,8 +1519,8 @@
 }
 
 .bufala .bottone:hover {
-  background: rgb(246 241 228 / 0.08);
-  border-color: rgb(246 241 228 / 0.18);
+  background: rgb(247 243 234 / 0.08);
+  border-color: rgb(247 243 234 / 0.18);
 }
 
 .bufala .bottone:active {
@@ -1482,12 +1531,12 @@
 .bufala .bottone--pieno {
   background: var(--ottone);
   border-color: var(--ottone);
-  color: #16110a;
+  color: #1c1608;
 }
 
 .bufala .bottone--pieno:hover {
-  background: #c39d63;
-  border-color: #c39d63;
+  background: #c8ab72;
+  border-color: #c8ab72;
 }
 
 /* Il marchio nella hero, composto in tipografia e non in immagine.

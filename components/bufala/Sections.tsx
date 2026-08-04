@@ -151,8 +151,10 @@ export function Sections() {
       </section>
 
       {/* La firma: il marchio storico a colori e la scritta originale del
-          logo, senza la targhetta di legno. Restano sul verde del sito —
-          niente riquadro marrone (Direzione §2). */}
+          logo, senza la targhetta di legno. Il marchio è nato per fondi
+          chiari — il verde del toro sparirebbe sul verde del sito — quindi
+          qui c'è una carta di latte, e la scritta è la gemella scura: quella
+          chiara su quella carta dava un contrasto di 1,02 a 1. */}
       <section className="bufala-sezione bufala-firma">
         <img
           className="marchio"
@@ -164,7 +166,7 @@ export function Sections() {
         />
         <img
           className="wordmark"
-          src={asset("/assets/brand-bufala/logo-wordmark.png")}
+          src={asset("/assets/brand-bufala/logo-wordmark-scuro.png")}
           alt={company.brand}
           width={2328}
           height={426}
