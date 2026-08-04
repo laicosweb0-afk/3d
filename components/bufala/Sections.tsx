@@ -70,9 +70,6 @@ export function Sections() {
           </span>
           <figcaption className="micro">Il banco, dentro il C.A.R.R. di Rimini</figcaption>
         </figure>
-        <h2>{sezioni.perChi.frase}</h2>
-        <p className="perchi-intro">{sezioni.perChi.intro}</p>
-
         <div className="perchi-carte" data-rivela>
           <article className="perchi-carta">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"

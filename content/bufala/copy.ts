@@ -118,17 +118,19 @@ export const sezioni = {
   //
   // La riga «Ingresso libero e gratuito» non e' sparita: vive nel passo 03
   // della Visita, verbatim, dov'era gia'.
+  // Secondo giro del brief (04/08, sera): «A chi è dedicato» suonava male
+  // ed è caduto insieme alla riga sotto — dopo la fotografia si va dritti
+  // alle due scelte. I titoli sono le due parole del mestiere, Ingrosso e
+  // Dettaglio: piu' chiare di qualunque perifrasi. I testi restano i suoi.
   perChi: {
     titolo: 'Il banco',
-    frase: 'A chi è dedicato',
-    intro: 'Lo stesso banco, la stessa selezione: due modi di comprare.',
     lavoro: {
-      nome: 'Per professionisti',
+      nome: 'Ingrosso',
       testo:
         'Ristoranti, gastronomie e attività possono acquistare all’ingrosso direttamente dal nostro banco, con la stessa selezione disponibile ogni giorno.',
     },
     casa: {
-      nome: 'Per la tua cucina',
+      nome: 'Dettaglio',
       testo:
         'Acquista senza appuntamento: entra liberamente, scegli i prodotti che preferisci e porta a casa la qualità del nostro banco.',
     },

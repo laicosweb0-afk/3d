@@ -1303,66 +1303,57 @@
   letter-spacing: 0.14em;
 }
 
-/* La scala del brief: 32→56px, peso 700, molto spazio sopra e sotto. */
-.bufala-perchi h2 {
-  font-size: clamp(2rem, 4vw, 3.5rem);
-  font-weight: 700;
-  line-height: 1.08;
-}
-
-.perchi-intro {
-  margin-top: clamp(0.75rem, 1.6vh, 1.15rem);
-  color: var(--testo-corpo);
-  font-size: clamp(1.05rem, 1.4vw, 1.2rem);
-  /* Una riga sola (brief): la misura standard dei paragrafi la spezzava
-     in due gia' su tablet. Su telefono torna a capo da sola, e va bene. */
-  max-width: none;
-}
-
+/* Le due scelte, subito dopo la fotografia (secondo brief: «A chi è
+   dedicato» è caduto — dopo la foto si va dritti alle box). */
 .perchi-carte {
   display: grid;
   gap: clamp(1.5rem, 3vw, 2.5rem);
   width: 100%;
   max-width: 62rem;
-  margin-top: clamp(2.5rem, 6vh, 4rem);
 }
 
-/* La carta: fondo di crema appena diverso dalla pagina (finalmente la
-   riserva della tavolozza lavora), un filo delicato, raggio grande,
-   padding generoso. Niente ombra: sul chiaro basta il cambio di carta.
-   `align-content: start` con le stesse tre righe in entrambe: icona,
-   titolo e testo cadono alla stessa altezza — le ancore del brief. */
+/* La carta, versione scura (secondo brief): il verde profondo del tema
+   sulla pagina chiara, scritta in latte, tutto centrato — icona, titolo in
+   Playfair, testo. L'ombra è morbida e ferma (mai animata, B19): su fondo
+   chiaro una scatola scura si stacca da sola, l'ombra deve solo appoggiarla. */
 .perchi-carta {
-  text-align: left;
+  text-align: center;
   display: grid;
+  justify-items: center;
   align-content: start;
   gap: clamp(0.85rem, 1.8vh, 1.2rem);
-  background: var(--crema);
-  border: 1px solid rgb(17 40 29 / 0.07);
+  background: var(--verde-profondo);
+  color: var(--latte);
   border-radius: var(--raggio-grande);
-  padding: clamp(1.75rem, 3.2vw, 2.75rem);
+  padding: clamp(2rem, 3.6vw, 3rem) clamp(1.75rem, 3.2vw, 2.75rem);
+  box-shadow: 0 30px 60px -32px rgb(17 40 29 / 0.4);
 }
 
 .perchi-carta svg {
-  width: 28px;
-  height: 28px;
-  color: var(--testo-titolo);
+  width: 30px;
+  height: 30px;
+  color: var(--latte);
   margin-bottom: clamp(0.5rem, 1.2vh, 0.9rem);
 }
 
-.perchi-carta h3 {
+/* Il selettore e' lungo apposta: la regola generale dei titoli della meta'
+   chiara (.bufala-sezioni:not(.bufala-buio) h3) vince per specificita' su
+   una classe sola, e dipingeva questi titoli in verde scuro sul verde
+   scuro — 1,01 a 1, trovato dallo strumento, invisibile a occhio sul
+   codice. La carta e' un'isola scura dentro la meta' chiara. */
+.bufala-sezioni:not(.bufala-buio) .perchi-carta h3 {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: clamp(1.3rem, 2vw, 1.75rem);
-  line-height: 1.15;
-  color: var(--testo-titolo);
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  line-height: 1.12;
+  color: var(--latte);
 }
 
 .perchi-carta p {
   font-size: clamp(1.0625rem, 1.3vw, 1.2rem);
   line-height: 1.7;
-  color: var(--testo-corpo);
-  max-width: 40ch;
+  color: var(--latte-70);
+  max-width: 36ch;
 }
 
 /* Desktop: due percorsi affiancati, identici. Telefono: impilati, stessa
