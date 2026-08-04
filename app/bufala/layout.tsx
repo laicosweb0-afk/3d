@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Playfair_Display, Hanken_Grotesk } from 'next/font/google';
 import './bufala.css';
 import { company, indirizzoPuntoVendita } from '@/content/bufala/company';
+import { BASE_PATH } from '@/lib/asset';
 
 // I caratteri scelti sul provino (04/08): Playfair Display per i titoli —
 // scelta dell'utente — e Hanken Grotesk per il testo, abbinata qui.
@@ -34,6 +35,17 @@ export const metadata: Metadata = {
   // una pagina finisce in cache sui motori molto prima di quanto ne esca.
   // È una riga sola da togliere al lancio.
   robots: { index: false, follow: false },
+  // La firma-medaglione come icona della pagina (04/08): il marchio vero
+  // nella ceramica d'avorio, composto — non generato — dal PNG originale.
+  // Sono i metadati di QUESTO layout, quindi valgono solo per /bufala:
+  // l'altro sito del repo tiene la propria icona.
+  icons: {
+    icon: [
+      { url: `${BASE_PATH}/assets/brand-bufala/firma-medaglione-32.png`, sizes: '32x32', type: 'image/png' },
+      { url: `${BASE_PATH}/assets/brand-bufala/firma-medaglione-180.png`, sizes: '180x180', type: 'image/png' },
+    ],
+    apple: `${BASE_PATH}/assets/brand-bufala/firma-medaglione-180.png`,
+  },
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
