@@ -33,7 +33,15 @@
   /* Generoso ma non vuoto. La prima versione arrivava a 12rem e le sezioni
      si allontanavano al punto che la pagina sembrava mezza vuota: lo spazio
      deve far respirare il contenuto, non nasconderlo. */
-  --spazio-sezione: clamp(4.5rem, 10vh, 8rem);
+  /* Tre gradini, e ogni distanza del documento è uno di questi. Prima era
+     un valore solo usato ovunque — fra i capitoli, fra le sezioni e dentro
+     i blocchi — e uno spazio uniforme non è ritmo: è assenza di ritmo. Lo
+     spazio dentro un blocco deve essere stretto perché le cose che stanno
+     insieme sembrino una cosa sola; quello fra i blocchi ampio. Con un
+     valore unico il lettore non capisce mai cosa appartiene a cosa. */
+  --spazio-respiro: clamp(3.5rem, 7.5vh, 6rem);  /* fra un capitolo e l'altro */
+  --spazio-sezione: clamp(2.5rem, 5vh, 3.75rem); /* fra le sezioni */
+  --spazio-blocco: clamp(0.85rem, 1.8vh, 1.25rem); /* fra titolo e testo */
   /* La misura di lettura. 62ch erano ~70 caratteri: leggibili, ma su uno
      schermo largo una riga così lunga fa perdere il rigo e legge come un
      documento. 52ch è la misura editoriale — meno parole per riga, più
@@ -376,17 +384,31 @@
   /* Il fondo lo porta il velo di latte, che il viaggio ha appena aperto:
      le sezioni ci si appoggiano sopra senza stacco. */
   background: var(--latte);
-  padding: var(--spazio-sezione) 6vw;
+  padding: var(--spazio-respiro) 6vw;
   display: grid;
-  gap: var(--spazio-sezione);
+  gap: var(--spazio-respiro);
 }
 
+/* Dentro una sezione lo spazio è stretto: eyebrow, titolo e testo sono una
+   cosa sola e devono sembrarlo. L'aria sta fra le sezioni, non dentro. */
 .bufala-sezione {
   display: grid;
-  gap: 1.75rem;
+  gap: var(--spazio-blocco);
   max-width: 68rem;
   margin: 0 auto;
   width: 100%;
+}
+
+/* L'occhiello sta attaccato al titolo che introduce, non a mezza strada fra
+   il titolo sopra e quello sotto: è la distanza a dire di chi è. */
+.bufala-sezione .micro + h2 {
+  margin-top: -0.35rem;
+}
+
+/* Fra un paragrafo e ciò che segue serve meno aria di quanta ne serva fra
+   due sezioni: un paragrafo che finisce non è un capitolo che finisce. */
+.bufala-sezione p + p {
+  margin-top: -0.25rem;
 }
 
 .bufala-sezione a {
@@ -689,12 +711,25 @@
 
 /* L'apertura e il congedo del documento: una frase sola al centro del campo,
    con lo stesso respiro delle scene del viaggio. */
+/* La pausa narrativa. Non piu' una riga al centro di uno schermo quasi
+   vuoto: occhiello, pensiero e una riga che lo chiude, tenuti stretti fra
+   loro e con l'aria tutta intorno. L'altezza minima e' sparita — era lei a
+   produrre la schermata di solo sfondo. */
 .bufala-apertura {
-  min-height: 34vh;
   display: grid;
-  align-content: center;
   justify-items: center;
   text-align: center;
+  padding: clamp(1rem, 3vh, 2.5rem) 0;
+}
+
+.bufala-apertura h2 {
+  max-width: 20ch;
+}
+
+.bufala-apertura > p:last-child {
+  max-width: 44ch;
+  margin-top: 0.4rem;
+  color: rgb(14 32 24 / 0.62);
 }
 
 .bufala-apertura h2 {
@@ -1053,36 +1088,54 @@
   background: #fff;
 }
 
-/* — La scheda dei dati — */
-.bufala .scheda--dati {
-  padding: clamp(1.75rem, 4.5vw, 2.75rem);
-  display: grid;
-  gap: 0.55rem;
-  justify-items: start;
-  max-width: 34rem;
-}
-
-.recapito-nome {
-  font-family: var(--font-display);
-  font-size: clamp(1.3rem, 2.6vw, 1.6rem);
-  line-height: 1.2;
-  letter-spacing: -0.015em;
+/* — I recapiti, impaginati nella pagina —
+   Etichetta a sinistra, dato a destra, un filo di capello fra una riga e
+   l'altra. E' la composizione di un colophon, e per questo si legge come
+   una pagina invece che come un modulo. Su schermo stretto le due colonne
+   si impilano: una colonna da otto caratteri accanto a un indirizzo di tre
+   righe non e' una griglia, e' una strettoia. */
+.recapito-insegna {
+  font-size: clamp(1.6rem, 3.2vw, 2.2rem);
   margin-bottom: 0.35rem;
 }
 
-.recapito-riga {
-  line-height: 1.7;
+.recapito-voci {
+  margin: 0;
+  width: 100%;
+  max-width: 46rem;
+  border-top: 1px solid var(--filo-su-scuro);
 }
 
-.recapito-riga--tenue {
-  color: var(--latte-45);
-  font-size: 0.9rem;
+.recapito-voce {
+  display: grid;
+  gap: 0.2rem;
+  padding: clamp(0.85rem, 2vh, 1.15rem) 0;
+  border-bottom: 1px solid var(--filo-su-scuro);
 }
 
-.recapito-tel {
-  margin-top: 0.35rem;
-  font-size: 1.05rem;
+.recapito-voce dt {
+  font-size: 0.68rem;
   font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--latte-45);
+}
+
+.recapito-voce dd {
+  margin: 0;
+  line-height: 1.65;
+}
+
+@media (min-width: 700px) {
+  .recapito-voce {
+    grid-template-columns: 13rem 1fr;
+    gap: 2rem;
+    align-items: baseline;
+  }
+}
+
+.bufala-recapito .scheda-azioni {
+  margin-top: clamp(1.25rem, 3vh, 2rem);
 }
 
 .bufala-mappa,
@@ -1374,4 +1427,65 @@
   .guida-icona::after,
   .guida-pista::after { animation: none; }
   .guida-pista::after { opacity: 0; }
+}
+
+/* ══ Pulsanti ══
+   Erano stati cancellati per sbaglio sostituendo il blocco delle schede, e
+   il risultato era "Ottieni indicazioniChiama": due testi attaccati con una
+   sottolineatura. Il pieno e' d'ottone perche' e' l'unica cosa su cui
+   vogliamo che si clicchi; il vuoto e' un filo. Nessun raggio pieno, nessuna
+   ombra colorata: un rettangolo appena addolcito, come i tasti di sistema. */
+.scheda-azioni {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.bufala .bottone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.9rem;
+  padding: 0 1.4rem;
+  border: 1px solid var(--filo-su-scuro);
+  border-radius: var(--raggio-piccolo);
+  font-family: var(--font-testo);
+  font-size: 0.92rem;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  color: var(--latte);
+  text-decoration: none;
+  background: rgb(246 241 228 / 0.04);
+  transition:
+    background-color 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* La sottolineatura dei link del documento non deve arrivare qui: un
+   pulsante sottolineato e' un link travestito. */
+.bufala .bottone,
+.bufala .bottone:hover {
+  border-bottom-style: solid;
+}
+
+.bufala .bottone:hover {
+  background: rgb(246 241 228 / 0.08);
+  border-color: rgb(246 241 228 / 0.18);
+}
+
+.bufala .bottone:active {
+  transform: translateY(1px) scale(0.985);
+  transition-duration: 0.085s;
+}
+
+.bufala .bottone--pieno {
+  background: var(--ottone);
+  border-color: var(--ottone);
+  color: #16110a;
+}
+
+.bufala .bottone--pieno:hover {
+  background: #c39d63;
+  border-color: #c39d63;
 }

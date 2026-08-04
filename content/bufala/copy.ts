@@ -80,8 +80,18 @@ export const sezioni = {
   // mai verificato. Le frasi che raccontano *come* si lavora invecchiano
   // male e possono essere smentite; quelle che dichiarano *cosa si sceglie*
   // restano vere finché l'azienda resta sé stessa.
+  // La pausa narrativa. Non una frase al centro di uno schermo quasi vuoto:
+  // un pensiero, con sopra da dove viene e sotto cosa comporta.
+  //
+  // "Prima di vendere, scegliamo" diceva una cosa vera ma banale — la dice
+  // qualunque rivenditore. Questa la può dire solo chi sceglie davvero, e
+  // non promette niente che si possa smentire: parla di ciò che resta fuori
+  // dal banco, che è l'unica prova di una selezione.
   apertura: {
-    frase: 'Prima di vendere, scegliamo.',
+    occhiello: 'La selezione',
+    frase: 'Quello che non teniamo\ndice di noi quanto\nquello che vendiamo.',
+    testo:
+      'È la parte del lavoro che al banco non si vede. Ed è quella che decide tutto il resto.',
   },
 
   banco: {

@@ -19,7 +19,9 @@ export function Sections() {
       {/* L'apertura: una frase sola, tanto spazio intorno. È il primo
           respiro dopo il viaggio, e la prima cosa che si legge sul chiaro. */}
       <section className="bufala-sezione bufala-apertura" data-rivela>
+        <p className="micro">{sezioni.apertura.occhiello}</p>
         <h2>{sezioni.apertura.frase}</h2>
+        <p>{sezioni.apertura.testo}</p>
       </section>
 
       <section className="bufala-sezione" data-rivela>
@@ -85,36 +87,61 @@ export function Sections() {
       </section>
 
       {/* — Punto vendita —
-          I dati, ordinati e senza commento. Una riga per informazione. */}
+          Non una scheda. La mappa e' gia' il fuoco visivo della pagina, e
+          un secondo riquadro subito sotto la fa sembrare un pannello di
+          controllo: due contenitori uno sull'altro leggono come un widget,
+          non come un documento. Qui le informazioni sono impaginate nella
+          pagina — una riga per voce, l'etichetta a sinistra, il dato a
+          destra, un filo di capello fra l'una e l'altra. E' la stessa
+          composizione di una pagina di colophon, ed e' il motivo per cui si
+          legge senza sembrare un modulo. */}
       <section className="bufala-sezione bufala-recapito" data-rivela>
         <p className="micro">{sezioni.luogo.titolo}</p>
-        <div className="scheda scheda--dati">
-          <span className="scheda-riflesso" aria-hidden="true" />
-          <p className="recapito-nome">{company.brand}</p>
-          <p className="recapito-riga">
-            {pv.presso}
-            <br />
-            {pv.via}
-            <br />
-            {pv.cap} {pv.comune} ({pv.provincia})
-          </p>
-          <p className="recapito-riga recapito-riga--tenue">{pv.dettaglio}</p>
-          <p className="recapito-tel">
-            <a href={company.telefonoHref}>{company.telefono}</a>
-          </p>
-          <div className="scheda-azioni">
-            <a
-              className="bottone bottone--pieno"
-              href={mappaApri}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {sezioni.luogo.azione}
-            </a>
-            <a className="bottone" href={company.telefonoHref}>
-              {sezioni.luogo.chiama}
-            </a>
+        <h2 className="recapito-insegna">{company.brand}</h2>
+
+        <dl className="recapito-voci">
+          <div className="recapito-voce">
+            <dt>Indirizzo</dt>
+            <dd>
+              {pv.presso}
+              <br />
+              {pv.via}
+              <br />
+              {pv.cap} {pv.comune} ({pv.provincia})
+            </dd>
           </div>
+          <div className="recapito-voce">
+            <dt>Dove esattamente</dt>
+            <dd>{pv.dettaglio}</dd>
+          </div>
+          <div className="recapito-voce">
+            <dt>Ingresso</dt>
+            <dd>{pv.accesso}</dd>
+          </div>
+          <div className="recapito-voce">
+            <dt>In auto</dt>
+            <dd>{pv.uscita}</dd>
+          </div>
+          <div className="recapito-voce">
+            <dt>Telefono</dt>
+            <dd>
+              <a href={company.telefonoHref}>{company.telefono}</a>
+            </dd>
+          </div>
+        </dl>
+
+        <div className="scheda-azioni">
+          <a
+            className="bottone bottone--pieno"
+            href={mappaApri}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {sezioni.luogo.azione}
+          </a>
+          <a className="bottone" href={company.telefonoHref}>
+            {sezioni.luogo.chiama}
+          </a>
         </div>
       </section>
 
