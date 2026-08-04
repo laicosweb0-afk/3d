@@ -86,14 +86,17 @@ export function Oggi() {
   return (
     <div className="oggi" id="oggi">
       <div className="oggi-carta">
-        {/* La fotografia: per ora la mozzarella del sito; il giorno che
-            arriva lo scatto vero del sacchetto D.O.P., si sostituisce qui. */}
+        {/* Lo scatto VERO del sacchetto D.O.P. (dall'utente, 04/08). È su
+            fondo bianco da studio: invece di scontornare la plastica
+            semitrasparente — il caso peggiore per un ritaglio — il pannello
+            prende il colore esatto di quel fondo e diventa la finestra
+            prodotto chiara dentro la carta scura. */}
         <div className="oggi-foto" aria-hidden="true">
           <img
-            src={asset('/assets/bufala/intera.webp')}
+            src={asset('/assets/bufala/sacchetto-dop.webp')}
             alt=""
-            width={1280}
-            height={720}
+            width={1100}
+            height={1375}
             loading="lazy"
             decoding="async"
           />
