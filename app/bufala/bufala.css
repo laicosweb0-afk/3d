@@ -372,189 +372,198 @@
   color: var(--latte-55);
 }
 
-/* — Oggi al banco —
-   La grafica del riferimento del titolare: pannello con la fotografia a
-   sinistra e il semaforo a destra, e sotto la legenda con le tre lucine
-   sempre visibili. I colori del semaforo sono FUNZIONALI, non di marca:
-   dicono uno stato, come i colori di un errore. */
-.oggi {
+/* — Oggi al banco: la carta unica (brief Apple, 04/08) —
+   Disponibilità, orari e azioni non sono tre componenti: sono tre zone di
+   UNA carta, divise da fili sottilissimi. Bordo appena percettibile, ombra
+   quasi invisibile, curvatura della scala, spazio in abbondanza. */
+.visita-carta {
   width: 100%;
-  max-width: 56rem;
-  margin-top: var(--spazio-blocco);
-  display: grid;
-  gap: clamp(0.9rem, 2vh, 1.25rem);
-}
-
-.oggi-carta,
-.oggi-legenda {
-  border: 1px solid rgb(247 243 234 / 0.08);
+  max-width: 44rem;
+  margin-top: clamp(2rem, 5vh, 3.25rem);
+  padding: clamp(1.6rem, 3.4vw, 2.75rem);
+  border: 1px solid rgb(247 243 234 / 0.07);
   border-radius: var(--raggio-grande);
-  background: linear-gradient(to bottom, rgb(247 243 234 / 0.045), rgb(247 243 234 / 0.015));
+  background: linear-gradient(to bottom, rgb(247 243 234 / 0.04), rgb(247 243 234 / 0.012));
   box-shadow:
     0 1px 0 rgb(247 243 234 / 0.05) inset,
-    0 30px 70px -30px rgb(0 0 0 / 0.75);
+    0 24px 60px -36px rgb(0 0 0 / 0.55);
 }
 
-.oggi-carta {
-  overflow: hidden;
+/* Zona 1 · lo stato: la miniatura del sacchetto come un'icona, i testi
+   accanto. Il punto colorato sta sulla linea ottica del titolo. */
+.carta-stato {
   display: grid;
+  grid-template-columns: auto 1fr;
+  gap: clamp(1rem, 2.6vw, 1.6rem);
+  align-items: center;
 }
 
-/* La finestra prodotto: il fondo È quello dello scatto da studio (254,
-   campionato), così il sacchetto ci galleggia dentro senza nessun bordo di
-   ritaglio. L'unico bianco quasi puro del sito, ed è una fotografia. */
-.oggi-foto {
-  min-height: 15rem;
-  background: #fefefe;
+.stato-foto {
   display: grid;
   place-items: center;
-  padding: clamp(1rem, 2.5vw, 1.75rem);
+  width: clamp(4.6rem, 11vw, 6rem);
+  height: clamp(4.6rem, 11vw, 6rem);
+  background: #fefefe;
+  border-radius: var(--raggio-medio);
+  padding: 0.5rem;
+  overflow: hidden;
 }
 
-.oggi-foto img {
+.stato-foto img {
   display: block;
-  width: auto;
-  max-width: 100%;
-  max-height: min(20rem, 42vh);
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
-.oggi-contenuto {
-  padding: clamp(1.25rem, 2.8vw, 2rem);
+.bufala .carta-etichetta {
+  color: var(--latte-55);
 }
 
-.bufala .oggi-etichetta {
-  color: var(--latte-70);
-}
-
-.oggi-stato {
+.stato-titolo {
   display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  margin-top: 0.7rem;
+  align-items: baseline;
+  gap: 0.55rem;
+  margin-top: 0.45rem;
   font-family: var(--font-display);
   font-weight: 500;
-  font-size: clamp(1.7rem, 4vw, 2.5rem);
-  line-height: 1.1;
+  font-size: clamp(1.5rem, 3.4vw, 2.1rem);
+  line-height: 1.12;
   color: var(--latte);
 }
 
 .oggi-punto {
-  width: 0.62em;
-  height: 0.62em;
+  width: 0.6rem;
+  height: 0.6rem;
   border-radius: 999px;
   flex: none;
+  /* allineamento ottico col titolo, non geometrico con la riga */
+  transform: translateY(-0.08em);
 }
 
 .oggi-punto--verde { background: #58a662; }
 .oggi-punto--giallo { background: #d9a13b; }
 .oggi-punto--rosso { background: #c05b4d; }
 
-.oggi-testo {
-  margin-top: 0.5rem;
+.stato-riga {
+  margin-top: 0.3rem;
   color: var(--latte-70);
-  line-height: 1.6;
-  max-width: 44ch;
+  line-height: 1.55;
+  max-width: 34ch;
 }
 
-.oggi-filo {
-  border: 0;
-  border-top: 1px solid var(--filo-su-scuro);
-  margin: clamp(0.9rem, 2vh, 1.25rem) 0;
+.bufala .stato-ora {
+  margin-top: 0.55rem;
+  color: var(--latte-55);
 }
 
-.oggi-voce {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.8rem;
+/* I tre semafori in riga: mai un elenco. L'attivo è pieno, gli altri si
+   spengono ma restano leggibili — la legenda è dentro lo strumento. */
+.stato-chips {
+  margin-top: clamp(1rem, 2.4vh, 1.5rem);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.stato-chip {
+  display: inline-flex;
   align-items: center;
-  padding: 0.45rem 0;
-}
-
-.oggi-icona {
-  display: grid;
-  place-items: center;
-  width: 2.2rem;
-  height: 2.2rem;
-  border: 1px solid rgb(184 155 94 / 0.5);
+  gap: 0.45rem;
+  padding: 0.38rem 0.8rem;
+  border: 1px solid rgb(247 243 234 / 0.1);
   border-radius: 999px;
-  color: var(--ottone);
-}
-
-.oggi-icona svg {
-  width: 17px;
-  height: 17px;
-}
-
-.oggi-voce-nome {
-  display: block;
-  color: var(--latte);
-  font-weight: 500;
-  line-height: 1.35;
-}
-
-.oggi-voce-dato {
-  display: block;
+  font-size: 0.8rem;
   color: var(--latte-70);
-  font-size: 0.92rem;
-  line-height: 1.5;
+  opacity: 0.45;
+  transition: opacity var(--durata-micro) var(--curva-entrata);
 }
 
-.oggi-azioni {
-  margin-top: clamp(1rem, 2.2vh, 1.5rem);
+.stato-chip .oggi-punto {
+  width: 0.45rem;
+  height: 0.45rem;
+  transform: none;
+}
+
+.stato-chip--attivo {
+  opacity: 1;
+  border-color: rgb(247 243 234 / 0.2);
+  color: var(--latte);
+}
+
+/* Sul telefono i tre chip stanno su una riga: un orfano a capo da solo
+   e' esattamente l'elenco che il brief vieta. */
+@media (max-width: 480px) {
+  .stato-chip {
+    font-size: 0.74rem;
+    padding: 0.3rem 0.6rem;
+    gap: 0.38rem;
+  }
+}
+
+/* I fili fra le zone: sottilissimi, con l'aria intorno. */
+.carta-filo {
+  border: 0;
+  border-top: 1px solid rgb(247 243 234 / 0.07);
+  margin: clamp(1.4rem, 3vh, 2rem) 0;
+}
+
+/* Zona 2 · gli orari: il giorno è la categoria, l'orario è il contenuto.
+   Una riga d'aria importante, fili appena accennati, cifre tabulari.
+   I giorni chiusi sussurrano: colore secondario, mai lo stesso peso. */
+.carta-orari {
+  margin: 0;
+  display: grid;
+}
+
+.orario-riga {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 1.5rem;
+  padding: clamp(0.75rem, 1.8vh, 1rem) 0;
+  border-top: 1px solid rgb(247 243 234 / 0.05);
+}
+
+.orario-riga:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.orario-riga:last-child {
+  padding-bottom: 0;
+}
+
+.orario-giorno {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--latte-55);
+}
+
+.orario-ore {
+  margin: 0;
+  font-size: clamp(0.98rem, 1.6vw, 1.08rem);
+  color: var(--latte);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.orario-ore--chiuso {
+  /* Sussurra ma resta leggibile: il 45% dava 3,98 a 1 — sotto la soglia.
+     Il 55% e' il gradino minimo misurato, e la gerarchia la fanno anche il
+     corpo minore e la spaziatura. */
+  color: var(--latte-55);
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+}
+
+/* Zona 3 · le azioni. */
+.carta-azioni {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-}
-
-.oggi-azioni .bottone--pieno span {
-  margin-left: 0.45rem;
-}
-
-/* La legenda: tre stati affiancati da schermo medio in su, impilati sul
-   telefono, coi fili di capello a dividerli come nel riferimento. */
-.oggi-legenda {
-  padding: clamp(1rem, 2.4vw, 1.5rem) clamp(1.25rem, 2.8vw, 2rem);
-}
-
-.legenda-stati {
-  margin-top: 0.8rem;
-  display: grid;
-  gap: 0.8rem;
-}
-
-.legenda-stato {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.7rem;
-  align-items: start;
-}
-
-.legenda-stato .oggi-punto {
-  width: 0.7rem;
-  height: 0.7rem;
-  margin-top: 0.35rem;
-}
-
-@media (min-width: 700px) {
-  .oggi-carta {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  }
-  .oggi-foto {
-    min-height: 100%;
-  }
-  .legenda-stati {
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 0;
-  }
-  .legenda-stato {
-    padding: 0 1.25rem;
-    border-left: 1px solid var(--filo-su-scuro);
-  }
-  .legenda-stato:first-child {
-    padding-left: 0;
-    border-left: 0;
-  }
 }
 
 /* La pilla nell'ingresso: assoluta in cima, non tocca il flusso. */
@@ -1795,52 +1804,35 @@
   text-align: left;
 }
 
+/* La copertina (brief Apple, 04/08): il 04:30 non è un orologio, è una
+   testata — più contenuto di prima, col tracking APERTO invece che
+   compresso, e legato alla headline vera che gli sta sotto. La gerarchia
+   si è ribaltata: prima dominava il numero e la frase sembrava una
+   didascalia; ora il numero apre e la frase comanda. */
 .visita-ora {
   font-family: var(--font-display);
   font-weight: 500;
-  /* A questa scala lo spazio interno sopra le cifre (l'ascendente vuoto di
-     Playfair) vale da solo mezzo gradino di spazio: si compensa, o
-     l'etichetta LA VISITA sembra staccata dal numero che presenta. */
-  margin-top: -0.14em;
-  /* Da margine a margine: la misura e' il viewport, non la colonna. Il
-     tracking negativo compatta le cifre in un oggetto solo. */
-  font-size: clamp(5.5rem, 21vw, 15rem);
+  margin-top: -0.12em;
+  font-size: clamp(4.2rem, 14vw, 9.5rem);
   line-height: 0.95;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.03em;
   color: var(--ottone);
-  /* Cifre tabellari: il 4, lo 0 e il 3 devono pesare uguale, come su un
-     quadrante. */
   font-variant-numeric: tabular-nums;
-  margin-left: -0.04em;
 }
 
-.visita-frase {
-  margin-top: 0.2em;
+/* La headline vera. */
+.bufala-visita .visita-frase {
+  margin-top: 0.3em;
+  font-size: clamp(2rem, 4.6vw, 3.1rem);
+  line-height: 1.08;
+  max-width: 14ch;
 }
 
 .visita-testo {
-  max-width: var(--misura-testo);
+  margin-top: clamp(0.7rem, 1.6vh, 1rem);
+  max-width: 38ch;
   color: var(--latte-70);
-}
-
-.bufala-visita .recapito-voci {
-  margin-top: var(--spazio-blocco);
-}
-
-/* Gli orari: la stessa riga del colophon, compressa — sette righe non
-   possono pesare come sette recapiti. */
-.recapito-voce--orario {
-  padding: 0.55rem 0;
-}
-
-.recapito-voce--orario dd {
-  font-variant-numeric: tabular-nums;
-}
-
-@media (min-width: 700px) {
-  .recapito-voce--orario {
-    grid-template-columns: 13rem 1fr;
-  }
+  line-height: 1.6;
 }
 
 /* I tre passi: numero in ottone piccolo — eco della rottura, non replica. */

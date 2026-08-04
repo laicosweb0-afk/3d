@@ -122,35 +122,11 @@ export function Sections() {
         <h2 className="visita-frase">{sezioni.visita.frase}</h2>
         <p className="visita-testo">{sezioni.visita.testo}</p>
 
-        {/* La disponibilità di OGGI viene prima degli orari della
-            settimana: chi guarda qui vuole sapere se conviene partire
-            adesso. Il dato vivo arriva dal foglio del titolare; senza dato
-            di oggi la carta è l'invito a chiamare — mai un semaforo
-            vecchio. */}
+        {/* Ridisegno del 04/08 (brief Apple): disponibilità, orari e azioni
+            sono UNA carta, non tre componenti — la carta vive in Oggi.tsx.
+            I tre passi della strada sono passati sotto la mappa, dove è
+            casa loro. */}
         <Oggi />
-
-        <dl className="recapito-voci">
-          {company.orari.map((o) => (
-            <div className="recapito-voce recapito-voce--orario" key={o.giorno}>
-              <dt>{o.giorno}</dt>
-              <dd>{'apre' in o ? `${o.apre} – ${o.chiude}` : 'Chiuso'}</dd>
-            </div>
-          ))}
-        </dl>
-
-        <ol className="visita-passi">
-          {passi.map((p, i) => (
-            <li className="recapito-voce recapito-voce--passo" key={p.nome}>
-              <span className="passo-numero" aria-hidden="true">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <div>
-                <span className="voce-nome">{p.nome}</span>
-                <span className="voce-dato">{p.testo}</span>
-              </div>
-            </li>
-          ))}
-        </ol>
       </section>
 
       {/* Movimento 6 · Come arrivare. La mappa e' protagonista; sotto, il
@@ -187,6 +163,22 @@ export function Sections() {
           />
           <span className="scheda-azione">{sezioni.mappa.azione}</span>
         </a>
+
+        {/* I tre passi della strada, sotto la mappa che li disegna:
+            arrivavano dalla Visita, ma sono indicazioni — casa loro è qui. */}
+        <ol className="visita-passi">
+          {passi.map((p, i) => (
+            <li className="recapito-voce recapito-voce--passo" key={p.nome}>
+              <span className="passo-numero" aria-hidden="true">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <div>
+                <span className="voce-nome">{p.nome}</span>
+                <span className="voce-dato">{p.testo}</span>
+              </div>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <section className="bufala-sezione bufala-recapito" data-rivela>
