@@ -38,44 +38,51 @@ export function Sections() {
         <p>{sezioni.apertura.testo}</p>
       </section>
 
-      {/* Movimento 3 · Per chi. La fotografia VERA del banco — arrivata il
-          04/08, dopo che quella generata era stata bocciata («troppo da
-          IA», con ragione) — scura sulla carta chiara come una stampa
-          impaginata. Accanto, i due pubblici con pesi diversi perche' sono
-          diversi: l'orario dice che chi compra per lavoro viene prima; la
-          colonna minore e' sfalsata, non affiancata pari (Composizione
-          §regola 4). Regola permanente di questo movimento: o la realta',
-          o la tipografia — mai una fotografia sintetica. */}
+      {/* Movimento 3 · Per chi. Brief dell'utente (04/08): due percorsi con
+          peso visivo identico — due carte gemelle, icona + titolo + testo,
+          stessa altezza, stesse ancore. Sopra, la fotografia VERA del banco
+          come tavola d'apertura (regola permanente: o la realta' o la
+          tipografia, mai una foto sintetica) e il titolo di sezione.
+          L'entrata e' opacity+translateY con scaglionamento dal sistema:
+          il velo di sfocatura chiesto dal brief non entra — il budget B15
+          vieta di animare i filtri, ed e' la regola che protegge la
+          fluidita' dello scroll. Costo dichiarato, non taciuto. */}
       <section className="bufala-sezione bufala-perchi" data-rivela>
         <p className="micro">{sezioni.perChi.titolo}</p>
+        <figure className="perchi-foto">
+          <img
+            src={asset('/assets/bufala/banco.webp')}
+            alt="Il banco di Quelli della bufala: formaggi e salumi nel banco frigo, prosciutti appesi alle travi"
+            width={1169}
+            height={914}
+            loading="lazy"
+          />
+          <figcaption className="micro">Il banco, dentro il C.A.R.R. di Rimini</figcaption>
+        </figure>
         <h2>{sezioni.perChi.frase}</h2>
-        <div className="perchi-campo">
-          <figure className="perchi-foto">
-            <img
-              src={asset('/assets/bufala/banco.webp')}
-              alt="Il banco di Quelli della bufala: formaggi e salumi nel banco frigo, prosciutti appesi alle travi"
-              width={1169}
-              height={914}
-              loading="lazy"
-            />
-            <figcaption className="micro">Il banco, dentro il C.A.R.R. di Rimini</figcaption>
-          </figure>
-          {/* La colonna dei pubblici e' UNA unita' con tre ancore: il primo
-              blocco al bordo alto della fotografia, la nota alla riga della
-              didascalia, il rientro d'ottone in mezzo. La nota sta qui —
-              conclude entrambi i pubblici — non orfana sotto la didascalia,
-              dove due righine impilate si pestavano i piedi. */}
-          <div className="perchi-blocchi">
-            <div className="perchi-blocco perchi-blocco--lavoro">
-              <h3>{sezioni.perChi.lavoro.nome}</h3>
-              <p>{sezioni.perChi.lavoro.testo}</p>
-            </div>
-            <div className="perchi-blocco perchi-blocco--casa">
-              <h3>{sezioni.perChi.casa.nome}</h3>
-              <p>{sezioni.perChi.casa.testo}</p>
-            </div>
-            <p className="perchi-nota">{sezioni.perChi.nota}</p>
-          </div>
+        <p className="perchi-intro">{sezioni.perChi.intro}</p>
+
+        <div className="perchi-carte" data-rivela>
+          <article className="perchi-carta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+              strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              {/* L'edificio: il percorso di chi compra per lavoro. */}
+              <path d="M3 21h18M5 21V7l7-4 7 4v14M9.5 21v-4.5h5V21" />
+              <path d="M9.5 10.5h.01M14.5 10.5h.01M9.5 14h.01M14.5 14h.01" />
+            </svg>
+            <h3>{sezioni.perChi.lavoro.nome}</h3>
+            <p>{sezioni.perChi.lavoro.testo}</p>
+          </article>
+          <article className="perchi-carta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+              strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              {/* La casa: il percorso di chi cucina. */}
+              <path d="M4 11.5 12 4l8 7.5M6 10v10h12V10" />
+              <path d="M10 20v-5h4v5" />
+            </svg>
+            <h3>{sezioni.perChi.casa.nome}</h3>
+            <p>{sezioni.perChi.casa.testo}</p>
+          </article>
         </div>
       </section>
     </div>

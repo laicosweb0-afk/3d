@@ -30,7 +30,7 @@ blocchi; **una sola rottura di griglia in tutto il sito**.
 |---|---|---|---|
 | 1 | **Il film** | il palco: pieno schermo, tipografia centrata sopra il filmato | è il cinema; il documento non è ancora cominciato |
 | 2 | **Chi siamo** | *dichiarazione*: occhiello + frase + una riga, centrata, misura stretta | dal pieno schermo a una pagina quasi vuota — il primo silenzio |
-| 3 | **Per chi** | *doppia colonna asimmetrica*, allineata a sinistra: prima chi compra per lavoro (colonna maggiore), poi chi cucina a casa (minore, sfalsata verso destra e più in basso) | dalla simmetria centrata all'asimmetria: due pubblici, due pesi — la gerarchia è il contenuto |
+| 3 | **Per chi** | *aggiornata dal brief dell'utente (04/08)*: la fotografia vera del banco come tavola d'apertura, titolo centrato, poi **due carte gemelle a peso identico** — icona, titolo, testo, stessa altezza, stesse ancore | dal testo alla scelta: in meno di un secondo si percepiscono due percorsi, e nessuno dei due è la nota dell'altro *(la versione asimmetrica a gerarchia è stata superata da una decisione esplicita dell'utente)* |
 | — | il passaggio | la fascia che scorre (esiste) | non è una sezione: è luce che cambia |
 | 4 | **Il banco** | *campo*: micro-etichetta + titolo a sinistra su misura larga, poi la vetrina a tutta larghezza; le ragioni vivono nelle didascalie dei prodotti, non in un paragrafo | dal testo al pannello; per la prima volta l'immagine comanda e il testo serve |
 | 5 | **La visita** | **la rottura — unica nel sito**: `04:30` composto enorme in Playfair, da margine a margine, l'ottone usato una volta sola come colore di un testo grande; sotto, tre righe numerate (01 uscita · 02 padiglione · 03 si entra) con filo di capello, etichetta a sinistra e dato a destra | l'unico momento in cui la griglia si spezza: un numero come immagine. È il fatto più raro dell'azienda e riceve la composizione più rara del sito |
@@ -54,8 +54,10 @@ una sola rottura.**
 4. Il movimento 3 si impagina con la colonna minore **sfalsata**, non
    affiancata in griglia pari: su telefono lo sfalsamento resta (la minore
    scende sotto, rientrata), così la gerarchia sopravvive al breakpoint.
-5. Niente nuove card: le superfici rialzate restano due (vetrina, mappa).
-   Tutto il resto è impaginato **sulla** pagina.
+5. Le superfici rialzate della metà scura restano due (vetrina, mappa).
+   Nella metà chiara vivono le due carte gemelle del Per chi — volute
+   dall'utente, in crema su latte, senza ombra: sono carta su carta, non
+   pannelli. Tutto il resto è impaginato **sulla** pagina.
 
 ## Cosa serve dal cliente (non blocca la progettazione, blocca il testo)
 

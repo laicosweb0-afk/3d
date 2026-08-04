@@ -109,33 +109,29 @@ export const sezioni = {
       'È la parte del lavoro che al banco non si vede. Ed è quella che decide tutto il resto.',
   },
 
-  // «Il banco» come blocco di solo testo non esiste più (Architettura §III,
-  // e la schermata del 04/08: due titoli galleggianti sul bianco, senza
-  // niente che li ancorasse). Al suo posto: PER CHI è questo banco — i due
-  // pubblici veri, con pesi diversi perché SONO diversi. L'orario dice che
-  // il pubblico primario è chi compra per lavoro; chi cucina a casa è
-  // benvenuto, ma ci si alza presto apposta. Fingere due colonne pari
-  // farebbe perdere tempo a entrambi.
+  // PER CHI — brief dell'utente (04/08): due percorsi con peso visivo
+  // IDENTICO, due carte gemelle. La mia versione precedente dava piu' peso
+  // ai professionisti (gerarchia dedotta dall'orario); l'utente ha deciso
+  // diversamente e la decisione e' sua: nessuno dei due deve sembrare una
+  // nota dell'altro. I testi delle carte sono i suoi, rifiniti nella sola
+  // punteggiatura.
   //
-  // Il vecchio testo del banco («accoglie privati, professionisti e
-  // attività…») non sparisce: si scompone qui, un pubblico per blocco.
+  // La riga «Ingresso libero e gratuito» non e' sparita: vive nel passo 03
+  // della Visita, verbatim, dov'era gia'.
   perChi: {
     titolo: 'Il banco',
-    frase: 'Un banco solo,\nper chi lavora\ne per chi cucina.',
+    frase: 'A chi è dedicato',
+    intro: 'Lo stesso banco, la stessa selezione: due modi di comprare.',
     lavoro: {
-      nome: 'Chi compra per lavoro',
+      nome: 'Per professionisti',
       testo:
-        'Ristoranti, gastronomie, attività: vendita all’ingrosso, allo stesso banco e dalla stessa selezione di tutti.',
+        'Ristoranti, gastronomie e attività possono acquistare all’ingrosso direttamente dal nostro banco, con la stessa selezione disponibile ogni giorno.',
     },
     casa: {
-      nome: 'Chi cucina a casa',
+      nome: 'Per la tua cucina',
       testo:
-        'Vendita al dettaglio, senza appuntamento: si entra, si guarda, si sceglie.',
+        'Acquista senza appuntamento: entra liberamente, scegli i prodotti che preferisci e porta a casa la qualità del nostro banco.',
     },
-    // Verbatim dal dato confermato (company.accesso): è la rassicurazione
-    // piu' preziosa che il cliente possiede, e stava in corpo undici in
-    // fondo alla pagina.
-    nota: 'Ingresso libero e gratuito, per grossisti e privati.',
   },
 
   prodotti: {
