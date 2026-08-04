@@ -373,18 +373,47 @@
 }
 
 /* — Oggi al banco —
-   La carta nella Visita e la pilla nell'ingresso. I tre colori del
-   semaforo sono FUNZIONALI, non di marca: dicono uno stato, come i colori
-   di un errore — per questo non entrano nella tavolozza del documento. */
+   La grafica del riferimento del titolare: pannello con la fotografia a
+   sinistra e il semaforo a destra, e sotto la legenda con le tre lucine
+   sempre visibili. I colori del semaforo sono FUNZIONALI, non di marca:
+   dicono uno stato, come i colori di un errore. */
 .oggi {
   width: 100%;
-  max-width: 46rem;
+  max-width: 56rem;
   margin-top: var(--spazio-blocco);
-  padding: clamp(1.25rem, 2.6vw, 1.75rem) clamp(1.25rem, 2.8vw, 2rem);
+  display: grid;
+  gap: clamp(0.9rem, 2vh, 1.25rem);
+}
+
+.oggi-carta,
+.oggi-legenda {
   border: 1px solid rgb(247 243 234 / 0.08);
-  border-radius: var(--raggio-medio);
+  border-radius: var(--raggio-grande);
   background: linear-gradient(to bottom, rgb(247 243 234 / 0.045), rgb(247 243 234 / 0.015));
-  box-shadow: 0 1px 0 rgb(247 243 234 / 0.05) inset;
+  box-shadow:
+    0 1px 0 rgb(247 243 234 / 0.05) inset,
+    0 30px 70px -30px rgb(0 0 0 / 0.75);
+}
+
+.oggi-carta {
+  overflow: hidden;
+  display: grid;
+}
+
+.oggi-foto {
+  min-height: 11rem;
+  background: #0b1c14;
+}
+
+.oggi-foto img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.oggi-contenuto {
+  padding: clamp(1.25rem, 2.8vw, 2rem);
 }
 
 .bufala .oggi-etichetta {
@@ -394,18 +423,18 @@
 .oggi-stato {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  margin-top: 0.6rem;
+  gap: 0.65rem;
+  margin-top: 0.7rem;
   font-family: var(--font-display);
   font-weight: 500;
-  font-size: clamp(1.4rem, 3vw, 1.9rem);
-  line-height: 1.15;
+  font-size: clamp(1.7rem, 4vw, 2.5rem);
+  line-height: 1.1;
   color: var(--latte);
 }
 
 .oggi-punto {
-  width: 0.72em;
-  height: 0.72em;
+  width: 0.62em;
+  height: 0.62em;
   border-radius: 999px;
   flex: none;
 }
@@ -415,22 +444,110 @@
 .oggi-punto--rosso { background: #c05b4d; }
 
 .oggi-testo {
-  margin-top: 0.4rem;
+  margin-top: 0.5rem;
   color: var(--latte-70);
   line-height: 1.6;
   max-width: 44ch;
 }
 
-.bufala .oggi-ora {
-  margin-top: 0.7rem;
-  color: var(--latte-55);
+.oggi-filo {
+  border: 0;
+  border-top: 1px solid var(--filo-su-scuro);
+  margin: clamp(0.9rem, 2vh, 1.25rem) 0;
 }
 
-.oggi .scheda-azioni {
-  margin-top: clamp(1rem, 2.2vh, 1.4rem);
+.oggi-voce {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.8rem;
+  align-items: center;
+  padding: 0.45rem 0;
+}
+
+.oggi-icona {
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 1px solid rgb(184 155 94 / 0.5);
+  border-radius: 999px;
+  color: var(--ottone);
+}
+
+.oggi-icona svg {
+  width: 17px;
+  height: 17px;
+}
+
+.oggi-voce-nome {
+  display: block;
+  color: var(--latte);
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.oggi-voce-dato {
+  display: block;
+  color: var(--latte-70);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.oggi-azioni {
+  margin-top: clamp(1rem, 2.2vh, 1.5rem);
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+}
+
+.oggi-azioni .bottone--pieno span {
+  margin-left: 0.45rem;
+}
+
+/* La legenda: tre stati affiancati da schermo medio in su, impilati sul
+   telefono, coi fili di capello a dividerli come nel riferimento. */
+.oggi-legenda {
+  padding: clamp(1rem, 2.4vw, 1.5rem) clamp(1.25rem, 2.8vw, 2rem);
+}
+
+.legenda-stati {
+  margin-top: 0.8rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.legenda-stato {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.7rem;
+  align-items: start;
+}
+
+.legenda-stato .oggi-punto {
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-top: 0.35rem;
+}
+
+@media (min-width: 700px) {
+  .oggi-carta {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  }
+  .oggi-foto {
+    min-height: 100%;
+  }
+  .legenda-stati {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+  }
+  .legenda-stato {
+    padding: 0 1.25rem;
+    border-left: 1px solid var(--filo-su-scuro);
+  }
+  .legenda-stato:first-child {
+    padding-left: 0;
+    border-left: 0;
+  }
 }
 
 /* La pilla nell'ingresso: assoluta in cima, non tocca il flusso. */

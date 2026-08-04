@@ -82,6 +82,12 @@ export const company = {
    *  di ieri spacciato per fresco. */
   disponibilitaCsv: '',
 
+  /** Lo stato mostrato FINCHÉ il foglio non è configurato (decisione
+   *  dell'utente 04/08: la grafica del titolare va in campo subito, con le
+   *  lucine). Appena `disponibilitaCsv` esiste, comanda il foglio e questo
+   *  campo viene ignorato. Valori: 'verde' | 'giallo' | 'rosso'. */
+  disponibilitaManuale: 'verde' as 'verde' | 'giallo' | 'rosso',
+
   orari: [
     { giorno: 'lunedì', apre: '04:30', chiude: '09:00' },
     { giorno: 'martedì', apre: '04:30', chiude: '09:00' },

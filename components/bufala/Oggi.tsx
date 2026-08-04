@@ -1,116 +1,182 @@
 'use client';
 
 // «Oggi al banco» — la disponibilità della mozzarella, richiesta dal
-// titolare. Due facce dello stesso dato:
+// titolare, nella grafica del suo riferimento (04/08): pannello con la
+// fotografia a sinistra, semaforo grande a destra, le righe informative,
+// i due gesti — e sotto la legenda con TUTTE e tre le lucine, sempre.
 //
-//  · la CARTA, nella Visita: semaforo, stato composto in Playfair, ora
-//    dell'ultimo aggiornamento, e i due gesti (chiama / come arrivare);
-//  · la PILLA, nell'ingresso: una riga viva in cima allo schermo che porta
-//    alla carta con un'ancora. È assoluta: compare senza spostare di un
-//    pixel il resto (lo spostamento di layout è a zero e ci resta).
+// Da dove viene lo stato, in ordine di autorità:
+//  1. il foglio Google del titolare (company.disponibilitaCsv), se la sua
+//     ultima riga è DI OGGI, fuso di Roma;
+//  2. altrimenti lo stato manuale (company.disponibilitaManuale), deciso
+//     dall'utente: la grafica va in campo subito, il foglio la comanderà.
+// L'ora dell'ultimo aggiornamento compare solo se arriva dal foglio: un
+// orario inventato sarebbe finta freschezza.
 //
-// La regola d'onestà governa tutto: il dato vale solo se è DI OGGI
-// (fuso di Roma). Foglio non configurato, rete assente, riga vecchia →
-// nessun semaforo: l'invito a chiamare, che è sempre vero. Mai un
-// «Disponibile» di ieri spacciato per fresco.
-//
-// ⚠️ I testi degli stati sono scritti per il titolare e vanno approvati
-// con lui insieme al resto del copy (Task 10).
+// ⚠️ I testi sono quelli del riferimento del titolare; da riconfermare con
+// lui insieme al resto del copy (Task 10).
 
 import { useEffect, useState } from 'react';
+import { asset } from '@/lib/asset';
 import { company } from '@/content/bufala/company';
 
 type Stato = 'verde' | 'giallo' | 'rosso';
 interface Disponibilita { stato: Stato; ora?: string; nota?: string }
 
-const TESTI: Record<Stato, { titolo: string; testo: string }> = {
-  verde: { titolo: 'Disponibile', testo: 'La mozzarella fresca di oggi è al banco.' },
-  giallo: { titolo: 'Quasi terminata', testo: 'Ne restano poche: meglio chiamare prima.' },
-  rosso: { titolo: 'Terminata per oggi', testo: 'Domattina si ricomincia presto.' },
+const TESTI: Record<Stato, { titolo: string; testo: string; legenda: string }> = {
+  verde: {
+    titolo: 'Disponibile',
+    testo: 'La mozzarella fresca di oggi è disponibile in negozio.',
+    legenda: 'Puoi passare al banco.',
+  },
+  giallo: {
+    titolo: 'Quasi terminato',
+    testo: 'Ne restano poche al banco: meglio chiamare prima.',
+    legenda: 'Ne restano poche al banco.',
+  },
+  rosso: {
+    titolo: 'Terminato',
+    testo: 'Tutto esaurito per oggi: domattina si ricomincia presto.',
+    legenda: 'Tutto esaurito per oggi.',
+  },
 };
 
-/** Una lettura sola per pagina, condivisa da carta e pilla. */
-let promessa: Promise<Disponibilita | null> | null = null;
+const ORDINE: Stato[] = ['verde', 'giallo', 'rosso'];
 
-function leggi(): Promise<Disponibilita | null> {
-  if (!company.disponibilitaCsv) return Promise.resolve(null);
+/** Una lettura sola per pagina, condivisa da carta e pilla. */
+let promessa: Promise<Disponibilita> | null = null;
+
+function leggi(): Promise<Disponibilita> {
+  const manuale: Disponibilita = { stato: company.disponibilitaManuale };
+  if (!company.disponibilitaCsv) return Promise.resolve(manuale);
   if (!promessa) {
     promessa = fetch(company.disponibilitaCsv, { cache: 'no-store' })
       .then((r) => (r.ok ? r.text() : null))
       .then((testo) => {
-        if (!testo) return null;
-        // L'ultima riga compilata del foglio: il titolare aggiunge in coda.
+        if (!testo) return manuale;
         const righe = testo.trim().split(/\r?\n/).filter((r) => r.trim() !== '');
         const [data, stato, ora, ...nota] = righe[righe.length - 1]
           .split(',')
           .map((c) => c.replace(/^"|"$/g, '').trim());
         const oggi = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Rome' })
           .format(new Date());
-        if (data !== oggi) return null; // il dato di ieri non esiste
-        if (stato !== 'verde' && stato !== 'giallo' && stato !== 'rosso') return null;
+        if (data !== oggi) return manuale; // il dato di ieri non esiste
+        if (stato !== 'verde' && stato !== 'giallo' && stato !== 'rosso') return manuale;
         return {
           stato: stato as Stato,
           ora: ora || undefined,
           nota: nota.join(',') || undefined,
         };
       })
-      .catch(() => null);
+      .catch(() => manuale);
   }
   return promessa;
 }
 
-/** La carta nella Visita. Senza dato vivo mostra la faccia onesta:
- *  l'invito a chiamare, che non può mai essere falso. */
+/** La carta nella Visita, fedele al riferimento del titolare. */
 export function Oggi() {
-  const [dato, setDato] = useState<Disponibilita | null>(null);
+  const [dato, setDato] = useState<Disponibilita>({ stato: company.disponibilitaManuale });
 
   useEffect(() => {
-    leggi().then((d) => { if (d) setDato(d); });
+    leggi().then(setDato);
   }, []);
+
+  const t = TESTI[dato.stato];
 
   return (
     <div className="oggi" id="oggi">
-      <p className="micro oggi-etichetta">Oggi al banco</p>
+      <div className="oggi-carta">
+        {/* La fotografia: per ora la mozzarella del sito; il giorno che
+            arriva lo scatto vero del sacchetto D.O.P., si sostituisce qui. */}
+        <div className="oggi-foto" aria-hidden="true">
+          <img
+            src={asset('/assets/bufala/intera.webp')}
+            alt=""
+            width={1280}
+            height={720}
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
 
-      {dato ? (
-        <>
+        <div className="oggi-contenuto">
+          <p className="micro oggi-etichetta">Oggi al banco</p>
+
           <p className="oggi-stato">
             <span className={`oggi-punto oggi-punto--${dato.stato}`} aria-hidden="true" />
-            {TESTI[dato.stato].titolo}
+            {t.titolo}
           </p>
-          <p className="oggi-testo">{dato.nota || TESTI[dato.stato].testo}</p>
-          {dato.ora && (
-            <p className="micro oggi-ora">Ultimo aggiornamento · {dato.ora}</p>
-          )}
-        </>
-      ) : (
-        <>
-          <p className="oggi-stato">La disponibilità cambia ogni mattina.</p>
-          <p className="oggi-testo">Per sapere com’è messa oggi, chiamaci.</p>
-        </>
-      )}
+          <p className="oggi-testo">{dato.nota || t.testo}</p>
 
-      <div className="scheda-azioni">
-        <a className="bottone bottone--pieno" href={company.telefonoHref}>
-          Chiama il negozio
-        </a>
-        <a className="bottone" href="#dove">
-          Come arrivare
-        </a>
+          <hr className="oggi-filo" />
+
+          <div className="oggi-voce">
+            <span className="oggi-icona" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+                strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="8.5" />
+                <path d="M12 7.5V12l3 2" />
+              </svg>
+            </span>
+            <span>
+              <span className="oggi-voce-nome">Preparata questa mattina</span>
+              <span className="oggi-voce-dato">Con latte fresco selezionato</span>
+            </span>
+          </div>
+
+          {dato.ora && (
+            <div className="oggi-voce">
+              <span className="oggi-icona" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+                  strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 12a8 8 0 1 1-2.3-5.6" />
+                  <path d="M20 4v4h-4" />
+                </svg>
+              </span>
+              <span>
+                <span className="oggi-voce-nome">Ultimo aggiornamento</span>
+                <span className="oggi-voce-dato">{dato.ora}</span>
+              </span>
+            </div>
+          )}
+
+          <div className="oggi-azioni">
+            <a className="bottone bottone--pieno" href="#dove">
+              Passa al banco <span aria-hidden="true">→</span>
+            </a>
+            <a className="bottone" href={company.telefonoHref}>
+              Chiama il negozio
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* La legenda: le tre lucine, sempre visibili, come nel riferimento. */}
+      <div className="oggi-legenda">
+        <p className="micro oggi-etichetta">Stato disponibilità</p>
+        <div className="legenda-stati">
+          {ORDINE.map((s) => (
+            <div className="legenda-stato" key={s}>
+              <span className={`oggi-punto oggi-punto--${s}`} aria-hidden="true" />
+              <span>
+                <span className="oggi-voce-nome">{TESTI[s].titolo}</span>
+                <span className="oggi-voce-dato">{TESTI[s].legenda}</span>
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
-/** La riga viva nell'ingresso: esiste solo col dato di oggi. */
+/** La riga viva nell'ingresso: porta alla carta. */
 export function OggiPilla() {
-  const [dato, setDato] = useState<Disponibilita | null>(null);
+  const [dato, setDato] = useState<Disponibilita>({ stato: company.disponibilitaManuale });
 
   useEffect(() => {
-    leggi().then((d) => { if (d) setDato(d); });
+    leggi().then(setDato);
   }, []);
-
-  if (!dato) return null;
 
   return (
     <a className="oggi-pilla" href="#oggi">
