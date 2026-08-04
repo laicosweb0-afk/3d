@@ -40,6 +40,17 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'it_IT',
     siteName: company.brand,
+    // L'anteprima quando il link viaggia in chat: il banco vero, ritagliato
+    // a 1200×630. URL assoluto sull'indirizzo di anteprima — da aggiornare
+    // quando ci sara' il dominio definitivo (blocco 6 del protocollo).
+    images: [
+      {
+        url: 'https://laicosweb0-afk.github.io/3d/assets/bufala/og-banco.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Il banco di Quelli della bufala',
+      },
+    ],
   },
 };
 
