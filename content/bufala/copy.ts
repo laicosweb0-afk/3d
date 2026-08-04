@@ -19,6 +19,13 @@ export interface SceneCopy {
   titolo: string;
   /** Riga di accompagnamento, opzionale. Corpo piccolo, sotto il titolo. */
   nota?: string;
+  /** Solo per la hero: il nome del marchio, composto in tipografia.
+   *
+   *  Non il logo: il marchio reale è un disegno a colori nato per fondi
+   *  chiari, e su verde profondo un PNG con quel fondo si vedrebbe. Il nome
+   *  scritto nel carattere del sito lo dice altrettanto bene e appartiene
+   *  alla pagina invece di esserci appoggiato sopra. */
+  marchio?: string;
   /** Solo per la hero: la riga che dice cosa si trova al banco. */
   sottotitolo?: string;
   /** Solo per la hero: il payoff. Non è un sottotitolo — vive lontano dalla
@@ -30,6 +37,9 @@ export interface SceneCopy {
 export const sceneCopy: Record<SceneId, SceneCopy> = {
   // La hero: headline dominante, payoff piccolo e lontanissimo.
   s01: {
+    // Senza questo si entrava nel sito senza sapere di chi fosse: la prima
+    // schermata diceva cosa si vende, mai chi lo vende.
+    marchio: 'Quelli della bufala',
     titolo: 'La qualità non si promette.\nSi assaggia.',
     // Il sottotitolo dice cosa si trova al banco: la headline dà il tono, il
     // sottotitolo dà il fatto. Senza, la prima schermata è solo un'idea.

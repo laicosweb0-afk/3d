@@ -41,6 +41,12 @@ export function Journey() {
      *  (Direzione §6 — ritmo cerimonioso). */
     let smoothed = 0;
     let ultimo = performance.now();
+    /** L'ultimo valore effettivamente disegnato. Serve a non riscrivere gli
+     *  stessi stili quando la pagina è ferma: il loop continua a girare
+     *  (deve, per riprendere subito allo scroll successivo) ma smette di
+     *  toccare il DOM. Su un telefono di fascia media questo è la
+     *  differenza fra un viaggio fluido e uno che scalda. */
+    let disegnato = -1;
 
     const leggiScroll = () => {
       const alt = spacer.offsetHeight - window.innerHeight;
@@ -54,6 +60,15 @@ export function Journey() {
 
       // Smorzamento esponenziale, indipendente dal frame rate.
       smoothed += (p.current - smoothed) * (1 - Math.exp(-9 * dt));
+
+      // Se il valore non è cambiato abbastanza da spostare un pixel, non c'è
+      // niente da riscrivere. La soglia è un decimillesimo del viaggio: su
+      // diciotto viewport di scroll è meno di un pixel.
+      if (Math.abs(smoothed - disegnato) < 0.00005) {
+        raf = requestAnimationFrame(frame);
+        return;
+      }
+      disegnato = smoothed;
 
       const velo = veloRef.current;
       const overlay = overlayRef.current;
@@ -149,6 +164,7 @@ export function Journey() {
               // schermata no, quella deve esserci comunque.
               style={{ opacity: hero ? 1 : 0 }}
             >
+              {c.marchio && <p className="marchio-testo">{c.marchio}</p>}
               <h1>{c.titolo}</h1>
               {c.sottotitolo && <p className="sottotitolo">{c.sottotitolo}</p>}
               {hero && <span aria-hidden="true" />}

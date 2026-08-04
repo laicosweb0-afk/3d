@@ -256,7 +256,7 @@
   align-self: stretch;
   justify-self: stretch;
   display: grid;
-  grid-template-rows: auto auto 1fr auto auto;
+  grid-template-rows: auto auto auto 1fr auto auto;
   justify-items: center;
   width: 100%;
 }
@@ -1488,4 +1488,25 @@
 .bufala .bottone--pieno:hover {
   background: #c39d63;
   border-color: #c39d63;
+}
+
+/* Il marchio nella hero, composto in tipografia e non in immagine.
+   Il logo reale e' un disegno a colori nato per fondi chiari: su verde
+   profondo un PNG porterebbe con se' il proprio fondo e si vedrebbe il
+   riquadro. Il nome scritto nel carattere del sito lo dice altrettanto bene
+   e appartiene alla pagina invece di esserci appoggiato sopra.
+
+   Sta in alto e piccolo, come la testata di una copertina: non compete con
+   la headline, la precede. */
+.bufala-overlay .scena--hero .marchio-testo {
+  font-family: var(--font-display);
+  font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+  font-weight: 400;
+  letter-spacing: 0.13em;
+  line-height: 1;
+  color: var(--latte-70);
+  margin-bottom: clamp(1.5rem, 4vh, 2.75rem);
+  /* Il tracking aggiunge spazio anche dopo l'ultima lettera: senza questo
+     compenso la riga non e' centrata, e' spostata di mezzo carattere. */
+  padding-left: 0.13em;
 }
