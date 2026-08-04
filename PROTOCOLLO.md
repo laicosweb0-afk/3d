@@ -194,9 +194,25 @@ fotogrammi video persi, 26 immagini/s alla velocità di lettura, CLS 0,
 prima pittura 1.056 ms (56 sopra B6 → Task 12), contrasti a posto, nessuna
 coppia di sezioni adiacenti con la stessa forma, 14 schermate totali.
 
-**Fase 3 — La rifinitura**
-`11` Animazioni · `12` Ottimizzazione *(≈380 ms di thread all'avvio, 56 ms
-di prima pittura, 4 kB di CSS oltre soglia)* · `13` Premium polish
+**Fase 3 — La rifinitura** — in corso
+`11` Animazioni ◐ *(banco-che-si-compone montato; il puntino della i resta
+da discutere con l'utente prima di farlo)* ·
+`12` Ottimizzazione ◐ *(fatto: CSS per rotta 84→26 kB, prima pittura
+728–760 ms, preload dei loghi spenti, CLS 0. Residuo dichiarato: ~300 ms
+di thread all'avvio su CPU×4 — ~75 ms reali — è l'idratazione di React coi
+componenti vivi; ridurlo vorrebbe dire rinunciare a componenti, costo non
+accettato)* ·
+`13` Premium polish ◐ *(primo giro fatto: mappa con fondale d'attesa,
+orfani di riga, targa della firma, respiro del 04:30)*
+
+**Collaudo completo del 04/08 (sera), quattro formati** — desktop 1440,
+desktop 1920, tablet, telefono, CPU ×4, gesti veri: 60 fps ovunque, zero
+errori console, zero fotogrammi video persi, traversata completa fino al
+piede, tutte le ancore a segno (tre porte + pilla), tastiera ok, vetrina
+che risponde al trascinamento del mouse. Strumento: `tools/misura/collaudone.mjs`.
+L'audit dei contrasti è tutto verde per la prima volta — e onestamente:
+lo strumento ora compone i fondi semitrasparenti invece di ignorarli, e il
+falso positivo storico del bottone mappa è morto di morte naturale.
 
 Responsive e accessibilità **non sono task**: sono condizioni di consegna di
 ognuna, con un collaudo sui dispositivi veri alla fine di ogni fase.

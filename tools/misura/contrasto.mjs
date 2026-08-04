@@ -7,12 +7,27 @@ await p.waitForTimeout(1200);
 
 const voci = await p.evaluate(() => {
   const num = (s) => (s.match(/[\d.]+/g) || []).map(Number);
+  // Il fondo VERO dietro un testo: si sale fino al primo colore opaco e poi
+  // si ricompongono, dal basso verso l'alto, tutti gli strati traslucidi
+  // incontrati per strada — compreso quello dell'elemento stesso. Senza
+  // questa composizione, un bottone chiaro al 94% su fondo scuro veniva
+  // misurato contro lo scuro: il falso positivo che ha accompagnato ogni
+  // audit di questo progetto.
   const opaco = (el) => {
+    const strati = [];
+    let base = [255, 255, 255];
     for (let n = el; n; n = n.parentElement) {
       const c = num(getComputedStyle(n).backgroundColor);
-      if (c.length < 4 || c[3] > 0.95) return c.slice(0, 3);
+      if (c.length === 0) continue;
+      if (c.length < 4 || c[3] > 0.95) { base = c.slice(0, 3); break; }
+      if (c[3] > 0) strati.push(c);
     }
-    return [255, 255, 255];
+    let f = base;
+    for (let i = strati.length - 1; i >= 0; i--) {
+      const [r, g, b, a] = strati[i];
+      f = [r * a + f[0] * (1 - a), g * a + f[1] * (1 - a), b * a + f[2] * (1 - a)];
+    }
+    return f;
   };
   const out = [];
   for (const el of document.querySelectorAll('h1,h2,h3,p,dt,dd,li,figcaption,span,a')) {
