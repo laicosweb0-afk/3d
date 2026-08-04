@@ -9,7 +9,6 @@
 
 import { asset } from '@/lib/asset';
 import { company, indirizzoPuntoVendita, mappaEmbed, mappaApri } from '@/content/bufala/company';
-import { immagini } from '@/content/bufala/assets';
 import { sezioni } from '@/content/bufala/copy';
 import { Vetrina } from './Vetrina';
 import { Rivela } from './Rivela';
@@ -39,26 +38,21 @@ export function Sections() {
         <p>{sezioni.apertura.testo}</p>
       </section>
 
-      {/* Movimento 3 · Per chi. Non piu' un blocco di testo che galleggia
-          sul bianco (la schermata del 04/08): una tavola editoriale — la
-          fotografia vera delle mani, scura sulla carta chiara come una
-          stampa impaginata — e i due pubblici con pesi diversi, perche'
+      {/* Movimento 3 · Per chi. I due pubblici con pesi diversi, perche'
           sono diversi: l'orario del banco dice che chi compra per lavoro
           viene prima. La colonna minore e' sfalsata, non affiancata pari
-          (Composizione §regola 4). */}
+          (Composizione §regola 4).
+
+          Qui c'era la fotografia generata delle mani: l'utente l'ha
+          bocciata — «troppo da IA» — e ha ragione, perche' questo e'
+          il movimento che parla del luogo vero. Il posto della fotografia
+          resta progettato (la colonna sinistra del campo): si riapre il
+          giorno in cui arriva uno scatto REALE del banco. Niente
+          generazioni qui, mai piu': o la realta', o la tipografia. */}
       <section className="bufala-sezione bufala-perchi" data-rivela>
         <p className="micro">{sezioni.perChi.titolo}</p>
         <h2>{sezioni.perChi.frase}</h2>
         <div className="perchi-campo">
-          <figure className="perchi-foto">
-            <img
-              src={immagini.mani.src}
-              alt={immagini.mani.alt}
-              width={1376}
-              height={768}
-              loading="lazy"
-            />
-          </figure>
           <div className="perchi-blocchi">
             <div className="perchi-blocco perchi-blocco--lavoro">
               <h3>{sezioni.perChi.lavoro.nome}</h3>
