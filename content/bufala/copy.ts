@@ -71,13 +71,17 @@ export const sceneCopy: Record<SceneId, SceneCopy> = {
 
 /** Le sezioni dopo il viaggio. */
 export const sezioni = {
-  // L'apertura del documento, sul chiaro. Raccoglie la frase che stava
-  // nell'ultima scena scura del viaggio: quella scena non esiste più, ma la
-  // frase è del progetto e non del filmato, quindi vive benissimo qui.
+  // Nessuna narrazione, nessun processo, nessuna logistica.
+  //
+  // Qui prima c'era "Il tempo è l'unica cosa che non si può recuperare: per
+  // questo la lavorazione, il banco e la vendita restano vicini". L'avevo
+  // scritta io, e aveva due difetti: suonava generata, e soprattutto
+  // affermava una vicinanza fra lavorazione e punto vendita che nessuno ha
+  // mai verificato. Le frasi che raccontano *come* si lavora invecchiano
+  // male e possono essere smentite; quelle che dichiarano *cosa si sceglie*
+  // restano vere finché l'azienda resta sé stessa.
   apertura: {
-    frase: 'Una mozzarella si misura in ore.',
-    testo:
-      'Il tempo è l’unica cosa che non si può recuperare: per questo la lavorazione, il banco e la vendita restano vicini.',
+    frase: 'Prima di vendere, scegliamo.',
   },
 
   banco: {
@@ -92,19 +96,24 @@ export const sezioni = {
     frase: 'Una selezione costruita con cura.',
     testo:
       'Accanto alla nostra mozzarella trovi una selezione di formaggi, salumi e specialità gastronomiche scelti per qualità, provenienza e gusto. Ogni prodotto completa il banco con lo stesso livello di attenzione che dedichiamo alla nostra produzione.',
-    // L'indicazione sotto il carosello. Un carosello che non dichiara di
-    // essere trascinabile viene guardato come una fotografia: l'affordance
-    // va detta, non lasciata indovinare.
+    // Un carosello che non dichiara di essere trascinabile viene guardato
+    // come una fotografia: l'affordance va detta, non lasciata indovinare.
     invito: 'Scorri per scoprire la nostra selezione',
   },
 
-  dove: {
-    titolo: 'Dove trovarci',
-    frase: 'Al Centro Agro Alimentare Riminese.',
-    testo:
-      'Il banco è dentro il padiglione centrale del mercato ortofrutticolo. L’ingresso è libero e gratuito: non serve una tessera, non serve un appuntamento.',
+  // La mappa è protagonista e non ha bisogno di essere presentata: sopra di
+  // lei due parole, sotto niente. I dati stanno nella sezione dopo, che è
+  // un'altra cosa e va letta come tale.
+  mappa: {
+    titolo: 'Siamo qui',
+    azione: 'Apri su Google Maps',
   },
 
-  contatti: { titolo: 'Contatti' },
+  luogo: {
+    titolo: 'Punto vendita',
+    azione: 'Ottieni indicazioni',
+    chiama: 'Chiama',
+  },
+
   congedo: { frase: 'Vi aspettiamo al banco.' },
 } as const;

@@ -6,22 +6,23 @@ import { asset } from '@/lib/asset';
 import { company, indirizzoPuntoVendita, mappaEmbed, mappaApri } from '@/content/bufala/company';
 import { sezioni } from '@/content/bufala/copy';
 import { Vetrina } from './Vetrina';
+import { Rivela } from './Rivela';
 
 const pv = company.puntoVendita;
 
 export function Sections() {
   return (
     <>
+    <Rivela />
     {/* La meta' chiara: solo le informazioni che devono essere leggibili. */}
     <div className="bufala-sezioni">
       {/* L'apertura: una frase sola, tanto spazio intorno. È il primo
           respiro dopo il viaggio, e la prima cosa che si legge sul chiaro. */}
-      <section className="bufala-sezione bufala-apertura">
+      <section className="bufala-sezione bufala-apertura" data-rivela>
         <h2>{sezioni.apertura.frase}</h2>
-        <p>{sezioni.apertura.testo}</p>
       </section>
 
-      <section className="bufala-sezione">
+      <section className="bufala-sezione" data-rivela>
         <p className="micro">{sezioni.banco.titolo}</p>
         <h2>{sezioni.banco.frase}</h2>
         <p>{sezioni.banco.testo}</p>
@@ -49,7 +50,7 @@ export function Sections() {
       {/* I prodotti: le foto reali del cliente, non un elenco. Una lista di
           nomi non dice niente; questi scatti dicono tutto — compreso che
           dietro il banco c'è una selezione, non un assortimento a caso. */}
-      <section className="bufala-sezione">
+      <section className="bufala-sezione" data-rivela>
         <p className="micro">{sezioni.prodotti.titolo}</p>
         <h2>{sezioni.prodotti.frase}</h2>
         <p>{sezioni.prodotti.testo}</p>
@@ -60,65 +61,69 @@ export function Sections() {
           dell'intera larghezza e di una propria altezza di scorrimento. */}
       <Vetrina />
 
-      {/* — Dove trovarci —
-          Non un indirizzo scritto: una scheda con la mappa, i dati e le due
-          cose che uno vuole fare davvero da un telefono — aprire il
-          navigatore e chiamare. I recapiti scritti servivano quando non si
-          poteva agire; qui si può.
+      {/* — Siamo qui —
+          La mappa e' protagonista e non ha bisogno di essere presentata:
+          sopra di lei due parole, dentro solo lei, sotto niente. Tutto
+          quello che si puo' leggere sta nella sezione dopo, che e' un'altra
+          cosa e va letta come tale. Prima erano un blocco solo, e il blocco
+          leggeva come "ecco la nostra sede" invece che come un luogo. */}
+      <section className="bufala-sezione bufala-mappa" id="dove" data-rivela>
+        <p className="micro">{sezioni.mappa.titolo}</p>
+        <a
+          className="scheda scheda--mappa"
+          href={mappaApri}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={`${sezioni.mappa.azione}: ${company.brand}, ${indirizzoPuntoVendita}`}
+        >
+          <span className="scheda-riflesso" aria-hidden="true" />
+          <iframe
+            src={mappaEmbed}
+            title={`${company.brand} — ${indirizzoPuntoVendita}`}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            tabIndex={-1}
+          />
+          <span className="scheda-azione">{sezioni.mappa.azione}</span>
+        </a>
+      </section>
 
-          ⚠️ La mappa incorporata di Google installa cookie di profilazione al
-          caricamento: per un'azienda italiana significa banner dei cookie
-          obbligatorio. È una scelta del cliente, non una svista. */}
-      <section className="bufala-sezione" id="dove">
-        <p className="micro">{sezioni.dove.titolo}</p>
-        <h2>{sezioni.dove.frase}</h2>
-        <p>{sezioni.dove.testo}</p>
-
-        <div className="scheda-luogo">
-          <div className="scheda-mappa">
-            <iframe
-              src={mappaEmbed}
-              title={`Mappa: ${company.brand}, ${indirizzoPuntoVendita}`}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allowFullScreen
-            />
-          </div>
-
-          <div className="scheda-corpo">
-            <p className="scheda-nome">{company.brand}</p>
-            <p className="scheda-riga">
-              {pv.presso}
-              <br />
-              {indirizzoPuntoVendita}
-              <br />
-              {pv.dettaglio}
-            </p>
-            <p className="micro">
-              {pv.uscita} · {pv.accesso}
-            </p>
-
-            <div className="scheda-azioni">
-              <a
-                className="bottone bottone--pieno"
-                href={mappaApri}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Apri su Google Maps
-              </a>
-              <a className="bottone" href={company.telefonoHref}>
-                Chiama ora
-              </a>
-            </div>
-
-            <p className="micro scheda-telefono">{company.telefono}</p>
+      {/* — Punto vendita —
+          I dati, ordinati e senza commento. Una riga per informazione. */}
+      <section className="bufala-sezione bufala-recapito" data-rivela>
+        <p className="micro">{sezioni.luogo.titolo}</p>
+        <div className="scheda scheda--dati">
+          <span className="scheda-riflesso" aria-hidden="true" />
+          <p className="recapito-nome">{company.brand}</p>
+          <p className="recapito-riga">
+            {pv.presso}
+            <br />
+            {pv.via}
+            <br />
+            {pv.cap} {pv.comune} ({pv.provincia})
+          </p>
+          <p className="recapito-riga recapito-riga--tenue">{pv.dettaglio}</p>
+          <p className="recapito-tel">
+            <a href={company.telefonoHref}>{company.telefono}</a>
+          </p>
+          <div className="scheda-azioni">
+            <a
+              className="bottone bottone--pieno"
+              href={mappaApri}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {sezioni.luogo.azione}
+            </a>
+            <a className="bottone" href={company.telefonoHref}>
+              {sezioni.luogo.chiama}
+            </a>
           </div>
         </div>
       </section>
 
       {/* Il congedo, dove prima finiva il viaggio. */}
-      <section className="bufala-sezione bufala-apertura">
+      <section className="bufala-sezione bufala-apertura" data-rivela>
         <h2>{sezioni.congedo.frase}</h2>
       </section>
 

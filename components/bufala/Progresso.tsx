@@ -65,8 +65,16 @@ Progresso.render = function render(p: number): void {
   // Sulla hero l'indicatore non c'è: quella schermata deve restare la
   // headline e nient'altro. Compare quando il viaggio è già cominciato,
   // cioè quando serve davvero — orientare chi sta già scorrendo.
+  //
+  // E se ne va prima che il viaggio finisca. Misura l'avanzamento del piano
+  // sequenza, non della pagina: lasciarlo acceso sul documento significa
+  // mostrare una barra ferma al fondo mentre si legge — e accanto alla
+  // scheda della mappa, che ha una propria riga di avanzamento, diventano
+  // due indicatori d'ottone nello stesso schermo che misurano cose diverse.
   const inizio = sceneRange(SCENES[0].id).p1;
-  const comparsa = smooth(span(p, inizio * 0.55, inizio));
+  const entra = smooth(span(p, inizio * 0.55, inizio));
+  const esce = 1 - smooth(span(p, 0.88, 0.98));
+  const comparsa = entra * esce;
   radice.style.opacity = comparsa.toFixed(3);
   radice.style.visibility = comparsa < 0.01 ? 'hidden' : 'visible';
 
