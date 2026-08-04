@@ -49,14 +49,25 @@ export function Sections() {
           fluidita' dello scroll. Costo dichiarato, non taciuto. */}
       <section className="bufala-sezione bufala-perchi" data-rivela>
         <p className="micro">{sezioni.perChi.titolo}</p>
+        {/* Il banco che si compone (idea dell'utente, variante a costo
+            zero — Task 11): tre veli di carta coprono la fotografia e si
+            alzano a battute scaglionate quando la sezione entra in vista.
+            I pixel restano quelli veri: si anima la carta, mai la foto.
+            Solo transform e opacity (B15); senza JavaScript o con
+            prefers-reduced-motion i veli non esistono e la foto è ferma. */}
         <figure className="perchi-foto">
-          <img
-            src={asset('/assets/bufala/banco.webp')}
-            alt="Il banco di Quelli della bufala: formaggi e salumi nel banco frigo, prosciutti appesi alle travi"
-            width={1169}
-            height={914}
-            loading="lazy"
-          />
+          <span className="foto-cornice">
+            <img
+              src={asset('/assets/bufala/banco.webp')}
+              alt="Il banco di Quelli della bufala: formaggi e salumi nel banco frigo, prosciutti appesi alle travi"
+              width={1169}
+              height={914}
+              loading="lazy"
+            />
+            <span className="foto-velo" aria-hidden="true" />
+            <span className="foto-velo" aria-hidden="true" />
+            <span className="foto-velo" aria-hidden="true" />
+          </span>
           <figcaption className="micro">Il banco, dentro il C.A.R.R. di Rimini</figcaption>
         </figure>
         <h2>{sezioni.perChi.frase}</h2>

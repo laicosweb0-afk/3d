@@ -1251,8 +1251,53 @@
   display: block;
   width: 100%;
   height: auto;
+}
+
+.perchi-foto .foto-cornice {
+  position: relative;
+  display: block;
+  overflow: hidden;
   border-radius: var(--raggio-medio);
 }
+
+/* — Il banco che si compone (Task 11, variante a costo zero) —
+   Tre veli del colore della pagina coprono la fotografia in terzi
+   verticali e si alzano uno dopo l'altro quando la sezione entra: la foto
+   vera si compone davanti agli occhi, e i suoi pixel non vengono mai
+   toccati — si anima la carta, non l'immagine. Solo transform e opacity.
+
+   I veli ESISTONO solo se la rivelazione ha preso il comando
+   ([data-rivela]): senza JavaScript l'attributo non c'è, i veli restano
+   trasparenti e la fotografia è semplicemente lì. Lo stesso vale per chi
+   preferisce meno movimento. */
+.foto-velo {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 33.5%;
+  background: var(--latte);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.foto-velo:nth-of-type(1) { left: 0; }
+.foto-velo:nth-of-type(2) { left: 33.25%; }
+.foto-velo:nth-of-type(3) { left: 66.5%; }
+
+[data-rivela='attesa'] .foto-velo {
+  opacity: 1;
+}
+
+[data-rivela='visto'] .foto-velo {
+  opacity: 0;
+  transform: translateY(-6%);
+  transition:
+    opacity var(--durata-scena) var(--curva-entrata),
+    transform var(--durata-scena) var(--curva-entrata);
+}
+
+[data-rivela='visto'] .foto-velo:nth-of-type(2) { transition-delay: var(--passo-coda); }
+[data-rivela='visto'] .foto-velo:nth-of-type(3) { transition-delay: calc(var(--passo-coda) * 2); }
 
 .perchi-foto figcaption {
   letter-spacing: 0.14em;

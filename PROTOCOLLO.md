@@ -205,13 +205,12 @@ ognuna, con un collaudo sui dispositivi veri alla fine di ogni fase.
 
 - **Il puntino della i che cade e diventa la mozzarella** — idea dell'utente,
   esplicitamente rimandata («questa qui rimane come task da fare»). → Task 11.
-- **Il banco che si compone scorrendo** — idea dell'utente (04/08): mentre si
-  scende, il bancone si compone davanti agli occhi. Due strade, da decidere in
-  Task 11:
-  1. *A costo zero:* la fotografia REALE del banco rivelata a pezzi dallo
-     scroll — maschere e trasformazioni, dentro il budget (B15), i pixel
-     restano quelli veri. Nessun rischio «troppo da IA».
-  2. *A pagamento:* video generato da Higgsfield partendo dalla foto reale.
-     Rischio concreto: l'IA che tocca un luogo vero produce esattamente
-     l'effetto sintetico appena bocciato nel Per chi. Se si sceglie questa
-     strada: prima il costo esatto in crediti, poi il permesso, come sempre.
+- **Il banco che si compone scorrendo** — idea dell'utente (04/08).
+  **Prototipata a costo zero** (04/08, sera): tre veli del colore della
+  pagina coprono la fotografia vera in terzi e si alzano a battute
+  scaglionate quando la sezione entra — si anima la carta, mai la foto,
+  solo transform e opacity (B15). Senza JavaScript o con meno movimento i
+  veli non esistono. **In attesa del giudizio dell'utente sul sito
+  pubblicato**; la strada a pagamento (video generato) resta possibile ma
+  sconsigliata — l'IA su un luogo vero produce l'effetto sintetico appena
+  bocciato — e comunque: prima il costo esatto, poi il permesso.
