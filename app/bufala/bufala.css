@@ -2274,6 +2274,85 @@
       var(--verde-profondo) 100%);
 }
 
+/* — Il fondale vivo (brief dell'utente, 04/08) —
+   La fascia dipinta qui sopra e' la BASE: senza JavaScript o con meno
+   movimento, il passaggio resta quello. Quando il Fondale si accende
+   (classe --css o --js), la fascia diventa un metro invisibile alto
+   mezza schermata e il colore passa sullo sfondo dell'INTERO documento,
+   che cambia mentre si scorre: comincia quando la fascia entra dal
+   fondo — mezza schermata prima della meta' scura — e finisce quando la
+   fascia esce di testa, cioe' quando la meta' scura riempie lo schermo.
+
+   La scala e' la stessa a nove fermate della fascia, che era stata
+   costruita apposta per non passare mai dal grigio: solo che le fermate
+   ora sono istanti dello scorrimento, non punti nello spazio. */
+.bufala-documento {
+  position: relative;
+}
+
+.bufala-documento--css,
+.bufala-documento--js {
+  z-index: 3;
+  background-color: var(--latte);
+}
+
+.bufala-documento--css .bufala-sezioni:not(.bufala-buio),
+.bufala-documento--js .bufala-sezioni:not(.bufala-buio) {
+  background: transparent;
+}
+
+.bufala-documento--css .bufala-passaggio,
+.bufala-documento--js .bufala-passaggio {
+  background: none;
+  height: 50svh;
+  margin-bottom: 0;
+}
+
+/* La meta' scura cede il colore di base al fondale: restano la luce
+   morbida, la vignettatura e la discesa verso il quasi-nero, che sono
+   veli — e sopra il fondale, ormai fermo su verde profondo, compongono
+   esattamente la superficie di prima. Il primo tratto resta trasparente
+   perche' e' li' che il fondale sta ancora finendo la sua corsa. */
+.bufala-documento--css .bufala-sezioni.bufala-buio,
+.bufala-documento--js .bufala-sezioni.bufala-buio {
+  background:
+    radial-gradient(120% 52% at 50% 42%, rgb(30 62 44 / 0.42) 0%, rgb(17 40 29 / 0) 62%),
+    radial-gradient(150% 100% at 50% 58%, rgb(17 40 29 / 0) 55%, rgb(6 15 11 / 0.5) 100%),
+    linear-gradient(to bottom, rgb(13 33 23 / 0) 16%, #0d2117 100%);
+}
+
+@supports (animation-timeline: view()) {
+  .bufala-documento--css {
+    timeline-scope: --passaggio;
+    animation: fondale-scorrimento linear both;
+    /* Dichiarata DOPO la scorciatoia `animation`, che altrimenti la
+       azzererebbe: e' la riga che lega i fotogrammi allo scorrimento. */
+    animation-timeline: --passaggio;
+    /* La corsa si chiude al 75% della finestra, non al 100%: il primo
+       occhiello della meta' scura arriva al centro dello schermo quando
+       il fondale e' ancora salvia — misurato: 2,48 a 1 — e il colore
+       deve essere gia' a casa PRIMA che il primo testo sia in posizione
+       di lettura. */
+    animation-range: cover 0% cover 75%;
+  }
+  .bufala-documento--css .bufala-passaggio {
+    view-timeline: --passaggio;
+  }
+}
+
+@keyframes fondale-scorrimento {
+  0% { background-color: var(--latte); }
+  11% { background-color: #f2ede1; }
+  23% { background-color: #e6e2d2; }
+  35% { background-color: #cdd3c3; }
+  47% { background-color: #aabaa6; }
+  59% { background-color: #7e9784; }
+  71% { background-color: #517062; }
+  83% { background-color: #2c4a39; }
+  93% { background-color: #17311f; }
+  100% { background-color: var(--verde-profondo); }
+}
+
 
 /* Fase 4 — i contenuti della metà scura arrivano in ordine.
    Titolo, poi testo, poi schede: novanta millisecondi l'uno dall'altro. È

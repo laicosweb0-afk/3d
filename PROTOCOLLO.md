@@ -84,7 +84,8 @@ Cosa si misura, e con cosa:
 | Ingrandimento dei video | `film.mjs` — sorgente contro pixel in pagina | *definita dalla Task 01* |
 | Peso dello scroll | `peso.mjs` — schermate per sezione | *definita dalla Task 01* |
 | Forma delle sezioni | `forma.mjs` — allineamento, larghezza, sequenza dei blocchi | mai due consecutive uguali |
-| Il compositore dell'ordine | `ordine.mjs` — ricerca, stepper col minimo, prodotto a mano, messaggio WhatsApp, finestre | zero difetti |
+| Il compositore dell'ordine | `ordine.mjs` — ricerca, stepper col minimo, prodotto a mano, messaggio, finestre | zero difetti |
+| Il passaggio vivo | `passaggio.mjs` — panna prima, salvia (mai grigio) a metà, verde a schermo pieno; strade CSS e JS | zero difetti |
 
 Gli script vivono nella cartella di lavoro temporanea e vanno **riscritti se
 persi**: sono corti, e il metodo conta più del file.
@@ -228,7 +229,12 @@ ognuna, con un collaudo sui dispositivi veri alla fine di ogni fase.
 
 ## 9-bis. Il programma vivo (aggiornato 04/08, sera tardi)
 
-**Fatte oggi, oltre il piano:** l'ingresso a tre porte col sipario ·
+**Fatte oggi, oltre il piano:** il passaggio vivo (brief dell'utente: il
+colore del documento cambia DURANTE lo scorrimento su un solo strato,
+stile Apple — CSS scroll-driven dove c'è, lerp JS altrove, fascia dipinta
+come base per no-JS e meno-movimento; la scala a nove fermate diventa
+tempo; l'audit dei contrasti ora misura ogni testo dal punto in cui il
+lettore lo vede) · l'ingresso a tre porte col sipario ·
 «Oggi al banco» (grafica del titolare → ridisegno Apple: carta unica con
 stato, chip, orari, azioni) · il sacchetto D.O.P. vero · il sottotitolo
 dell'ingresso rimosso (riferimento utente) · i passi sotto la mappa ·

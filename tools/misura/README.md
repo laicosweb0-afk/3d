@@ -32,6 +32,7 @@ node tools/misura/<strumento>.mjs
 | `peso.mjs` | schermate di scorrimento per sezione | ha trovato che il filmato era il 77% del sito |
 | `film.mjs` | risoluzione sorgente contro pixel in pagina | ha trovato l'ingrandimento ×3,73 |
 | `ordine.mjs` | il compositore dell'ordine: ricerca, stepper, messaggio | ha trovato che «olio» non trovava «all'olio»: l'apostrofo tipografico teneva la parola incollata |
+| `passaggio.mjs` | il fondale vivo: panna → salvia → verde, strade CSS e JS | ha trovato l'occhiello del buio che arrivava sul salvia: la corsa ora chiude al 75% |
 
 ## Due cose che qui non si possono misurare
 

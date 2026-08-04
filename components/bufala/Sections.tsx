@@ -15,6 +15,7 @@ import { Rivela } from './Rivela';
 import { Oggi } from './Oggi';
 import { Ordina } from './Ordina';
 import { IconaWhatsApp, IconaInstagram, IconaEmail } from './icone';
+import { Fondale } from './Fondale';
 
 const pv = company.puntoVendita;
 
@@ -29,6 +30,12 @@ export function Sections() {
   return (
     <>
     <Rivela />
+    <Fondale />
+    {/* Il documento intero — metà chiara, fascia, metà scura — vive in un
+        contenitore solo: è il SUO sfondo che cambia colore durante lo
+        scorrimento (Fondale). Le metà diventano trasparenti solo quando
+        il fondale si accende; senza JavaScript resta la fascia dipinta. */}
+    <div className="bufala-documento">
     {/* — La metà chiara — */}
     <div className="bufala-sezioni">
       {/* Movimento 2 · Chi siamo. L'unica dichiarazione centrata del
@@ -304,6 +311,8 @@ export function Sections() {
           {company.sedeLegale.comune}{' '}({company.sedeLegale.provincia})
         </p>
       </footer>
+    </div>
+    {/* /bufala-documento */}
     </div>
     </>
   );
