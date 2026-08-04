@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
-import './brand-font.css';
-import './globals.css';
+// Solo la base condivisa: il CSS di Mondial (globals + brand-font) viaggia
+// con la sua pagina, non con tutte (B7 — era il 70% del CSS bloccante di
+// /bufala, per zero righe usate).
+import './base.css';
 
 const TITLE = 'Mondial Service Srl — Ristrutturazioni, Impianti, Servizi | Mordano (BO)';
 const DESCRIPTION =

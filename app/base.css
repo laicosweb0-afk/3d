@@ -1,0 +1,25 @@
+/* La base comune ai tre siti di questo repository — e NIENT'ALTRO.
+ *
+ * Qui viveva l'intero globals.css di Mondial Service (60 kB con un font
+ * incorporato), importato nel layout radice: ogni rotta lo pagava come CSS
+ * bloccante, compresa /bufala che non ne usa una riga. Misurato in Task 00,
+ * assegnato in B7, pagato qui: ora il CSS di ogni sito viaggia solo con la
+ * sua rotta, e in comune resta il minimo che tutti danno per scontato. */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: auto;
+}
+
+/* Il fondo dietro la pagina della bufala: il verde del film, non il bianco
+ * di Mondial. Si vede solo nel rimbalzo dell'overscroll — che prima
+ * lampeggiava chiaro sopra la hero scura. Il selettore è progressivo: dove
+ * :has non c'è, resta il fondo di prima. */
+body:has(.bufala) {
+  background: #11281d;
+}

@@ -1,3 +1,7 @@
+// Il CSS di Mondial Service vive qui, con la sua pagina: nel layout radice
+// lo pagava anche /bufala come CSS bloccante (60 kB, font incluso).
+import './brand-font.css';
+import './globals.css';
 import { ExperienceRoot } from '@/components/ExperienceRoot';
 import { BeforeAfter } from '@/components/dom/BeforeAfter';
 import { MaterialChips } from '@/components/dom/MaterialChips';
