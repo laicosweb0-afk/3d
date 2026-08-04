@@ -111,8 +111,17 @@ export const video = {
    * legge a 300 px/s vede finalmente 24 immagini al secondo invece di 7.
    * I fotogrammi inventati sono stati ispezionati sul punto peggiore, il
    * taglio: lama nitida, nessuna scia sulle gocce. */
-  webm: `${BASE}/mozzarella-49.webm`,
+  /* L'ORDINE delle sorgenti è la cura del Lenovo (04/08): il browser
+   * sceglie la prima che sa leggere. Col WebM davanti, Chrome su Android
+   * lo prendeva — e sui tablet economici il decodificatore VP9 è spesso
+   * software: era quello il singhiozzo del Lenovo dell'utente, mentre
+   * iPhone (che VP9 non lo legge) e PC andavano bene. Con l'MP4 davanti,
+   * ogni dispositivo con H.264 in hardware — cioè tutti quelli veri — usa
+   * quello. Il WebM resta in panchina per i Chromium open-source senza
+   * codec proprietari (fra cui il banco di prova di questo progetto):
+   * ormai pesano uguale, non costa tenerlo. */
   mp4: `${BASE}/mozzarella-49.mp4`,
+  webm: `${BASE}/mozzarella-49.webm`,
   poster: `${BASE}/mozzarella-4-poster.webp`,
 };
 

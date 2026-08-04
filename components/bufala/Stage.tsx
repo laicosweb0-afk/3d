@@ -70,7 +70,7 @@ export function Stage() {
           }}
         />
       ))}
-      {sceneVideo.length > 0 && <Video webm={clip.webm} mp4={clip.mp4} poster={clip.poster} />}
+      {sceneVideo.length > 0 && <Video mp4={clip.mp4} webm={clip.webm} poster={clip.poster} />}
     </div>
   );
 }

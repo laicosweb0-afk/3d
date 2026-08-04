@@ -25,18 +25,19 @@ const player = {
 };
 
 export interface VideoProps {
-  /** WebM/VP9: preferito, pesa meno a parità di resa. */
-  webm: string;
-  /** MP4/H.264: ripiego universale. Serve davvero — Safari su iOS non
-   *  legge VP9 in ogni versione, e senza questo il viaggio resterebbe fermo
-   *  sul poster proprio sui telefoni. */
+  /** MP4/H.264, PRIMA sorgente: decodifica hardware su ogni dispositivo
+   *  vero. L'ordine è la cura del singhiozzo sui tablet Android economici,
+   *  che col WebM davanti finivano sul decodificatore VP9 software. */
   mp4: string;
+  /** WebM/VP9, riserva: serve solo ai Chromium open-source senza codec
+   *  proprietari (fra cui il banco di prova di questo progetto). */
+  webm: string;
   /** Poster mostrato finché il video non è pronto: senza, il primo
    *  fotogramma resta nero e si vede lo stacco. */
   poster: string;
 }
 
-export function Video({ webm, mp4, poster }: VideoProps) {
+export function Video({ mp4, webm, poster }: VideoProps) {
   const rif = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -112,8 +113,8 @@ export function Video({ webm, mp4, poster }: VideoProps) {
       // non c'è nessuno scatto di luminosità.
       style={{ opacity: regia[SCENES[0].id].luce[0] }}
     >
-      <source src={webm} type="video/webm" />
       <source src={mp4} type="video/mp4" />
+      <source src={webm} type="video/webm" />
     </video>
   );
 }
