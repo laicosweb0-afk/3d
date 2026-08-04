@@ -34,7 +34,43 @@
      si allontanavano al punto che la pagina sembrava mezza vuota: lo spazio
      deve far respirare il contenuto, non nasconderlo. */
   --spazio-sezione: clamp(3.5rem, 8vh, 6.5rem);
-  --misura-testo: 62ch; /* ~70 caratteri con questa famiglia */
+  /* La misura di lettura. 62ch erano ~70 caratteri: leggibili, ma su uno
+     schermo largo una riga così lunga fa perdere il rigo e legge come un
+     documento. 52ch è la misura editoriale — meno parole per riga, più
+     ritorni, e l'occhio non deve mai cercare l'inizio della riga dopo. */
+  --misura-testo: 52ch;
+
+  /* — Raggi —
+     Una scala sola, tre gradini, e ogni angolo del sito appartiene a uno di
+     questi. Prima c'erano 2px e 3px sparsi: raggi così piccoli non si
+     leggono come morbidezza, si leggono come un errore di allineamento —
+     l'occhio vede un angolo vivo appena smussato e lo trova sgradevole
+     senza sapere perché. */
+  --raggio-piccolo: 8px;   /* immagini in fila, elementi minori */
+  --raggio-medio: 16px;    /* schede e pannelli */
+  --raggio-grande: 24px;   /* contenitori che tengono altri elementi */
+
+  /* — Bordi —
+     Filo di capello, sempre 1px, sempre a bassissimo contrasto. Un bordo
+     che si nota è un bordo sbagliato: serve a definire dove finisce una
+     superficie, non a disegnarci intorno una cornice. */
+  --filo-su-scuro: rgb(246 241 228 / 0.09);
+
+  /* — Elevazione —
+     Su fondo scuro un'ombra non produce separazione: nero su verde profondo
+     non si vede. L'elevazione la fanno due cose insieme — un filo di luce
+     sul bordo alto, come se la superficie prendesse luce da sopra, e
+     un'ombra larghissima e molto sfocata sotto, che non si vede ma si
+     sente. È il motivo per cui le interfacce scure hanno un bordo chiaro e
+     non un'ombra netta.
+
+     Non c'è un equivalente per le superfici chiare perché nella metà chiara
+     del sito non ci sono superfici sollevate: un token dichiarato e non
+     usato invecchia male e prima o poi qualcuno lo applica a caso. Quando
+     arriverà la scheda della mappa, si definirà allora. */
+  --alza-su-scuro:
+    inset 0 1px 0 rgb(246 241 228 / 0.07),
+    0 24px 60px -24px rgb(0 0 0 / 0.7);
 
   background: var(--verde-profondo);
   color: var(--latte);
@@ -345,6 +381,8 @@
 
 .bufala-sezione a {
   color: var(--latte);
+  padding-bottom: 0.12em;
+  transition: border-bottom-color 0.35s ease;
   text-decoration: none;
   border-bottom: 1px solid var(--latte-20);
   padding-bottom: 0.1em;
@@ -427,7 +465,8 @@
 .bufala-fila img {
   width: 100%;
   height: auto;
-  border-radius: 2px;
+  border-radius: var(--raggio-piccolo);
+  border: 1px solid var(--filo-su-scuro);
 }
 
 @media (max-width: 860px) {
@@ -671,6 +710,17 @@
   font-weight: 500;
   letter-spacing: -0.005em;
   line-height: 1.2;
+  /* La sottolineatura scende sotto la linea di base e non tocca le
+     discendenti: una sottolineatura che taglia la "g" e la "p" e' il
+     dettaglio che distingue un testo composto da uno buttato li'. */
+  border-bottom: 1px solid currentColor;
+  border-bottom-color: rgb(246 241 228 / 0.25);
+  padding-bottom: 0.15em;
+  transition: border-bottom-color 0.35s ease, color 0.35s ease;
+}
+
+.bufala-dati .dato:hover {
+  border-bottom-color: var(--ottone);
 }
 
 /* — L'eclisse: il rientro nel buio —
@@ -766,8 +816,13 @@
   width: min(100%, 54rem);
   aspect-ratio: 4 / 3;
   overflow: hidden;
-  border-radius: 3px;
+  border-radius: var(--raggio-medio);
   background: #0a0f0c;
+  /* Il filo di luce e l'ombra profonda: senza, il verde quasi nero del
+     filmato e il verde della pagina si toccano e il pannello legge come un
+     ritaglio nella pagina invece che come un oggetto appoggiato sopra. */
+  border: 1px solid var(--filo-su-scuro);
+  box-shadow: var(--alza-su-scuro);
 }
 
 .vetrina-video {
@@ -807,9 +862,13 @@
 /* Quanta vetrina resta: senza, chi arriva non ha nessun indizio che ci sia
    dell'altro di lato. */
 .vetrina-corsa {
-  width: min(100%, 54rem);
+  /* Più stretta del pannello: un filo che arriva esattamente agli stessi
+     bordi legge come una parte del pannello caduta fuori. Rientrando,
+     legge come una didascalia. */
+  width: min(70%, 32rem);
   height: 1px;
-  background: var(--latte-20);
+  background: rgb(246 241 228 / 0.12);
+  border-radius: 1px;
   overflow: hidden;
 }
 
@@ -835,4 +894,31 @@
     grid-template: none;
     gap: 0.75rem;
   }
+}
+
+/* — Stato di messa a fuoco —
+   Mancava del tutto: chi naviga da tastiera non aveva nessun modo di sapere
+   dove si trovava. L'anello e' d'ottone e distanziato, come una cosa
+   disegnata e non come il contorno di sistema. */
+.bufala a:focus-visible,
+.bufala button:focus-visible,
+.bufala [tabindex]:focus-visible {
+  outline: 1px solid var(--ottone);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+/* — Selezione del testo —
+   Il blu di sistema su una pagina verde e crema e' l'unico colore fuori
+   palette che il visitatore vedra' mai. Basta dichiararlo. */
+.bufala ::selection {
+  background: rgb(176 141 87 / 0.28);
+  color: inherit;
+}
+
+/* — Rendering delle immagini —
+   Le fotografie del banco sono ridimensionate parecchio: senza questo, i
+   bordi delle etichette prendono una scaletta visibile. */
+.bufala img {
+  image-rendering: auto;
 }
