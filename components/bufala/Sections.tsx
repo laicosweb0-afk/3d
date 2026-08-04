@@ -14,7 +14,7 @@ import { Vetrina } from './Vetrina';
 import { Rivela } from './Rivela';
 import { Oggi } from './Oggi';
 import { Ordina } from './Ordina';
-import { IconaWhatsApp, IconaInstagram } from './icone';
+import { IconaWhatsApp, IconaInstagram, IconaEmail } from './icone';
 
 const pv = company.puntoVendita;
 
@@ -216,6 +216,12 @@ export function Sections() {
               <a href={company.telefonoHref}>{company.telefono}</a>
             </dd>
           </div>
+          <div className="recapito-voce">
+            <dt>Email</dt>
+            <dd>
+              <a href={`mailto:${company.email}`}>{company.email}</a>
+            </dd>
+          </div>
         </dl>
 
         <h2 className="recapito-congedo">{sezioni.congedo.frase}</h2>
@@ -235,8 +241,8 @@ export function Sections() {
         {/* I canali coi loro glifi (richiesta dell'utente, 04/08): riga
             propria, sempre — in coda ai bottoni andavano a capo spaiati
             sul telefono. Cerchi della stessa famiglia dei bottoni,
-            monocromi. Il terzo — l'email — si aggiunge quando arriva
-            l'indirizzo vero (blocco 11): quello vecchio è bandito. */}
+            monocromi: WhatsApp, Instagram e l'email ufficiale (arrivata
+            il 04/08, blocco 11 chiuso — quella vecchia resta bandita). */}
         <div className="canali">
           <a
             className="canale"
@@ -255,6 +261,13 @@ export function Sections() {
             aria-label={`Il profilo Instagram ${company.instagramHandle}`}
           >
             {IconaInstagram}
+          </a>
+          <a
+            className="canale"
+            href={`mailto:${company.email}`}
+            aria-label={`Scrivici via email: ${company.email}`}
+          >
+            {IconaEmail}
           </a>
         </div>
       </section>

@@ -4,9 +4,11 @@
 //
 // Quattro zone divise da fili: la ricerca, la lista con lo stepper a
 // chili, il ritiro con le finestre del titolare, l'invio. Il pulsante
-// finale non manda niente a nessun server: apre WhatsApp col messaggio
-// già scritto, e l'ordine diventa una conversazione col banco — che è
-// l'unico posto dove può essere confermato davvero.
+// finale non manda niente a nessun server: apre la posta con oggetto e
+// messaggio già scritti (decisione dell'utente, 04/08: «l'ordine delle
+// mozzarelle facciamolo tramite email» — prima era WhatsApp), e l'ordine
+// diventa una conversazione col banco — l'unico posto dove può essere
+// confermato davvero.
 //
 // Le finestre di prenotazione sono INFORMAZIONE, non cancello (decisione
 // dell'utente, 04/08: «inserirla delicatamente nella box, come le luci
@@ -21,7 +23,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { company } from '@/content/bufala/company';
-import { IconaWhatsApp } from './icone';
+import { IconaEmail } from './icone';
 import {
   ordinabili,
   finestre,
@@ -122,10 +124,10 @@ export function Ordina() {
     scelti.reduce((somma, p) => somma + kg[p.nome], 0) + extra.reduce((s, v) => s + v.kg, 0);
 
   /** Il messaggio: righe corte, dati e basta — dev'essere comodo da
-   *  leggere sul telefono del banco, non elegante. */
+   *  leggere sul telefono del banco, non elegante. Il titolo sta
+   *  nell'oggetto; il corpo usa \r\n, che è l'a-capo che il mailto
+   *  garantisce su ogni client di posta. */
   const messaggio = [
-    `Ordine — ${company.brand}`,
-    '',
     ...scelti.map((p) => `• ${p.nome} — ${kgTesto(kg[p.nome])}`),
     ...extra.map((v) => `• ${v.nome} — ${kgTesto(v.kg)}`),
     '',
@@ -134,9 +136,12 @@ export function Ordina() {
       : `Ritiro: da concordare (prenotazioni chiuse al momento dell’invio${
           adesso ? `, riaprono ${adesso.prossima.apreTesto}` : ''
         })`,
-  ].join('\n');
+  ].join('\r\n');
 
-  const invia = `https://wa.me/${company.whatsapp}?text=${encodeURIComponent(messaggio)}`;
+  const invia =
+    `mailto:${company.email}` +
+    `?subject=${encodeURIComponent(`Ordine — ${company.brand}`)}` +
+    `&body=${encodeURIComponent(messaggio)}`;
 
   return (
     <div className="visita-carta ordina-carta">
@@ -311,19 +316,19 @@ export function Ordina() {
       )}
       <div className="carta-azioni">
         {voci > 0 ? (
-          <a className="bottone bottone--pieno" href={invia} target="_blank" rel="noreferrer">
-            {IconaWhatsApp}
-            Invia l’ordine su WhatsApp
+          <a className="bottone bottone--pieno" href={invia}>
+            {IconaEmail}
+            Invia l’ordine via email
           </a>
         ) : (
           <span className="bottone bottone--pieno bottone--spento" aria-disabled="true">
-            {IconaWhatsApp}
-            Invia l’ordine su WhatsApp
+            {IconaEmail}
+            Invia l’ordine via email
           </span>
         )}
       </div>
       <p className="micro ordina-nota">
-        Si apre WhatsApp col messaggio già scritto. L’ordine vale quando ti rispondiamo.
+        Si apre la tua posta col messaggio già scritto. L’ordine vale quando ti rispondiamo.
       </p>
     </div>
   );

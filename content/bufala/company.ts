@@ -21,6 +21,12 @@ export const company = {
    *  entrano nel copy del sito — sono claim non ancora approvati qui. */
   instagram: 'https://www.instagram.com/quellidellabufala/',
   instagramHandle: '@quellidellabufala',
+
+  /** L'email UFFICIALE, dettata dall'utente (04/08): è il canale che
+   *  riceve gli ordini del compositore (sua decisione: «l'ordine delle
+   *  mozzarelle facciamolo tramite email»). Non è quella obsoleta del
+   *  biglietto da visita, che resta bandita. */
+  email: 'quellidellabufala1@gmail.com',
   // ⚠️ Indirizzo e sito del vecchio biglietto da visita: il cliente li ha
   // sostituiti e non vanno più mostrati da nessuna parte. Restano qui solo
   // per non farli riapparire per distrazione — se servisse un recapito

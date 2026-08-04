@@ -56,13 +56,13 @@ esito('un prodotto fuori lista si aggiunge a mano',
 // 4 — il messaggio: rimetto la mozzarella e leggo il collegamento
 await rigaMozz.locator('.ordine-aggiungi').click();
 const href = await p.getAttribute('.ordina-carta .bottone--pieno', 'href');
-const testo = decodeURIComponent((href ?? '').split('text=')[1] ?? '');
-esito('il collegamento apre wa.me col numero del banco',
-  (href ?? '').startsWith('https://wa.me/393920220924?text='));
-esito('il messaggio elenca i prodotti coi chili',
-  testo.includes('Mozzarella di bufala — 1 kg') && testo.includes('ricotta di bufala — 1 kg'));
-esito('il messaggio dice il ritiro (giorno o riapertura)',
-  /Ritiro: (lunedì|martedì|mercoledì|venerdì|da concordare)/.test(testo));
+const corpo = decodeURIComponent((href ?? '').split('body=')[1] ?? '');
+esito('il collegamento apre la posta sull’indirizzo ufficiale con l’oggetto',
+  (href ?? '').startsWith('mailto:quellidellabufala1@gmail.com?subject='));
+esito('il corpo elenca i prodotti coi chili',
+  corpo.includes('Mozzarella di bufala — 1 kg') && corpo.includes('ricotta di bufala — 1 kg'));
+esito('il corpo dice il ritiro (giorno o riapertura)',
+  /Ritiro: (lunedì|martedì|mercoledì|venerdì|da concordare)/.test(corpo));
 
 // 5 — le finestre: quattro righe informative, sintesi presente
 esito('le quattro finestre del titolare sono in campo',
