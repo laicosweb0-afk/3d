@@ -172,6 +172,7 @@ Aggiornato a ogni task. Un blocco aperto non si aggira in silenzio.
 | 6 | Dominio definitivo | **aperto** | cliente |
 | 9 | Le «ragioni» delle didascalie prodotti (una riga per prodotto: perché è al banco) | **aperto** — ferma il completamento della Task 07; parole sue, non nostre | cliente |
 | 10 | Lista completa dei prodotti ordinabili | **aperto** — il compositore (Task 14) è in campo col catalogo parziale: la mozzarella e le cinque tappe della vetrina, tutti prodotti già confermati. Arrivato l'elenco del titolare, si allunga `content/bufala/ordina.ts` e basta; intanto un prodotto fuori lista si scrive a mano e parte lo stesso | cliente |
+| 11 | Profilo Instagram e indirizzo email | **aperto** — l'utente vuole i loghi cliccabili (04/08): WhatsApp è già nel bottone dell'ordine; Instagram ed email si aggiungono APPENA arrivano l'handle vero e l'indirizzo nuovo. L'unica email in archivio è quella obsoleta del biglietto (bandita): un logo che porta a un recapito inventato è peggio di nessun logo | utente/cliente |
 | 7 | ~~Modello del tablet~~ | **chiuso** — succede su tre dispositivi diversi, quindi non è il dispositivo. Misurato: è aritmetica, non hardware (Task 00) | — |
 | 8 | ~~File originale del filmato~~ | **chiuso** — è a 1280×720, cioè la stessa risoluzione della copia in repo: non c'è niente da recuperare | — |
 
@@ -238,6 +239,7 @@ sempre zero difetti) · audit contrasti verde con lo strumento onesto.
 |---|---|
 | Ragioni dei prodotti (Task 07) | una riga per prodotto dal cliente |
 | Catalogo completo dell'ordine (Task 14) | l'elenco dei prodotti dal titolare |
+| Loghi Instagram ed email | l'handle e l'indirizzo veri (blocco 11) |
 | Copy definitivo (Task 10) | approvazione del cliente |
 | Semaforo vivo | il foglio Google dell'utente (5 minuti) |
 | Verifica mappa e giudizio sipario | gli occhi dell'utente sul link |

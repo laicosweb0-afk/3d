@@ -744,22 +744,33 @@
   color: var(--latte);
 }
 
-/* Il ritiro: le righe hanno la grammatica degli orari (una famiglia sola
-   di elenco); la finestra aperta ADESSO si accende col punto verde — la
-   stessa luce, lo stesso significato: si può. */
-.ritiro-righe {
+/* Il ritiro: due colonne DICHIARATE (brief 04/08, «strutturato, stile
+   Apple») — la testata dice ritiro/si ordina, le righe hanno la stessa
+   grammatica degli orari: giorno in maiuscoletto, finestra in cifre
+   tabulari compatte («ven 17:00 — sab 12:00», la stessa lineetta di
+   «04:30 — 09:00»). La finestra aperta ADESSO si accende col punto
+   verde; le altre sussurrano. Solo colore e punto: la riga non cambia
+   mai altezza quando lo stato arriva. */
+.ritiro-testata {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 1.5rem;
   margin-top: 0.4rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid rgb(247 243 234 / 0.07);
+}
+
+.bufala .ritiro-testata .micro {
+  color: var(--latte-55);
+  font-size: 0.6rem;
 }
 
 .ritiro-quando {
   margin: 0;
-  /* Blocco allineato a destra, non inline-flex: la finestra più lunga
-     («da domenica 12:00 a lunedì 12:00») sul telefono DEVE andare a capo
-     — misurato: non ci sta a nessun corpo leggibile — e col flex la
-     seconda riga cadeva appesa a sinistra. Così cade sotto, a destra,
-     come un capo voluto. */
   display: block;
   text-align: right;
+  white-space: nowrap;
   font-size: 0.9rem;
   line-height: 1.5;
   letter-spacing: 0.02em;
@@ -809,9 +820,8 @@
   color: var(--latte);
 }
 
-/* Sul telefono la finestra più lunga («da domenica 12:00 a lunedì 12:00»)
-   accanto al giorno più largo (MERCOLEDÌ) non sta su una riga: misurato a
-   390px, a 0.8rem ci sta — e le cifre restano tabulari. */
+/* Sul telefono la finestra compatta accanto a MERCOLEDÌ resta una riga
+   sola solo scendendo di un gradino — misurato a 390 e 320px. */
 @media (max-width: 480px) {
   .ritiro-quando {
     font-size: 0.8rem;
@@ -2454,6 +2464,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.55rem;
   min-height: 2.9rem;
   padding: 0 1.4rem;
   border: 1px solid var(--filo-su-scuro);
@@ -2497,6 +2508,15 @@
 .bufala .bottone--pieno:hover {
   background: #c8ab72;
   border-color: #c8ab72;
+}
+
+/* L'icona nel bottone (il glifo di WhatsApp sull'invio dell'ordine):
+   monocroma nel colore del testo, mai nel colore del marchio — è
+   un'indicazione, non un adesivo. */
+.bufala .bottone svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: none;
 }
 
 /* Il marchio nella hero, composto in tipografia e non in immagine.

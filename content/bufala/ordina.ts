@@ -57,31 +57,35 @@ export interface Finestra {
   chiude: { giorno: number; ora: string };
 }
 
+/* Le `quando` sono nella grammatica degli orari della carta «Oggi al
+   banco» — giorno abbreviato, lineetta lunga, cifre tabulari — perché
+   sono la stessa famiglia di informazione (brief dell'utente, 04/08:
+   «più strutturata, stile Apple», non una frase in prosa). */
 export const finestre: Finestra[] = [
   {
     ritiro: 'lunedì',
-    quando: 'da venerdì 17:00 a sabato 12:00',
+    quando: 'ven 17:00 — sab 12:00',
     apreTesto: 'venerdì alle 17:00',
     apre: { giorno: 5, ora: '17:00' },
     chiude: { giorno: 6, ora: '12:00' },
   },
   {
     ritiro: 'martedì',
-    quando: 'da venerdì 17:00 a sabato 12:00',
+    quando: 'ven 17:00 — sab 12:00',
     apreTesto: 'venerdì alle 17:00',
     apre: { giorno: 5, ora: '17:00' },
     chiude: { giorno: 6, ora: '12:00' },
   },
   {
     ritiro: 'mercoledì',
-    quando: 'da domenica 12:00 a lunedì 12:00',
+    quando: 'dom 12:00 — lun 12:00',
     apreTesto: 'domenica alle 12:00',
     apre: { giorno: 0, ora: '12:00' },
     chiude: { giorno: 1, ora: '12:00' },
   },
   {
     ritiro: 'venerdì',
-    quando: 'da martedì 17:00 a mercoledì 12:00',
+    quando: 'mar 17:00 — mer 12:00',
     apreTesto: 'martedì alle 17:00',
     apre: { giorno: 2, ora: '17:00' },
     chiude: { giorno: 3, ora: '12:00' },
