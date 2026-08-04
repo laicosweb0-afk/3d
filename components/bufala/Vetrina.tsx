@@ -44,7 +44,8 @@ export function Vetrina() {
   const video = useRef<HTMLVideoElement>(null);
   const nomi = useRef<HTMLDivElement>(null);
   const barra = useRef<HTMLDivElement>(null);
-  const invito = useRef<HTMLParagraphElement>(null);
+  const guida = useRef<HTMLDivElement>(null);
+  const cursore = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const sez = sezione.current;
@@ -134,12 +135,15 @@ export function Vetrina() {
         }
       }
 
-      if (barra.current) barra.current.style.transform = `scaleX(${posizione.toFixed(4)})`;
+      // Il cursore segue la posizione reale dei prodotti: non è una
+      // decorazione che si muove, è dove sei dentro la selezione.
+      if (cursore.current) cursore.current.style.setProperty('--pos', posizione.toFixed(4));
 
-      // L'invito si ritira appena la vetrina si muove: ha già funzionato.
-      if (invito.current) {
-        const resta = Math.max(0, 1 - posizione * 14);
-        invito.current.style.opacity = resta.toFixed(3);
+      // Il suggerimento ha già svolto il proprio compito appena la vetrina si
+      // muove: si spegne l'animazione e il testo si ritira, ma la barra resta
+      // — quella non era un suggerimento, è uno strumento.
+      if (guida.current && posizione > 0.005 && guida.current.dataset.usato !== 'si') {
+        guida.current.dataset.usato = 'si';
       }
 
       // Ci si ferma quando la posizione ha raggiunto il bersaglio: un ciclo
@@ -243,20 +247,28 @@ export function Vetrina() {
         ))}
       </div>
 
-      {/* L'invito. Un carosello che non dichiara di essere trascinabile viene
-          guardato come una fotografia: nessuno prova a spostare un'immagine.
-          La freccia si muove appena, e si ferma appena si comincia a
-          trascinare — un invito che continua a insistere dopo che è stato
-          accolto diventa un tic. */}
-      <p className="vetrina-invito" ref={invito}>
-        <span className="freccia" aria-hidden="true">←</span>
-        {sezioni.prodotti.invito}
-      </p>
+      {/* La guida.
 
-      {/* Una hairline che dice quanta vetrina resta. Senza, chi arriva non ha
-          nessun indizio che ci sia dell'altro di lato. */}
-      <div className="vetrina-corsa" aria-hidden="true">
-        <div className="riga" ref={barra} />
+          Un carosello che non dichiara di essere trascinabile viene guardato
+          come una fotografia: nessuno prova a spostare un'immagine. Ma un
+          cartello che dice "trascinami" è un'istruzione, e le istruzioni
+          rompono il tono. Qui il suggerimento e lo strumento sono la stessa
+          cosa: una frase, e sotto una barra che è già l'indicatore di dove
+          sei nella selezione.
+
+          Il testo è una frase in tondo, non un'etichetta in maiuscoletto
+          tracciato: è quello che lo fa leggere come qualcosa da leggere
+          invece che come decorazione. */}
+      <div className="vetrina-guida" ref={guida}>
+        <p className="guida-testo">
+          {/* L'icona è una miniatura dell'indicatore stesso: una linea e un
+              punto che scivola. Il gesto è disegnato, non spiegato. */}
+          <span className="guida-icona" aria-hidden="true" />
+          {sezioni.prodotti.invito}
+        </p>
+        <div className="guida-pista">
+          <span className="guida-cursore" ref={cursore} />
+        </div>
       </div>
 
       <noscript>

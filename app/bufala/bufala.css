@@ -849,27 +849,6 @@
   letter-spacing: -0.015em;
 }
 
-/* Quanta vetrina resta: senza, chi arriva non ha nessun indizio che ci sia
-   dell'altro di lato. */
-.vetrina-corsa {
-  /* Più stretta del pannello: un filo che arriva esattamente agli stessi
-     bordi legge come una parte del pannello caduta fuori. Rientrando,
-     legge come una didascalia. */
-  width: min(70%, 32rem);
-  height: 1px;
-  background: rgb(246 241 228 / 0.12);
-  border-radius: 1px;
-  overflow: hidden;
-}
-
-.vetrina-corsa .riga {
-  height: 100%;
-  background: var(--ottone);
-  transform: scaleX(0);
-  transform-origin: left center;
-  will-change: transform;
-}
-
 @media (prefers-reduced-motion: reduce) {
   /* Senza movimento la vetrina non ha senso: restano i nomi in elenco. */
   .vetrina-pannello,
@@ -1093,40 +1072,6 @@
   justify-items: start;
 }
 
-/* ══ L'invito del carosello ══ */
-.vetrina-invito {
-  display: inline-flex;
-  /* Allineata alla prima riga e non al centro del blocco: quando il testo va
-     a capo, una freccia centrata verticalmente galleggia in mezzo alle due
-     righe e sembra fuori posto. */
-  align-items: baseline;
-  gap: 0.55rem;
-  max-width: 34ch;
-  text-align: left;
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-  color: var(--latte-45);
-  transition: opacity 0.5s ease;
-}
-
-.vetrina-invito .freccia {
-  display: inline-block;
-  font-size: 0.95rem;
-  line-height: 1;
-  color: var(--ottone);
-  animation: vetrina-cenno 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-
-/* Un cenno, non un rimbalzo: tre pixel e una pausa lunga. Un'animazione che
-   non smette mai di chiedere attenzione diventa un tic. */
-@keyframes vetrina-cenno {
-  0%, 62%, 100% { transform: translateX(0); }
-  74% { transform: translateX(-3px); }
-  86% { transform: translateX(0); }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .vetrina-invito .freccia { animation: none; }
   .bufala .bottone { transition: none; }
@@ -1314,4 +1259,149 @@
     opacity: 1 !important;
     transform: none !important;
   }
+}
+
+/* ══ La guida del carosello ══
+   Suggerimento e strumento sono la stessa cosa: una frase, e sotto la barra
+   che dice già dove sei nella selezione. Un cartello che dice "trascinami"
+   è un'istruzione, e le istruzioni rompono il tono; una barra con un cursore
+   è un oggetto, e un oggetto si capisce senza leggere. */
+.vetrina-guida {
+  width: min(100%, 54rem);
+  display: grid;
+  gap: clamp(0.9rem, 2vh, 1.35rem);
+  justify-items: center;
+  /* Molto spazio intorno: è quello che la fa sembrare progettata insieme
+     alla vetrina invece che aggiunta dopo. */
+  margin-top: clamp(0.5rem, 1.5vh, 1rem);
+}
+
+/* Una frase in tondo, non un'etichetta in maiuscoletto tracciato.
+   Il maiuscoletto con tracking largo è quello che faceva leggere l'indicazione
+   come decorazione grafica: l'occhio lo classifica come marchio o didascalia
+   e lo salta. In tondo, alla misura di una nota, si legge. */
+.guida-testo {
+  display: inline-flex;
+  /* Allineata alla prima riga, non al centro del blocco: quando il testo va
+     a capo, un'icona centrata verticalmente galleggia fra le due righe e
+     sembra staccata da tutto. Il margine è mezza riga di testo. */
+  align-items: flex-start;
+  gap: 0.7rem;
+  max-width: 26ch;
+  text-wrap: balance;
+  margin: 0;
+  font-size: clamp(0.86rem, 1.4vw, 0.95rem);
+  font-weight: 400;
+  letter-spacing: 0.004em;
+  line-height: 1.5;
+  color: var(--latte-70);
+  /* A bandiera e non centrato: con il testo centrato dentro un blocco più
+     largo del testo stesso, l'icona resta orfana all'estrema sinistra e
+     sembra un elemento di un'altra composizione. Allineate a sinistra, icona
+     e prima riga cominciano nello stesso punto. */
+  text-align: left;
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* L'icona è una miniatura dell'indicatore: una linea corta con un punto
+   d'oro che ci scivola sopra. Il gesto è disegnato, non spiegato — e non è
+   una freccia, che sarebbe un segnale stradale. */
+.guida-icona {
+  position: relative;
+  flex: 0 0 auto;
+  margin-top: 0.72em;
+  width: 1.35rem;
+  height: 1px;
+  background: rgb(246 241 228 / 0.22);
+}
+
+.guida-icona::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 50%;
+  background: var(--ottone);
+  /* Da destra verso sinistra e ritorno: è il verso del gesto che serve.
+     Sette secondi di ciclo, di cui più di metà fermo — un movimento che si
+     ripete spesso si nota, e questo deve arrivare solo con la coda
+     dell'occhio. */
+  animation: guida-scivola 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes guida-scivola {
+  0%, 8% { transform: translateX(0); opacity: 1; }
+  32% { transform: translateX(calc(-1.35rem + 4px)); opacity: 1; }
+  48% { transform: translateX(calc(-1.35rem + 4px)); opacity: 0.35; }
+  60%, 100% { transform: translateX(0); opacity: 1; }
+}
+
+/* La pista: un filo di capello largo quanto il pannello. */
+.guida-pista {
+  position: relative;
+  /* Esattamente la larghezza del pannello: una barra più stretta della card
+     sembra una didascalia, una barra allineata sembra parte dell'oggetto.
+     Sottile e quasi spenta da ferma — è il cursore d'oro a doversi vedere,
+     non la pista. */
+  width: min(100%, 54rem);
+  height: 1.5px;
+  border-radius: 2px;
+  background: rgb(246 241 228 / 0.08);
+  overflow: hidden;
+}
+
+/* Il cursore segue la posizione reale dei prodotti. La larghezza dice quanta
+   selezione si sta vedendo — è la stessa convenzione di una barra di
+   scorrimento, e per questo si capisce senza spiegazioni. */
+.guida-cursore {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 22%;
+  left: calc(var(--pos, 0) * 78%);
+  border-radius: 2px;
+  background: var(--ottone);
+  box-shadow: 0 0 0 1px rgb(176 141 87 / 0.18);
+}
+
+/* Il velo di luce che percorre la pista: quasi invisibile, e serve solo a
+   far capire che quella riga è viva. Si spegne appena la vetrina viene
+   usata. */
+.guida-pista::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to left,
+    rgb(246 241 228 / 0) 0%,
+    rgb(246 241 228 / 0.3) 50%,
+    rgb(246 241 228 / 0) 100%);
+  transform: translateX(100%);
+  animation: guida-luce 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes guida-luce {
+  0%, 10% { transform: translateX(100%); }
+  55%, 100% { transform: translateX(-100%); }
+}
+
+/* Quando la vetrina è stata usata il suggerimento ha svolto il proprio
+   compito: l'animazione si ferma, il testo si ritira, la barra resta —
+   quella non era un suggerimento, è uno strumento. */
+.vetrina-guida[data-usato='si'] .guida-testo {
+  opacity: 0.32;
+}
+
+.vetrina-guida[data-usato='si'] .guida-icona::after,
+.vetrina-guida[data-usato='si'] .guida-pista::after {
+  animation: none;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guida-icona::after,
+  .guida-pista::after { animation: none; }
+  .guida-pista::after { opacity: 0; }
 }

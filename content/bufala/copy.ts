@@ -98,7 +98,7 @@ export const sezioni = {
       'Accanto alla nostra mozzarella trovi una selezione di formaggi, salumi e specialità gastronomiche scelti per qualità, provenienza e gusto. Ogni prodotto completa il banco con lo stesso livello di attenzione che dedichiamo alla nostra produzione.',
     // Un carosello che non dichiara di essere trascinabile viene guardato
     // come una fotografia: l'affordance va detta, non lasciata indovinare.
-    invito: 'Scorri per scoprire la nostra selezione',
+    invito: 'Scorri per esplorare alcuni dei nostri prodotti',
   },
 
   // La mappa è protagonista e non ha bisogno di essere presentata: sopra di
