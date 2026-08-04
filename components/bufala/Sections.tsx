@@ -313,28 +313,25 @@ export function Sections() {
         </div>
       </section>
 
-      {/* Movimento 7 · La firma: il marchio storico sulla carta di latte.
-          Qui il centrato e' guadagnato — e' una firma. */}
+      {/* Movimento 7 · La firma: il medaglione al posto della targa
+          (decisione dell'utente, 05/08 — «al posto del logo che abbiamo
+          adesso in fondo metti questo qui»). La ceramica d'avorio se la
+          porta dentro il medaglione stesso: una carta dietro sarebbe una
+          cornice intorno a una cornice. Vive direttamente sul verde, come
+          nel riferimento; sotto, il nome in tipografia quieta — il
+          medaglione per scelta non contiene testo. Qui il centrato e'
+          guadagnato: e' una firma. */}
       <section className="bufala-sezione bufala-firma">
         <img
-          className="marchio"
-          src={asset("/assets/brand-bufala/logo-marchio.png")}
-          alt=""
-          aria-hidden="true"
-          width={1242}
-          height={970}
-          loading="lazy"
-          decoding="async"
-        />
-        <img
-          className="wordmark"
-          src={asset("/assets/brand-bufala/logo-wordmark-scuro.png")}
+          className="medaglione"
+          src={asset("/assets/brand-bufala/firma-medaglione-512.png")}
           alt={company.brand}
-          width={2328}
-          height={426}
+          width={512}
+          height={512}
           loading="lazy"
           decoding="async"
         />
+        <p className="micro firma-nome">{company.brand}</p>
       </section>
 
       <footer className="bufala-sezione bufala-piede">

@@ -1142,26 +1142,27 @@
   border-color: var(--ottone);
 }
 
-/* La firma: marchio a colori sopra, scritta del logo sotto. Nessun riquadro
-   e nessun fondo proprio — vivono direttamente sul verde del sito
-   (Direzione §2: la targhetta di legno dell'originale resta fuori). */
+/* La firma: il medaglione sul verde (decisione utente, 05/08). Nessun
+   riquadro: la ceramica d'avorio è DENTRO il medaglione, e una carta
+   dietro sarebbe una cornice intorno a una cornice. */
 .bufala-firma {
   justify-items: center;
   text-align: center;
-  gap: clamp(1.5rem, 4vw, 2.5rem);
+  gap: clamp(1.4rem, 3.5vw, 2rem);
   padding: clamp(3rem, 8vh, 6rem) 0;
 }
 
-.bufala-firma .marchio {
-  width: min(11rem, 42vw);
+.bufala-firma .medaglione {
+  width: clamp(11rem, 30vw, 15rem);
   height: auto;
 }
 
-/* La scritta è già nel latte della palette: il PNG a 4x pesa un decimo
-   dell'SVG (le lettere sono un tracciato con migliaia di punti). */
-.bufala-firma .wordmark {
-  width: min(30rem, 82vw);
-  height: auto;
+/* Il nome sotto il medaglione, come il payoff dell'ingresso: spaziato,
+   quieto, col compenso del tracking per un centrato vero. */
+.bufala .firma-nome {
+  letter-spacing: 0.3em;
+  padding-left: 0.3em;
+  color: var(--latte-55);
 }
 
 .bufala-piede {
@@ -1409,20 +1410,6 @@
 
 .bufala-sezione a:hover {
   border-bottom-color: var(--ottone);
-}
-
-/* La firma: il marchio è nato per fondi chiari, quindi qui torna al suo
-   contrasto naturale. */
-/* Su desktop la carta della firma non e' un nastro a tutta colonna: e' una
-   targa. Larghezza contenuta e angoli morbidi — su telefono resta com'era,
-   quasi piena. (Trovato al giro di polish: 62rem di crema con un marchio
-   piccolo in mezzo leggevano come vuoto, non come respiro.) */
-.bufala-firma {
-  background: var(--latte);
-  width: min(100%, 46rem);
-  justify-self: center;
-  margin-inline: auto;
-  border-radius: var(--raggio-medio);
 }
 
 @media (prefers-reduced-motion: reduce) {
