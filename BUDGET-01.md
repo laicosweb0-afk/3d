@@ -96,8 +96,12 @@ componente nasce già dentro questi limiti, non viene ottimizzato dopo.
   blur ≤ **16 px**. Ombre: ≤ 2 strati per elemento, mai animate.
 - **B20** — Listener di scroll/touch/wheel **passivi**; chi deve
   intercettare (la vetrina) decide prima di farlo, come già fa.
-- **B21** — Durate: micro-interazioni 150–250 ms · comparse 400–700 ms ·
-  momenti cinematografici 800–1.200 ms. Le curve si definiscono in Task 03.
+- **B21** — Durate: solo i gradini della scala del sistema (definita in
+  Task 03): **tocco 85 ms · micro 350 ms · comparsa 500 ms · scena 1.000 ms
+  · cicli ≥ 7 s**, due curve sole. Nessun valore fuori scala.
+  *(Riformulata in Task 03: la prima versione dava intervalli, e un
+  intervallo permette esattamente la deriva di valori che una scala vieta —
+  il CSS ne aveva accumulati tredici.)*
 - **B22** — La pagina regge **60 fps a CPU ×6** (oggi ✔ — resta condizione).
 
 Verifica: `scorrimento.mjs` + ispezione del CSS.
