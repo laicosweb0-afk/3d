@@ -38,6 +38,32 @@ export const company = {
     uscita: 'Uscita autostrada Rimini Nord',
     accesso: 'Ingresso libero e gratuito per grossisti e privati',
   },
+
+  /** Gli orari, dalla scheda Google del cliente (04/08/2026).
+   *
+   *  Non sono un dato di servizio da mettere in fondo. Un banco che apre
+   *  alle quattro e mezza e chiude alle nove, chiuso nel fine settimana,
+   *  dice due cose insieme: a chi si rivolge — chi compra per lavoro, non
+   *  chi fa la spesa il sabato — e che la merce arriva di notte. È il fatto
+   *  più raro che questa azienda possiede, e va detto presto e forte.
+   *
+   *  ⚠️ Da riconfermare col cliente: la scheda Google mostra «Suggerisci
+   *  nuovi orari», quindi nemmeno Google li dà per certi, e il giovedì
+   *  chiuso è insolito abbastanza da meritare una domanda. Google tronca
+   *  la visualizzazione a «04:30−09»: la chiusura alle 09:00 è la lettura
+   *  naturale, non un dato letto per esteso.
+   *
+   *  Dato grezzo, non ancora mostrato da nessuna parte: la sezione che lo
+   *  espone nasce nella task dedicata, non qui. */
+  orari: [
+    { giorno: 'lunedì', apre: '04:30', chiude: '09:00' },
+    { giorno: 'martedì', apre: '04:30', chiude: '09:00' },
+    { giorno: 'mercoledì', apre: '05:00', chiude: '09:00' },
+    { giorno: 'giovedì', chiuso: true },
+    { giorno: 'venerdì', apre: '05:00', chiude: '09:00' },
+    { giorno: 'sabato', chiuso: true },
+    { giorno: 'domenica', chiuso: true },
+  ],
 } as const;
 
 /** Indirizzo del punto vendita su una riga, per meta e microcopy. */
