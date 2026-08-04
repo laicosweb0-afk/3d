@@ -35,18 +35,13 @@ export interface SceneCopy {
 }
 
 export const sceneCopy: Record<SceneId, SceneCopy> = {
-  // La hero: headline dominante, payoff piccolo e lontanissimo.
+  // La prima scena non ha piu' testo: la headline, il marchio e l'invito
+  // vivono nella schermata d'ingresso (content: `ingresso`, componente
+  // Ingresso.tsx), che sta NEL FLUSSO prima del palco. Scorrendo si alza
+  // come un sipario e scopre il film — l'uscita elegante chiesta dal brief
+  // e' l'architettura stessa, non un effetto. Il film ora apre pulito.
   s01: {
-    // Senza questo si entrava nel sito senza sapere di chi fosse: la prima
-    // schermata diceva cosa si vende, mai chi lo vende.
-    marchio: 'Quelli della bufala',
-    titolo: 'La qualità non si promette.\nSi assaggia.',
-    // Il sottotitolo dice cosa si trova al banco: la headline dà il tono, il
-    // sottotitolo dà il fatto. Senza, la prima schermata è solo un'idea.
-    sottotitolo:
-      'Dalla mozzarella fresca ai migliori formaggi e salumi selezionati. Un banco pensato per chi cerca eccellenza, ogni giorno.',
-    payoff: 'Mozzarella di Bufala',
-    nota: 'Scorri',
+    titolo: '',
   },
 
   // I titoli non raccontano il filmato: parlano del progetto — la bufala,
@@ -78,6 +73,41 @@ export const sceneCopy: Record<SceneId, SceneCopy> = {
     titolo: '',
   },
 };
+
+/** La schermata d'ingresso: la headline e le tre porte.
+ *
+ *  Dal riferimento dell'utente (04/08): prima del film, una scelta. Chi ha
+ *  fretta clicca — banco, prodotti, dove — chi vuole il cinema scorre.
+ *  Le descrizioni sono quelle del riferimento, gia' nel tono del sito. */
+export const ingresso = {
+  marchio: 'Quelli della bufala',
+  titolo: 'La qualità non si promette.\nSi assaggia.',
+  sottotitolo:
+    'Dalla mozzarella fresca ai migliori formaggi e salumi selezionati. Un banco pensato per chi cerca eccellenza, ogni giorno.',
+  domanda: 'Da dove vuoi iniziare?',
+  porte: [
+    {
+      nome: 'Il nostro banco',
+      testo: 'Scopri la nostra selezione e la qualità che ci distingue.',
+      href: '#banco',
+      foto: 'banco' as const,
+    },
+    {
+      nome: 'I nostri prodotti',
+      testo: 'Mozzarella di bufala, formaggi e salumi selezionati.',
+      href: '#prodotti',
+      foto: 'prodotto' as const,
+    },
+    {
+      nome: 'Vieni a trovarci',
+      testo: 'Dove siamo, orari di apertura e contatti.',
+      href: '#dove',
+      foto: 'mappa' as const,
+    },
+  ],
+  payoff: 'Mozzarella di Bufala',
+  nota: 'Scorri',
+} as const;
 
 /** Le sezioni dopo il viaggio. */
 export const sezioni = {

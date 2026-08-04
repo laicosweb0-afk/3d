@@ -47,7 +47,7 @@ export function Sections() {
           il velo di sfocatura chiesto dal brief non entra — il budget B15
           vieta di animare i filtri, ed e' la regola che protegge la
           fluidita' dello scroll. Costo dichiarato, non taciuto. */}
-      <section className="bufala-sezione bufala-perchi" data-rivela>
+      <section className="bufala-sezione bufala-perchi" id="banco" data-rivela>
         <p className="micro">{sezioni.perChi.titolo}</p>
         {/* Il banco che si compone (idea dell'utente, variante a costo
             zero — Task 11): tre veli di carta coprono la fotografia e si

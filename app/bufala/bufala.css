@@ -197,6 +197,181 @@
   color: var(--latte-45);
 }
 
+/* — La schermata d'ingresso —
+   Nel flusso, PRIMA del palco fisso: scorrendo si alza come un sipario e
+   scopre il film. Fondo opaco sopra il palco (z sopra lo stage), stessa
+   ricetta di superficie della metà scura: luce in alto, discesa, grana. */
+.bufala-ingresso {
+  position: relative;
+  z-index: 3;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3.5rem, 8vh, 6rem) 6vw clamp(2rem, 5vh, 3.5rem);
+  color: var(--latte);
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgb(31 62 45 / 0.55) 0%, rgb(17 40 29 / 0) 62%),
+    linear-gradient(to bottom, var(--verde-alto) 0%, var(--verde-profondo) 70%, #0d2117 100%);
+  /* L'orlo sfumato del sipario. Un bordo netto che esce attraversa TUTTO il
+     fotogramma del film, quindi nessun colore di chiusura può eliminare la
+     riga di giuntura (misurato: 35 livelli con la chiusura campionata sul
+     poster). La maschera dissolve gli ultimi 12vh: la giuntura non esiste
+     mai, in nessuna posizione dello scorrimento. Il padding sotto è
+     rialzato della stessa misura, così nessun testo finisce nell'orlo. */
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 12vh), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 12vh), transparent 100%);
+  padding-bottom: calc(clamp(2rem, 5vh, 3.5rem) + 12vh);
+}
+
+.bufala-ingresso::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+.ingresso-campo {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  width: min(100%, 40rem);
+}
+
+.bufala .ingresso-marchio {
+  letter-spacing: 0.3em;
+  color: var(--latte-70);
+}
+
+.bufala-ingresso h1 {
+  margin-top: clamp(1rem, 2.5vh, 1.75rem);
+  font-size: clamp(2.2rem, 7.5vw, 3.9rem);
+  line-height: 1.08;
+}
+
+.bufala-ingresso h1 span {
+  display: block;
+}
+
+.ingresso-sotto {
+  margin-top: clamp(0.9rem, 2vh, 1.4rem);
+  max-width: 44ch;
+  color: var(--latte-70);
+  line-height: 1.65;
+}
+
+/* — Le tre porte —
+   Il pannello ha la ricetta della scheda (filo, luce sul bordo alto, ombra
+   larga); dentro, tre righe-ancora: miniatura, nome in Playfair, riga di
+   descrizione, freccia nel cerchio d'ottone. Tutto coordinato coi token:
+   raggi della scala, durate della scala, un solo accento. */
+.ingresso-porte {
+  margin-top: clamp(1.75rem, 4.5vh, 2.75rem);
+  width: 100%;
+  text-align: left;
+  background: linear-gradient(to bottom, rgb(247 243 234 / 0.045), rgb(247 243 234 / 0.015));
+  border: 1px solid rgb(247 243 234 / 0.08);
+  border-radius: var(--raggio-grande);
+  box-shadow:
+    0 1px 0 rgb(247 243 234 / 0.05) inset,
+    0 30px 70px -30px rgb(0 0 0 / 0.75);
+  padding: clamp(1rem, 2.4vw, 1.5rem) clamp(1rem, 2.6vw, 1.6rem);
+}
+
+.bufala .porte-domanda {
+  color: var(--latte-70);
+  padding: 0.25rem 0.25rem clamp(0.6rem, 1.5vh, 0.9rem);
+}
+
+.porta {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: clamp(0.85rem, 2.2vw, 1.25rem);
+  padding: clamp(0.7rem, 1.6vh, 1rem) 0.25rem;
+  text-decoration: none;
+  color: var(--latte);
+  border-top: 1px solid var(--filo-su-scuro);
+}
+
+.porta-foto {
+  width: clamp(3.4rem, 8vw, 4.2rem);
+  height: clamp(3.4rem, 8vw, 4.2rem);
+  object-fit: cover;
+  border-radius: var(--raggio-piccolo);
+  display: block;
+}
+
+.porta-foto--pin {
+  display: grid;
+  place-items: center;
+  background: var(--verde-alto);
+  border: 1px solid var(--filo-su-scuro);
+  color: var(--ottone);
+}
+
+.porta-foto--pin svg {
+  width: 22px;
+  height: 22px;
+}
+
+.porta-nome {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.1rem, 2.6vw, 1.35rem);
+  line-height: 1.2;
+}
+
+.porta-descrizione {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--latte-70);
+}
+
+.porta-freccia {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid rgb(184 155 94 / 0.5);
+  border-radius: 999px;
+  color: var(--latte);
+}
+
+.porta-freccia svg {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--durata-micro) var(--curva-entrata);
+}
+
+.porta:hover .porta-freccia svg,
+.porta:focus-visible .porta-freccia svg {
+  transform: translateX(3px);
+}
+
+.porta:focus-visible {
+  outline: 2px solid var(--ottone);
+  outline-offset: 2px;
+  border-radius: var(--raggio-piccolo);
+}
+
+.bufala .ingresso-payoff {
+  margin-top: clamp(1.75rem, 4.5vh, 2.75rem);
+  letter-spacing: 0.3em;
+  color: var(--latte-55);
+}
+
+.bufala .ingresso-scorri {
+  margin-top: 0.9rem;
+  color: var(--latte-55);
+}
+
 /* — Il palco del viaggio —
    Il canvas/immagini stanno fissi; lo spacer sotto genera lo scroll. */
 
