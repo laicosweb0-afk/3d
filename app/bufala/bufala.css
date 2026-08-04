@@ -1116,6 +1116,20 @@
   width: 100%;
 }
 
+/* Le sezioni fatte di colonna e carta non occupano il campo intero: su
+   schermo largo il contenuto e' largo ~44-46rem e il campo 68 — tutto
+   appoggiato a sinistra con un terzo di vuoto a destra. Era il «sito
+   spostato a sinistra» visto dall'utente sul portatile (05/08): il
+   contenitore era centrato, la colonna dentro no. Qui il campo si
+   stringe sul contenuto e la colonna sta al centro dello schermo;
+   dentro, l'allineamento non cambia di un pixel. Le sezioni larghe —
+   il banco, la vetrina — restano a campo pieno. */
+.bufala-visita,
+.bufala-ordina,
+.bufala-dove {
+  max-width: 48rem;
+}
+
 /* L'occhiello sta attaccato al titolo che introduce, non a mezza strada fra
    il titolo sopra e quello sotto: è la distanza a dire di chi è. */
 .bufala-sezione .micro + h2 {
