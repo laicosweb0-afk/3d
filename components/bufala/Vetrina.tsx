@@ -70,13 +70,28 @@ export function Vetrina() {
 
     // Il ciclo gira solo quando la vetrina è in vista: fuori non c'è niente
     // da disegnare, e tenerlo acceso costerebbe batteria per nulla.
+    //
+    // Il montaggio del filmato (source + load) costa ~80 ms di thread: era
+    // l'unico singhiozzo rimasto nella traversata, perché scattava DURANTE
+    // lo scorrimento. Ora scatta in un momento di quiete (requestIdleCallback)
+    // appena la vetrina si avvicina — con una scadenza: se la quiete non
+    // arriva entro un secondo, si monta comunque, perché arrivare alla
+    // vetrina senza filmato sarebbe peggio del singhiozzo.
     let inVista = false;
+    const montaConCalma = () => {
+      if (montato) return;
+      if ('requestIdleCallback' in window) {
+        (window as Window & typeof globalThis).requestIdleCallback(() => monta(), { timeout: 1000 });
+      } else {
+        monta();
+      }
+    };
     const osservatore = new IntersectionObserver(
       (voci) => {
         for (const x of voci) {
           inVista = x.isIntersecting;
           if (inVista) {
-            monta();
+            montaConCalma();
             avvia();
           }
         }

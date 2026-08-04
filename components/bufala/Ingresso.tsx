@@ -13,16 +13,18 @@ import { asset } from '@/lib/asset';
 import { ingresso } from '@/content/bufala/copy';
 import { OggiPilla } from './Oggi';
 
-/** Le miniature delle porte. La terza non è una fotografia: è lo stesso
- *  fondale a spillo della scheda mappa — una mini-mappa vera qui sarebbe
- *  una terza dipendenza esterna per un francobollo. */
+/** Le miniature delle porte: file DEDICATI da 240px (10 e 6 kB), non le
+ *  fotografie intere — prima l'ingresso scaricava 158 kB per due
+ *  francobolli da 68px. La terza non è una fotografia: è lo stesso fondale
+ *  a spillo della scheda mappa — una mini-mappa vera qui sarebbe una terza
+ *  dipendenza esterna per un francobollo. */
 const FOTO: Record<string, { src: string; alt: string } | null> = {
   banco: {
-    src: '/assets/bufala/banco.webp',
+    src: '/assets/bufala/porta-banco.webp',
     alt: '',
   },
   prodotto: {
-    src: '/assets/bufala/p-prataiola.webp',
+    src: '/assets/bufala/porta-prodotti.webp',
     alt: '',
   },
   mappa: null,
