@@ -42,7 +42,10 @@ export function Ingresso() {
             <span key={i}>{riga}</span>
           ))}
         </h1>
-        <p className="ingresso-sotto">{ingresso.sottotitolo}</p>
+        {/* Niente sottotitolo (riferimento dell'utente, 04/08): dalla
+            headline si va dritti alle porte. La frase spiegava cosa c'è al
+            banco, ma le tre porte lo MOSTRANO — era una didascalia di cose
+            già in campo. */}
 
         <nav className="ingresso-porte" aria-label={ingresso.domanda}>
           <p className="micro porte-domanda">{ingresso.domanda}</p>

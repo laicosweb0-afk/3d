@@ -256,12 +256,6 @@
   display: block;
 }
 
-.ingresso-sotto {
-  margin-top: clamp(0.9rem, 2vh, 1.4rem);
-  max-width: 44ch;
-  color: var(--latte-70);
-  line-height: 1.65;
-}
 
 /* — Le tre porte —
    Il pannello ha la ricetta della scheda (filo, luce sul bordo alto, ombra
@@ -1605,10 +1599,6 @@
    una pagina invece che come un modulo. Su schermo stretto le due colonne
    si impilano: una colonna da otto caratteri accanto a un indirizzo di tre
    righe non e' una griglia, e' una strettoia. */
-.recapito-insegna {
-  font-size: clamp(1.6rem, 3.2vw, 2.2rem);
-  margin-bottom: 0.35rem;
-}
 
 .recapito-voci {
   margin: 0;

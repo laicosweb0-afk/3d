@@ -82,8 +82,9 @@ export const sceneCopy: Record<SceneId, SceneCopy> = {
 export const ingresso = {
   marchio: 'Quelli della bufala',
   titolo: 'La qualità non si promette.\nSi assaggia.',
-  sottotitolo:
-    'Dalla mozzarella fresca ai migliori formaggi e salumi selezionati. Un banco pensato per chi cerca eccellenza, ogni giorno.',
+  // Il sottotitolo è caduto (riferimento dell'utente, 04/08): spiegava cosa
+  // c'è al banco, ma le tre porte qui sotto lo mostrano. Meno parole, più
+  // aria — la headline respira da sola.
   domanda: 'Da dove vuoi iniziare?',
   porte: [
     {

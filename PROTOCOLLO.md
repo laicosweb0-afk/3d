@@ -217,6 +217,25 @@ falso positivo storico del bottone mappa è morto di morte naturale.
 Responsive e accessibilità **non sono task**: sono condizioni di consegna di
 ognuna, con un collaudo sui dispositivi veri alla fine di ogni fase.
 
+## 9-bis. Il programma vivo (aggiornato 04/08, sera tardi)
+
+**Fatte oggi, oltre il piano:** l'ingresso a tre porte col sipario ·
+«Oggi al banco» (grafica del titolare → ridisegno Apple: carta unica con
+stato, chip, orari, azioni) · il sacchetto D.O.P. vero · il sottotitolo
+dell'ingresso rimosso (riferimento utente) · i passi sotto la mappa ·
+anteprima di condivisione · collaudone a quattro formati (due volte,
+sempre zero difetti) · audit contrasti verde con lo strumento onesto.
+
+**Uniche task ferme, e su chi aspettano:**
+| task | aspetta |
+|---|---|
+| Il puntino della i (Task 11) | la discussione che l'utente stesso ha chiesto («capire prima di farla») |
+| Ragioni dei prodotti (Task 07) | una riga per prodotto dal cliente |
+| Copy definitivo (Task 10) | approvazione del cliente |
+| Semaforo vivo | il foglio Google dell'utente (5 minuti) |
+| Verifica mappa e giudizio sipario | gli occhi dell'utente sul link |
+| Dominio | cliente |
+
 ## 10. Registro delle idee (si valutano nella task giusta, non prima)
 
 - **Il puntino della i che cade e diventa la mozzarella** — idea dell'utente,
