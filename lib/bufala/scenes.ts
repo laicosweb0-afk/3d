@@ -35,18 +35,26 @@ export const SCENES: SceneDef[] = [
   // Le durate vanno lette insieme ai `tempo` della regia: il loro rapporto
   // è la velocità di riproduzione, e tenerlo simile fra scene vicine evita
   // che al confine il gesto cambi passo.
-  { id: 's01', vh: 2.0, capitolo: 1, titolo: "L'apparizione" },
-  { id: 's02', vh: 2.0, capitolo: 1, titolo: 'La discesa' },
+  /* La corsa totale è ~7,75 schermate, metà di prima (15,5). Due ragioni
+     indipendenti che arrivano allo stesso numero:
+     — narrativa: fra un titolo e l'altro passavano quattro schermate di
+       niente, e quel niente si leggeva come lentezza, non come respiro;
+     — misurata (Task 00): a parità di fotogrammi, dimezzare la corsa
+       dimezza i pixel di scorrimento per immagine — da 45 a ~12 px, la
+       soglia del budget B1 sotto cui il filmato è fluido anche per chi
+       guarda piano. Le proporzioni fra le scene restano identiche. */
+  { id: 's01', vh: 1.0, capitolo: 1, titolo: "L'apparizione" },
+  { id: 's02', vh: 1.0, capitolo: 1, titolo: 'La discesa' },
   // La sospensione è il tratto più lungo: è quello in cui non succede un
   // fatto nuovo ma si guarda l'oggetto girare fra le gocce sospese, ed è il
   // motivo per cui si continua a scorrere.
-  { id: 's03', vh: 4.0, capitolo: 2, titolo: 'La pelle' },
-  { id: 's04', vh: 2.0, capitolo: 2, titolo: 'La lama' },
-  { id: 's05', vh: 3.0, capitolo: 3, titolo: 'Il taglio' },
+  { id: 's03', vh: 2.0, capitolo: 2, titolo: 'La pelle' },
+  { id: 's04', vh: 1.0, capitolo: 2, titolo: 'La lama' },
+  { id: 's05', vh: 1.5, capitolo: 3, titolo: 'Il taglio' },
   // Il latte invade il campo e copre l'obiettivo. Nessun titolo: è una
   // transizione, e un testo bianco su un fotogramma che diventa bianco
   // sarebbe illeggibile per costruzione.
-  { id: 's06', vh: 2.5, capitolo: 4, titolo: 'Il latte' },
+  { id: 's06', vh: 1.25, capitolo: 4, titolo: 'Il latte' },
 ];
 
 

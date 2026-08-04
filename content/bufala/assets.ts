@@ -99,8 +99,15 @@ export const immagini: Record<Inquadratura, Asset> = {
  *  ricaricamento forzato non esiste). Un nome nuovo è un URL nuovo, e un URL
  *  nuovo non può essere servito da una cache. */
 export const video = {
-  webm: `${BASE}/mozzarella-4.webm`,
-  mp4: `${BASE}/mozzarella-4.mp4`,
+  /* «-48»: lo stesso filmato interpolato a 48 fotogrammi al secondo con
+   * compensazione di movimento (tools/bufala-video.mjs). Non è estetica:
+   * con la corsa compressa a ~8 schermate, 578 fotogrammi su ~6.700 px
+   * fanno un'immagine nuova ogni ~12 px di scorrimento (budget B1) — chi
+   * legge a 300 px/s vede finalmente 24 immagini al secondo invece di 7.
+   * I fotogrammi inventati sono stati ispezionati sul punto peggiore, il
+   * taglio: lama nitida, nessuna scia sulle gocce. */
+  webm: `${BASE}/mozzarella-48.webm`,
+  mp4: `${BASE}/mozzarella-48.mp4`,
   poster: `${BASE}/mozzarella-4-poster.webp`,
 };
 

@@ -14,7 +14,7 @@ const geo = await p.evaluate(() => {
   const sp = document.querySelector('.bufala-spacer');
   return { corsa: sp.getBoundingClientRect().height, schermo: window.innerHeight };
 });
-const DURATA = 12.04, FPS = 25;
+const DURATA = 12.04, FPS = 48;
 console.log(`corsa del filmato: ${Math.round(geo.corsa)} px = ${(geo.corsa / geo.schermo).toFixed(1)} schermate`);
 console.log(`il filmato ha ${Math.round(DURATA * FPS)} fotogrammi diversi in tutto`);
 console.log(`→ ${(geo.corsa / (DURATA * FPS)).toFixed(0)} px di scroll per ogni fotogramma diverso\n`);
