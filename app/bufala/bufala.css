@@ -372,6 +372,93 @@
   color: var(--latte-55);
 }
 
+/* — Oggi al banco —
+   La carta nella Visita e la pilla nell'ingresso. I tre colori del
+   semaforo sono FUNZIONALI, non di marca: dicono uno stato, come i colori
+   di un errore — per questo non entrano nella tavolozza del documento. */
+.oggi {
+  width: 100%;
+  max-width: 46rem;
+  margin-top: var(--spazio-blocco);
+  padding: clamp(1.25rem, 2.6vw, 1.75rem) clamp(1.25rem, 2.8vw, 2rem);
+  border: 1px solid rgb(247 243 234 / 0.08);
+  border-radius: var(--raggio-medio);
+  background: linear-gradient(to bottom, rgb(247 243 234 / 0.045), rgb(247 243 234 / 0.015));
+  box-shadow: 0 1px 0 rgb(247 243 234 / 0.05) inset;
+}
+
+.bufala .oggi-etichetta {
+  color: var(--latte-70);
+}
+
+.oggi-stato {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  line-height: 1.15;
+  color: var(--latte);
+}
+
+.oggi-punto {
+  width: 0.72em;
+  height: 0.72em;
+  border-radius: 999px;
+  flex: none;
+}
+
+.oggi-punto--verde { background: #58a662; }
+.oggi-punto--giallo { background: #d9a13b; }
+.oggi-punto--rosso { background: #c05b4d; }
+
+.oggi-testo {
+  margin-top: 0.4rem;
+  color: var(--latte-70);
+  line-height: 1.6;
+  max-width: 44ch;
+}
+
+.bufala .oggi-ora {
+  margin-top: 0.7rem;
+  color: var(--latte-55);
+}
+
+.oggi .scheda-azioni {
+  margin-top: clamp(1rem, 2.2vh, 1.4rem);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* La pilla nell'ingresso: assoluta in cima, non tocca il flusso. */
+.oggi-pilla {
+  position: absolute;
+  top: clamp(0.9rem, 2.2vh, 1.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgb(247 243 234 / 0.14);
+  border-radius: 999px;
+  background: rgb(13 33 23 / 0.72);
+  color: var(--latte);
+  font-size: 0.85rem;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color var(--durata-micro) var(--curva-entrata);
+}
+
+.oggi-pilla:hover,
+.oggi-pilla:focus-visible {
+  border-color: rgb(184 155 94 / 0.6);
+}
+
 /* — Il palco del viaggio —
    Il canvas/immagini stanno fissi; lo spacer sotto genera lo scroll. */
 

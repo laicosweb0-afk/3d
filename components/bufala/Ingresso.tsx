@@ -11,6 +11,7 @@
 
 import { asset } from '@/lib/asset';
 import { ingresso } from '@/content/bufala/copy';
+import { OggiPilla } from './Oggi';
 
 /** Le miniature delle porte. La terza non è una fotografia: è lo stesso
  *  fondale a spillo della scheda mappa — una mini-mappa vera qui sarebbe
@@ -30,6 +31,10 @@ const FOTO: Record<string, { src: string; alt: string } | null> = {
 export function Ingresso() {
   return (
     <section className="bufala-ingresso">
+      {/* Il messaggio del titolare, quando c'è il dato di oggi: una riga
+          viva in cima allo schermo. Assoluta: comparendo non sposta di un
+          pixel il resto (lo spostamento di layout resta zero). */}
+      <OggiPilla />
       <div className="ingresso-campo">
         <p className="micro ingresso-marchio">{ingresso.marchio}</p>
         <h1>

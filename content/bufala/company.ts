@@ -62,6 +62,26 @@ export const company = {
    *
    *  Dato grezzo, non ancora mostrato da nessuna parte: la sezione che lo
    *  espone nasce nella task dedicata, non qui. */
+  /** «Oggi al banco» — la disponibilità della mozzarella, richiesta dal
+   *  titolare (04/08). Il sito è statico: il dato vivo arriva da un foglio
+   *  Google che il titolare aggiorna dal telefono, pubblicato come CSV.
+   *
+   *  COME SI CREA (una volta sola, dall'utente):
+   *  1. Un foglio Google con QUATTRO colonne: data | stato | ora | nota
+   *     · data  = 2026-08-04  (anno-mese-giorno)
+   *     · stato = verde | giallo | rosso
+   *     · ora   = 10:47  (facoltativa)
+   *     · nota  = testo libero (facoltativa, sostituisce la frase standard)
+   *     Ogni mattina il titolare AGGIUNGE UNA RIGA (o corregge l'ultima).
+   *  2. File → Condividi → Pubblica sul web → foglio, formato CSV.
+   *  3. L'indirizzo che ne esce va incollato qui sotto.
+   *
+   *  REGOLA D'ONESTÀ, non negoziabile: se l'indirizzo è vuoto, se la rete
+   *  non risponde o se l'ultima riga NON è di oggi, il sito non mostra
+   *  nessun semaforo — mostra l'invito a chiamare. Mai un «Disponibile»
+   *  di ieri spacciato per fresco. */
+  disponibilitaCsv: '',
+
   orari: [
     { giorno: 'lunedì', apre: '04:30', chiude: '09:00' },
     { giorno: 'martedì', apre: '04:30', chiude: '09:00' },

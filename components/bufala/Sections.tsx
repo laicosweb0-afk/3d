@@ -12,6 +12,7 @@ import { company, indirizzoPuntoVendita, mappaEmbed, mappaApri } from '@/content
 import { sezioni } from '@/content/bufala/copy';
 import { Vetrina } from './Vetrina';
 import { Rivela } from './Rivela';
+import { Oggi } from './Oggi';
 
 const pv = company.puntoVendita;
 
@@ -120,6 +121,13 @@ export function Sections() {
         <p className="visita-ora" aria-hidden="true">04:30</p>
         <h2 className="visita-frase">{sezioni.visita.frase}</h2>
         <p className="visita-testo">{sezioni.visita.testo}</p>
+
+        {/* La disponibilità di OGGI viene prima degli orari della
+            settimana: chi guarda qui vuole sapere se conviene partire
+            adesso. Il dato vivo arriva dal foglio del titolare; senza dato
+            di oggi la carta è l'invito a chiamare — mai un semaforo
+            vecchio. */}
+        <Oggi />
 
         <dl className="recapito-voci">
           {company.orari.map((o) => (
