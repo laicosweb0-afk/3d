@@ -755,8 +755,16 @@
 
 /* La firma: il marchio è nato per fondi chiari, quindi qui torna al suo
    contrasto naturale. */
+/* Su desktop la carta della firma non e' un nastro a tutta colonna: e' una
+   targa. Larghezza contenuta e angoli morbidi — su telefono resta com'era,
+   quasi piena. (Trovato al giro di polish: 62rem di crema con un marchio
+   piccolo in mezzo leggevano come vuoto, non come respiro.) */
 .bufala-firma {
   background: var(--latte);
+  width: min(100%, 46rem);
+  justify-self: center;
+  margin-inline: auto;
+  border-radius: var(--raggio-medio);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1131,6 +1139,32 @@
   aspect-ratio: 16 / 11;
   text-decoration: none;
   color: inherit;
+  /* Il fondale dell'attesa: finche' la mappa non e' arrivata l'iframe e'
+     trasparente, e sotto si vede questo — lo spillo e l'indirizzo composti
+     sul verde, non un rettangolo muto. Su rete lenta la scheda sembra
+     voluta, non rotta. Quando la mappa carica, lo copre da sola. */
+  display: grid;
+}
+
+.scheda--mappa .mappa-attesa {
+  grid-area: 1 / 1;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.6rem;
+  text-align: center;
+  color: var(--latte-70);
+  padding: 2rem;
+}
+
+.scheda--mappa .mappa-attesa svg {
+  width: 30px;
+  height: 30px;
+  color: var(--ottone);
+}
+
+.scheda--mappa iframe {
+  grid-area: 1 / 1;
 }
 
 .bufala .scheda--mappa iframe {
@@ -1378,6 +1412,10 @@
 .visita-ora {
   font-family: var(--font-display);
   font-weight: 500;
+  /* A questa scala lo spazio interno sopra le cifre (l'ascendente vuoto di
+     Playfair) vale da solo mezzo gradino di spazio: si compensa, o
+     l'etichetta LA VISITA sembra staccata dal numero che presenta. */
+  margin-top: -0.14em;
   /* Da margine a margine: la misura e' il viewport, non la colonna. Il
      tracking negativo compatta le cifre in un oggetto solo. */
   font-size: clamp(5.5rem, 21vw, 15rem);

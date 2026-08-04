@@ -159,6 +159,17 @@ export function Sections() {
           aria-label={`${sezioni.mappa.azione}: ${company.brand}, ${indirizzoPuntoVendita}`}
         >
           <span className="scheda-riflesso" aria-hidden="true" />
+          {/* Il fondale dell'attesa: visibile finche' l'iframe non ha
+              dipinto la mappa. Su rete lenta la scheda sembra progettata,
+              non un rettangolo vuoto. */}
+          <span className="mappa-attesa" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+              strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11Z" />
+              <circle cx="12" cy="10" r="2.5" />
+            </svg>
+            <span className="micro">{pv.via} · {pv.comune}</span>
+          </span>
           <iframe
             src={mappaEmbed}
             title={`${company.brand} — ${indirizzoPuntoVendita}`}
@@ -179,7 +190,9 @@ export function Sections() {
             <dd>
               {pv.presso}
               <br />
-              {pv.via}, {pv.cap} {pv.comune} ({pv.provincia})
+              {/* Spazio indivisibile prima della provincia: «(RN)» a capo
+                  da solo era l'orfano trovato al giro di polish. */}
+              {pv.via}, {pv.cap} {pv.comune}{' '}({pv.provincia})
             </dd>
           </div>
           <div className="recapito-voce">
@@ -235,7 +248,7 @@ export function Sections() {
           {company.ragioneSociale}
           <br />
           Sede legale: {company.sedeLegale.via}, {company.sedeLegale.cap}{' '}
-          {company.sedeLegale.comune} ({company.sedeLegale.provincia})
+          {company.sedeLegale.comune}{' '}({company.sedeLegale.provincia})
         </p>
       </footer>
     </div>
