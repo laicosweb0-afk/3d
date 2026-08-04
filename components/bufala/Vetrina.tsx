@@ -245,8 +245,8 @@ export function Vetrina() {
         >
           {/* `data-src` e non `src`: il filmato pesa, e chi non arriva fin qui
               non deve scaricarlo. */}
-          <source data-src={vetrina.mp4} type="video/mp4" />
           <source data-src={vetrina.webm} type="video/webm" />
+          <source data-src={vetrina.mp4} type="video/mp4" />
         </video>
       </div>
 

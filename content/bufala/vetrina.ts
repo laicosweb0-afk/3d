@@ -23,10 +23,10 @@ const BASE = `${BASE_PATH}/assets/bufala`;
  *  per URL, e senza un nome nuovo chi ha già visitato il sito continuerebbe a
  *  vedere la versione vecchia. */
 export const vetrina = {
-  /* MP4 davanti, per la stessa ragione del film: decodifica hardware sui
-   * dispositivi veri, WebM in panchina per i Chromium senza codec. */
-  mp4: `${BASE}/vetrina-1.mp4`,
+  /* WebM davanti, come per il film: l'MP4-davanti ha rotto un tablet
+   * Android sul campo (vedi components/bufala/Video.tsx). */
   webm: `${BASE}/vetrina-1.webm`,
+  mp4: `${BASE}/vetrina-1.mp4`,
   poster: `${BASE}/vetrina-1-poster.webp`,
 };
 

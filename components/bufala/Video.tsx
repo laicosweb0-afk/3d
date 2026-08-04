@@ -25,13 +25,17 @@ const player = {
 };
 
 export interface VideoProps {
-  /** MP4/H.264, PRIMA sorgente: decodifica hardware su ogni dispositivo
-   *  vero. L'ordine è la cura del singhiozzo sui tablet Android economici,
-   *  che col WebM davanti finivano sul decodificatore VP9 software. */
-  mp4: string;
-  /** WebM/VP9, riserva: serve solo ai Chromium open-source senza codec
-   *  proprietari (fra cui il banco di prova di questo progetto). */
+  /** WebM/VP9 prima, MP4/H.264 dopo — e quest'ordine è SCOLPITO da un
+   *  esperimento fallito sul campo (04/08): con l'MP4 davanti, il Chrome
+   *  di un tablet Android economico ha DICHIARATO di saperlo leggere, l'ha
+   *  scelto, e il suo decodificatore è morto sul profilo High a 48 fps —
+   *  film bianco, vetrina rotta. Quando un video muore dopo la scelta, il
+   *  browser NON passa alla sorgente di riserva. Col WebM davanti il caso
+   *  peggiore è VP9 software un po' rigido su quei tablet; mai una pagina
+   *  rotta. iPhone il VP9 non lo legge e prende comunque l'MP4 hardware:
+   *  per lui l'ordine è indifferente. */
   webm: string;
+  mp4: string;
   /** Poster mostrato finché il video non è pronto: senza, il primo
    *  fotogramma resta nero e si vede lo stacco. */
   poster: string;
@@ -113,8 +117,8 @@ export function Video({ mp4, webm, poster }: VideoProps) {
       // non c'è nessuno scatto di luminosità.
       style={{ opacity: regia[SCENES[0].id].luce[0] }}
     >
-      <source src={mp4} type="video/mp4" />
       <source src={webm} type="video/webm" />
+      <source src={mp4} type="video/mp4" />
     </video>
   );
 }
