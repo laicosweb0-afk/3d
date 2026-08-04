@@ -31,6 +31,9 @@ export const vetrina = {
 export interface Tappa {
   /** Il nome reale del prodotto. Nessun claim, nessun aggettivo: il nome. */
   nome: string;
+  /** Cos'è, quando il nome da solo non lo dice — solo se confermato dal
+   *  materiale del cliente (etichetta o didascalia sua), mai dedotto. */
+  tipo?: string;
   /** Il produttore, dove è leggibile sulla confezione reale del cliente. */
   produttore?: string;
   /** L'istante del filmato in cui questo prodotto passa più vicino al centro.
@@ -38,6 +41,12 @@ export interface Tappa {
    *  sposta sempre i tempi rispetto a quelli chiesti. */
   secondo: number;
 }
+
+// ⚠️ Le «ragioni» delle didascalie (perché OGNI prodotto è al banco — il
+// criterio di selezione dimostrato cinque volte, Architettura mov. 4) NON
+// possono nascere qui: sarebbero parole messe in bocca al cliente. Vanno
+// chieste a lui, una riga per prodotto. Finché non arrivano, la didascalia
+// dice solo ciò che è confermato: nome, tipo, produttore.
 
 /** Le cinque tappe della processione, con gli istanti letti sul filmato
  *  consegnato — non quelli chiesti nel prompt, che il modello sposta sempre.
@@ -47,7 +56,7 @@ export interface Tappa {
  *  prodotto a cui si riferiscono, cioè un nome sbagliato sotto un prodotto
  *  giusto. */
 export const tappe: Tappa[] = [
-  { nome: 'Prataiola alla rucola', produttore: 'Moncalo', secondo: 2.0 },
+  { nome: 'Prataiola alla rucola', tipo: 'Formaggio di pecora', produttore: 'Moncalo', secondo: 2.0 },
   { nome: 'Formaggio di capra', secondo: 5.6 },
   { nome: 'Prosciutto stagionato', secondo: 7.3 },
   { nome: "Friarielli all'olio", secondo: 9.2 },

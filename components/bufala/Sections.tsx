@@ -208,6 +208,8 @@ export function Sections() {
           aria-hidden="true"
           width={1242}
           height={970}
+          loading="lazy"
+          decoding="async"
         />
         <img
           className="wordmark"
@@ -215,6 +217,8 @@ export function Sections() {
           alt={company.brand}
           width={2328}
           height={426}
+          loading="lazy"
+          decoding="async"
         />
       </section>
 

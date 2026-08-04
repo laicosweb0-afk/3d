@@ -1416,6 +1416,27 @@
   font-size: clamp(1.5rem, 3vw, 2.1rem);
 }
 
+/* Il colophon dei recapiti a due colonne da schermo largo (Composizione,
+   mov. 6): indirizzo e telefono affiancati, l'etichetta sopra il dato.
+   I fili orizzontali spariscono qui — due celle affiancate con altezze
+   diverse metterebbero due righe a quote diverse, e una riga storta si
+   nota piu' di una riga assente. Resta il filo d'apertura del blocco. */
+@media (min-width: 900px) {
+  .recapito-voci--colophon {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: clamp(2rem, 5vw, 4rem);
+    padding-top: clamp(0.85rem, 2vh, 1.15rem);
+  }
+  .recapito-voci--colophon .recapito-voce {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+    align-content: start;
+    border-bottom: 0;
+    padding: 0;
+  }
+}
+
 .bufala-recapito .scheda-azioni {
   margin-top: clamp(1.25rem, 3vh, 2rem);
 }

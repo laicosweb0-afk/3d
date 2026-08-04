@@ -242,7 +242,11 @@ export function Vetrina() {
         {tappe.map((t) => (
           <p className="vetrina-nome" key={t.nome} style={{ opacity: 0 }}>
             <span className="nome">{t.nome}</span>
-            {t.produttore && <span className="micro">{t.produttore}</span>}
+            {(t.tipo || t.produttore) && (
+              <span className="micro">
+                {[t.tipo, t.produttore].filter(Boolean).join(' · ')}
+              </span>
+            )}
           </p>
         ))}
       </div>

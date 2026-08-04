@@ -48,6 +48,11 @@ export function Nav() {
           alt={company.brand}
           width={1242}
           height={970}
+          // Pigra, e non per pigrizia: la barra è invisibile per tutto il
+          // filmato, ma il framework preccaricava questo PNG da 85 kB nella
+          // prima schermata (misurato in Task 00, assegnato in B10/Task 12).
+          loading="lazy"
+          decoding="async"
         />
       </a>
       <ul>

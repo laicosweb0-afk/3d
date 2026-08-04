@@ -169,6 +169,7 @@ Aggiornato a ogni task. Un blocco aperto non si aggira in silenzio.
 | 4 | ~~Conferma orari~~ | **chiuso** — decisione utente 04/08: valgono quelli della scheda Google, già in `company.ts`. Riconferma dal cliente consigliata, non bloccante | — |
 | 5 | Approvazione del copy definitivo | **aperto** — ferma la Task 10 | cliente |
 | 6 | Dominio definitivo | **aperto** | cliente |
+| 9 | Le «ragioni» delle didascalie prodotti (una riga per prodotto: perché è al banco) | **aperto** — ferma il completamento della Task 07; parole sue, non nostre | cliente |
 | 7 | ~~Modello del tablet~~ | **chiuso** — succede su tre dispositivi diversi, quindi non è il dispositivo. Misurato: è aritmetica, non hardware (Task 00) | — |
 | 8 | ~~File originale del filmato~~ | **chiuso** — è a 1280×720, cioè la stessa risoluzione della copia in repo: non c'è niente da recuperare | — |
 
@@ -176,19 +177,26 @@ Aggiornato a ogni task. Un blocco aperto non si aggira in silenzio.
 
 ## 9. Le fasi
 
-**Fase 0 — Fondamenta** · niente di visibile cambia
-`00` Misura · `01` Performance budget · `02` Blocchi
+**Fase 0 — Fondamenta** ✅
+`00` Misura ✓ · `01` Performance budget ✓ · `02` Blocchi ✓
 
-**Fase 1 — Le regole** · niente di visibile cambia
-`03` Design system completo (colore, tipografia, spazio, superfici, movimento)
-`04` Composizione
+**Fase 1 — Le regole** ✅
+`03` Design system completo ✓ · `04` Composizione ✓
 
-**Fase 2 — La regia** · qui il sito cambia
-`05` Struttura · `06` Il film · `07` La vetrina · `08` I movimenti nuovi
-`09` Contatto · `10` Contenuti · **collaudo + polish #1**
+**Fase 2 — La regia** — in corso
+`05` Struttura ✓ · `06` Il film ✓ · `07` La vetrina ◐ *(didascalie coi dati
+confermati fatte; le «ragioni» aspettano il cliente — blocco 9)* ·
+`08` I movimenti nuovi ✓ *(Per chi e La visita, dentro la 05; Per chi
+ridisegnata a carte gemelle su brief dell'utente)* · `09` Contatto ✓ ·
+`10` Contenuti ⛔ *(blocco 5: approvazione del cliente)* ·
+**collaudo #1 ✓ (04/08)**: 60 fps con input veri su telefono e tablet, zero
+fotogrammi video persi, 26 immagini/s alla velocità di lettura, CLS 0,
+prima pittura 1.056 ms (56 sopra B6 → Task 12), contrasti a posto, nessuna
+coppia di sezioni adiacenti con la stessa forma, 14 schermate totali.
 
 **Fase 3 — La rifinitura**
-`11` Animazioni · `12` Ottimizzazione · `13` Premium polish
+`11` Animazioni · `12` Ottimizzazione *(≈380 ms di thread all'avvio, 56 ms
+di prima pittura, 4 kB di CSS oltre soglia)* · `13` Premium polish
 
 Responsive e accessibilità **non sono task**: sono condizioni di consegna di
 ognuna, con un collaudo sui dispositivi veri alla fine di ogni fase.
