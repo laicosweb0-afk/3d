@@ -10,6 +10,11 @@ export const company = {
 
   telefono: '+39 392 0220924',
   telefonoHref: 'tel:+393920220924',
+  /** Il numero che riceve gli ordini su WhatsApp, in cifre nude per il
+   *  collegamento wa.me. Confermato dall'utente (04/08): è lo stesso del
+   *  telefono — se un giorno il banco usasse un numero WhatsApp dedicato,
+   *  cambia SOLO qui. */
+  whatsapp: '393920220924',
   // ⚠️ Indirizzo e sito del vecchio biglietto da visita: il cliente li ha
   // sostituiti e non vanno più mostrati da nessuna parte. Restano qui solo
   // per non farli riapparire per distrazione — se servisse un recapito

@@ -17,6 +17,7 @@ const voci = [
   // un'ancora inesistente porta a fondo pagina senza dirlo — e sembra un
   // sito rotto proprio a chi sta cercando come raggiungervi.
   { href: '#prodotti', testo: 'Prodotti' },
+  { href: '#ordina', testo: 'Ordina' },
   { href: '#orari', testo: 'Orari' },
   { href: '#dove', testo: 'Dove trovarci' },
 ];

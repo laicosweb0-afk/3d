@@ -9,6 +9,7 @@
 // prodotti, dove. Ogni riga è un'ancora vera — niente JavaScript, niente
 // stato — e chi invece vuole il film semplicemente scorre.
 
+import type { ReactNode } from 'react';
 import { asset } from '@/lib/asset';
 import { ingresso } from '@/content/bufala/copy';
 import { OggiPilla } from './Oggi';
@@ -28,6 +29,25 @@ const FOTO: Record<string, { src: string; alt: string } | null> = {
     alt: '',
   },
   mappa: null,
+  ordine: null,
+};
+
+/** Le porte senza fotografia hanno un'icona nella stessa piastrella: il
+ *  segnaposto per la mappa, il sacchetto per l'ordine. Tratti da 1.5,
+ *  stesso ottone: la piastrella è la stessa, cambia solo il disegno. */
+const ICONE: Record<string, ReactNode> = {
+  mappa: (
+    <>
+      <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11Z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </>
+  ),
+  ordine: (
+    <>
+      <path d="M5.5 8h13l-1 13h-11l-1-13Z" />
+      <path d="M9 10.5V6.5a3 3 0 0 1 6 0v4" />
+    </>
+  ),
 };
 
 export function Ingresso() {
@@ -70,8 +90,7 @@ export function Ingresso() {
                   <span className="porta-foto porta-foto--pin" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
                       strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11Z" />
-                      <circle cx="12" cy="10" r="2.5" />
+                      {ICONE[porta.foto]}
                     </svg>
                   </span>
                 )}

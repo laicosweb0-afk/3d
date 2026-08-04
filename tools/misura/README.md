@@ -31,6 +31,7 @@ node tools/misura/<strumento>.mjs
 | `forma.mjs` | allineamento, larghezza e sequenza dei blocchi di ogni sezione | ha trovato il sapore di template: nove sezioni, una sola forma |
 | `peso.mjs` | schermate di scorrimento per sezione | ha trovato che il filmato era il 77% del sito |
 | `film.mjs` | risoluzione sorgente contro pixel in pagina | ha trovato l'ingrandimento ×3,73 |
+| `ordine.mjs` | il compositore dell'ordine: ricerca, stepper, messaggio | ha trovato che «olio» non trovava «all'olio»: l'apostrofo tipografico teneva la parola incollata |
 
 ## Due cose che qui non si possono misurare
 

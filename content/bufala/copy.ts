@@ -87,6 +87,15 @@ export const ingresso = {
   // aria — la headline respira da sola.
   domanda: 'Da dove vuoi iniziare?',
   porte: [
+    // L'ordine sta in cima (decisione utente 04/08: «il click nella hero,
+    // così abbiamo tutto sotto controllo»): è l'unica porta che fa fare
+    // qualcosa, le altre fanno vedere.
+    {
+      nome: 'Ordina ora',
+      testo: 'Componi l’ordine e ritiralo al banco.',
+      href: '#ordina',
+      foto: 'ordine' as const,
+    },
     {
       nome: 'Il nostro banco',
       testo: 'Scopri la nostra selezione e la qualità che ci distingue.',
@@ -175,6 +184,16 @@ export const sezioni = {
     // Un carosello che non dichiara di essere trascinabile viene guardato
     // come una fotografia: l'affordance va detta, non lasciata indovinare.
     invito: 'Scorri per esplorare alcuni dei nostri prodotti',
+  },
+
+  // L'ORDINE — richiesta del titolare via WhatsApp (04/08): ordinare
+  // direttamente dal sito, minimo un chilo, con le finestre di
+  // prenotazione dette «delicatamente, come le luci» (parole dell'utente).
+  // La frase promette solo il meccanismo, che è verificabile: si ordina
+  // qui, si ritira lì. Il resto lo dice la carta.
+  ordina: {
+    titolo: 'L’ordine',
+    frase: 'Ordina ora, ritira al banco.',
   },
 
   // La rottura unica del sito (Composizione §regola 2): il 04:30 composto

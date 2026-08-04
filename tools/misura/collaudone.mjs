@@ -15,6 +15,7 @@ const TAPPE = [
   ['.bufala-apertura', 'apertura'],
   ['#banco', 'per chi'],
   ['#prodotti', 'vetrina'],
+  ['#ordina', 'ordine'],
   ['#oggi', 'oggi al banco'],
   ['#dove', 'mappa'],
   ['.bufala-firma', 'firma'],
@@ -41,7 +42,7 @@ for (const f of FORMATI) {
 
   // 1 — le ancore delle tre porte
   const porte = [];
-  for (const href of ['#banco', '#prodotti', '#dove', '#oggi']) {
+  for (const href of ['#ordina', '#banco', '#prodotti', '#dove', '#oggi']) {
     await p.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await p.waitForTimeout(350);
     await p.click(`.porta[href="${href}"], .oggi-pilla[href="${href}"]`);

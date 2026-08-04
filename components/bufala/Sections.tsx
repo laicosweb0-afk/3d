@@ -13,6 +13,7 @@ import { sezioni } from '@/content/bufala/copy';
 import { Vetrina } from './Vetrina';
 import { Rivela } from './Rivela';
 import { Oggi } from './Oggi';
+import { Ordina } from './Ordina';
 
 const pv = company.puntoVendita;
 
@@ -110,6 +111,19 @@ export function Sections() {
       </section>
 
       <Vetrina />
+
+      {/* Movimento 4-bis · L'ordine (richiesta del titolare, 04/08).
+          Subito dopo la vetrina, perché è la sua conseguenza: i prodotti
+          si sono appena visti, qui si mettono nel messaggio. Il sito è
+          statico: la carta compone, WhatsApp consegna, il banco conferma.
+          Le finestre di prenotazione stanno DENTRO la carta come
+          informazione — la stessa delicatezza delle luci di «Oggi al
+          banco» — mai come cancello. */}
+      <section className="bufala-sezione bufala-ordina" id="ordina" data-rivela>
+        <p className="micro">{sezioni.ordina.titolo}</p>
+        <h2>{sezioni.ordina.frase}</h2>
+        <Ordina />
+      </section>
 
       {/* Movimento 5 · La visita. L'unica rottura di griglia del sito: il
           04:30 come immagine, da margine a margine, l'ottone usato come

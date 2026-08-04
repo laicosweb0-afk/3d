@@ -604,6 +604,247 @@
   border-color: rgb(184 155 94 / 0.6);
 }
 
+/* — L'ordine: il compositore (richiesta del titolare, 04/08) —
+   La stessa carta della Visita — le due classi convivono sull'elemento,
+   la ricetta non si duplica. Dentro, quattro zone divise dagli stessi
+   fili: ricerca, lista con lo stepper a chili, ritiro con le finestre
+   del titolare (informazione quieta, come le luci del semaforo), invio.
+   In transizione solo colori e opacità: niente che il budget vieti. */
+
+.ordina-carta .carta-etichetta {
+  margin-bottom: 0.9rem;
+}
+
+.ordina-cerca {
+  width: 100%;
+  min-height: 2.9rem;
+  padding: 0 1.1rem;
+  appearance: none;
+  background: rgb(247 243 234 / 0.05);
+  border: 1px solid rgb(247 243 234 / 0.12);
+  border-radius: var(--raggio-piccolo);
+  color: var(--latte);
+  font-family: var(--font-testo);
+  /* 1rem, non meno: sotto i 16px iOS ingrandisce la pagina al fuoco. */
+  font-size: 1rem;
+  transition: border-color var(--durata-micro) var(--curva-entrata);
+}
+
+.ordina-cerca::placeholder {
+  color: var(--latte-55);
+}
+
+.ordina-cerca:focus-visible {
+  outline: 2px solid var(--ottone);
+  outline-offset: 2px;
+}
+
+.bufala .ordina-regola {
+  margin-top: 0.7rem;
+  color: var(--latte-55);
+}
+
+.ordine-lista {
+  margin-top: clamp(0.6rem, 1.5vh, 1rem);
+}
+
+.ordine-riga {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: clamp(0.75rem, 1.8vh, 1rem) 0;
+  border-top: 1px solid rgb(247 243 234 / 0.05);
+}
+
+.ordine-lista .ordine-riga:first-child {
+  border-top: 0;
+}
+
+.ordine-nome {
+  display: block;
+  font-size: clamp(0.98rem, 1.6vw, 1.08rem);
+  color: var(--latte);
+}
+
+.ordine-dettaglio {
+  display: block;
+  margin-top: 0.18rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--latte-55);
+}
+
+/* «Aggiungi» e lo stepper sono la stessa famiglia dei pulsanti: filo,
+   fondo appena percettibile, il tocco che abbassa di un pixel. */
+.ordine-aggiungi {
+  min-height: 2.5rem;
+  padding: 0 1.1rem;
+  border: 1px solid rgb(184 155 94 / 0.5);
+  border-radius: 999px;
+  background: none;
+  color: var(--latte);
+  font-family: var(--font-testo);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color var(--durata-micro) var(--curva-entrata),
+    border-color var(--durata-micro) var(--curva-entrata);
+}
+
+.ordine-aggiungi:hover {
+  background: rgb(184 155 94 / 0.12);
+  border-color: rgb(184 155 94 / 0.7);
+}
+
+.ordine-aggiungi:active {
+  transform: translateY(1px);
+}
+
+.ordine-passo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.passo-tasto {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid rgb(247 243 234 / 0.14);
+  border-radius: 999px;
+  background: rgb(247 243 234 / 0.04);
+  color: var(--latte);
+  font-family: var(--font-testo);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color var(--durata-micro) var(--curva-entrata),
+    border-color var(--durata-micro) var(--curva-entrata);
+}
+
+.passo-tasto:hover {
+  background: rgb(247 243 234 / 0.1);
+  border-color: rgb(247 243 234 / 0.22);
+}
+
+.passo-tasto:active {
+  transform: translateY(1px);
+}
+
+.passo-kg {
+  min-width: 3.6rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+  color: var(--latte);
+}
+
+/* Il ritiro: le righe hanno la grammatica degli orari (una famiglia sola
+   di elenco); la finestra aperta ADESSO si accende col punto verde — la
+   stessa luce, lo stesso significato: si può. */
+.ritiro-righe {
+  margin-top: 0.4rem;
+}
+
+.ritiro-quando {
+  margin: 0;
+  /* Blocco allineato a destra, non inline-flex: la finestra più lunga
+     («da domenica 12:00 a lunedì 12:00») sul telefono DEVE andare a capo
+     — misurato: non ci sta a nessun corpo leggibile — e col flex la
+     seconda riga cadeva appesa a sinistra. Così cade sotto, a destra,
+     come un capo voluto. */
+  display: block;
+  text-align: right;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: var(--latte-55);
+  font-variant-numeric: tabular-nums;
+}
+
+.ritiro-quando--aperta {
+  color: var(--latte);
+}
+
+.ritiro-quando .oggi-punto {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-right: 0.5rem;
+  transform: none;
+}
+
+.ritiro-chips {
+  margin: 0.4rem 0 0.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ritiro-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.42rem 0.95rem;
+  border: 1px solid rgb(247 243 234 / 0.14);
+  border-radius: 999px;
+  background: none;
+  font-family: var(--font-testo);
+  font-size: 0.85rem;
+  color: var(--latte-70);
+  cursor: pointer;
+  transition:
+    background-color var(--durata-micro) var(--curva-entrata),
+    border-color var(--durata-micro) var(--curva-entrata),
+    color var(--durata-micro) var(--curva-entrata);
+}
+
+.ritiro-chip--attivo {
+  border-color: rgb(184 155 94 / 0.65);
+  background: rgb(184 155 94 / 0.12);
+  color: var(--latte);
+}
+
+/* Sul telefono la finestra più lunga («da domenica 12:00 a lunedì 12:00»)
+   accanto al giorno più largo (MERCOLEDÌ) non sta su una riga: misurato a
+   390px, a 0.8rem ci sta — e le cifre restano tabulari. */
+@media (max-width: 480px) {
+  .ritiro-quando {
+    font-size: 0.8rem;
+  }
+}
+
+.ordina-sintesi {
+  margin-top: 1.4rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--latte-70);
+  max-width: 44ch;
+}
+
+.ordina-totale {
+  margin-bottom: 0.9rem;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.15rem;
+  color: var(--latte);
+  font-variant-numeric: tabular-nums;
+}
+
+.bufala .bottone--spento {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.bufala .ordina-nota {
+  margin-top: 0.9rem;
+  color: var(--latte-55);
+}
+
 /* — Il palco del viaggio —
    Il canvas/immagini stanno fissi; lo spacer sotto genera lo scroll. */
 

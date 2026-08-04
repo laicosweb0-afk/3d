@@ -84,6 +84,7 @@ Cosa si misura, e con cosa:
 | Ingrandimento dei video | `film.mjs` — sorgente contro pixel in pagina | *definita dalla Task 01* |
 | Peso dello scroll | `peso.mjs` — schermate per sezione | *definita dalla Task 01* |
 | Forma delle sezioni | `forma.mjs` — allineamento, larghezza, sequenza dei blocchi | mai due consecutive uguali |
+| Il compositore dell'ordine | `ordine.mjs` — ricerca, stepper col minimo, prodotto a mano, messaggio WhatsApp, finestre | zero difetti |
 
 Gli script vivono nella cartella di lavoro temporanea e vanno **riscritti se
 persi**: sono corti, e il metodo conta più del file.
@@ -170,6 +171,7 @@ Aggiornato a ogni task. Un blocco aperto non si aggira in silenzio.
 | 5 | Approvazione del copy definitivo | **aperto** — ferma la Task 10 | cliente |
 | 6 | Dominio definitivo | **aperto** | cliente |
 | 9 | Le «ragioni» delle didascalie prodotti (una riga per prodotto: perché è al banco) | **aperto** — ferma il completamento della Task 07; parole sue, non nostre | cliente |
+| 10 | Lista completa dei prodotti ordinabili | **aperto** — il compositore (Task 14) è in campo col catalogo parziale: la mozzarella e le cinque tappe della vetrina, tutti prodotti già confermati. Arrivato l'elenco del titolare, si allunga `content/bufala/ordina.ts` e basta; intanto un prodotto fuori lista si scrive a mano e parte lo stesso | cliente |
 | 7 | ~~Modello del tablet~~ | **chiuso** — succede su tre dispositivi diversi, quindi non è il dispositivo. Misurato: è aritmetica, non hardware (Task 00) | — |
 | 8 | ~~File originale del filmato~~ | **chiuso** — è a 1280×720, cioè la stessa risoluzione della copia in repo: non c'è niente da recuperare | — |
 
@@ -203,7 +205,12 @@ di thread all'avvio su CPU×4 — ~75 ms reali — è l'idratazione di React coi
 componenti vivi; ridurlo vorrebbe dire rinunciare a componenti, costo non
 accettato)* ·
 `13` Premium polish ◐ *(primo giro fatto: mappa con fondale d'attesa,
-orfani di riga, targa della firma, respiro del 04:30)*
+orfani di riga, targa della firma, respiro del 04:30)* ·
+`14` L'ordine ◐ *(richiesta del titolare 04/08: compositore in campo —
+ricerca che capisce categorie e plurali, stepper dal minimo di 1 kg,
+finestre di prenotazione come informazione, invio via WhatsApp; porta
+«Ordina ora» nell'ingresso e voce nel menu. Manca solo il catalogo
+completo — blocco 10)*
 
 **Collaudo completo del 04/08 (sera), quattro formati** — desktop 1440,
 desktop 1920, tablet, telefono, CPU ×4, gesti veri: 60 fps ovunque, zero
@@ -230,6 +237,7 @@ sempre zero difetti) · audit contrasti verde con lo strumento onesto.
 | task | aspetta |
 |---|---|
 | Ragioni dei prodotti (Task 07) | una riga per prodotto dal cliente |
+| Catalogo completo dell'ordine (Task 14) | l'elenco dei prodotti dal titolare |
 | Copy definitivo (Task 10) | approvazione del cliente |
 | Semaforo vivo | il foglio Google dell'utente (5 minuti) |
 | Verifica mappa e giudizio sipario | gli occhi dell'utente sul link |
