@@ -7,6 +7,7 @@ import { company, indirizzoPuntoVendita, mappaEmbed, mappaApri } from '@/content
 import { sezioni } from '@/content/bufala/copy';
 import { Vetrina } from './Vetrina';
 import { Rivela } from './Rivela';
+import { Passaggio } from './Passaggio';
 
 const pv = company.puntoVendita;
 
@@ -30,20 +31,13 @@ export function Sections() {
 
     </div>
 
-    {/* Il rientro nel buio.
-
-        La parte chiara serve a una cosa sola: le informazioni che devono
-        essere leggibili. Finita quella si torna nel verde e non se ne esce
-        piu', perche' i prodotti sono fotografati su quel fondo — mostrarli
-        sul chiaro vorrebbe dire cinque rettangoli scuri su una pagina crema,
-        che e' esattamente il collage che avevamo scartato.
-
-        Il verde risale con un bordo curvo come il latte era sceso: la
-        simmetria fa leggere le due meta' del sito come un respiro, non come
-        due pagine attaccate. E' un contenitore unico, non un fondo per
-        sezione — dandolo alle singole sezioni si ottengono scatole scure su
-        pagina crema, con i vuoti in mezzo. */}
-    <div className="bufala-eclisse" aria-hidden="true" />
+    {/* Il passaggio dalla panna al verde: l'avvicinarsi al banco.
+        Sostituisce un gradiente fermo alto un quarto di schermo, che aveva
+        due difetti — non seguiva lo scroll, quindi aveva lo stesso aspetto a
+        qualunque velocita' si scorresse, e aveva due confini. Un confine,
+        per quanto sfumato, resta un punto in cui una cosa finisce e
+        un'altra comincia. */}
+    <Passaggio />
 
     <div className="bufala-sezioni bufala-buio">
 

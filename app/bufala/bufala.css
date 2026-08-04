@@ -733,25 +733,6 @@
   border-bottom-color: var(--ottone);
 }
 
-/* — L'eclisse: il rientro nel buio —
-   Il verde risale dal basso con un bordo curvo e morbido, come il latte era
-   sceso dall'alto. Non e' un'animazione: e' una forma che entra in pagina
-   scorrendo, quindi non costa niente al browser e funziona anche senza
-   JavaScript. Da qui in giu' il sito resta scuro. */
-.bufala-eclisse {
-  height: 26vh;
-  /* Due gradienti sovrapposti: il radiale fa salire la curva dal centro, il
-     lineare garantisce che il bordo basso sia pieno su tutta la larghezza.
-     Senza il secondo, agli angoli in basso resterebbe la crema e si vedrebbe
-     una cucitura contro il verde della meta' sotto. */
-  background:
-    linear-gradient(to bottom, rgb(14 32 24 / 0) 52%, var(--verde-profondo) 100%),
-    radial-gradient(130% 92% at 50% 100%,
-      var(--verde-profondo) 0 46%,
-      rgb(14 32 24 / 0.5) 68%,
-      rgb(14 32 24 / 0) 84%);
-}
-
 /* Da qui in poi il documento torna scuro. */
 .bufala-buio {
   background: var(--verde-profondo);
@@ -1211,5 +1192,126 @@
   .bufala .scheda,
   .bufala .bottone {
     transition: none;
+  }
+}
+
+/* ══ Il passaggio dalla panna al verde ══
+   Tre strati dentro un palco che resta fermo mentre la zona scorre. Ogni
+   strato riceve un solo numero dal componente e si muove con trasformazioni
+   e opacità: niente ricalcolo di impaginato a ogni fotogramma.
+
+   L'altezza della zona è quella che decide quanto dura il passaggio. Sotto
+   una schermata e mezza il cambio si nota come cambio; molto oltre le due,
+   si comincia ad aspettare. */
+.bufala-passaggio {
+  position: relative;
+  /* Sopra il velo di latte del viaggio, che è `fixed` e resta a schermo
+     pieno per sempre una volta cresciuto: senza questo indice, il passaggio
+     gli sta dietro e non si vede niente — la pagina resta panna per tutta
+     la corsa. Le sezioni hanno già lo stesso indice per la stessa ragione. */
+  z-index: 3;
+  height: 175svh;
+  /* La panna continua dentro la zona: senza, il palco si stacca dalla
+     sezione sopra e si vede una giunzione proprio dove non deve essercene
+     nessuna. */
+  background: var(--latte);
+}
+
+.passaggio-palco {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--latte);
+}
+
+.passaggio-palco > * {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* Fase 1 — la panna perde un soffio di luce.
+   Non diventa grigia: si scurisce dal basso con lo stesso verde di tutto il
+   resto, così il calo di luce ha già il colore dell'ambiente in cui si sta
+   entrando. Il massimo è 9% di nero verde: sopra si vede, sotto non si
+   sente. */
+.passaggio-velatura {
+  background: linear-gradient(to bottom,
+    rgb(14 32 24 / 0) 0%,
+    rgb(14 32 24 / 0.035) 45%,
+    rgb(14 32 24 / 0.09) 100%);
+  opacity: var(--velatura, 0);
+}
+
+/* Fase 2 — l'ombra che sale.
+   Un'ellisse enorme appoggiata sotto il bordo inferiore, con tre fermate di
+   colore invece di due: una sola sfumatura produce sempre una fascia
+   riconoscibile a metà strada, tre la spezzano. Non ha contorno da nessuna
+   parte, quindi non può produrre una linea. */
+.passaggio-ombra {
+  height: 150%;
+  top: auto;
+  bottom: 0;
+  background:
+    radial-gradient(135% 78% at 50% 100%,
+      rgb(8 22 15 / 0.92) 0%,
+      rgb(11 26 19 / 0.62) 26%,
+      rgb(14 32 24 / 0.28) 52%,
+      rgb(14 32 24 / 0) 78%);
+  transform: translate3d(0, calc(var(--ombra, 1) * 72%), 0);
+}
+
+/* Fase 3 — il verde che emerge.
+   Più alto dello schermo perché, a fine corsa, il tratto pieno deve arrivare
+   oltre il bordo superiore: solo così consegna il campo alla sezione scura
+   senza che si veda dove uno finisce e l'altra comincia — sono lo stesso
+   colore. Sale più lentamente dell'ombra, ed è questo sfasamento a far
+   convivere i due colori invece di sostituirli. */
+.passaggio-verde {
+  height: 260%;
+  top: auto;
+  bottom: 0;
+  background: linear-gradient(to top,
+    #0e2018 0%,
+    #0e2018 55%,
+    rgb(14 32 24 / 0.55) 78%,
+    rgb(14 32 24 / 0) 100%);
+  transform: translate3d(0, calc(var(--verde, 1) * 100%), 0);
+}
+
+/* Fase 4 — i contenuti della metà scura arrivano in ordine.
+   Titolo, poi testo, poi schede: novanta millisecondi l'uno dall'altro. È
+   sotto la soglia in cui si conta la sequenza e sopra quella in cui si
+   percepisce come un blocco solo. */
+.bufala [data-rivela='attesa'] > * {
+  opacity: 0;
+  transform: translate3d(0, 8px, 0);
+}
+
+.bufala [data-rivela='visto'] > * {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bufala [data-rivela='visto'] > *:nth-child(2) { transition-delay: 0.09s; }
+.bufala [data-rivela='visto'] > *:nth-child(3) { transition-delay: 0.18s; }
+.bufala [data-rivela='visto'] > *:nth-child(4) { transition-delay: 0.27s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bufala-passaggio { height: auto; }
+  .passaggio-palco {
+    position: static;
+    height: 26vh;
+    background: linear-gradient(to bottom, var(--latte), var(--verde-profondo));
+  }
+  .passaggio-palco > * { display: none; }
+  .bufala [data-rivela] > * {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
