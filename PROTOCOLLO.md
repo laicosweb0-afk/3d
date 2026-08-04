@@ -229,7 +229,6 @@ sempre zero difetti) · audit contrasti verde con lo strumento onesto.
 **Uniche task ferme, e su chi aspettano:**
 | task | aspetta |
 |---|---|
-| Il puntino della i (Task 11) | la discussione che l'utente stesso ha chiesto («capire prima di farla») |
 | Ragioni dei prodotti (Task 07) | una riga per prodotto dal cliente |
 | Copy definitivo (Task 10) | approvazione del cliente |
 | Semaforo vivo | il foglio Google dell'utente (5 minuti) |
@@ -238,8 +237,9 @@ sempre zero difetti) · audit contrasti verde con lo strumento onesto.
 
 ## 10. Registro delle idee (si valutano nella task giusta, non prima)
 
-- **Il puntino della i che cade e diventa la mozzarella** — idea dell'utente,
-  esplicitamente rimandata («questa qui rimane come task da fare»). → Task 11.
+- ~~Il puntino della i che cade e diventa la mozzarella~~ — **abbandonata
+  per decisione dell'utente (04/08)**: «lo scrolling è già abbastanza
+  impegnativo, caviamo questa opzione». Non si ripropone.
 - **Il banco che si compone scorrendo** — idea dell'utente (04/08).
   **Prototipata a costo zero** (04/08, sera): tre veli del colore della
   pagina coprono la fotografia vera in terzi e si alzano a battute
