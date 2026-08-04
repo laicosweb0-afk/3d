@@ -1195,7 +1195,9 @@
   border-bottom: 1px solid var(--filo-su-scuro);
 }
 
-.recapito-voce dt {
+.recapito-voce dt,
+.recapito-voce .voce-nome {
+  display: block;
   font-size: 0.68rem;
   font-weight: 500;
   letter-spacing: 0.2em;
@@ -1203,7 +1205,9 @@
   color: var(--latte-55);
 }
 
-.recapito-voce dd {
+.recapito-voce dd,
+.recapito-voce .voce-dato {
+  display: block;
   margin: 0;
   line-height: 1.65;
 }
@@ -1214,6 +1218,176 @@
     gap: 2rem;
     align-items: baseline;
   }
+}
+
+/* — Per chi (movimento 3) —
+   La tavola editoriale: la fotografia scura appoggiata sulla carta chiara,
+   come una stampa impaginata in una rivista — e' il modo in cui una foto
+   del set scuro puo' vivere nella meta' chiara senza stonare. Accanto, i
+   due pubblici con pesi diversi: la colonna di chi compra per lavoro viene
+   prima e pesa di piu'; quella di chi cucina a casa e' sfalsata verso il
+   basso — la gerarchia e' il contenuto, e sopravvive anche su telefono,
+   dove lo sfalsamento diventa un rientro. */
+.bufala-perchi {
+  align-items: start;
+  text-align: left;
+}
+
+.bufala-perchi h2 {
+  max-width: 16ch;
+}
+
+.perchi-campo {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  width: 100%;
+  max-width: 62rem;
+  margin-top: var(--spazio-blocco);
+}
+
+.perchi-foto {
+  margin: 0;
+  border-radius: var(--raggio-medio);
+  overflow: hidden;
+}
+
+.perchi-foto img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.perchi-blocchi {
+  display: grid;
+  gap: clamp(1.25rem, 3vh, 2rem);
+  align-content: center;
+}
+
+.perchi-blocco h3 {
+  font-family: var(--font-testo);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--testo-nota);
+  margin-bottom: 0.45rem;
+}
+
+.perchi-blocco p {
+  max-width: 34ch;
+  line-height: 1.65;
+}
+
+/* Lo sfalsamento: su telefono un rientro, da tablet in su anche piu' in
+   basso. Non e' decorazione — dice chi viene prima. */
+.perchi-blocco--casa {
+  padding-left: clamp(1.25rem, 6vw, 3rem);
+}
+
+.perchi-nota {
+  margin-top: var(--spazio-blocco);
+  font-size: 0.9rem;
+  color: var(--testo-nota);
+}
+
+@media (min-width: 760px) {
+  .perchi-campo {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+  .perchi-foto {
+    aspect-ratio: 4 / 3;
+  }
+  .perchi-blocco--casa {
+    transform: translateY(clamp(0.5rem, 2vh, 1.5rem));
+  }
+}
+
+/* — La visita (movimento 5): la rottura —
+   L'unico punto del sito in cui la griglia si spezza: il numero come
+   immagine, da margine a margine, e l'ottone usato come colore di un testo
+   grande qui e in nessun altro posto. Un accento usato due volte non e'
+   piu' un accento. */
+.bufala-visita {
+  align-items: start;
+  text-align: left;
+}
+
+.visita-ora {
+  font-family: var(--font-display);
+  font-weight: 500;
+  /* Da margine a margine: la misura e' il viewport, non la colonna. Il
+     tracking negativo compatta le cifre in un oggetto solo. */
+  font-size: clamp(5.5rem, 21vw, 15rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--ottone);
+  /* Cifre tabellari: il 4, lo 0 e il 3 devono pesare uguale, come su un
+     quadrante. */
+  font-variant-numeric: tabular-nums;
+  margin-left: -0.04em;
+}
+
+.visita-frase {
+  margin-top: 0.2em;
+}
+
+.visita-testo {
+  max-width: var(--misura-testo);
+  color: var(--latte-70);
+}
+
+.bufala-visita .recapito-voci {
+  margin-top: var(--spazio-blocco);
+}
+
+/* Gli orari: la stessa riga del colophon, compressa — sette righe non
+   possono pesare come sette recapiti. */
+.recapito-voce--orario {
+  padding: 0.55rem 0;
+}
+
+.recapito-voce--orario dd {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 700px) {
+  .recapito-voce--orario {
+    grid-template-columns: 13rem 1fr;
+  }
+}
+
+/* I tre passi: numero in ottone piccolo — eco della rottura, non replica. */
+.visita-passi {
+  list-style: none;
+  margin: var(--spazio-blocco) 0 0;
+  padding: 0;
+  width: 100%;
+  max-width: 46rem;
+  /* Niente filo in testa: l'ultima riga degli orari ha gia' il suo sotto,
+     e due fili con un margine in mezzo disegnano una banda vuota — si
+     vedeva, misurato sullo screenshot. */
+}
+
+.visita-passi .recapito-voce--passo {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.passo-numero {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--ottone);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Il congedo dentro i recapiti: sopra i bottoni e' la ragione per
+   premerli; dopo, era un saluto a pagina gia' finita. */
+.recapito-congedo {
+  margin-top: var(--spazio-sezione);
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
 }
 
 .bufala-recapito .scheda-azioni {

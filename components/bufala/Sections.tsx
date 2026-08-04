@@ -1,70 +1,133 @@
 // Le sezioni dopo il viaggio: il documento vero e proprio.
 // Solo dati reali (content/bufala/company.ts). Dove il cliente non ha ancora
 // fornito il contenuto, la sezione non compare — nessun segnaposto inventato.
+//
+// L'ordine e le forme vengono dall'architettura (Task 01) e dalla
+// composizione (Task 04): ogni movimento ha una forma diversa dal
+// precedente, il blocco occhiello+titolo+paragrafo esiste una volta sola,
+// e la griglia si rompe in un punto solo — il 04:30.
 
 import { asset } from '@/lib/asset';
 import { company, indirizzoPuntoVendita, mappaEmbed, mappaApri } from '@/content/bufala/company';
+import { immagini } from '@/content/bufala/assets';
 import { sezioni } from '@/content/bufala/copy';
 import { Vetrina } from './Vetrina';
 import { Rivela } from './Rivela';
 
 const pv = company.puntoVendita;
 
+/** I tre passi della visita, dai dati confermati del punto vendita. */
+const passi = [
+  { nome: 'In auto', testo: pv.uscita },
+  { nome: 'Dove', testo: `${pv.presso} — ${pv.dettaglio}` },
+  { nome: 'All’ingresso', testo: pv.accesso },
+];
+
 export function Sections() {
   return (
     <>
     <Rivela />
-    {/* La meta' chiara: solo le informazioni che devono essere leggibili. */}
+    {/* — La metà chiara — */}
     <div className="bufala-sezioni">
-      {/* L'apertura: una frase sola, tanto spazio intorno. È il primo
-          respiro dopo il viaggio, e la prima cosa che si legge sul chiaro. */}
+      {/* Movimento 2 · Chi siamo. L'unica dichiarazione centrata del
+          documento, e l'unico posto dove la forma occhiello+titolo+riga è
+          ammessa: qui il centrato è guadagnato — una frase sola, tanto
+          spazio intorno. */}
       <section className="bufala-sezione bufala-apertura" data-rivela>
         <p className="micro">{sezioni.apertura.occhiello}</p>
         <h2>{sezioni.apertura.frase}</h2>
         <p>{sezioni.apertura.testo}</p>
       </section>
 
-      <section className="bufala-sezione" data-rivela>
-        <p className="micro">{sezioni.banco.titolo}</p>
-        <h2>{sezioni.banco.frase}</h2>
-        <p>{sezioni.banco.testo}</p>
+      {/* Movimento 3 · Per chi. Non piu' un blocco di testo che galleggia
+          sul bianco (la schermata del 04/08): una tavola editoriale — la
+          fotografia vera delle mani, scura sulla carta chiara come una
+          stampa impaginata — e i due pubblici con pesi diversi, perche'
+          sono diversi: l'orario del banco dice che chi compra per lavoro
+          viene prima. La colonna minore e' sfalsata, non affiancata pari
+          (Composizione §regola 4). */}
+      <section className="bufala-sezione bufala-perchi" data-rivela>
+        <p className="micro">{sezioni.perChi.titolo}</p>
+        <h2>{sezioni.perChi.frase}</h2>
+        <div className="perchi-campo">
+          <figure className="perchi-foto">
+            <img
+              src={immagini.mani.src}
+              alt={immagini.mani.alt}
+              width={1376}
+              height={768}
+              loading="lazy"
+            />
+          </figure>
+          <div className="perchi-blocchi">
+            <div className="perchi-blocco perchi-blocco--lavoro">
+              <h3>{sezioni.perChi.lavoro.nome}</h3>
+              <p>{sezioni.perChi.lavoro.testo}</p>
+            </div>
+            <div className="perchi-blocco perchi-blocco--casa">
+              <h3>{sezioni.perChi.casa.nome}</h3>
+              <p>{sezioni.perChi.casa.testo}</p>
+            </div>
+          </div>
+        </div>
+        <p className="perchi-nota">{sezioni.perChi.nota}</p>
       </section>
-
     </div>
 
-    {/* Il passaggio dalla panna al verde: l'avvicinarsi al banco.
-
-        Non e' piu' un palco incollato alto quasi due schermate. Quella
-        versione teneva ferma una schermata intera mentre il colore
-        cambiava, e il risultato era esattamente cio' che doveva evitare:
-        uno schermo verde vuoto, e quindi un blocco separato. Ora e' una
-        fascia che scorre, e il colore cambia perche' la fascia passa —
-        come succede in una stanza quando ci si avvicina a una parete in
-        ombra. Meno meccanica, piu' continuita'. */}
+    {/* Il passaggio dalla panna al verde: una fascia che scorre, il colore
+        cambia perche' la fascia passa. */}
     <div className="bufala-passaggio" aria-hidden="true" />
 
     <div className="bufala-sezioni bufala-buio">
-
-      {/* I prodotti: le foto reali del cliente, non un elenco. Una lista di
-          nomi non dice niente; questi scatti dicono tutto — compreso che
-          dietro il banco c'è una selezione, non un assortimento a caso. */}
+      {/* Movimento 4 · Il banco. Il testo si ferma alla soglia: etichetta e
+          titolo, poi comanda l'immagine. Le ragioni dei prodotti vivranno
+          nelle didascalie della vetrina (Task 07), non in un paragrafo. */}
       <section className="bufala-sezione" data-rivela>
         <p className="micro">{sezioni.prodotti.titolo}</p>
         <h2>{sezioni.prodotti.frase}</h2>
-        <p>{sezioni.prodotti.testo}</p>
       </section>
 
-      {/* La vetrina: il pannello col filmato dei prodotti legato allo
-          scorrimento. Sta fuori da .bufala-sezione perche' ha bisogno
-          dell'intera larghezza e di una propria altezza di scorrimento. */}
       <Vetrina />
 
-      {/* — Siamo qui —
-          La mappa e' protagonista e non ha bisogno di essere presentata:
-          sopra di lei due parole, dentro solo lei, sotto niente. Tutto
-          quello che si puo' leggere sta nella sezione dopo, che e' un'altra
-          cosa e va letta come tale. Prima erano un blocco solo, e il blocco
-          leggeva come "ecco la nostra sede" invece che come un luogo. */}
+      {/* Movimento 5 · La visita. L'unica rottura di griglia del sito: il
+          04:30 come immagine, da margine a margine, l'ottone usato come
+          colore di testo qui e mai altrove. Sotto, gli orari veri e i tre
+          passi — stessa anatomia di riga del colophon (una famiglia sola
+          di elenco, Composizione §regola 3). */}
+      <section className="bufala-sezione bufala-visita" id="orari" data-rivela>
+        <p className="micro">{sezioni.visita.titolo}</p>
+        <p className="visita-ora" aria-hidden="true">04:30</p>
+        <h2 className="visita-frase">{sezioni.visita.frase}</h2>
+        <p className="visita-testo">{sezioni.visita.testo}</p>
+
+        <dl className="recapito-voci">
+          {company.orari.map((o) => (
+            <div className="recapito-voce recapito-voce--orario" key={o.giorno}>
+              <dt>{o.giorno}</dt>
+              <dd>{'apre' in o ? `${o.apre} – ${o.chiude}` : 'Chiuso'}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <ol className="visita-passi">
+          {passi.map((p, i) => (
+            <li className="recapito-voce recapito-voce--passo" key={p.nome}>
+              <span className="passo-numero" aria-hidden="true">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <div>
+                <span className="voce-nome">{p.nome}</span>
+                <span className="voce-dato">{p.testo}</span>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* Movimento 6 · Come arrivare. La mappa e' protagonista; sotto, il
+          colophon ridotto alle due righe che restano — indirizzo e telefono
+          — e il congedo SOPRA i bottoni: messa prima, la frase e' la
+          ragione per premerli; messa dopo, era un saluto a pagina finita. */}
       <section className="bufala-sezione bufala-mappa" id="dove" data-rivela>
         <p className="micro">{sezioni.mappa.titolo}</p>
         <a
@@ -86,41 +149,17 @@ export function Sections() {
         </a>
       </section>
 
-      {/* — Punto vendita —
-          Non una scheda. La mappa e' gia' il fuoco visivo della pagina, e
-          un secondo riquadro subito sotto la fa sembrare un pannello di
-          controllo: due contenitori uno sull'altro leggono come un widget,
-          non come un documento. Qui le informazioni sono impaginate nella
-          pagina — una riga per voce, l'etichetta a sinistra, il dato a
-          destra, un filo di capello fra l'una e l'altra. E' la stessa
-          composizione di una pagina di colophon, ed e' il motivo per cui si
-          legge senza sembrare un modulo. */}
       <section className="bufala-sezione bufala-recapito" data-rivela>
         <p className="micro">{sezioni.luogo.titolo}</p>
-        <h2 className="recapito-insegna">{company.brand}</h2>
 
-        <dl className="recapito-voci">
+        <dl className="recapito-voci recapito-voci--colophon">
           <div className="recapito-voce">
             <dt>Indirizzo</dt>
             <dd>
               {pv.presso}
               <br />
-              {pv.via}
-              <br />
-              {pv.cap} {pv.comune} ({pv.provincia})
+              {pv.via}, {pv.cap} {pv.comune} ({pv.provincia})
             </dd>
-          </div>
-          <div className="recapito-voce">
-            <dt>Dove esattamente</dt>
-            <dd>{pv.dettaglio}</dd>
-          </div>
-          <div className="recapito-voce">
-            <dt>Ingresso</dt>
-            <dd>{pv.accesso}</dd>
-          </div>
-          <div className="recapito-voce">
-            <dt>In auto</dt>
-            <dd>{pv.uscita}</dd>
           </div>
           <div className="recapito-voce">
             <dt>Telefono</dt>
@@ -130,6 +169,7 @@ export function Sections() {
           </div>
         </dl>
 
+        <h2 className="recapito-congedo">{sezioni.congedo.frase}</h2>
         <div className="scheda-azioni">
           <a
             className="bottone bottone--pieno"
@@ -145,16 +185,8 @@ export function Sections() {
         </div>
       </section>
 
-      {/* Il congedo, dove prima finiva il viaggio. */}
-      <section className="bufala-sezione bufala-apertura" data-rivela>
-        <h2>{sezioni.congedo.frase}</h2>
-      </section>
-
-      {/* La firma: il marchio storico a colori e la scritta originale del
-          logo, senza la targhetta di legno. Il marchio è nato per fondi
-          chiari — il verde del toro sparirebbe sul verde del sito — quindi
-          qui c'è una carta di latte, e la scritta è la gemella scura: quella
-          chiara su quella carta dava un contrasto di 1,02 a 1. */}
+      {/* Movimento 7 · La firma: il marchio storico sulla carta di latte.
+          Qui il centrato e' guadagnato — e' una firma. */}
       <section className="bufala-sezione bufala-firma">
         <img
           className="marchio"

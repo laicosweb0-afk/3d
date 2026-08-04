@@ -109,11 +109,33 @@ export const sezioni = {
       'È la parte del lavoro che al banco non si vede. Ed è quella che decide tutto il resto.',
   },
 
-  banco: {
+  // «Il banco» come blocco di solo testo non esiste più (Architettura §III,
+  // e la schermata del 04/08: due titoli galleggianti sul bianco, senza
+  // niente che li ancorasse). Al suo posto: PER CHI è questo banco — i due
+  // pubblici veri, con pesi diversi perché SONO diversi. L'orario dice che
+  // il pubblico primario è chi compra per lavoro; chi cucina a casa è
+  // benvenuto, ma ci si alza presto apposta. Fingere due colonne pari
+  // farebbe perdere tempo a entrambi.
+  //
+  // Il vecchio testo del banco («accoglie privati, professionisti e
+  // attività…») non sparisce: si scompone qui, un pubblico per blocco.
+  perChi: {
     titolo: 'Il banco',
-    frase: 'Un luogo dove la qualità prende forma.',
-    testo:
-      'Qui non trovi semplicemente prodotti. Trovi una selezione costruita negli anni, scegliendo solo ciò che merita davvero di arrivare sulla tua tavola. Il nostro punto vendita accoglie privati, professionisti e attività, offrendo ogni giorno freschezza, gusto e qualità senza compromessi.',
+    frase: 'Un banco solo,\nper chi lavora\ne per chi cucina.',
+    lavoro: {
+      nome: 'Chi compra per lavoro',
+      testo:
+        'Ristoranti, gastronomie, attività: vendita all’ingrosso, allo stesso banco e dalla stessa selezione di tutti.',
+    },
+    casa: {
+      nome: 'Chi cucina a casa',
+      testo:
+        'Vendita al dettaglio, senza appuntamento: si entra, si guarda, si sceglie.',
+    },
+    // Verbatim dal dato confermato (company.accesso): è la rassicurazione
+    // piu' preziosa che il cliente possiede, e stava in corpo undici in
+    // fondo alla pagina.
+    nota: 'Ingresso libero e gratuito, per grossisti e privati.',
   },
 
   prodotti: {
@@ -124,6 +146,19 @@ export const sezioni = {
     // Un carosello che non dichiara di essere trascinabile viene guardato
     // come una fotografia: l'affordance va detta, non lasciata indovinare.
     invito: 'Scorri per esplorare alcuni dei nostri prodotti',
+  },
+
+  // La rottura unica del sito (Composizione §regola 2): il 04:30 composto
+  // enorme, l'ottone usato come colore di testo qui e in nessun altro
+  // posto. Non è un orario di servizio: è il fatto più raro che questa
+  // azienda possiede — nessun concorrente apre prima dell'alba — e riceve
+  // la composizione più rara del sito. I dati vengono da company.orari
+  // (scheda Google, decisione utente 04/08).
+  visita: {
+    titolo: 'La visita',
+    frase: 'Apriamo prima dell’alba.',
+    // Nessun claim: alle nove il banco chiude davvero (orari confermati).
+    testo: 'Alle nove abbiamo già finito. Per questo conviene arrivare presto.',
   },
 
   // La mappa è protagonista e non ha bisogno di essere presentata: sopra di
