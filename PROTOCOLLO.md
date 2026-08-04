@@ -229,7 +229,7 @@ ognuna, con un collaudo sui dispositivi veri alla fine di ogni fase.
 
 ## 9-bis. Il programma vivo (aggiornato 04/08, sera tardi)
 
-**Fatte oggi, oltre il piano:** la sezione «Dove siamo» unificata (via i passi che ripetevano l'indirizzo: la mappa disegna, il colophon dichiara — brief utente) · il passaggio vivo (brief dell'utente: il
+**Fatte oggi, oltre il piano:** «Dove trovarci» ridisegnata per azioni (brief Apple: invito, azioni gemelle, carte senza fili, numero protagonista) · la sezione «Dove siamo» unificata (via i passi che ripetevano l'indirizzo: la mappa disegna, il colophon dichiara — brief utente) · il passaggio vivo (brief dell'utente: il
 colore del documento cambia DURANTE lo scorrimento su un solo strato,
 stile Apple — CSS scroll-driven dove c'è, lerp JS altrove, fascia dipinta
 come base per no-JS e meno-movimento; la scala a nove fermate diventa

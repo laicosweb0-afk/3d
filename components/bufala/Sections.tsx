@@ -14,7 +14,7 @@ import { Vetrina } from './Vetrina';
 import { Rivela } from './Rivela';
 import { Oggi } from './Oggi';
 import { Ordina } from './Ordina';
-import { IconaWhatsApp, IconaInstagram, IconaEmail } from './icone';
+import { IconaWhatsApp, IconaInstagram } from './icone';
 import { Fondale } from './Fondale';
 
 const pv = company.puntoVendita;
@@ -144,130 +144,172 @@ export function Sections() {
         <Oggi />
       </section>
 
-      {/* Movimento 6 · Come arrivare. La mappa e' protagonista; sotto, il
-          colophon ridotto alle due righe che restano — indirizzo e telefono
-          — e il congedo SOPRA i bottoni: messa prima, la frase e' la
-          ragione per premerli; messa dopo, era un saluto a pagina finita. */}
-      <section className="bufala-sezione bufala-mappa" id="dove" data-rivela>
-        <p className="micro">{sezioni.mappa.titolo}</p>
+      {/* Movimento 6 · Dove trovarci — ridisegno Apple (brief dell'utente,
+          04/08): la sezione non mostra informazioni, guida alle azioni.
+          Gerarchia: l'invito («Vi aspettiamo al banco.», che smette di
+          essere un congedo e diventa il titolo), le due azioni GEMELLE —
+          venire o chiamare, nessuna dominante: un pieno d'ottone qui
+          sarebbe una scelta fatta al posto dell'utente — poi la mappa
+          ridotta a supporto, e le carte senza fili: la gerarchia la fanno
+          spazio e tipografia, mai le righe. Facebook non compare: manca
+          l'indirizzo reale, e un recapito inventato non entra. */}
+      <section className="bufala-sezione bufala-dove" id="dove" data-rivela>
+        <p className="micro">{sezioni.dove.titolo}</p>
+        <h2>{sezioni.dove.frase}</h2>
+        <p className="dove-sotto">{sezioni.dove.sotto}</p>
+
+        <div className="dove-azioni">
+          <a className="bottone dove-cta" href={mappaApri} target="_blank" rel="noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+              strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11Z" />
+              <circle cx="12" cy="10" r="2.5" />
+            </svg>
+            {sezioni.dove.indicazioni}
+          </a>
+          <a className="bottone dove-cta" href={company.telefonoHref}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+              strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 4h3.5l2 5-2.2 1.3a11.5 11.5 0 0 0 5.4 5.4L15 13.5l5 2V19a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" />
+            </svg>
+            {sezioni.dove.chiama}
+          </a>
+        </div>
+
+        {/* La mappa, ridotta a supporto (brief: «non deve sembrare un
+            iframe incollato»): mezza altezza di prima, stessa curvatura,
+            stessa attesa disegnata per la rete lenta. */}
         <a
           className="scheda scheda--mappa"
           href={mappaApri}
           target="_blank"
           rel="noreferrer"
-          aria-label={`${sezioni.mappa.azione}: ${company.brand}, ${indirizzoPuntoVendita}`}
+          aria-label={`${sezioni.dove.mappa}: ${company.brand}, ${indirizzoPuntoVendita}`}
         >
           <span className="scheda-riflesso" aria-hidden="true" />
-          {/* Il fondale dell'attesa: visibile finche' l'iframe non ha
-              dipinto la mappa. Su rete lenta la scheda sembra progettata,
-              non un rettangolo vuoto. */}
           <span className="mappa-attesa" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
               strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11Z" />
               <circle cx="12" cy="10" r="2.5" />
             </svg>
-            <span className="micro">{pv.via} · {pv.comune}</span>
+            <span className="micro">{pv.via} \u00b7 {pv.comune}</span>
           </span>
           <iframe
             src={mappaEmbed}
-            title={`${company.brand} — ${indirizzoPuntoVendita}`}
+            title={`${company.brand} \u2014 ${indirizzoPuntoVendita}`}
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
             tabIndex={-1}
           />
-          <span className="scheda-azione">{sezioni.mappa.azione}</span>
+          <span className="scheda-azione">{sezioni.dove.mappa}</span>
         </a>
 
-        {/* Il colophon direttamente sotto la mappa (brief dell'utente,
-            04/08): i tre passi numerati ripetevano l'indirizzo che il
-            blocco qui sotto ridiceva per intero — via i passi, via anche
-            l'occhiello «Punto vendita», e i due fatti unici dei passi
-            (l'uscita autostradale, l'ingresso libero) diventano voci del
-            blocco. Una sezione sola: la mappa disegna, il colophon
-            dichiara. */}
-        <dl className="recapito-voci recapito-voci--colophon">
-          <div className="recapito-voce">
-            <dt>Indirizzo</dt>
-            <dd>
-              {pv.presso}
-              <br />
-              {/* Spazio indivisibile prima della provincia: «(RN)» a capo
-                  da solo era l'orfano trovato al giro di polish. */}
-              {pv.via}, {pv.cap} {pv.comune}{' '}({pv.provincia})
-            </dd>
-          </div>
-          <div className="recapito-voce">
-            <dt>Dentro il centro</dt>
-            <dd>{pv.dettaglio}</dd>
-          </div>
-          <div className="recapito-voce">
-            <dt>In auto</dt>
-            <dd>{pv.uscita}</dd>
-          </div>
-          <div className="recapito-voce">
-            <dt>All’ingresso</dt>
-            <dd>{pv.accesso}</dd>
-          </div>
-          <div className="recapito-voce">
-            <dt>Telefono</dt>
-            <dd>
-              <a href={company.telefonoHref}>{company.telefono}</a>
-            </dd>
-          </div>
-          <div className="recapito-voce">
-            <dt>Email</dt>
-            <dd>
-              <a href={`mailto:${company.email}`}>{company.email}</a>
-            </dd>
-          </div>
-        </dl>
+        <div className="dove-carte">
+          {/* La strada: una carta, quattro momenti, zero fili — lo
+              spazio verticale E' la gerarchia. L'ultima parola con la
+              provincia non si spezza: niente orfani «(RN)». */}
+          <article className="dove-carta">
+            <div className="via-voce">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+                strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11Z" />
+                <circle cx="12" cy="10" r="2.5" />
+              </svg>
+              <div>
+                <p className="micro via-nome">{sezioni.dove.strada.indirizzo}</p>
+                <p className="via-dato">
+                  {pv.presso}
+                  <br />
+                  {pv.via}, {pv.cap} <span className="intero">{pv.comune} ({pv.provincia})</span>
+                </p>
+              </div>
+            </div>
+            <div className="via-voce">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+                strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M4.5 15.5 6 10.5a2 2 0 0 1 1.9-1.4h8.2a2 2 0 0 1 1.9 1.4l1.5 5" />
+                <path d="M4 15.5h16v3.5h-2.4v-1.6H6.4v1.6H4Z" />
+              </svg>
+              <div>
+                <p className="micro via-nome">{sezioni.dove.strada.auto}</p>
+                <p className="via-dato">{pv.uscita}</p>
+              </div>
+            </div>
+            <div className="via-voce">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+                strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M3 21h18M5 21V7l7-4 7 4v14M9.5 21v-4.5h5V21" />
+                <path d="M9.5 10.5h.01M14.5 10.5h.01M9.5 14h.01M14.5 14h.01" />
+              </svg>
+              <div>
+                <p className="micro via-nome">{sezioni.dove.strada.centro}</p>
+                <p className="via-dato">{pv.dettaglio}</p>
+              </div>
+            </div>
+            <div className="via-voce">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+                strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M4 21h16" />
+                <path d="M14.5 12h.01" />
+              </svg>
+              <div>
+                <p className="micro via-nome">{sezioni.dove.strada.ingresso}</p>
+                <p className="via-dato">{pv.accesso}</p>
+              </div>
+            </div>
+          </article>
 
-        <h2 className="recapito-congedo">{sezioni.congedo.frase}</h2>
-        <div className="scheda-azioni">
-          <a
-            className="bottone bottone--pieno"
-            href={mappaApri}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {sezioni.luogo.azione}
-          </a>
-          <a className="bottone" href={company.telefonoHref}>
-            {sezioni.luogo.chiama}
-          </a>
-        </div>
-        {/* I canali coi loro glifi (richiesta dell'utente, 04/08): riga
-            propria, sempre — in coda ai bottoni andavano a capo spaiati
-            sul telefono. Cerchi della stessa famiglia dei bottoni,
-            monocromi: WhatsApp, Instagram e l'email ufficiale (arrivata
-            il 04/08, blocco 11 chiuso — quella vecchia resta bandita). */}
-        <div className="canali">
-          <a
-            className="canale"
-            href={`https://wa.me/${company.whatsapp}`}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Scrivici su WhatsApp"
-          >
-            {IconaWhatsApp}
-          </a>
-          <a
-            className="canale"
-            href={company.instagram}
-            target="_blank"
-            rel="noreferrer"
-            aria-label={`Il profilo Instagram ${company.instagramHandle}`}
-          >
-            {IconaInstagram}
-          </a>
-          <a
-            className="canale"
-            href={`mailto:${company.email}`}
-            aria-label={`Scrivici via email: ${company.email}`}
-          >
-            {IconaEmail}
-          </a>
+          <div className="dove-colonna">
+            {/* L'aiuto: il numero e' il protagonista — grande, in cifre
+                d'aria, componibile con un tocco. L'email resta sotto,
+                con peso minore: e' la strada lenta, non la prima. */}
+            <article className="dove-carta dove-carta--aiuto">
+              <h3>{sezioni.dove.aiuto.titolo}</h3>
+              <p className="aiuto-testo">{sezioni.dove.aiuto.testo}</p>
+              <a className="aiuto-numero" href={company.telefonoHref}>
+                {company.telefono}
+              </a>
+              <div className="carta-azioni">
+                <a className="bottone bottone--pieno" href={company.telefonoHref}>
+                  {sezioni.dove.chiama}
+                </a>
+                <a
+                  className="bottone"
+                  href={`https://wa.me/${company.whatsapp}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {IconaWhatsApp}
+                  WhatsApp
+                </a>
+              </div>
+              <p className="aiuto-scrivi">
+                {sezioni.dove.aiuto.scrivi}{' '}
+                <a href={`mailto:${company.email}`}>{company.email}</a>
+              </p>
+            </article>
+
+            {/* Seguici: una riga, non i tre cerchi — la grammatica dei
+                tondi social e' quella dei template. */}
+            <article className="dove-carta dove-carta--seguici">
+              <p className="micro carta-etichetta">{sezioni.dove.seguici}</p>
+              <a
+                className="seguici-riga"
+                href={company.instagram}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Instagram: ${company.instagramHandle}`}
+              >
+                {IconaInstagram}
+                <span>Instagram</span>
+                <svg className="seguici-freccia" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M4 12h15M13 6l6 6-6 6" />
+                </svg>
+              </a>
+            </article>
+          </div>
         </div>
       </section>
 

@@ -209,21 +209,32 @@ export const sezioni = {
     testo: 'Alle nove abbiamo già finito. Per questo conviene arrivare presto.',
   },
 
-  // La mappa e i recapiti sono UNA sezione (brief dell'utente, 04/08:
-  // «vale la pena mettere direttamente quella sotto e cavare totalmente
-  // quelle sopra»): i tre passi numerati ripetevano l'indirizzo del
-  // colophon, e l'occhiello «Punto vendita» era un secondo cartello sulla
-  // stessa porta. Resta «Dove siamo» — le sue parole — sopra la mappa,
-  // e sotto il colophon che dichiara tutto una volta sola.
-  mappa: {
-    titolo: 'Dove siamo',
-    azione: 'Apri su Google Maps',
+  // DOVE TROVARCI — ridisegno Apple (brief dell'utente, 04/08): la
+  // sezione non mostra informazioni, guida alle azioni — venire o
+  // chiamare, a peso identico. Il congedo «Vi aspettiamo al banco.»
+  // smette di essere un saluto in fondo e diventa il titolo: È l'invito.
+  // Il sottotitolo proposto dal brief diceva «ogni giorno»: il banco è
+  // chiuso giovedì e nel weekend, quindi la frase qui dice il vero e
+  // basta. Facebook non c'è: manca l'indirizzo reale (regola: niente
+  // recapiti inventati).
+  dove: {
+    titolo: 'Dove trovarci',
+    frase: 'Vi aspettiamo al banco.',
+    sotto: 'Mozzarella, formaggi e salumi: la selezione si sceglie dal vivo.',
+    indicazioni: 'Ottieni indicazioni',
+    chiama: 'Chiama ora',
+    mappa: 'Apri su Google Maps',
+    strada: {
+      indirizzo: 'Indirizzo',
+      auto: 'In auto',
+      centro: 'Dentro il centro',
+      ingresso: 'All’ingresso',
+    },
+    aiuto: {
+      titolo: 'Serve una mano?',
+      testo: 'Ti rispondiamo direttamente dal banco.',
+      scrivi: 'Preferisci scrivere?',
+    },
+    seguici: 'Seguici',
   },
-
-  luogo: {
-    azione: 'Ottieni indicazioni',
-    chiama: 'Chiama',
-  },
-
-  congedo: { frase: 'Vi aspettiamo al banco.' },
 } as const;

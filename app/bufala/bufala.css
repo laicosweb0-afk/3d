@@ -1869,42 +1869,7 @@
    si impilano: una colonna da otto caratteri accanto a un indirizzo di tre
    righe non e' una griglia, e' una strettoia. */
 
-.recapito-voci {
-  margin: 0;
-  width: 100%;
-  max-width: 46rem;
-  border-top: 1px solid var(--filo-su-scuro);
-}
 
-.recapito-voce {
-  display: grid;
-  gap: 0.2rem;
-  padding: clamp(0.85rem, 2vh, 1.15rem) 0;
-  border-bottom: 1px solid var(--filo-su-scuro);
-}
-
-.recapito-voce dt {
-  display: block;
-  font-size: 0.68rem;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--latte-55);
-}
-
-.recapito-voce dd {
-  display: block;
-  margin: 0;
-  line-height: 1.65;
-}
-
-@media (min-width: 700px) {
-  .recapito-voce {
-    grid-template-columns: 13rem 1fr;
-    gap: 2rem;
-    align-items: baseline;
-  }
-}
 
 /* — Per chi (movimento 3) —
    Brief dell'utente (04/08): due percorsi con peso visivo IDENTICO. In
@@ -2098,45 +2063,11 @@
 }
 
 /* I tre passi: numero in ottone piccolo — eco della rottura, non replica. */
-/* Il congedo dentro i recapiti: sopra i bottoni e' la ragione per
-   premerli; dopo, era un saluto a pagina gia' finita. */
-.recapito-congedo {
-  margin-top: var(--spazio-sezione);
-  font-size: clamp(1.5rem, 3vw, 2.1rem);
-}
 
-/* Il colophon dei recapiti a due colonne da schermo largo (Composizione,
-   mov. 6): indirizzo e telefono affiancati, l'etichetta sopra il dato.
-   I fili orizzontali spariscono qui — due celle affiancate con altezze
-   diverse metterebbero due righe a quote diverse, e una riga storta si
-   nota piu' di una riga assente. Resta il filo d'apertura del blocco. */
-@media (min-width: 900px) {
-  .recapito-voci--colophon {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: clamp(2rem, 5vw, 4rem);
-    padding-top: clamp(0.85rem, 2vh, 1.15rem);
-  }
-  .recapito-voci--colophon .recapito-voce {
-    grid-template-columns: 1fr;
-    gap: 0.35rem;
-    align-content: start;
-    border-bottom: 0;
-    padding: 0;
-  }
-}
 
-/* La sezione unica mappa+recapiti (brief 04/08): i passi ripetuti sono
-   caduti e il colophon vive sotto la mappa. */
-.bufala-mappa .scheda-azioni {
-  margin-top: clamp(1.25rem, 3vh, 2rem);
-}
 
-.bufala-mappa {
-  display: grid;
-  gap: clamp(1rem, 2.5vh, 1.6rem);
-  justify-items: start;
-}
+
+
 
 @media (prefers-reduced-motion: reduce) {
   .vetrina-invito .freccia { animation: none; }
@@ -2529,10 +2460,13 @@
   color: var(--latte);
   text-decoration: none;
   background: rgb(247 243 234 / 0.04);
+  /* 350ms, non 500 (brief 04/08): il tocco morbido si sente, non si
+     aspetta. L'ombra NON entra in transizione — B15: mai animare ombre
+     o filtri, il sollevamento lo racconta il transform da solo. */
   transition:
-    background-color var(--durata-comparsa) var(--curva-entrata),
-    border-color var(--durata-comparsa) var(--curva-entrata),
-    transform var(--durata-comparsa) var(--curva-entrata);
+    background-color var(--durata-micro) var(--curva-entrata),
+    border-color var(--durata-micro) var(--curva-entrata),
+    transform var(--durata-micro) var(--curva-entrata);
 }
 
 /* La sottolineatura dei link del documento non deve arrivare qui: un
@@ -2545,6 +2479,7 @@
 .bufala .bottone:hover {
   background: rgb(247 243 234 / 0.08);
   border-color: rgb(247 243 234 / 0.18);
+  transform: translateY(-1px);
 }
 
 .bufala .bottone:active {
@@ -2563,6 +2498,238 @@
   border-color: #c8ab72;
 }
 
+/* — Dove trovarci: il ridisegno per azioni (brief Apple, 04/08) —
+   Niente categorie, niente fili: l'invito, due azioni gemelle, la mappa
+   come supporto, e carte dove la gerarchia la fanno spazio, luce e
+   tipografia. Le righe orizzontali qui non esistono. */
+.bufala-dove {
+  display: grid;
+  gap: clamp(1rem, 2.4vh, 1.5rem);
+  justify-items: start;
+}
+
+.dove-sotto {
+  max-width: 44ch;
+  color: var(--latte-70);
+  line-height: 1.65;
+}
+
+/* Le due azioni a peso IDENTICO: stessa altezza, stessa larghezza,
+   stesso vestito — Apple non forza la scelta. Sotto i 375px si
+   impilano, alla portata del pollice, mai compresse. */
+.dove-azioni {
+  margin-top: clamp(0.4rem, 1.2vh, 0.8rem);
+  width: 100%;
+  max-width: 30rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.bufala .dove-cta {
+  width: 100%;
+  min-height: 3.1rem;
+  padding: 0 0.75rem;
+  font-size: 0.9rem;
+}
+
+.bufala .dove-cta svg {
+  color: var(--ottone);
+}
+
+/* Sotto i 560px «Ottieni indicazioni» non sta su una riga accanto al
+   gemello: le due azioni si impilano a tutta larghezza — identiche,
+   sotto il pollice, mai spezzate su due righe. */
+@media (max-width: 560px) {
+  .dove-azioni {
+    grid-template-columns: 1fr;
+    max-width: 100%;
+  }
+}
+
+/* La mappa come supporto: mezza altezza di prima. Da strumento a
+   contesto — chi vuole la strada ha già il pulsante qui sopra. */
+.bufala-dove .scheda--mappa {
+  aspect-ratio: auto;
+  width: 100%;
+  max-width: 46rem;
+  height: clamp(13rem, 30vh, 17rem);
+  margin-top: clamp(0.5rem, 1.4vh, 0.9rem);
+}
+
+.dove-carte {
+  width: 100%;
+  max-width: 46rem;
+  display: grid;
+  gap: clamp(0.9rem, 2vw, 1.25rem);
+  align-items: start;
+}
+
+@media (min-width: 940px) {
+  .dove-carte {
+    grid-template-columns: 1.12fr 1fr;
+  }
+}
+
+.dove-colonna {
+  display: grid;
+  gap: clamp(0.9rem, 2vw, 1.25rem);
+}
+
+/* La carta: la stessa pelle di vetro delle altre — filo appena
+   percettibile, luce sul bordo alto, ombra ferma e quasi invisibile. */
+.dove-carta {
+  width: 100%;
+  padding: clamp(1.5rem, 3.2vw, 2.25rem);
+  border: 1px solid rgb(247 243 234 / 0.07);
+  border-radius: var(--raggio-grande);
+  background: linear-gradient(to bottom, rgb(247 243 234 / 0.04), rgb(247 243 234 / 0.012));
+  box-shadow:
+    0 1px 0 rgb(247 243 234 / 0.05) inset,
+    0 24px 60px -36px rgb(0 0 0 / 0.55);
+}
+
+/* La strada: quattro momenti, zero fili — lo spazio verticale È la
+   gerarchia. L'icona in oro delicato, il dato in latte pieno. */
+.via-voce {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.via-voce + .via-voce {
+  margin-top: clamp(1.3rem, 2.8vh, 1.8rem);
+}
+
+.via-voce > svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.1rem;
+  color: rgb(184 155 94 / 0.85);
+}
+
+.bufala .via-nome {
+  color: var(--latte-55);
+}
+
+.via-dato {
+  margin-top: 0.3rem;
+  line-height: 1.6;
+  color: var(--latte);
+  font-size: 0.98rem;
+}
+
+.intero {
+  white-space: nowrap;
+}
+
+/* L'aiuto: il numero è il protagonista — cifre d'aria, grandi,
+   componibili con un tocco. */
+.dove-carta--aiuto h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.4rem, 3vw, 1.75rem);
+  line-height: 1.15;
+  color: var(--latte);
+}
+
+.aiuto-testo {
+  margin-top: 0.4rem;
+  color: var(--latte-70);
+  line-height: 1.6;
+}
+
+.bufala .aiuto-numero {
+  display: inline-block;
+  /* Niente sottolineatura da documento: il numero è un titolo che si
+     tocca, non una riga di testo con un link dentro. */
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin: clamp(0.9rem, 2.2vh, 1.3rem) 0;
+  font-weight: 250;
+  /* Un numero di telefono spezzato su due righe non è più un numero:
+     resta su una riga SEMPRE, e il corpo è tarato sulla colonna più
+     stretta (la carta a destra sul desktop), non sullo schermo. */
+  white-space: nowrap;
+  font-size: clamp(1.8rem, 5.2vw, 2rem);
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--latte);
+  text-decoration: none;
+  transition: color var(--durata-micro) var(--curva-entrata);
+}
+
+.bufala .aiuto-numero:hover,
+.bufala .aiuto-numero:focus-visible {
+  color: #c8ab72;
+}
+
+/* I due bottoni della carta: gemelli a mezza larghezza, mai una fila
+   che va a capo storta nella colonna stretta. */
+.dove-carta--aiuto .carta-azioni {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.bufala .dove-carta--aiuto .carta-azioni .bottone {
+  width: 100%;
+  padding: 0 0.5rem;
+}
+
+.aiuto-scrivi {
+  margin-top: clamp(0.9rem, 2vh, 1.2rem);
+  font-size: 0.85rem;
+  color: var(--latte-55);
+}
+
+.aiuto-scrivi a {
+  color: var(--latte-70);
+}
+
+/* Seguici: una riga col nome e la freccia, non i tre cerchi — la
+   grammatica dei tondi social è quella dei template. */
+.bufala .seguici-riga {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 0.9rem;
+  color: var(--latte);
+  text-decoration: none;
+  font-size: 1rem;
+  /* La riga non è un link nel testo: niente filo sotto. */
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.seguici-riga > svg:first-child {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: none;
+  color: rgb(184 155 94 / 0.85);
+}
+
+.seguici-freccia {
+  margin-left: auto;
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  transition: transform var(--durata-micro) var(--curva-entrata);
+}
+
+.seguici-riga:hover .seguici-freccia,
+.seguici-riga:focus-visible .seguici-freccia {
+  transform: translateX(3px);
+}
+
+.seguici-riga:focus-visible {
+  outline: 2px solid var(--ottone);
+  outline-offset: 2px;
+  border-radius: var(--raggio-piccolo);
+}
+
 /* L'icona nel bottone (il glifo di WhatsApp sull'invio dell'ordine):
    monocroma nel colore del testo, mai nel colore del marchio — è
    un'indicazione, non un adesivo. */
@@ -2572,45 +2739,7 @@
   flex: none;
 }
 
-/* I canali del colophon: cerchi della stessa famiglia dei bottoni —
-   stessa altezza, stesso filo, stesso tocco — col glifo al posto della
-   parola. Riga propria sotto le azioni: in coda ai bottoni, sul
-   telefono, i due cerchi si spaiavano al primo a capo. */
-.canali {
-  margin-top: 0.75rem;
-  display: flex;
-  gap: 0.75rem;
-}
 
-.bufala .canale {
-  display: grid;
-  place-items: center;
-  width: 2.9rem;
-  height: 2.9rem;
-  border: 1px solid var(--filo-su-scuro);
-  border-radius: 999px;
-  background: rgb(247 243 234 / 0.04);
-  color: var(--latte);
-  transition:
-    background-color var(--durata-comparsa) var(--curva-entrata),
-    border-color var(--durata-comparsa) var(--curva-entrata);
-}
-
-.bufala .canale svg {
-  width: 1.15rem;
-  height: 1.15rem;
-}
-
-.bufala .canale:hover,
-.bufala .canale:focus-visible {
-  background: rgb(247 243 234 / 0.08);
-  border-color: rgb(184 155 94 / 0.6);
-}
-
-.bufala .canale:active {
-  transform: translateY(1px) scale(0.985);
-  transition-duration: var(--durata-tocco);
-}
 
 /* Il marchio nella hero, composto in tipografia e non in immagine.
    Il logo reale e' un disegno a colori nato per fondi chiari: su verde
