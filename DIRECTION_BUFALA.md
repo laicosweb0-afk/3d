@@ -105,7 +105,7 @@ Stessa architettura tecnica già validata su Mondial Service — tutto funzione 
 
 ## 7. Input ancora mancanti (da NON inventare)
 
-- ~~Font ufficiale del brand~~ — **definito** (§4): Canela (display) + Neue Haas Grotesk (corpo/UI), fallback gratuiti Fraunces + Inter. Da verificare: possesso della licenza commerciale dei font primari prima del build finale.
+- ~~Font ufficiale del brand~~ — **chiuso** (04/08, provino con l'utente): **Playfair Display** (titoli, peso 500 — scelta dell'utente sul provino a nove candidati) + **Hanken Grotesk** (testo). Entrambi liberi anche per uso commerciale: la verifica di licenza per Canela/Neue Haas non serve più. Serviti self-hosted via next/font, file variabili, ~73 kB totali contro i 302 precedenti.
 - ~~Versione vettoriale del logo~~ — **ricevuta** (§2): PDF sorgente + PNG + SVG salvati in `public/assets/brand-bufala/`.
 - Conferma se `--terracotta` ha un riferimento reale nel brand (etichetta, insegna) o va escluso.
 - Materiale fotografico/video definitivo del prodotto e del banco da usare come base per le generazioni (le foto finora condivise sono riferimenti di stile, non ancora asset finali).

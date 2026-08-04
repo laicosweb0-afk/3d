@@ -1,7 +1,27 @@
 import type { Metadata } from 'next';
-import './bufala-font.css';
+import { Playfair_Display, Hanken_Grotesk } from 'next/font/google';
 import './bufala.css';
 import { company, indirizzoPuntoVendita } from '@/content/bufala/company';
+
+// I caratteri scelti sul provino (04/08): Playfair Display per i titoli —
+// scelta dell'utente — e Hanken Grotesk per il testo, abbinata qui.
+//
+// next/font li scarica al build e li serve da noi come file variabili: un
+// file per famiglia, precaricato, con il fallback a metrica compensata
+// generato in automatico. È ciò che chiede il budget (B7/B8) — prima erano
+// incorporati in base64 dentro un CSS da 302 kB che teneva la pagina bianca
+// per 2,8 secondi, con ogni peso duplicato per intero.
+const carattereTitoli = Playfair_Display({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--carattere-titoli',
+});
+
+const carattereTesto = Hanken_Grotesk({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--carattere-testo',
+});
 
 const TITLE = `${company.brand} — Mozzarella di bufala | ${company.puntoVendita.comune}`;
 const DESCRIPTION =
@@ -43,7 +63,7 @@ const jsonLd = {
 
 export default function BufalaLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bufala">
+    <div className={`bufala ${carattereTitoli.variable} ${carattereTesto.variable}`}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

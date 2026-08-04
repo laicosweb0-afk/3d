@@ -42,13 +42,14 @@
   --latte-45: rgb(247 243 234 / 0.45);
   --latte-20: rgb(247 243 234 / 0.2);
 
-  /* — Tipografia (Direzione §4) —
-     Canela e Neue Haas Grotesk sono font commerciali: finché la licenza non
-     è confermata si sviluppa sui fallback gratuiti dichiarati nel documento
-     (Fraunces, Inter). Sostituire qui il primo nome della stack quando i
-     file con licenza sono disponibili. */
-  --font-display: Canela, Fraunces, 'Iowan Old Style', Georgia, serif;
-  --font-testo: 'Neue Haas Grotesk', Inter, system-ui, -apple-system, sans-serif;
+  /* — Tipografia —
+     Scelta chiusa sul provino (04/08): Playfair Display per i titoli
+     (decisione dell'utente), Hanken Grotesk per il testo. La domanda sulla
+     licenza di Canela/Neue Haas non esiste più: questi sono liberi anche
+     per uso commerciale. Le variabili --carattere-* le fornisce next/font
+     in layout.tsx, con file self-hosted e fallback a metrica compensata. */
+  --font-display: var(--carattere-titoli), 'Iowan Old Style', Georgia, serif;
+  --font-testo: var(--carattere-testo), system-ui, -apple-system, sans-serif;
 
   /* — Ritmo verticale —
      Generoso per costruzione: "mai sezioni compresse" (Direzione §4). */
@@ -121,7 +122,9 @@
 .bufala h1,
 .bufala h2 {
   font-family: var(--font-display);
-  font-weight: 400;
+  /* Il peso che l'utente ha approvato sul provino: Playfair a 500. A 400
+     questo disegno perde corpo sul verde scuro e sopra il filmato. */
+  font-weight: 500;
   font-optical-sizing: auto;
   margin: 0;
   text-wrap: balance;

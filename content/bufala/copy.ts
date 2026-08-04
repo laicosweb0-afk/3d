@@ -97,9 +97,14 @@ export const sezioni = {
   // qualunque rivenditore. Questa la può dire solo chi sceglie davvero, e
   // non promette niente che si possa smentire: parla di ciò che resta fuori
   // dal banco, che è l'unica prova di una selezione.
+  // La frase è dell'utente (04/08), al posto di «Quello che non teniamo…»,
+  // che era mia e non gli piaceva. La sua è migliore per un motivo preciso:
+  // è affermativa invece che costruita per negazione, e si legge in un
+  // respiro solo. Composta in maiuscolo/minuscolo come tutti i titoli del
+  // sito — il maiuscolo pieno è riservato ai microtesti.
   apertura: {
     occhiello: 'La selezione',
-    frase: 'Quello che non teniamo\ndice di noi quanto\nquello che vendiamo.',
+    frase: 'Ogni scelta racconta\nchi siamo.',
     testo:
       'È la parte del lavoro che al banco non si vede. Ed è quella che decide tutto il resto.',
   },
