@@ -30,7 +30,10 @@
 
   /* — Ritmo verticale —
      Generoso per costruzione: "mai sezioni compresse" (Direzione §4). */
-  --spazio-sezione: clamp(6rem, 14vh, 12rem);
+  /* Generoso ma non vuoto. La prima versione arrivava a 12rem e le sezioni
+     si allontanavano al punto che la pagina sembrava mezza vuota: lo spazio
+     deve far respirare il contenuto, non nasconderlo. */
+  --spazio-sezione: clamp(3.5rem, 8vh, 6.5rem);
   --misura-testo: 62ch; /* ~70 caratteri con questa famiglia */
 
   background: var(--verde-profondo);
@@ -638,7 +641,7 @@
 /* L'apertura e il congedo del documento: una frase sola al centro del campo,
    con lo stesso respiro delle scene del viaggio. */
 .bufala-apertura {
-  min-height: 62vh;
+  min-height: 34vh;
   display: grid;
   align-content: center;
   justify-items: center;
@@ -676,7 +679,7 @@
    scorrendo, quindi non costa niente al browser e funziona anche senza
    JavaScript. Da qui in giu' il sito resta scuro. */
 .bufala-eclisse {
-  height: 44vh;
+  height: 26vh;
   /* Due gradienti sovrapposti: il radiale fa salire la curva dal centro, il
      lineare garantisce che il bordo basso sia pieno su tutta la larghezza.
      Senza il secondo, agli angoli in basso resterebbe la crema e si vedrebbe
@@ -730,38 +733,40 @@
 }
 
 /* — La vetrina dei prodotti —
-   Un pannello, non uno schermo pieno. La misura non è estetica: un video a
-   tutto campo su un telefono mostra solo la fascia centrale del 26% della
-   larghezza, e una processione che entra ed esce lateralmente andrebbe quasi
-   tutta perduta. In un pannello si vede tutto su ogni schermo — e la forma
-   incorniciata è anche quello che questa sezione è. */
+   Un pannello che si scorre di lato, non una sezione alta dieci schermate.
+   La prima versione bloccava il palco e usava lo scorrimento della pagina:
+   funzionava, ma allungava il sito di dieci schermate per cinque prodotti, e
+   ogni trascinamento spostava lo scorrimento vero — che con lo scorrimento
+   smorzato attivo si accavallava e faceva scattare tutto.
+
+   La misura del pannello non è estetica: un video a tutto campo su un
+   telefono mostra solo la fascia centrale del 26% della larghezza, e una
+   processione che entra ed esce lateralmente andrebbe quasi tutta perduta. */
 .bufala-vetrina {
   position: relative;
   background: var(--verde-profondo);
-  /* Il trascinamento laterale comanda lo scorrimento: senza questo il
-     browser interpreta il gesto come una selezione di testo. */
+  padding: 0 6vw var(--spazio-sezione);
+  display: grid;
+  justify-items: center;
+  gap: clamp(1.25rem, 3vh, 2rem);
+  /* Il gesto orizzontale è nostro, quello verticale resta della pagina:
+     `pan-y` lascia scorrere il sito e ci dà il resto. Senza, o si perde il
+     trascinamento o si blocca lo scorrimento — ed è il difetto classico
+     delle gallerie che catturano lo scroll. */
   touch-action: pan-y;
   user-select: none;
+  cursor: grab;
 }
 
-.vetrina-palco {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: clamp(1.5rem, 4vh, 3rem);
-  padding: 0 6vw;
+.bufala-vetrina:active {
+  cursor: grabbing;
 }
 
 .vetrina-pannello {
-  width: min(100%, 62rem);
+  width: min(100%, 54rem);
   aspect-ratio: 4 / 3;
   overflow: hidden;
   border-radius: 3px;
-  /* Il pannello non ha cornice disegnata: è il fondo più scuro intorno a
-     fargli da cornice. Una riga d'ottone qui sarebbe decorazione. */
   background: #0a0f0c;
 }
 
@@ -770,50 +775,64 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  /* Il gesto lo raccoglie la sezione: senza questo, trascinare partendo dal
+     video avvia il trascinamento nativo dell'elemento. */
+  pointer-events: none;
 }
 
 /* I nomi: una sola cella, tutte le schede sovrapposte, e l'opacità decide
-   quale si legge. Così non c'è nessuno spostamento di impaginato quando il
-   nome cambia — il blocco resta esattamente dov'è. */
+   quale si legge. Così l'impaginato non si sposta mai quando il nome cambia. */
 .vetrina-nomi {
   display: grid;
   grid-template: 1fr / 1fr;
-  min-height: 4.5rem;
+  min-height: 3.6rem;
   text-align: center;
 }
 
 .vetrina-nome {
   grid-area: 1 / 1;
   display: grid;
-  gap: 0.4rem;
+  gap: 0.3rem;
   justify-items: center;
-  will-change: opacity, transform;
+  will-change: opacity;
 }
 
 .vetrina-nome .nome {
   font-family: var(--font-display);
-  font-size: clamp(1.5rem, 3.4vw, 2.4rem);
+  font-size: clamp(1.35rem, 3vw, 2rem);
   line-height: 1.1;
   letter-spacing: -0.015em;
 }
 
+/* Quanta vetrina resta: senza, chi arriva non ha nessun indizio che ci sia
+   dell'altro di lato. */
+.vetrina-corsa {
+  width: min(100%, 54rem);
+  height: 1px;
+  background: var(--latte-20);
+  overflow: hidden;
+}
+
+.vetrina-corsa .riga {
+  height: 100%;
+  background: var(--ottone);
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  /* Senza movimento la vetrina non ha senso: torna una fila di fotografie. */
-  .bufala-vetrina {
-    height: auto !important;
-  }
-  .vetrina-palco {
-    position: static;
-    height: auto;
-    padding: var(--spazio-sezione) 6vw;
+  /* Senza movimento la vetrina non ha senso: restano i nomi in elenco. */
+  .vetrina-pannello,
+  .vetrina-corsa {
+    display: none;
   }
   .vetrina-nome {
     opacity: 1 !important;
-    transform: none !important;
     position: static;
   }
   .vetrina-nomi {
     grid-template: none;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 }

@@ -1,35 +1,31 @@
 'use client';
 
-// La vetrina dei prodotti: il viaggio ruotato di novanta gradi.
+// La vetrina dei prodotti: si scorre di lato, non in verticale.
 //
-// Il palco resta fermo mentre la sezione scorre, e lo scorrimento comanda il
-// fotogramma del filmato invece di spostare la pagina. Avanti la processione
-// avanza, indietro si riavvolge. Non c'è nessuna animazione in corso da
-// interrompere, quindi cambiare direzione a metà di un'uscita non rompe
-// niente: il prodotto che stava uscendo rientra, ed è corretto così.
+// La prima versione era una sezione alta dieci schermate che bloccava il
+// palco e usava lo scorrimento della pagina. Funzionava, ma allungava il
+// sito di dieci schermate per cinque prodotti, e ogni trascinamento
+// spostava lo scorrimento vero della pagina — che con lo scorrimento
+// smorzato attivo si accavallava e faceva scattare tutto.
 //
-// Il trascinamento laterale col dito non è un secondo meccanismo: sposta lo
-// scorrimento della pagina. Una manopola sola, due modi di girarla — se ce
-// ne fossero due davvero, prima o poi si contraddirebbero.
+// Ora la sezione è alta una schermata sola e il filmato ha una sua
+// posizione interna, comandata dal gesto laterale: trascinamento col dito,
+// trascinamento col mouse, rotellina orizzontale del trackpad. La pagina
+// non viene toccata, quindi lo scorrimento verticale resta libero e non c'è
+// niente che possa entrare in conflitto.
 //
-// Il filmato è un pannello, non uno schermo pieno. Il motivo è misurato: un
-// video 16:9 in `cover` su un telefono mostra solo la fascia centrale del 26%
-// della larghezza, e una processione che entra ed esce lateralmente andrebbe
-// quasi tutta perduta. In un pannello si vede tutto su ogni schermo, e la
-// forma incorniciata è anche quello che la sezione è: una vetrina.
+// Lo smorzamento è lo stesso del viaggio: la posizione insegue il bersaglio
+// in modo esponenziale e indipendente dal frame rate. È questo a togliere
+// gli scatti — senza, ogni evento del dito diventa un salto del fotogramma.
 
 import { useEffect, useRef } from 'react';
 import { vetrina, tappe } from '@/content/bufala/vetrina';
 import { prodotti } from '@/content/bufala/assets';
 
-/** Quanto scorrimento occupa la vetrina, in altezze di viewport. Quindici
- *  secondi su dieci viewport: circa due per prodotto, più svelto del viaggio
- *  perché qui si consulta, non si contempla. */
-export const VETRINA_VH = 10;
-
-/** Quanti pixel di trascinamento valgono un pixel di scorrimento. Sopra 1 il
- *  gesto corre più del dito e sembra scivoloso. */
-const TRASCINAMENTO = 1.15;
+/** Quanto bisogna trascinare per attraversare tutta la vetrina, in larghezze
+ *  di schermo. Sotto 2 la processione vola via con un gesto solo; sopra 3
+ *  diventa faticosa. */
+const CORSA = 2.4;
 
 /** Semiampiezza della dissolvenza fra un nome e il successivo, in secondi di
  *  filmato. Stretta: l'incrocio deve essere un cambio, non una doppia
@@ -46,6 +42,7 @@ export function Vetrina() {
   const sezione = useRef<HTMLElement>(null);
   const video = useRef<HTMLVideoElement>(null);
   const nomi = useRef<HTMLDivElement>(null);
+  const barra = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const sez = sezione.current;
@@ -56,8 +53,7 @@ export function Vetrina() {
     if (fermo) return;
 
     // Il filmato non si scarica all'apertura della pagina: sono megabyte che
-    // chi non arriva fin qui non deve pagare. Le sorgenti si montano solo
-    // quando la sezione si avvicina.
+    // chi non arriva fin qui non deve pagare.
     let montato = false;
     const monta = () => {
       if (montato) return;
@@ -68,21 +64,27 @@ export function Vetrina() {
       }
       v.load();
     };
+
+    // Il ciclo gira solo quando la vetrina è in vista: fuori non c'è niente
+    // da disegnare, e tenerlo acceso costerebbe batteria per nulla.
+    let inVista = false;
     const osservatore = new IntersectionObserver(
       (voci) => {
-        if (voci.some((x) => x.isIntersecting)) {
-          monta();
-          osservatore.disconnect();
+        for (const x of voci) {
+          inVista = x.isIntersecting;
+          if (inVista) {
+            monta();
+            avvia();
+          }
         }
       },
-      { rootMargin: '150% 0px' },
+      { rootMargin: '80% 0px' },
     );
     osservatore.observe(sez);
 
     // iOS non scarica un video finché non c'è stata un'interazione, e su rete
-    // cellulare ignora preload: un play seguito subito da un pause al primo
-    // gesto autorizza l'elemento a spostarsi nel tempo. Stessa medicina già
-    // necessaria per il filmato del viaggio.
+    // cellulare ignora `preload`: un play seguito subito da un pause al primo
+    // gesto autorizza l'elemento a spostarsi nel tempo.
     const sblocca = () => {
       monta();
       const avvio = v.play();
@@ -92,34 +94,32 @@ export function Vetrina() {
     const unaVolta = { once: true, passive: true } as const;
     window.addEventListener('touchstart', sblocca, unaVolta);
     window.addEventListener('pointerdown', sblocca, unaVolta);
-    window.addEventListener('scroll', sblocca, unaVolta);
 
+    let bersaglio = 0; // dove il gesto ha portato la vetrina, 0..1
+    let posizione = 0; // dove si trova adesso: insegue il bersaglio
     let raf = 0;
-    let ultimo = -1;
+    let ultimo = 0;
 
-    const disegna = () => {
-      const r = sez.getBoundingClientRect();
-      const corsa = r.height - window.innerHeight;
-      const q = corsa > 0 ? Math.min(Math.max(-r.top / corsa, 0), 1) : 0;
+    const disegna = (ora: number) => {
+      const dt = Math.min((ora - ultimo) / 1000, 0.1);
+      ultimo = ora;
 
+      // Smorzamento esponenziale, indipendente dal frame rate: è quello che
+      // toglie gli scatti. Senza, ogni evento del dito è un salto.
+      posizione += (bersaglio - posizione) * (1 - Math.exp(-11 * dt));
+
+      const durata = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : 15;
       if (Number.isFinite(v.duration) && v.duration > 0) {
-        const t = q * (v.duration - 0.05);
+        const t = posizione * (v.duration - 0.05);
         if (Math.abs(v.currentTime - t) > 1 / 60) v.currentTime = t;
       }
 
-      // Il nome del prodotto in campo. Ogni tappa possiede una regione di
-      // tempo che arriva a metà strada dalle vicine, ed è piena per tutta la
-      // regione: si dissolve solo vicino ai confini, dove la vicina sta già
-      // salendo. Le due rampe usano la stessa curva e la stessa finestra,
-      // quindi sommano sempre a uno — è la proprietà dello smoothstep cubico
-      // già sfruttata per i titoli del viaggio.
-      //
-      // Una dissolvenza proporzionale alla distanza, che era il primo
-      // tentativo, tiene invece due nomi leggibili insieme per un tratto
-      // lungo: sotto il prodotto giusto si legge in trasparenza il nome di
-      // quello dopo.
-      const durata = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : 15;
-      const adesso = q * durata;
+      // Il nome del prodotto in campo. Ogni tappa possiede una regione che
+      // arriva a metà strada dalle vicine ed è piena per tutta la regione: si
+      // dissolve solo ai confini, dove la vicina sta già salendo. Le due
+      // rampe usano la stessa curva e la stessa finestra, quindi sommano
+      // sempre a uno.
+      const adesso = posizione * durata;
       const elenco = nomi.current;
       if (elenco) {
         for (const [i, el] of Array.from(elenco.children).entries()) {
@@ -129,106 +129,118 @@ export function Vetrina() {
           const uscita = dopo === Infinity ? 1 : lisci(((dopo + MEZZA) - adesso) / (2 * MEZZA));
           const peso = Math.max(0, Math.min(1, entrata)) * Math.max(0, Math.min(1, uscita));
           (el as HTMLElement).style.opacity = peso.toFixed(3);
-          (el as HTMLElement).style.transform = `translate3d(0, ${((1 - peso) * 0.5).toFixed(2)}rem, 0)`;
         }
       }
 
-      ultimo = q;
-      raf = 0;
+      if (barra.current) barra.current.style.transform = `scaleX(${posizione.toFixed(4)})`;
+
+      // Ci si ferma quando la posizione ha raggiunto il bersaglio: un ciclo
+      // acceso su una vetrina immobile è batteria buttata.
+      if (inVista && Math.abs(bersaglio - posizione) > 0.0002) {
+        raf = requestAnimationFrame(disegna);
+      } else {
+        raf = 0;
+      }
     };
 
-    const chiedi = () => {
+    const avvia = () => {
       if (raf) return;
+      ultimo = performance.now();
       raf = requestAnimationFrame(disegna);
     };
 
-    // Il trascinamento laterale sposta lo scorrimento della pagina: una
-    // manopola sola, due modi di girarla.
+    const sposta = (dx: number) => {
+      const corsa = window.innerWidth * CORSA;
+      bersaglio = Math.min(Math.max(bersaglio - dx / corsa, 0), 1);
+      avvia();
+    };
+
+    // Il trascinamento. `setPointerCapture` fa sì che il gesto continui a
+    // essere seguito anche se il dito esce dal pannello.
     let giu = false;
-    let partenza = 0;
+    let precedente = 0;
     const premuto = (e: PointerEvent) => {
       giu = true;
-      partenza = e.clientX;
+      precedente = e.clientX;
+      (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
     };
     const mosso = (e: PointerEvent) => {
       if (!giu) return;
-      const dx = e.clientX - partenza;
-      partenza = e.clientX;
-      window.scrollBy({ top: -dx * TRASCINAMENTO, behavior: 'instant' as ScrollBehavior });
+      const dx = e.clientX - precedente;
+      precedente = e.clientX;
+      sposta(dx);
     };
     const alzato = () => {
       giu = false;
     };
 
-    sez.addEventListener('pointerdown', premuto);
-    window.addEventListener('pointermove', mosso, { passive: true });
-    window.addEventListener('pointerup', alzato, { passive: true });
-    window.addEventListener('pointercancel', alzato, { passive: true });
+    // La rotellina orizzontale del trackpad. Solo quella: se si intercettasse
+    // anche quella verticale la pagina non scorrerebbe più, ed è il difetto
+    // classico delle gallerie che "catturano" lo scroll.
+    const rotella = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      sposta(-e.deltaX);
+    };
 
-    window.addEventListener('scroll', chiedi, { passive: true });
-    window.addEventListener('resize', chiedi);
-    v.addEventListener('loadedmetadata', chiedi);
-    chiedi();
+    sez.addEventListener('pointerdown', premuto);
+    sez.addEventListener('pointermove', mosso);
+    sez.addEventListener('pointerup', alzato);
+    sez.addEventListener('pointercancel', alzato);
+    sez.addEventListener('wheel', rotella, { passive: false });
+    v.addEventListener('loadedmetadata', avvia);
 
     return () => {
       osservatore.disconnect();
       cancelAnimationFrame(raf);
       sez.removeEventListener('pointerdown', premuto);
-      window.removeEventListener('pointermove', mosso);
-      window.removeEventListener('pointerup', alzato);
-      window.removeEventListener('pointercancel', alzato);
-      window.removeEventListener('scroll', chiedi);
-      window.removeEventListener('resize', chiedi);
+      sez.removeEventListener('pointermove', mosso);
+      sez.removeEventListener('pointerup', alzato);
+      sez.removeEventListener('pointercancel', alzato);
+      sez.removeEventListener('wheel', rotella);
+      v.removeEventListener('loadedmetadata', avvia);
       window.removeEventListener('touchstart', sblocca);
       window.removeEventListener('pointerdown', sblocca);
-      window.removeEventListener('scroll', sblocca);
-      v.removeEventListener('loadedmetadata', chiedi);
-      void ultimo;
     };
   }, []);
 
   return (
-    <section
-      ref={sezione}
-      className="bufala-vetrina"
-      id="prodotti"
-      style={{ height: `${VETRINA_VH * 100}svh` }}
-    >
-      <div className="vetrina-palco">
-        <div className="vetrina-pannello">
-          <video
-            ref={video}
-            className="vetrina-video"
-            poster={vetrina.poster}
-            muted
-            playsInline
-            preload="none"
-            aria-hidden="true"
-          >
-            {/* `data-src` e non `src`: il filmato pesa, e chi non arriva fin
-                qui non deve scaricarlo. Le sorgenti si montano quando la
-                sezione si avvicina. */}
-            <source data-src={vetrina.webm} type="video/webm" />
-            <source data-src={vetrina.mp4} type="video/mp4" />
-          </video>
-        </div>
-
-        {/* I nomi: testo vivo sopra il pannello, mai dentro il filmato. Un
-            nome scritto in HTML è sempre corretto e sempre leggibile; una
-            scritta stampata dentro un video generato non lo è. */}
-        <div className="vetrina-nomi" ref={nomi}>
-          {tappe.map((t) => (
-            <p className="vetrina-nome" key={t.nome} style={{ opacity: 0 }}>
-              <span className="nome">{t.nome}</span>
-              {t.produttore && <span className="micro">{t.produttore}</span>}
-            </p>
-          ))}
-        </div>
+    <section ref={sezione} className="bufala-vetrina" id="prodotti">
+      <div className="vetrina-pannello">
+        <video
+          ref={video}
+          className="vetrina-video"
+          poster={vetrina.poster}
+          muted
+          playsInline
+          preload="none"
+          aria-hidden="true"
+        >
+          {/* `data-src` e non `src`: il filmato pesa, e chi non arriva fin qui
+              non deve scaricarlo. */}
+          <source data-src={vetrina.webm} type="video/webm" />
+          <source data-src={vetrina.mp4} type="video/mp4" />
+        </video>
       </div>
 
-      {/* Senza JavaScript, senza filmato o con il movimento ridotto restano le
-          fotografie vere, in fila e con i loro nomi. La vetrina è un
-          miglioramento; i prodotti no, quelli devono esserci sempre. */}
+      {/* I nomi: testo vivo sopra il pannello, mai dentro il filmato. Un nome
+          scritto in HTML è sempre corretto e sempre leggibile; una scritta
+          stampata dentro un video generato non lo è. */}
+      <div className="vetrina-nomi" ref={nomi}>
+        {tappe.map((t) => (
+          <p className="vetrina-nome" key={t.nome} style={{ opacity: 0 }}>
+            <span className="nome">{t.nome}</span>
+            {t.produttore && <span className="micro">{t.produttore}</span>}
+          </p>
+        ))}
+      </div>
+
+      {/* Una hairline che dice quanta vetrina resta. Senza, chi arriva non ha
+          nessun indizio che ci sia dell'altro di lato. */}
+      <div className="vetrina-corsa" aria-hidden="true">
+        <div className="riga" ref={barra} />
+      </div>
+
       <noscript>
         <div className="bufala-fila">
           {prodotti.map((p) => (
