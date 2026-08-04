@@ -485,13 +485,31 @@
   color: var(--latte);
 }
 
-/* Sul telefono i tre chip stanno su una riga: un orfano a capo da solo
-   e' esattamente l'elenco che il brief vieta. */
+/* Sul telefono i tre chip stanno su UNA riga: un orfano a capo da solo
+   e' esattamente l'elenco che il brief vieta. Misurato su 390px: a 0.74rem
+   il terzo cadeva ancora; a 0.68rem con l'aria ridotta ci stanno. */
 @media (max-width: 480px) {
+  .stato-chips {
+    gap: 0.35rem;
+  }
   .stato-chip {
-    font-size: 0.74rem;
-    padding: 0.3rem 0.6rem;
-    gap: 0.38rem;
+    font-size: 0.68rem;
+    padding: 0.28rem 0.5rem;
+    gap: 0.32rem;
+  }
+}
+
+/* Sotto i 375px (iPhone SE e simili) anche cosi' non ci stanno: li' i tre
+   chip diventano tre colonne pari, che e' comunque una riga sola. */
+@media (max-width: 374px) {
+  .stato-chips {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .stato-chip {
+    justify-content: center;
+    padding: 0.28rem 0.3rem;
+    font-size: 0.64rem;
   }
 }
 
@@ -1800,12 +1818,17 @@
    si è ribaltata: prima dominava il numero e la frase sembrava una
    didascalia; ora il numero apre e la frase comanda. */
 .visita-ora {
-  font-family: var(--font-display);
-  font-weight: 500;
-  margin-top: -0.12em;
-  font-size: clamp(4.2rem, 14vw, 9.5rem);
+  /* Il provino a cinque varianti (04/08) l'ha deciso: le cifre di Playfair
+     a questa scala sono goffe — il colon pesante, il 4 tozzo. Qui vince la
+     Hanken leggerissima: cifre d'aria, alla maniera dell'orologio di un
+     telefono, e il contrappunto col Playfair della headline sotto è la
+     coppia — il numero è la copertina, la frase è la voce. */
+  font-family: var(--font-testo);
+  font-weight: 250;
+  margin-top: -0.06em;
+  font-size: clamp(4.4rem, 15vw, 10rem);
   line-height: 0.95;
-  letter-spacing: 0.03em;
+  letter-spacing: 0;
   color: var(--ottone);
   font-variant-numeric: tabular-nums;
 }
