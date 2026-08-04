@@ -60,6 +60,11 @@ export function Sections() {
             />
             <figcaption className="micro">Il banco, dentro il C.A.R.R. di Rimini</figcaption>
           </figure>
+          {/* La colonna dei pubblici e' UNA unita' con tre ancore: il primo
+              blocco al bordo alto della fotografia, la nota alla riga della
+              didascalia, il rientro d'ottone in mezzo. La nota sta qui —
+              conclude entrambi i pubblici — non orfana sotto la didascalia,
+              dove due righine impilate si pestavano i piedi. */}
           <div className="perchi-blocchi">
             <div className="perchi-blocco perchi-blocco--lavoro">
               <h3>{sezioni.perChi.lavoro.nome}</h3>
@@ -69,9 +74,9 @@ export function Sections() {
               <h3>{sezioni.perChi.casa.nome}</h3>
               <p>{sezioni.perChi.casa.testo}</p>
             </div>
+            <p className="perchi-nota">{sezioni.perChi.nota}</p>
           </div>
         </div>
-        <p className="perchi-nota">{sezioni.perChi.nota}</p>
       </section>
     </div>
 

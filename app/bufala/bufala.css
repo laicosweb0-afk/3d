@@ -1270,6 +1270,9 @@
 .perchi-blocchi {
   display: grid;
   gap: clamp(1.5rem, 3.5vh, 2.5rem);
+  /* Tre figli: lavoro, casa, nota. Da tablet in su la colonna si tende
+     all'altezza della fotografia e i tre si distribuiscono — il primo
+     blocco al bordo alto, la nota in fondo, sulla riga della didascalia. */
 }
 
 .perchi-blocco h3 {
@@ -1299,23 +1302,29 @@
 }
 
 .perchi-nota {
-  margin-top: var(--spazio-blocco);
   font-size: 0.9rem;
   color: var(--testo-nota);
 }
 
 /* Da tablet in su: la fotografia tiene la colonna maggiore, i pubblici
-   quella minore, sfalsati anche in verticale. */
+   quella minore. Le due colonne si tendono alla stessa altezza: l'immagine
+   riempie la sua riga, e i tre elementi di destra si distribuiscono sulle
+   ancore — bordo alto, centro, riga della didascalia. Nessuna altezza
+   arbitraria: ogni cosa e' agganciata a qualcosa. */
 @media (min-width: 760px) {
   .perchi-campo {
     grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-    align-items: center;
+    align-items: stretch;
+  }
+  .perchi-foto {
+    grid-template-rows: 1fr auto;
+  }
+  .perchi-foto img {
+    height: 100%;
+    object-fit: cover;
   }
   .perchi-blocchi {
-    align-content: center;
-  }
-  .perchi-blocco--casa {
-    transform: translateY(clamp(0.4rem, 1.5vh, 1.1rem));
+    align-content: space-between;
   }
 }
 
