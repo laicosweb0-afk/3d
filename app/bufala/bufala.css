@@ -1883,8 +1883,7 @@
   border-bottom: 1px solid var(--filo-su-scuro);
 }
 
-.recapito-voce dt,
-.recapito-voce .voce-nome {
+.recapito-voce dt {
   display: block;
   font-size: 0.68rem;
   font-weight: 500;
@@ -1893,8 +1892,7 @@
   color: var(--latte-55);
 }
 
-.recapito-voce dd,
-.recapito-voce .voce-dato {
+.recapito-voce dd {
   display: block;
   margin: 0;
   line-height: 1.65;
@@ -2100,31 +2098,6 @@
 }
 
 /* I tre passi: numero in ottone piccolo — eco della rottura, non replica. */
-.visita-passi {
-  list-style: none;
-  margin: var(--spazio-blocco) 0 0;
-  padding: 0;
-  width: 100%;
-  max-width: 46rem;
-  /* Niente filo in testa: l'ultima riga degli orari ha gia' il suo sotto,
-     e due fili con un margine in mezzo disegnano una banda vuota — si
-     vedeva, misurato sullo screenshot. */
-}
-
-.visita-passi .recapito-voce--passo {
-  display: grid;
-  grid-template-columns: 2.5rem 1fr;
-  gap: 1rem;
-  align-items: baseline;
-}
-
-.passo-numero {
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  color: var(--ottone);
-  font-variant-numeric: tabular-nums;
-}
-
 /* Il congedo dentro i recapiti: sopra i bottoni e' la ragione per
    premerli; dopo, era un saluto a pagina gia' finita. */
 .recapito-congedo {
@@ -2153,12 +2126,13 @@
   }
 }
 
-.bufala-recapito .scheda-azioni {
+/* La sezione unica mappa+recapiti (brief 04/08): i passi ripetuti sono
+   caduti e il colophon vive sotto la mappa. */
+.bufala-mappa .scheda-azioni {
   margin-top: clamp(1.25rem, 3vh, 2rem);
 }
 
-.bufala-mappa,
-.bufala-recapito {
+.bufala-mappa {
   display: grid;
   gap: clamp(1rem, 2.5vh, 1.6rem);
   justify-items: start;

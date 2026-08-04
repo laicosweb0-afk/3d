@@ -19,13 +19,6 @@ import { Fondale } from './Fondale';
 
 const pv = company.puntoVendita;
 
-/** I tre passi della visita, dai dati confermati del punto vendita. */
-const passi = [
-  { nome: 'In auto', testo: pv.uscita },
-  { nome: 'Dove', testo: `${pv.presso} — ${pv.dettaglio}` },
-  { nome: 'All’ingresso', testo: pv.accesso },
-];
-
 export function Sections() {
   return (
     <>
@@ -186,26 +179,13 @@ export function Sections() {
           <span className="scheda-azione">{sezioni.mappa.azione}</span>
         </a>
 
-        {/* I tre passi della strada, sotto la mappa che li disegna:
-            arrivavano dalla Visita, ma sono indicazioni — casa loro è qui. */}
-        <ol className="visita-passi">
-          {passi.map((p, i) => (
-            <li className="recapito-voce recapito-voce--passo" key={p.nome}>
-              <span className="passo-numero" aria-hidden="true">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <div>
-                <span className="voce-nome">{p.nome}</span>
-                <span className="voce-dato">{p.testo}</span>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section className="bufala-sezione bufala-recapito" data-rivela>
-        <p className="micro">{sezioni.luogo.titolo}</p>
-
+        {/* Il colophon direttamente sotto la mappa (brief dell'utente,
+            04/08): i tre passi numerati ripetevano l'indirizzo che il
+            blocco qui sotto ridiceva per intero — via i passi, via anche
+            l'occhiello «Punto vendita», e i due fatti unici dei passi
+            (l'uscita autostradale, l'ingresso libero) diventano voci del
+            blocco. Una sezione sola: la mappa disegna, il colophon
+            dichiara. */}
         <dl className="recapito-voci recapito-voci--colophon">
           <div className="recapito-voce">
             <dt>Indirizzo</dt>
@@ -216,6 +196,18 @@ export function Sections() {
                   da solo era l'orfano trovato al giro di polish. */}
               {pv.via}, {pv.cap} {pv.comune}{' '}({pv.provincia})
             </dd>
+          </div>
+          <div className="recapito-voce">
+            <dt>Dentro il centro</dt>
+            <dd>{pv.dettaglio}</dd>
+          </div>
+          <div className="recapito-voce">
+            <dt>In auto</dt>
+            <dd>{pv.uscita}</dd>
+          </div>
+          <div className="recapito-voce">
+            <dt>All’ingresso</dt>
+            <dd>{pv.accesso}</dd>
           </div>
           <div className="recapito-voce">
             <dt>Telefono</dt>

@@ -209,16 +209,18 @@ export const sezioni = {
     testo: 'Alle nove abbiamo già finito. Per questo conviene arrivare presto.',
   },
 
-  // La mappa è protagonista e non ha bisogno di essere presentata: sopra di
-  // lei due parole, sotto niente. I dati stanno nella sezione dopo, che è
-  // un'altra cosa e va letta come tale.
+  // La mappa e i recapiti sono UNA sezione (brief dell'utente, 04/08:
+  // «vale la pena mettere direttamente quella sotto e cavare totalmente
+  // quelle sopra»): i tre passi numerati ripetevano l'indirizzo del
+  // colophon, e l'occhiello «Punto vendita» era un secondo cartello sulla
+  // stessa porta. Resta «Dove siamo» — le sue parole — sopra la mappa,
+  // e sotto il colophon che dichiara tutto una volta sola.
   mappa: {
-    titolo: 'Siamo qui',
+    titolo: 'Dove siamo',
     azione: 'Apri su Google Maps',
   },
 
   luogo: {
-    titolo: 'Punto vendita',
     azione: 'Ottieni indicazioni',
     chiama: 'Chiama',
   },
