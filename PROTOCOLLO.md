@@ -165,8 +165,8 @@ Aggiornato a ogni task. Un blocco aperto non si aggira in silenzio.
 |---|---|---|---|
 | 1 | Licenza Canela / Neue Haas Grotesk | **aperto** — ferma la Task 03 | cliente |
 | 2 | File dei caratteri scelti (Fontshare è irraggiungibile dal contenitore) | **aperto** | utente, se si sceglie Fontshare |
-| 3 | Conferma indirizzo punto vendita (biglietto ≠ scheda Google) | **aperto** — ferma la mappa | cliente |
-| 4 | Conferma orari | **aperto** — dato acquisito, da riconfermare | cliente |
+| 3 | ~~Conferma indirizzo punto vendita~~ | **chiuso** — decisione utente 04/08: fa fede la scheda Google; `company.ts` aggiornato | — |
+| 4 | ~~Conferma orari~~ | **chiuso** — decisione utente 04/08: valgono quelli della scheda Google, già in `company.ts`. Riconferma dal cliente consigliata, non bloccante | — |
 | 5 | Approvazione del copy definitivo | **aperto** — ferma la Task 10 | cliente |
 | 6 | Dominio definitivo | **aperto** | cliente |
 | 7 | ~~Modello del tablet~~ | **chiuso** — succede su tre dispositivi diversi, quindi non è il dispositivo. Misurato: è aritmetica, non hardware (Task 00) | — |
