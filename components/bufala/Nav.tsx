@@ -12,9 +12,12 @@ import { asset } from '@/lib/asset';
 import { company } from '@/content/bufala/company';
 
 const voci = [
+  // "Contatti" non c'è più come sezione: il telefono vive dentro la scheda
+  // del luogo, accanto al pulsante che lo compone. Un menu che punta a
+  // un'ancora inesistente porta a fondo pagina senza dirlo — e sembra un
+  // sito rotto proprio a chi sta cercando come raggiungervi.
   { href: '#prodotti', testo: 'Prodotti' },
-  { href: '#dove', testo: 'Dove siamo' },
-  { href: '#contatti', testo: 'Contatti' },
+  { href: '#dove', testo: 'Dove trovarci' },
 ];
 
 export function Nav() {

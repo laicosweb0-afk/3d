@@ -19,6 +19,8 @@ export interface SceneCopy {
   titolo: string;
   /** Riga di accompagnamento, opzionale. Corpo piccolo, sotto il titolo. */
   nota?: string;
+  /** Solo per la hero: la riga che dice cosa si trova al banco. */
+  sottotitolo?: string;
   /** Solo per la hero: il payoff. Non è un sottotitolo — vive lontano dalla
    *  headline, in fondo al campo. La distanza è il messaggio: un marchio di
    *  lusso non ha bisogno di stare attaccato al proprio nome. */
@@ -28,7 +30,11 @@ export interface SceneCopy {
 export const sceneCopy: Record<SceneId, SceneCopy> = {
   // La hero: headline dominante, payoff piccolo e lontanissimo.
   s01: {
-    titolo: 'La semplicità\nrichiede eccellenza.',
+    titolo: 'La qualità non si promette.\nSi assaggia.',
+    // Il sottotitolo dice cosa si trova al banco: la headline dà il tono, il
+    // sottotitolo dà il fatto. Senza, la prima schermata è solo un'idea.
+    sottotitolo:
+      'Dalla mozzarella fresca ai migliori formaggi e salumi selezionati. Un banco pensato per chi cerca eccellenza, ogni giorno.',
     payoff: 'Mozzarella di Bufala',
     nota: 'Scorri',
   },
@@ -65,25 +71,40 @@ export const sceneCopy: Record<SceneId, SceneCopy> = {
 
 /** Le sezioni dopo il viaggio. */
 export const sezioni = {
-  // L'apertura del documento, sul latte. Raccoglie la frase che stava
+  // L'apertura del documento, sul chiaro. Raccoglie la frase che stava
   // nell'ultima scena scura del viaggio: quella scena non esiste più, ma la
   // frase è del progetto e non del filmato, quindi vive benissimo qui.
   apertura: {
     frase: 'Una mozzarella si misura in ore.',
+    testo:
+      'Il tempo è l’unica cosa che non si può recuperare: per questo la lavorazione, il banco e la vendita restano vicini.',
   },
+
   banco: {
     titolo: 'Il banco',
-    frase: 'Si entra, si guarda, si chiede.',
+    frase: 'Un luogo dove la qualità prende forma.',
     testo:
-      'Il punto vendita è aperto a grossisti e privati senza distinzione: si entra, si assaggia, si porta via quello che serve.',
+      'Qui non trovi semplicemente prodotti. Trovi una selezione costruita negli anni, scegliendo solo ciò che merita davvero di arrivare sulla tua tavola. Il nostro punto vendita accoglie privati, professionisti e attività, offrendo ogni giorno freschezza, gusto e qualità senza compromessi.',
   },
+
   prodotti: {
     titolo: 'Al banco',
-    frase: "L'eccellenza, senza compromessi.",
-    testo: 'La nostra mozzarella, e una selezione che le sta accanto.',
-    // Nessun elenco scritto: i prodotti si mostrano, non si elencano.
+    frase: 'Una selezione costruita con cura.',
+    testo:
+      'Accanto alla nostra mozzarella trovi una selezione di formaggi, salumi e specialità gastronomiche scelti per qualità, provenienza e gusto. Ogni prodotto completa il banco con lo stesso livello di attenzione che dedichiamo alla nostra produzione.',
+    // L'indicazione sotto il carosello. Un carosello che non dichiara di
+    // essere trascinabile viene guardato come una fotografia: l'affordance
+    // va detta, non lasciata indovinare.
+    invito: 'Scorri per scoprire la nostra selezione',
   },
-  dove: { titolo: 'Dove siamo' },
+
+  dove: {
+    titolo: 'Dove trovarci',
+    frase: 'Al Centro Agro Alimentare Riminese.',
+    testo:
+      'Il banco è dentro il padiglione centrale del mercato ortofrutticolo. L’ingresso è libero e gratuito: non serve una tessera, non serve un appuntamento.',
+  },
+
   contatti: { titolo: 'Contatti' },
   congedo: { frase: 'Vi aspettiamo al banco.' },
 } as const;

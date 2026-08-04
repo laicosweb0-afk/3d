@@ -3,7 +3,7 @@
 // fornito il contenuto, la sezione non compare — nessun segnaposto inventato.
 
 import { asset } from '@/lib/asset';
-import { company, indirizzoPuntoVendita } from '@/content/bufala/company';
+import { company, indirizzoPuntoVendita, mappaEmbed, mappaApri } from '@/content/bufala/company';
 import { sezioni } from '@/content/bufala/copy';
 import { Vetrina } from './Vetrina';
 
@@ -18,6 +18,7 @@ export function Sections() {
           respiro dopo il viaggio, e la prima cosa che si legge sul chiaro. */}
       <section className="bufala-sezione bufala-apertura">
         <h2>{sezioni.apertura.frase}</h2>
+        <p>{sezioni.apertura.testo}</p>
       </section>
 
       <section className="bufala-sezione">
@@ -59,31 +60,60 @@ export function Sections() {
           dell'intera larghezza e di una propria altezza di scorrimento. */}
       <Vetrina />
 
+      {/* — Dove trovarci —
+          Non un indirizzo scritto: una scheda con la mappa, i dati e le due
+          cose che uno vuole fare davvero da un telefono — aprire il
+          navigatore e chiamare. I recapiti scritti servivano quando non si
+          poteva agire; qui si può.
+
+          ⚠️ La mappa incorporata di Google installa cookie di profilazione al
+          caricamento: per un'azienda italiana significa banner dei cookie
+          obbligatorio. È una scelta del cliente, non una svista. */}
       <section className="bufala-sezione" id="dove">
         <p className="micro">{sezioni.dove.titolo}</p>
-        <h2>{pv.comune}</h2>
-        <p>
-          {pv.presso}
-          <br />
-          {indirizzoPuntoVendita}
-          <br />
-          {pv.dettaglio}
-        </p>
-        <p className="micro">
-          {pv.uscita} · {pv.accesso}
-        </p>
-      </section>
+        <h2>{sezioni.dove.frase}</h2>
+        <p>{sezioni.dove.testo}</p>
 
-      {/* I contatti sono dati, non affermazioni: vanno nel carattere di
-          testo, non in quello di display. Un numero di telefono composto in
-          un serif da titolo si legge come uno slogan e si copia peggio —
-          il display serve a dire una cosa, non a elencare un recapito.
-          La gerarchia qui la fanno dimensione e spazio, non la famiglia. */}
-      <section className="bufala-sezione" id="contatti">
-        <p className="micro">{sezioni.contatti.titolo}</p>
-        <div className="bufala-dati">
-          <a className="dato" href={company.telefonoHref}>{company.telefono}</a>
-          <a className="dato" href={`mailto:${company.email}`}>{company.email}</a>
+        <div className="scheda-luogo">
+          <div className="scheda-mappa">
+            <iframe
+              src={mappaEmbed}
+              title={`Mappa: ${company.brand}, ${indirizzoPuntoVendita}`}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+            />
+          </div>
+
+          <div className="scheda-corpo">
+            <p className="scheda-nome">{company.brand}</p>
+            <p className="scheda-riga">
+              {pv.presso}
+              <br />
+              {indirizzoPuntoVendita}
+              <br />
+              {pv.dettaglio}
+            </p>
+            <p className="micro">
+              {pv.uscita} · {pv.accesso}
+            </p>
+
+            <div className="scheda-azioni">
+              <a
+                className="bottone bottone--pieno"
+                href={mappaApri}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Apri su Google Maps
+              </a>
+              <a className="bottone" href={company.telefonoHref}>
+                Chiama ora
+              </a>
+            </div>
+
+            <p className="micro scheda-telefono">{company.telefono}</p>
+          </div>
         </div>
       </section>
 

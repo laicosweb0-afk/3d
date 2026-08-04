@@ -30,7 +30,6 @@ const jsonLd = {
   name: company.brand,
   legalName: company.ragioneSociale,
   telephone: company.telefono,
-  email: company.email,
   address: {
     '@type': 'PostalAddress',
     streetAddress: company.puntoVendita.via,

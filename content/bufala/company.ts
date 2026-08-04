@@ -10,8 +10,12 @@ export const company = {
 
   telefono: '+39 392 0220924',
   telefonoHref: 'tel:+393920220924',
-  email: 'info@quellidellabufala.it',
-  sito: 'www.quellidellabufala.it',
+  // ⚠️ Indirizzo e sito del vecchio biglietto da visita: il cliente li ha
+  // sostituiti e non vanno più mostrati da nessuna parte. Restano qui solo
+  // per non farli riapparire per distrazione — se servisse un recapito
+  // scritto, va chiesto quello nuovo, non ripreso questo.
+  emailObsoleta: 'info@quellidellabufala.it',
+  sitoObsoleto: 'www.quellidellabufala.it',
 
   /** Sede legale e amministrativa — non è il punto vendita. */
   sedeLegale: {
@@ -39,3 +43,17 @@ export const company = {
 /** Indirizzo del punto vendita su una riga, per meta e microcopy. */
 export const indirizzoPuntoVendita =
   `${company.puntoVendita.via}, ${company.puntoVendita.cap} ${company.puntoVendita.comune} (${company.puntoVendita.provincia})`;
+
+/** La ricerca su Google Maps: l'indirizzo del punto vendita, non la sede
+ *  legale. Sono due luoghi diversi e mandare qualcuno alla sede legale
+ *  significa mandarlo dove non c'è nessun banco. */
+export const mappaQuery = encodeURIComponent(
+  `${company.puntoVendita.presso}, ${company.puntoVendita.via}, ${company.puntoVendita.cap} ${company.puntoVendita.comune} ${company.puntoVendita.provincia}`,
+);
+
+/** L'incorporazione della mappa. Non richiede chiave API. */
+export const mappaEmbed = `https://www.google.com/maps?q=${mappaQuery}&output=embed`;
+
+/** L'apertura nell'app: su telefono Google Maps si apre davvero, non nel
+ *  browser, ed è quello che serve a chi sta guidando. */
+export const mappaApri = `https://www.google.com/maps/search/?api=1&query=${mappaQuery}`;

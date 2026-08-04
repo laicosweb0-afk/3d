@@ -150,6 +150,7 @@ export function Journey() {
               style={{ opacity: hero ? 1 : 0 }}
             >
               <h1>{c.titolo}</h1>
+              {c.sottotitolo && <p className="sottotitolo">{c.sottotitolo}</p>}
               {hero && <span aria-hidden="true" />}
               {c.payoff && <p className="payoff">{c.payoff}</p>}
               {c.nota && !hero && <p className="micro nota">{c.nota}</p>}

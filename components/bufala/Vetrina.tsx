@@ -21,6 +21,7 @@
 import { useEffect, useRef } from 'react';
 import { vetrina, tappe } from '@/content/bufala/vetrina';
 import { prodotti } from '@/content/bufala/assets';
+import { sezioni } from '@/content/bufala/copy';
 
 /** Quanto bisogna trascinare per attraversare tutta la vetrina, in larghezze
  *  di schermo. Sotto 2 la processione vola via con un gesto solo; sopra 3
@@ -43,6 +44,7 @@ export function Vetrina() {
   const video = useRef<HTMLVideoElement>(null);
   const nomi = useRef<HTMLDivElement>(null);
   const barra = useRef<HTMLDivElement>(null);
+  const invito = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     const sez = sezione.current;
@@ -133,6 +135,12 @@ export function Vetrina() {
       }
 
       if (barra.current) barra.current.style.transform = `scaleX(${posizione.toFixed(4)})`;
+
+      // L'invito si ritira appena la vetrina si muove: ha già funzionato.
+      if (invito.current) {
+        const resta = Math.max(0, 1 - posizione * 14);
+        invito.current.style.opacity = resta.toFixed(3);
+      }
 
       // Ci si ferma quando la posizione ha raggiunto il bersaglio: un ciclo
       // acceso su una vetrina immobile è batteria buttata.
@@ -234,6 +242,16 @@ export function Vetrina() {
           </p>
         ))}
       </div>
+
+      {/* L'invito. Un carosello che non dichiara di essere trascinabile viene
+          guardato come una fotografia: nessuno prova a spostare un'immagine.
+          La freccia si muove appena, e si ferma appena si comincia a
+          trascinare — un invito che continua a insistere dopo che è stato
+          accolto diventa un tic. */}
+      <p className="vetrina-invito" ref={invito}>
+        <span className="freccia" aria-hidden="true">←</span>
+        {sezioni.prodotti.invito}
+      </p>
 
       {/* Una hairline che dice quanta vetrina resta. Senza, chi arriva non ha
           nessun indizio che ci sia dell'altro di lato. */}

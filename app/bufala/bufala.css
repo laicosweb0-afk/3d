@@ -238,7 +238,7 @@
   align-self: stretch;
   justify-self: stretch;
   display: grid;
-  grid-template-rows: auto 1fr auto auto;
+  grid-template-rows: auto auto 1fr auto auto;
   justify-items: center;
   width: 100%;
 }
@@ -794,7 +794,6 @@
    processione che entra ed esce lateralmente andrebbe quasi tutta perduta. */
 .bufala-vetrina {
   position: relative;
-  background: var(--verde-profondo);
   padding: 0 6vw var(--spazio-sezione);
   display: grid;
   justify-items: center;
@@ -921,4 +920,185 @@
    bordi delle etichette prendono una scaletta visibile. */
 .bufala img {
   image-rendering: auto;
+}
+
+/* ══ Profondità del fondo scuro ══
+   Un verde piatto su tutta l'altezza legge come una campitura, non come uno
+   spazio. Qui il fondo ha una sorgente: una luce larghissima e debolissima
+   in alto al centro che cade verso il basso, esattamente dove sta la luce
+   nelle fotografie del cliente. Non si vede — si sente che la pagina ha
+   un'aria dentro invece di un colore addosso.
+
+   Due gradienti soli, nessuna texture: una trama su un fondo scuro diventa
+   rumore appena lo schermo non è quello di chi l'ha disegnata. */
+/* Solo il contenitore, non anche i suoi figli: la vetrina sta dentro questo
+   blocco e dandole un secondo gradiente si ottiene una cucitura orizzontale
+   nel punto in cui comincia — due fondi che si sovrappongono si vedono
+   sempre, anche quando sono quasi identici. */
+.bufala-sezioni.bufala-buio {
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgb(31 62 45 / 0.55) 0%, rgb(14 32 24 / 0) 62%),
+    linear-gradient(to bottom, var(--verde-profondo) 0%, #0b1a13 100%);
+}
+
+/* ══ Schede ══
+   Una sola famiglia: stesso raggio, stesso filo, stessa elevazione del
+   pannello della vetrina. Se una scheda del sito si comportasse diversamente
+   da un'altra, la differenza si noterebbe prima del contenuto. */
+.scheda-luogo {
+  margin-top: clamp(2rem, 5vh, 3.25rem);
+  width: 100%;
+  max-width: 60rem;
+  border: 1px solid var(--filo-su-scuro);
+  border-radius: var(--raggio-grande);
+  box-shadow: var(--alza-su-scuro);
+  overflow: hidden;
+  /* Appena più chiara del fondo: è così che una superficie si stacca su
+     scuro, non con un bordo più marcato. */
+  background: rgb(246 241 228 / 0.025);
+}
+
+.scheda-mappa {
+  aspect-ratio: 16 / 10;
+  background: #0b1a13;
+  border-bottom: 1px solid var(--filo-su-scuro);
+}
+
+.scheda-mappa iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  /* La mappa di Google è chiara e satura: due ritocchi la portano dentro la
+     palette senza renderla illeggibile. Più di così diventa un filtro, e un
+     filtro su una mappa è un ostacolo per chi la sta leggendo. */
+  filter: saturate(0.72) brightness(0.92);
+}
+
+.scheda-corpo {
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  display: grid;
+  gap: 0.85rem;
+  justify-items: start;
+}
+
+.scheda-nome {
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 3vw, 1.85rem);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+
+.scheda-riga {
+  line-height: 1.6;
+  max-width: 42ch;
+}
+
+.scheda-telefono {
+  margin-top: 0.25rem;
+}
+
+/* ══ Pulsanti ══
+   Erano assenti da tutto il sito: la pagina non aveva una sola maniglia.
+   Il pieno è d'ottone perché è l'unica cosa su cui vogliamo che si clicchi;
+   il vuoto è un filo. Nessun raggio pieno, nessuna ombra colorata: la forma
+   è quella di un rettangolo appena addolcito, come i tasti di sistema. */
+.scheda-azioni {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.65rem;
+}
+
+.bufala .bottone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.9rem;
+  padding: 0 1.4rem;
+  border: 1px solid var(--filo-su-scuro);
+  border-radius: var(--raggio-piccolo);
+  font-family: var(--font-testo);
+  font-size: 0.92rem;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  color: var(--latte);
+  text-decoration: none;
+  background: rgb(246 241 228 / 0.04);
+  transition:
+    background-color 0.4s cubic-bezier(0.22, 0.61, 0.36, 1),
+    border-color 0.4s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.bufala .bottone:hover {
+  background: rgb(246 241 228 / 0.08);
+  border-color: rgb(246 241 228 / 0.18);
+}
+
+.bufala .bottone:active {
+  transform: translateY(1px);
+}
+
+.bufala .bottone--pieno {
+  background: var(--ottone);
+  border-color: var(--ottone);
+  color: #16110a;
+}
+
+.bufala .bottone--pieno:hover {
+  background: #c39d63;
+  border-color: #c39d63;
+}
+
+/* ══ L'invito del carosello ══ */
+.vetrina-invito {
+  display: inline-flex;
+  /* Allineata alla prima riga e non al centro del blocco: quando il testo va
+     a capo, una freccia centrata verticalmente galleggia in mezzo alle due
+     righe e sembra fuori posto. */
+  align-items: baseline;
+  gap: 0.55rem;
+  max-width: 34ch;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--latte-45);
+  transition: opacity 0.5s ease;
+}
+
+.vetrina-invito .freccia {
+  display: inline-block;
+  font-size: 0.95rem;
+  line-height: 1;
+  color: var(--ottone);
+  animation: vetrina-cenno 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Un cenno, non un rimbalzo: tre pixel e una pausa lunga. Un'animazione che
+   non smette mai di chiedere attenzione diventa un tic. */
+@keyframes vetrina-cenno {
+  0%, 62%, 100% { transform: translateX(0); }
+  74% { transform: translateX(-3px); }
+  86% { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vetrina-invito .freccia { animation: none; }
+  .bufala .bottone { transition: none; }
+}
+
+/* Il sottotitolo della hero: la headline dà il tono, questo dà il fatto.
+   Corpo di testo, non di display, e misura stretta — se occupasse la
+   larghezza del titolo diventerebbe un secondo titolo, e due titoli nella
+   stessa schermata non ne fanno nessuno. */
+.bufala-overlay .scena--hero .sottotitolo {
+  max-width: 42ch;
+  margin-top: clamp(1.1rem, 2.4vh, 1.75rem);
+  font-size: clamp(0.95rem, 1.5vw, 1.08rem);
+  line-height: 1.6;
+  color: var(--latte-70);
+  text-align: center;
 }
