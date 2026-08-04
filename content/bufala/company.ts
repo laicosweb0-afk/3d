@@ -15,6 +15,12 @@ export const company = {
    *  telefono — se un giorno il banco usasse un numero WhatsApp dedicato,
    *  cambia SOLO qui. */
   whatsapp: '393920220924',
+
+  /** Il profilo Instagram VERO, dallo screenshot del profilo mandato
+   *  dall'utente (04/08): @quellidellabufala. Le frasi della bio non
+   *  entrano nel copy del sito — sono claim non ancora approvati qui. */
+  instagram: 'https://www.instagram.com/quellidellabufala/',
+  instagramHandle: '@quellidellabufala',
   // ⚠️ Indirizzo e sito del vecchio biglietto da visita: il cliente li ha
   // sostituiti e non vanno più mostrati da nessuna parte. Restano qui solo
   // per non farli riapparire per distrazione — se servisse un recapito

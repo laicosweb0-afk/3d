@@ -2519,6 +2519,46 @@
   flex: none;
 }
 
+/* I canali del colophon: cerchi della stessa famiglia dei bottoni —
+   stessa altezza, stesso filo, stesso tocco — col glifo al posto della
+   parola. Riga propria sotto le azioni: in coda ai bottoni, sul
+   telefono, i due cerchi si spaiavano al primo a capo. */
+.canali {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.bufala .canale {
+  display: grid;
+  place-items: center;
+  width: 2.9rem;
+  height: 2.9rem;
+  border: 1px solid var(--filo-su-scuro);
+  border-radius: 999px;
+  background: rgb(247 243 234 / 0.04);
+  color: var(--latte);
+  transition:
+    background-color var(--durata-comparsa) var(--curva-entrata),
+    border-color var(--durata-comparsa) var(--curva-entrata);
+}
+
+.bufala .canale svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.bufala .canale:hover,
+.bufala .canale:focus-visible {
+  background: rgb(247 243 234 / 0.08);
+  border-color: rgb(184 155 94 / 0.6);
+}
+
+.bufala .canale:active {
+  transform: translateY(1px) scale(0.985);
+  transition-duration: var(--durata-tocco);
+}
+
 /* Il marchio nella hero, composto in tipografia e non in immagine.
    Il logo reale e' un disegno a colori nato per fondi chiari: su verde
    profondo un PNG porterebbe con se' il proprio fondo e si vedrebbe il

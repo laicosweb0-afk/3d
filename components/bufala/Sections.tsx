@@ -14,6 +14,7 @@ import { Vetrina } from './Vetrina';
 import { Rivela } from './Rivela';
 import { Oggi } from './Oggi';
 import { Ordina } from './Ordina';
+import { IconaWhatsApp, IconaInstagram } from './icone';
 
 const pv = company.puntoVendita;
 
@@ -229,6 +230,31 @@ export function Sections() {
           </a>
           <a className="bottone" href={company.telefonoHref}>
             {sezioni.luogo.chiama}
+          </a>
+        </div>
+        {/* I canali coi loro glifi (richiesta dell'utente, 04/08): riga
+            propria, sempre — in coda ai bottoni andavano a capo spaiati
+            sul telefono. Cerchi della stessa famiglia dei bottoni,
+            monocromi. Il terzo — l'email — si aggiunge quando arriva
+            l'indirizzo vero (blocco 11): quello vecchio è bandito. */}
+        <div className="canali">
+          <a
+            className="canale"
+            href={`https://wa.me/${company.whatsapp}`}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Scrivici su WhatsApp"
+          >
+            {IconaWhatsApp}
+          </a>
+          <a
+            className="canale"
+            href={company.instagram}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`Il profilo Instagram ${company.instagramHandle}`}
+          >
+            {IconaInstagram}
           </a>
         </div>
       </section>
