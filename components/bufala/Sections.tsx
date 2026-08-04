@@ -7,7 +7,6 @@ import { company, indirizzoPuntoVendita, mappaEmbed, mappaApri } from '@/content
 import { sezioni } from '@/content/bufala/copy';
 import { Vetrina } from './Vetrina';
 import { Rivela } from './Rivela';
-import { Passaggio } from './Passaggio';
 
 const pv = company.puntoVendita;
 
@@ -32,12 +31,15 @@ export function Sections() {
     </div>
 
     {/* Il passaggio dalla panna al verde: l'avvicinarsi al banco.
-        Sostituisce un gradiente fermo alto un quarto di schermo, che aveva
-        due difetti — non seguiva lo scroll, quindi aveva lo stesso aspetto a
-        qualunque velocita' si scorresse, e aveva due confini. Un confine,
-        per quanto sfumato, resta un punto in cui una cosa finisce e
-        un'altra comincia. */}
-    <Passaggio />
+
+        Non e' piu' un palco incollato alto quasi due schermate. Quella
+        versione teneva ferma una schermata intera mentre il colore
+        cambiava, e il risultato era esattamente cio' che doveva evitare:
+        uno schermo verde vuoto, e quindi un blocco separato. Ora e' una
+        fascia che scorre, e il colore cambia perche' la fascia passa —
+        come succede in una stanza quando ci si avvicina a una parete in
+        ombra. Meno meccanica, piu' continuita'. */}
+    <div className="bufala-passaggio" aria-hidden="true" />
 
     <div className="bufala-sezioni bufala-buio">
 

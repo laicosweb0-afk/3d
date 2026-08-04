@@ -920,10 +920,30 @@
    addosso. Separatamente non se ne vede nessuna. */
 .bufala-sezioni.bufala-buio {
   position: relative;
+  /* Nessuna luce in alto: il passaggio finisce esattamente su #0e2018, e
+     una pozza chiara proprio all'inizio di questo contenitore produceva uno
+     scalino — sopra piu' scuro, sotto piu' chiaro, con una riga netta in
+     mezzo. Era il difetto piu' visibile del sito su telefono. La luce
+     morbida resta, ma piu' in basso, dove non tocca nessuna giuntura. */
   background:
-    radial-gradient(120% 68% at 50% 0%, rgb(34 68 49 / 0.6) 0%, rgb(14 32 24 / 0) 58%),
-    radial-gradient(150% 100% at 50% 50%, rgb(14 32 24 / 0) 55%, rgb(6 15 11 / 0.55) 100%),
-    linear-gradient(to bottom, #10241a 0%, #0a1710 100%);
+    radial-gradient(120% 52% at 50% 42%, rgb(30 62 44 / 0.42) 0%, rgb(14 32 24 / 0) 62%),
+    radial-gradient(150% 100% at 50% 58%, rgb(14 32 24 / 0) 55%, rgb(6 15 11 / 0.5) 100%),
+    /* Il primo tratto è trasparente, per la stessa distanza di cui questo
+       contenitore risale dentro la fascia: senza, il verde pieno copre di
+       colpo la coda della fascia — che lì è ancora chiara — e produce uno
+       scalino di trentatré livelli. Misurato campionando una colonna di
+       pixel: a occhio sembrava una sfumatura riuscita. */
+    linear-gradient(to bottom,
+      /* La dissolvenza deve chiudersi ESATTAMENTE sulla distanza di cui
+         questo contenitore risale (il margine negativo della fascia), non
+         una frazione di piu'. Allungandola, il velo semitrasparente si
+         trova sopra la fascia chiara in un tratto e sopra il verde di fondo
+         in quello dopo: il salto non e' nel velo, e' in cio' che ha dietro,
+         e produce una fascia chiara visibile proprio dietro il titolo. */
+      rgb(14 32 24 / 0) 0,
+      var(--verde-profondo) calc(var(--spazio-sezione) * 0.9),
+      var(--verde-profondo) 16%,
+      #0b1a13 100%);
 }
 
 /* La grana di carta.
@@ -1141,90 +1161,47 @@
 }
 
 /* ══ Il passaggio dalla panna al verde ══
-   Tre strati dentro un palco che resta fermo mentre la zona scorre. Ogni
-   strato riceve un solo numero dal componente e si muove con trasformazioni
-   e opacità: niente ricalcolo di impaginato a ogni fotogramma.
+   Una fascia che scorre, non un palco che si incolla. La versione incollata
+   teneva ferma una schermata intera mentre il colore cambiava, e produceva
+   esattamente cio' che doveva evitare: uno schermo verde vuoto, cioe' un
+   blocco separato. Qui il colore cambia perche' la fascia passa — come in
+   una stanza quando ci si avvicina a una parete in ombra.
 
-   L'altezza della zona è quella che decide quanto dura il passaggio. Sotto
-   una schermata e mezza il cambio si nota come cambio; molto oltre le due,
-   si comincia ad aspettare. */
+   Nove fermate invece di due o tre. Ogni fermata in meno e' una fascia che
+   l'occhio riconosce a meta' strada: con due colori si vede sempre il punto
+   di mezzo, con nove non ce n'e' nessuno che si distingua dagli altri. E
+   nessuna fermata e' grigia — la scala passa da panna a verde chiarissimo a
+   verde bosco restando sempre nel verde, cosi' il calo di luce ha gia' il
+   colore dell'ambiente in cui si sta entrando. */
 .bufala-passaggio {
   position: relative;
-  /* Sopra il velo di latte del viaggio, che è `fixed` e resta a schermo
-     pieno per sempre una volta cresciuto: senza questo indice, il passaggio
-     gli sta dietro e non si vede niente — la pagina resta panna per tutta
-     la corsa. Le sezioni hanno già lo stesso indice per la stessa ragione. */
+  /* Sopra il velo di latte del viaggio, che e' `fixed` e resta a schermo
+     pieno per sempre una volta cresciuto: senza questo indice il passaggio
+     gli finisce dietro e la pagina resta panna. */
   z-index: 3;
-  height: 175svh;
-  /* La panna continua dentro la zona: senza, il palco si stacca dalla
-     sezione sopra e si vede una giunzione proprio dove non deve essercene
-     nessuna. */
-  background: var(--latte);
-}
-
-.passaggio-palco {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  overflow: hidden;
-  background: var(--latte);
-}
-
-.passaggio-palco > * {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  will-change: transform, opacity;
-}
-
-/* Fase 1 — la panna perde un soffio di luce.
-   Non diventa grigia: si scurisce dal basso con lo stesso verde di tutto il
-   resto, così il calo di luce ha già il colore dell'ambiente in cui si sta
-   entrando. Il massimo è 9% di nero verde: sopra si vede, sotto non si
-   sente. */
-.passaggio-velatura {
-  background: linear-gradient(to bottom,
-    rgb(14 32 24 / 0) 0%,
-    rgb(14 32 24 / 0.035) 45%,
-    rgb(14 32 24 / 0.09) 100%);
-  opacity: var(--velatura, 0);
-}
-
-/* Fase 2 — l'ombra che sale.
-   Un'ellisse enorme appoggiata sotto il bordo inferiore, con tre fermate di
-   colore invece di due: una sola sfumatura produce sempre una fascia
-   riconoscibile a metà strada, tre la spezzano. Non ha contorno da nessuna
-   parte, quindi non può produrre una linea. */
-.passaggio-ombra {
-  height: 150%;
-  top: auto;
-  bottom: 0;
+  height: clamp(19rem, 58svh, 30rem);
+  /* Il contenuto della meta' scura risale dentro la coda della fascia:
+     l'utente non deve vedere un blocco verde e poi il contenuto, ma una
+     composizione sola. */
+  margin-bottom: calc(var(--spazio-sezione) * -0.9);
   background:
-    radial-gradient(135% 78% at 50% 100%,
-      rgb(8 22 15 / 0.92) 0%,
-      rgb(11 26 19 / 0.62) 26%,
-      rgb(14 32 24 / 0.28) 52%,
-      rgb(14 32 24 / 0) 78%);
-  transform: translate3d(0, calc(var(--ombra, 1) * 72%), 0);
+    radial-gradient(125% 64% at 50% 100%,
+      rgb(9 24 17 / 0.5) 0%,
+      rgb(14 32 24 / 0.2) 46%,
+      rgb(14 32 24 / 0) 78%),
+    linear-gradient(to bottom,
+      #f6f1e4 0%,
+      #f1efe1 11%,
+      #e4e7d9 23%,
+      #ccd7c5 35%,
+      #a9bea7 47%,
+      #7d9a85 59%,
+      #507261 71%,
+      #2b4b38 83%,
+      #163020 93%,
+      #0e2018 100%);
 }
 
-/* Fase 3 — il verde che emerge.
-   Più alto dello schermo perché, a fine corsa, il tratto pieno deve arrivare
-   oltre il bordo superiore: solo così consegna il campo alla sezione scura
-   senza che si veda dove uno finisce e l'altra comincia — sono lo stesso
-   colore. Sale più lentamente dell'ombra, ed è questo sfasamento a far
-   convivere i due colori invece di sostituirli. */
-.passaggio-verde {
-  height: 260%;
-  top: auto;
-  bottom: 0;
-  background: linear-gradient(to top,
-    #0e2018 0%,
-    #0e2018 55%,
-    rgb(14 32 24 / 0.55) 78%,
-    rgb(14 32 24 / 0) 100%);
-  transform: translate3d(0, calc(var(--verde, 1) * 100%), 0);
-}
 
 /* Fase 4 — i contenuti della metà scura arrivano in ordine.
    Titolo, poi testo, poi schede: novanta millisecondi l'uno dall'altro. È
@@ -1248,13 +1225,6 @@
 .bufala [data-rivela='visto'] > *:nth-child(4) { transition-delay: 0.27s; }
 
 @media (prefers-reduced-motion: reduce) {
-  .bufala-passaggio { height: auto; }
-  .passaggio-palco {
-    position: static;
-    height: 26vh;
-    background: linear-gradient(to bottom, var(--latte), var(--verde-profondo));
-  }
-  .passaggio-palco > * { display: none; }
   .bufala [data-rivela] > * {
     opacity: 1 !important;
     transform: none !important;
