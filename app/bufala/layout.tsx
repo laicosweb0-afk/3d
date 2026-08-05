@@ -57,10 +57,10 @@ export const metadata: Metadata = {
     // quando ci sara' il dominio definitivo (blocco 6 del protocollo).
     images: [
       {
-        url: 'https://laicosweb0-afk.github.io/3d/assets/bufala/og-banco.jpg',
+        url: 'https://laicosweb0-afk.github.io/3d/assets/bufala/og-latte.jpg',
         width: 1200,
         height: 630,
-        alt: 'Il banco di Quelli della bufala',
+        alt: 'Un latte solo, quello di bufala — Quelli della bufala',
       },
     ],
   },
