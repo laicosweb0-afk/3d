@@ -9,17 +9,18 @@
 // prodotti, dove. Ogni riga è un'ancora vera — niente JavaScript, niente
 // stato — e chi invece vuole il film semplicemente scorre.
 
-import type { ReactNode } from 'react';
 import { asset } from '@/lib/asset';
 import { ingresso } from '@/content/bufala/copy';
 import { OggiPilla } from './Oggi';
 
-/** Le miniature delle porte: file DEDICATI da 240px (10 e 6 kB), non le
- *  fotografie intere — prima l'ingresso scaricava 158 kB per due
- *  francobolli da 68px. La terza non è una fotografia: è lo stesso fondale
- *  a spillo della scheda mappa — una mini-mappa vera qui sarebbe una terza
- *  dipendenza esterna per un francobollo. */
-const FOTO: Record<string, { src: string; alt: string } | null> = {
+/** Le miniature delle porte: file DEDICATI da 240px (3-10 kB l'uno), non
+ *  le fotografie intere — prima l'ingresso scaricava 158 kB per due
+ *  francobolli da 68px. Dal 05/08 (brief dell'utente) tutte e quattro le
+ *  porte hanno un'immagine: il sacchetto D.O.P. vero sull'ordine al posto
+ *  dell'icona-borsa, e una mini-mappa DISEGNATA in stile Maps — strade,
+ *  parco, spillo rosso — su «Vieni a trovarci»: sembra la mappa vera, ma
+ *  è un file nostro da 3 kB, zero chiamate a Google per un francobollo. */
+const FOTO: Record<string, { src: string; alt: string }> = {
   banco: {
     src: '/assets/bufala/porta-banco.webp',
     alt: '',
@@ -28,26 +29,14 @@ const FOTO: Record<string, { src: string; alt: string } | null> = {
     src: '/assets/bufala/porta-prodotti.webp',
     alt: '',
   },
-  mappa: null,
-  ordine: null,
-};
-
-/** Le porte senza fotografia hanno un'icona nella stessa piastrella: il
- *  segnaposto per la mappa, il sacchetto per l'ordine. Tratti da 1.5,
- *  stesso ottone: la piastrella è la stessa, cambia solo il disegno. */
-const ICONE: Record<string, ReactNode> = {
-  mappa: (
-    <>
-      <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11Z" />
-      <circle cx="12" cy="10" r="2.5" />
-    </>
-  ),
-  ordine: (
-    <>
-      <path d="M5.5 8h13l-1 13h-11l-1-13Z" />
-      <path d="M9 10.5V6.5a3 3 0 0 1 6 0v4" />
-    </>
-  ),
+  ordine: {
+    src: '/assets/bufala/porta-ordina.webp',
+    alt: '',
+  },
+  mappa: {
+    src: '/assets/bufala/porta-mappa.webp',
+    alt: '',
+  },
 };
 
 export function Ingresso() {
@@ -75,25 +64,16 @@ export function Ingresso() {
             const foto = FOTO[porta.foto];
             return (
               <a className="porta" href={porta.href} key={porta.href}>
-                {foto ? (
-                  <img
-                    className="porta-foto"
-                    src={asset(foto.src)}
-                    alt=""
-                    aria-hidden="true"
-                    width={120}
-                    height={120}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : (
-                  <span className="porta-foto porta-foto--pin" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
-                      strokeLinecap="round" strokeLinejoin="round">
-                      {ICONE[porta.foto]}
-                    </svg>
-                  </span>
-                )}
+                <img
+                  className="porta-foto"
+                  src={asset(foto.src)}
+                  alt=""
+                  aria-hidden="true"
+                  width={120}
+                  height={120}
+                  loading="lazy"
+                  decoding="async"
+                />
                 <span className="porta-testi">
                   <span className="porta-nome">{porta.nome}</span>
                   <span className="porta-descrizione">{porta.testo}</span>

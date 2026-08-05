@@ -299,19 +299,6 @@
   display: block;
 }
 
-.porta-foto--pin {
-  display: grid;
-  place-items: center;
-  background: var(--verde-alto);
-  border: 1px solid var(--filo-su-scuro);
-  color: var(--ottone);
-}
-
-.porta-foto--pin svg {
-  width: 22px;
-  height: 22px;
-}
-
 .porta-nome {
   display: block;
   font-family: var(--font-display);
