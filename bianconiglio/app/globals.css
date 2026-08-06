@@ -251,18 +251,44 @@ input {
 .coniglio {
   position: relative;
   width: 100%;
-  /* Sbuca dal fondo: nasce sotto la linea dello schermo e sale. */
-  transform: translateY(105%);
+  /* Nasce sotto la linea dello schermo: l'ingresso vero è nei keyframes. */
+  transform: translateY(108%);
   opacity: 0;
-  transition:
-    transform 1400ms cubic-bezier(0.16, 0.9, 0.28, 1),
-    opacity 900ms ease-out;
+  transform-origin: 50% 100%;
   will-change: transform;
 }
 
+/* L'ingresso, coi principi dei cartoni: il balzo con lo stiramento in salita,
+   il piccolo scavallamento oltre il punto d'arrivo, lo schiacciamento
+   dell'atterraggio e due assestamenti a smorzare. La scivolata lineare di
+   prima sembrava un ascensore. */
 .coniglio.arrivato {
-  transform: translateY(0);
-  opacity: 1;
+  animation: sbuca 1650ms cubic-bezier(0.24, 0.86, 0.36, 1) both;
+}
+
+@keyframes sbuca {
+  0% {
+    transform: translateY(108%) scale(1.05, 0.93);
+    opacity: 0;
+  }
+  14% {
+    opacity: 1;
+  }
+  52% {
+    /* in volo: allungato, oltre il punto d'arrivo */
+    transform: translateY(-2.6%) scale(0.965, 1.05);
+  }
+  70% {
+    /* atterraggio: si schiaccia sulle zampe */
+    transform: translateY(1.3%) scale(1.035, 0.955);
+  }
+  85% {
+    transform: translateY(-0.5%) scale(0.99, 1.012);
+  }
+  100% {
+    transform: translateY(0) scale(1, 1);
+    opacity: 1;
+  }
 }
 
 .coniglio img {
@@ -284,20 +310,32 @@ input {
 }
 
 .respiro {
-  animation: respira 3.8s ease-in-out infinite;
+  animation: respira 6.4s ease-in-out infinite;
 }
 
 .vita {
   transition: transform 90ms ease-out;
 }
 
+/* Respiro e peso del corpo insieme: il petto che si gonfia e il busto che
+   ondeggia appena da un piede all'altro, mai in sincrono perfetto — il ciclo
+   lungo e i gradi minuscoli sono quello che fa «essere vivo» senza che
+   nessuno riesca a dire perché. */
 @keyframes respira {
-  0%,
-  100% {
-    transform: scale(1, 1);
+  0% {
+    transform: scale(1, 1) rotate(-0.12deg);
+  }
+  25% {
+    transform: scale(1.003, 1.01) rotate(0.05deg);
   }
   50% {
-    transform: scale(1.004, 1.012);
+    transform: scale(1, 1.002) rotate(0.14deg);
+  }
+  75% {
+    transform: scale(1.004, 1.011) rotate(-0.05deg);
+  }
+  100% {
+    transform: scale(1, 1) rotate(-0.12deg);
   }
 }
 
