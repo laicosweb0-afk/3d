@@ -18,11 +18,23 @@
   /* Il respiro laterale: sul telefono stretto, largo sul desktop. */
   --margine: clamp(1.25rem, 5vw, 3.5rem);
 
-  /* Quanto è grande il coniglio. È l'unica manopola per dosarne la presenza,
-     ed è un compromesso con una direzione sola: più è grande, più la testa
-     riempie la scena — e più corpo resta tagliato sotto il bordo. Uscire dallo
-     schermo è voluto: sbuca dalla tana, non è in posa dentro una cornice. */
-  --coniglio: clamp(17rem, 82vw, 34rem);
+  /* L'inquadratura del coniglio.
+     Lo sprite è a corpo intero e altissimo (1200×2886, orecchie comprese):
+     fissarne la larghezza non funziona, perché su uno schermo basso resterebbero
+     in vista solo le orecchie. Si fissa invece IL VISO: l'inquadratura mostra
+     sempre dalla cima delle orecchie a sotto il mento, e il corpo scende fuori
+     dal bordo — sbuca dalla tana, non è in posa dentro una cornice.
+
+     --viso: a quale frazione dell'altezza dello sprite finisce il mento
+             (misurata sui pixel: bocca a 0.466, mento a ~0.50).
+     --sporgenza: di quanto le orecchie salgono oltre il bordo alto del palco,
+             in frazione dell'altezza del palco. Dà aria al viso senza
+             sacrificare la bocca.
+     --proporzioni-sprite: larghezza/altezza di public/bianconiglio.webp.
+             Se cambia l'immagine, cambia anche questo. */
+  --viso: 0.5;
+  --sporgenza: 0.07;
+  --proporzioni-sprite: calc(1200 / 2886);
 }
 
 * {
@@ -187,35 +199,36 @@ input {
 .palco {
   position: relative;
   flex: 1 1 auto;
-  min-height: clamp(9rem, 34vh, 26rem);
-  /* Il coniglio è più alto del palco ed è giusto così: sbuca dal fondo, quindi
-     va tagliato in basso dal bordo dell'inquadratura. Il taglio avviene qui. */
-  overflow: hidden;
+  min-height: clamp(9rem, 30vh, 26rem);
+  /* Il taglio dell'inquadratura: chiuso in basso e ai lati, APERTO in alto.
+     In basso perché il corpo scende fuori scena; in alto perché le orecchie
+     hanno il permesso di salire oltre il bordo (--sporgenza) — un overflow
+     hidden lì le mozzerebbe con un taglio netto orizzontale. */
+  clip-path: inset(-35% 0 0 0);
   z-index: 10;
 }
 
-/* L'ancora è la finestrella da cui si vede il coniglio.
+/* L'ancora dimensiona il coniglio a partire dal viso.
+ *
+ * L'altezza dello sprite è calcolata perché la fetta «orecchie → mento»
+ * (il --viso superiore, più la --sporgenza sopra il bordo) riempia esattamente
+ * il palco: su ogni schermo si vedono gli occhi E la bocca, che sono le due
+ * cose animate. La larghezza discende dalle proporzioni dello sprite.
  *
  * Sta fuori dal flusso perché, da elemento flex normale, la sua altezza
- * allargherebbe il palco e spingerebbe la barra sotto il bordo dello schermo:
- * su desktop succedeva davvero.
- *
- * `max-height` più `overflow: hidden` fanno il resto, e fanno la cosa giusta in
- * entrambi i casi: se il coniglio è più alto del palco — quasi sempre, con le
- * proporzioni Pixar — la finestra si ferma all'altezza del palco, la testa resta
- * in cima e il corpo viene tagliato in basso dal bordo dell'inquadratura;
- * se invece fosse più basso, la finestra si accorcia e lui appoggia sul fondo.
- * Tagliarlo in alto, come faceva la versione precedente, gli portava via
- * proprio occhi e orecchie.
+ * allargherebbe il palco e spingerebbe la barra sotto il bordo dello schermo.
  */
 .ancora {
   position: absolute;
   left: 50%;
-  bottom: 0;
+  top: calc(-1 * var(--sporgenza) * 100%);
   transform: translateX(-50%);
-  width: var(--coniglio);
-  max-height: 100%;
-  overflow: hidden;
+  height: calc((1 + var(--sporgenza)) * 100% / var(--viso));
+  aspect-ratio: var(--proporzioni-sprite);
+  /* Sugli schermi strettissimi il viso non deve superare le cornici magenta:
+     se questo limite scatta, l'aspect-ratio riduce anche l'altezza e il
+     coniglio rimpicciolisce intero — degrada, non si deforma. */
+  max-width: calc(100vw - var(--margine) * 1.6);
 }
 
 .coniglio {
@@ -299,8 +312,11 @@ input {
 }
 
 .bocca {
-  transform: translate(-50%, -50%);
-  border-radius: 50% 50% 46% 46% / 34% 34% 66% 66%;
+  /* Ancorata in alto, non al centro: la `y` dell'anatomia è la linea del
+     sorriso e l'apertura scende da lì, come una mascella. Il -10% tiene il
+     labbro superiore appena sopra la linea perché il bordo non "galleggi". */
+  transform: translate(-50%, -10%);
+  border-radius: 50% 50% 46% 46% / 30% 30% 70% 70%;
 }
 
 /* I mirini di calibrazione: compaiono solo con `?calibra=1`. */
@@ -314,6 +330,8 @@ input {
 .mirino.rettangolo {
   border-radius: 2px;
   border-color: #7cff00;
+  /* Come la bocca: il bordo alto del mirino è la linea del sorriso. */
+  transform: translate(-50%, -10%);
 }
 .griglia {
   position: absolute;

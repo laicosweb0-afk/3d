@@ -142,9 +142,9 @@ export function Bianconiglio({ arrivato, livello, calibra }: Proprieta) {
         <div className="segnaposto">
           <strong>Manca il Bianconiglio.</strong>
           <span>
-            Metti il PNG 4K scontornato in
+            Metti l&rsquo;immagine scontornata in
             <br />
-            <code>public/bianconiglio.png</code>
+            <code>public/bianconiglio.webp</code>
           </span>
         </div>
       ) : (
@@ -155,6 +155,9 @@ export function Bianconiglio({ arrivato, livello, calibra }: Proprieta) {
             ref={immagineRef}
             src={POSA_BASE}
             alt=""
+            // È l'elemento più grande della pagina e sta per entrare in scena:
+            // il browser deve scaricarlo per primo, non per ultimo.
+            fetchPriority="high"
             onError={() => setImmagineMancante(true)}
             draggable={false}
           />

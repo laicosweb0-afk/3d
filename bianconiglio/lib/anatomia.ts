@@ -1,56 +1,62 @@
-// Dove stanno gli occhi e la bocca sul PNG.
+// Dove stanno gli occhi e la bocca sul personaggio.
 //
-// Questo file è l'unica cosa da ritoccare quando arriva l'immagine definitiva,
-// ed è fatto apposta per essere calibrato a occhio in due minuti: apri la demo
-// con `?calibra=1` in fondo all'indirizzo e comparirà una griglia con i mirini
-// sopra il coniglio. Sposti i numeri qui, ricarichi, finché i mirini non
-// coincidono con le pupille e con la bocca. Poi togli `?calibra=1`.
+// Questi numeri NON sono a occhio: sono misurati sui pixel dello sprite che
+// sta in `public/bianconiglio.webp` (1200×2886), derivato dal character sheet
+// 4K fornito il 6/8/2026 — didascalia rimossa, scontorno locale, nessun tool
+// di generazione. Se l'immagine cambia, si ricalibra qui: apri la demo con
+// `?calibra=1` e sposta i numeri finché i mirini non coincidono.
 //
 // Tutte le misure sono percentuali del riquadro dell'immagine, non pixel: così
-// restano giuste su qualsiasi schermo, dal telefono al monitor del negozio.
+// restano giuste su qualsiasi schermo. Le x e y sul rispettivo lato, i raggi
+// sempre sulla larghezza.
 
 export const ANATOMIA = {
-  /** Centro dell'occhio sinistro **visto da chi guarda**, non del coniglio. */
-  occhioSinistro: { x: 42.0, y: 31.5 },
-  /** Centro dell'occhio destro visto da chi guarda. */
-  occhioDestro: { x: 56.5, y: 31.5 },
+  /** Centro dell'iride sinistra **vista da chi guarda**, non del coniglio. */
+  occhioSinistro: { x: 30.8, y: 37.9 },
+  /** Centro dell'iride destra vista da chi guarda. La testa è un filo inclinata. */
+  occhioDestro: { x: 58.9, y: 36.8 },
 
   /**
-   * Il disco d'iride che copre l'occhio disegnato nel PNG. Deve essere appena
-   * più grande dell'occhio originale, altrimenti si vede un bordo.
+   * Il disco d'iride che copre l'occhio disegnato. L'iride dipinta ha raggio
+   * ~5.3% della larghezza: il disco è appena più largo per coprirne il bordo
+   * senza mangiarsi la sclera bianca intorno, che resta quella del disegno.
    */
-  raggioIride: 2.05,
-  /** La pupilla che si muove dentro l'iride. */
-  raggioPupilla: 1.05,
-  /** Quanto la pupilla può allontanarsi dal centro dell'iride. */
-  corsaPupilla: 0.75,
+  raggioIride: 5.9,
+  /** La pupilla dipinta ha raggio ~3.75%: la nostra è un pelo più piccola. */
+  raggioPupilla: 3.6,
+  /** Corsa massima: entro iride−pupilla (2.2), col margine per non sbordare. */
+  corsaPupilla: 1.6,
 
   /**
-   * La bocca. `altezzaChiusa` è quanto si vede quando tace (una linea sottile),
-   * `altezzaAperta` quanto si apre sul picco della voce.
+   * La bocca. Il personaggio ha già il sorriso chiuso disegnato: a riposo la
+   * nostra ellisse è alta zero (invisibile, resta il disegno), e sulla voce si
+   * apre VERSO IL BASSO partendo dalla linea del sorriso — come una mascella
+   * che cade, non un buco che cresce dal centro. `y` è la linea del sorriso.
    */
   bocca: {
-    x: 49.3,
-    y: 43.0,
-    larghezza: 4.6,
-    altezzaChiusa: 0.35,
-    altezzaAperta: 3.2,
+    x: 46.4,
+    y: 45.4,
+    larghezza: 11.0,
+    altezzaChiusa: 0,
+    altezzaAperta: 5.2,
   },
 } as const;
 
 /**
- * I colori dell'occhio. Ambra grande e tondo è una scelta di design del
- * personaggio (§1.7), non un dettaglio tecnico: se cambia il PNG, cambiano qui.
+ * I colori dell'occhio, campionati dai pixel dell'iride dipinta: ambra
+ * #C68232 in basso dove batte la luce, orlo bruno #602B10 in alto dove
+ * l'ombra della palpebra la scurisce. Il gradiente rifà quella luce.
  */
 export const COLORI_OCCHIO = {
-  iride: 'radial-gradient(circle at 35% 30%, #F0C578 0%, #D79A3E 45%, #A2661F 100%)',
-  pupilla: '#1A1210',
-  /** Il puntino di luce che rende vivo l'occhio. */
+  iride:
+    'radial-gradient(circle at 50% 68%, #C68232 0%, #A0611F 42%, #602B10 76%, #45200C 100%)',
+  pupilla: '#0A0503',
+  /** Il puntino di luce che rende vivo l'occhio, in alto a sinistra come nel disegno. */
   luce: 'rgba(255, 250, 240, 0.92)',
 };
 
 /** Il colore dentro la bocca quando si apre. */
-export const COLORE_BOCCA = '#5B2733';
+export const COLORE_BOCCA = '#4A2028';
 
 /**
  * Percorso della seconda posa, a bocca aperta.
@@ -62,5 +68,8 @@ export const COLORE_BOCCA = '#5B2733';
  */
 export const POSA_BOCCA_APERTA: string | null = null;
 
-/** L'immagine principale, a bocca chiusa. */
-export const POSA_BASE = '/bianconiglio.png';
+/**
+ * L'immagine principale. WebP con trasparenza (308 kB): il PNG equivalente
+ * pesava 2,6 MB e avrebbe affossato il caricamento su mobile.
+ */
+export const POSA_BASE = '/bianconiglio.webp';

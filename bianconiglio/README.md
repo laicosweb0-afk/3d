@@ -12,27 +12,28 @@ significa che qui non si può rompere niente di quello che è già online.
 
 ---
 
-## 1. Le due cose che mancano per essere completa
+## 1. Lo stato delle due cose che contano
 
-### Il PNG del Bianconiglio
+### Il Bianconiglio — c'è ✔
 
-Finché non c'è, al suo posto compare un riquadro tratteggiato che dice cosa
-manca. Scaricalo e mettilo lì:
+`public/bianconiglio.webp` (1200×2886, 308 kB, trasparenza vera) è nel
+repository, derivato dal character sheet 4K fornito il 6/8/2026: didascalia
+rimossa, scontorno fatto in locale, occhi e bocca calibrati sui pixel.
 
-```bash
-cd bianconiglio
-curl -o public/bianconiglio.png "https://d8j0ntlcm91z4.cloudfront.net/user_3EzPcrBGp32RbeIR79HWLyATCBp/hf_20260806_101726_45a01fb1-d3d4-4f5c-9b60-09b0710ab805.png"
-```
+Tre cose da sapere su questo file:
 
-> **Guardane il peso prima di pubblicare.** Un PNG 4K può pesare parecchi MB, e
-> sarebbe l'unica cosa capace di affossare il punteggio Lighthouse di una pagina
-> per il resto leggerissima (107 kB di JavaScript in tutto). Il coniglio non
-> viene mai mostrato più largo di 416 px: se il file supera i 400-500 kB, prima
-> di andare online conviene ridurlo — `cwebp -q 82 -resize 900 0` produce un
-> `.webp` che a occhio è identico e pesa una frazione. In quel caso cambia anche
-> `POSA_BASE` in `lib/anatomia.ts`.
+- **Il character sheet originale NON va mai committato né pubblicato**: in
+  basso porta una didascalia col nome che non deve esistere prima di gennaio.
+  Nel repository sta solo il ritaglio, che ne è pulito.
+- Per sostituirlo: metti il nuovo file in `public/`, aggiorna `POSA_BASE` e
+  `--proporzioni-sprite` (in `app/globals.css`), poi ricalibra con `?calibra=1`
+  (punto 5 qui sotto). Tienilo sotto i ~400 kB: WebP con alpha, non PNG.
+- Nel character sheet l'orecchio piegato è **quello a destra guardando**
+  (il sinistro del coniglio) e sul quadrante dell'orologio ci sono i numeri
+  romani, non la «A». Se una delle due cose va corretta, va corretta
+  nell'immagine: il codice non specchia e non ridisegna niente.
 
-### La voce
+### La voce — manca il Voice ID
 
 Su ElevenLabs → Voice Design, con la descrizione concordata:
 
@@ -134,7 +135,7 @@ conversazione non si ferma mai.**
 | Claude (chiave, rete, quota) | «Tic tac… mi si è impigliata la catena dell'orologio.» |
 | Il microfono è negato | «Il microfono è chiuso. Scrivi pure, ti leggo lo stesso.» |
 | Il browser non ha il riconoscimento vocale | Il tasto microfono non compare — resta la scrittura |
-| Il PNG manca | Un riquadro che dice quale file mettere e dove |
+| L'immagine del coniglio manca o non carica | Un riquadro che dice quale file mettere e dove |
 
 Nessuno di questi casi mostra un errore tecnico: il coniglio inciampa nella
 catena dell'orologio, non in uno stack trace.
