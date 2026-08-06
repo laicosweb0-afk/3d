@@ -299,6 +299,35 @@ input {
   height: auto;
   /* Un'ombra calda sotto: lo appoggia sulla scena invece di lasciarlo incollato. */
   filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.55));
+  transition: opacity 180ms ease;
+}
+
+/* La tela del filmato d'attesa (vedi lib/filmato.ts). La geometria — dove sta
+   il riquadro video rispetto allo sprite — arriva inline da RITAGLIO_FILMATO;
+   qui c'è solo il come: sopra lo sprite, invisibile finché non serve, stessa
+   ombra dell'immagine perché nella dissolvenza non cambi la luce. */
+.tela {
+  position: absolute;
+  opacity: 0;
+  transition: opacity 180ms ease;
+  pointer-events: none;
+  filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.55));
+}
+
+/* Con `dalvivo` comanda il filmato: la tela si accende, lo sprite e i suoi
+   occhi/bocca disegnati si spengono. Le sovraimpressioni vanno in `visibility`
+   perché la loro opacità la scrive il codice inline, frame per frame. */
+.coniglio.dalvivo .tela {
+  opacity: 1;
+}
+.coniglio.dalvivo img {
+  opacity: 0;
+}
+.coniglio.dalvivo .occhio,
+.coniglio.dalvivo .pupilla,
+.coniglio.dalvivo .palpebra,
+.coniglio.dalvivo .bocca {
+  visibility: hidden;
 }
 
 /* I due strati di vita sopra lo sprite fermo (vedi Bianconiglio.tsx):

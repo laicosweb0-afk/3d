@@ -201,7 +201,12 @@ export function Esperienza() {
       <div className="palco">
         <Fumetto testo={fumetto} pensa={pensa} />
         <div className="ancora">
-          <Bianconiglio arrivato={arrivato} livello={livello} calibra={calibra} />
+          <Bianconiglio
+            arrivato={arrivato}
+            livello={livello}
+            parla={staParlando}
+            calibra={calibra}
+          />
         </div>
       </div>
 

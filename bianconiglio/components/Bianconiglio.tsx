@@ -8,6 +8,7 @@ import {
   POSA_BASE,
   POSA_BOCCA_APERTA,
 } from '@/lib/anatomia';
+import { creaPittore, RITAGLIO_FILMATO, type Pittore } from '@/lib/filmato';
 
 // Il coniglio.
 //
@@ -24,6 +25,8 @@ type Proprieta = {
   arrivato: boolean;
   /** Volume della voce, da 0 a 1. Apre la bocca. */
   livello: number;
+  /** Vero mentre il coniglio parla: si torna allo sprite con la bocca viva. */
+  parla: boolean;
   /** Con `?calibra=1` mostra la griglia e i mirini per allineare occhi e bocca. */
   calibra: boolean;
 };
@@ -31,13 +34,71 @@ type Proprieta = {
 /** Quanto lontano deve andare il puntatore perché l'occhio sia a fine corsa. */
 const PORTATA = 420;
 
-export function Bianconiglio({ arrivato, livello, calibra }: Proprieta) {
+/** Quanto dura l'animazione d'ingresso: il filmato parte quando è atterrato. */
+const DURATA_INGRESSO = 1700;
+
+export function Bianconiglio({ arrivato, livello, parla, calibra }: Proprieta) {
   const riquadroRef = useRef<HTMLDivElement>(null);
   const immagineRef = useRef<HTMLImageElement>(null);
   const [misure, setMisure] = useState({ larghezza: 0, altezza: 0 });
   const [sguardo, setSguardo] = useState({ sx: 0, sy: 0, dx: 0, dy: 0 });
   const [immagineMancante, setImmagineMancante] = useState(false);
   const [palpebre, setPalpebre] = useState(false);
+
+  // Il filmato d'attesa (vedi lib/filmato.ts). Quando il coniglio non parla,
+  // al posto dello sprite c'è il girato vero — orecchie, zampe, peso — dipinto
+  // senza fondo da un canvas WebGL. Quando parla si torna allo sprite, che ha
+  // occhi e bocca comandabili, con una dissolvenza breve.
+  const telaRef = useRef<HTMLCanvasElement>(null);
+  const filmatoRef = useRef<HTMLVideoElement>(null);
+  const pittoreRef = useRef<Pittore | null>(null);
+  const [pronto, setPronto] = useState(false);
+  const [dalvivo, setDalvivo] = useState(false);
+
+  useEffect(() => {
+    if (!arrivato) return;
+    const attesa = setTimeout(() => setPronto(true), DURATA_INGRESSO);
+    return () => clearTimeout(attesa);
+  }, [arrivato]);
+
+  useEffect(() => {
+    if (!pronto || parla || immagineMancante) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const video = filmatoRef.current;
+    const tela = telaRef.current;
+    if (!video || !tela) return;
+    pittoreRef.current ??= creaPittore(tela, video);
+    const pittore = pittoreRef.current;
+    if (!pittore) return; // niente WebGL: resta lo sprite, la demo di prima
+
+    let quadro = 0;
+    let acceso = false;
+    void video.play().catch(() => {});
+    const giro = () => {
+      // La tela si mostra solo quando un fotogramma è stato davvero dipinto:
+      // mai una dissolvenza verso un canvas vuoto.
+      if (pittore.dipingi() && !acceso) {
+        acceso = true;
+        setDalvivo(true);
+      }
+      quadro = requestAnimationFrame(giro);
+    };
+    quadro = requestAnimationFrame(giro);
+
+    return () => {
+      cancelAnimationFrame(quadro);
+      setDalvivo(false);
+      video.pause();
+      // Il nastro torna all'inizio: il fotogramma 0 ha la posa dello sprite,
+      // così la prossima dissolvenza riparte da due immagini che coincidono.
+      video.addEventListener('seeked', () => pittore.dipingi(), { once: true });
+      try {
+        video.currentTime = 0;
+      } catch {
+        // un video mai partito può non essere ancora riavvolgibile: pazienza
+      }
+    };
+  }, [pronto, parla, immagineMancante]);
 
   // Il battito di palpebre: ogni 3-6 secondi, per 140 millisecondi, due
   // "palpebre" color pelo coprono gli occhi. È il dettaglio che fa scattare
@@ -158,7 +219,7 @@ export function Bianconiglio({ arrivato, livello, calibra }: Proprieta) {
   return (
     <div
       ref={riquadroRef}
-      className={`coniglio${arrivato ? ' arrivato' : ''}`}
+      className={`coniglio${arrivato ? ' arrivato' : ''}${dalvivo ? ' dalvivo' : ''}`}
       style={{ ['--luce-occhio' as string]: COLORI_OCCHIO.luce }}
     >
       {/* Due strati di vita sopra lo sprite fermo: il respiro (sempre, via
@@ -195,6 +256,35 @@ export function Bianconiglio({ arrivato, livello, calibra }: Proprieta) {
             onError={() => setImmagineMancante(true)}
             draggable={false}
           />
+
+          {/* La tela del filmato d'attesa, sopra lo sprite e ritagliata perché
+              i due conigli coincidano. Il video che la nutre è invisibile. */}
+          <canvas
+            ref={telaRef}
+            className="tela"
+            width={540}
+            height={960}
+            style={RITAGLIO_FILMATO}
+            aria-hidden="true"
+          />
+          <video
+            ref={filmatoRef}
+            muted
+            playsInline
+            loop
+            preload="auto"
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              width: 1,
+              height: 1,
+              opacity: 0,
+              pointerEvents: 'none',
+            }}
+          >
+            <source src="/idle-stack.mp4" type='video/mp4; codecs="avc1.4d401f"' />
+            <source src="/idle-stack.webm" type='video/webm; codecs="vp9"' />
+          </video>
 
           {/* La seconda posa, se un giorno esiste: la dissolvenza sul volume è
               più bella della bocca disegnata, e la sostituisce del tutto. */}

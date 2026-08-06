@@ -5,3 +5,6 @@ out/
 .env.local
 *.tsbuildinfo
 next-env.d.ts
+
+# il prototipo «tutto in un file» generato da scripts/genera-artifact.mjs
+bianconiglio-link.html
