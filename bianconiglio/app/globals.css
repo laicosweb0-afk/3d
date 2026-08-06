@@ -18,22 +18,17 @@
   /* Il respiro laterale: sul telefono stretto, largo sul desktop. */
   --margine: clamp(1.25rem, 5vw, 3.5rem);
 
-  /* L'inquadratura del coniglio.
-     Lo sprite è a corpo intero e altissimo (1200×2886, orecchie comprese):
-     fissarne la larghezza non funziona, perché su uno schermo basso resterebbero
-     in vista solo le orecchie. Si fissa invece IL VISO: l'inquadratura mostra
-     sempre dalla cima delle orecchie a sotto il mento, e il corpo scende fuori
-     dal bordo — sbuca dalla tana, non è in posa dentro una cornice.
+  /* L'inquadratura del coniglio: CORPO INTERO, come nel character sheet.
+     Decisione del 6/8: si vede tutta la figura in piedi — panciotto, orologio,
+     zampe — leggermente piccola ma presente, e i movimenti del corpo si
+     studieranno su questa base.
 
-     --viso: a quale frazione dell'altezza dello sprite finisce il mento
-             (misurata sui pixel: bocca a 0.466, mento a ~0.50).
-     --sporgenza: di quanto le orecchie salgono oltre il bordo alto del palco,
-             in frazione dell'altezza del palco. Dà aria al viso senza
-             sacrificare la bocca.
+     --statura: quanta parte dell'altezza del palco occupa la figura intera.
+             È l'unica manopola della grandezza: alzarla lo ingrandisce,
+             il resto (larghezza, ombra, overlay) segue da solo.
      --proporzioni-sprite: larghezza/altezza di public/bianconiglio.webp.
              Se cambia l'immagine, cambia anche questo. */
-  --viso: 0.5;
-  --sporgenza: 0.07;
+  --statura: 0.94;
   --proporzioni-sprite: calc(1200 / 2886);
 }
 
@@ -63,6 +58,17 @@ button,
 input {
   font: inherit;
   color: inherit;
+}
+
+/* Sugli schermi bassi il titolo cede un po' di respiro al coniglio: con la
+   figura intera in scena, ogni riga di aria sopra è statura tolta a lui. */
+@media (max-height: 740px) {
+  .hero {
+    padding-top: 1.5rem;
+  }
+  .marchio {
+    margin-bottom: 1rem;
+  }
 }
 
 /* Chi ha chiesto meno animazioni al sistema operativo le riceve: il coniglio
@@ -200,35 +206,46 @@ input {
   position: relative;
   flex: 1 1 auto;
   min-height: clamp(9rem, 30vh, 26rem);
-  /* Il taglio dell'inquadratura: chiuso in basso e ai lati, APERTO in alto.
-     In basso perché il corpo scende fuori scena; in alto perché le orecchie
-     hanno il permesso di salire oltre il bordo (--sporgenza) — un overflow
-     hidden lì le mozzerebbe con un taglio netto orizzontale. */
-  clip-path: inset(-35% 0 0 0);
+  /* L'ingresso avviene da sotto: finché sale, il coniglio sta fuori
+     dall'inquadratura e non deve comparire sopra la barra. */
+  overflow: hidden;
   z-index: 10;
 }
 
-/* L'ancora dimensiona il coniglio a partire dal viso.
+/* L'ancora tiene la figura intera in piedi sul fondo del palco.
  *
- * L'altezza dello sprite è calcolata perché la fetta «orecchie → mento»
- * (il --viso superiore, più la --sporgenza sopra il bordo) riempia esattamente
- * il palco: su ogni schermo si vedono gli occhi E la bocca, che sono le due
- * cose animate. La larghezza discende dalle proporzioni dello sprite.
- *
- * Sta fuori dal flusso perché, da elemento flex normale, la sua altezza
- * allargherebbe il palco e spingerebbe la barra sotto il bordo dello schermo.
+ * L'altezza è una frazione del palco (--statura), la larghezza discende dalle
+ * proporzioni dello sprite. Sta fuori dal flusso perché, da elemento flex
+ * normale, la sua altezza allargherebbe il palco e spingerebbe la barra sotto
+ * il bordo dello schermo.
  */
 .ancora {
   position: absolute;
   left: 50%;
-  top: calc(-1 * var(--sporgenza) * 100%);
+  bottom: 1.2%;
   transform: translateX(-50%);
-  height: calc((1 + var(--sporgenza)) * 100% / var(--viso));
+  height: calc(var(--statura) * 100%);
   aspect-ratio: var(--proporzioni-sprite);
-  /* Sugli schermi strettissimi il viso non deve superare le cornici magenta:
+  /* Sugli schermi strettissimi la figura non deve superare le cornici magenta:
      se questo limite scatta, l'aspect-ratio riduce anche l'altezza e il
      coniglio rimpicciolisce intero — degrada, non si deforma. */
   max-width: calc(100vw - var(--margine) * 1.6);
+}
+
+/* L'ombra a terra: un'ellisse morbida sotto le zampe che lo appoggia al
+   pavimento della scena. Vive sul coniglio, non sull'ancora, così sale
+   insieme a lui durante l'ingresso invece di aspettarlo già pronta. */
+.coniglio::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -0.8%;
+  transform: translateX(-50%);
+  width: 96%;
+  height: 3.2%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.5) 0%, transparent 68%);
+  z-index: -1;
 }
 
 .coniglio {

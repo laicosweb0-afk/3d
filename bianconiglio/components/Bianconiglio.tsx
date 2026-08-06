@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   ANATOMIA,
   COLORI_OCCHIO,
-  COLORE_BOCCA,
+  GRADIENTE_BOCCA,
   POSA_BASE,
   POSA_BOCCA_APERTA,
 } from '@/lib/anatomia';
@@ -219,7 +219,10 @@ export function Bianconiglio({ arrivato, livello, calibra }: Proprieta) {
                 top: `${bocca.y}%`,
                 width: inPixel(bocca.larghezza),
                 height: inPixel(aperturaBocca),
-                background: COLORE_BOCCA,
+                background: GRADIENTE_BOCCA,
+                // Un filo di sfocatura sul contorno: il bordo netto di un div
+                // stonava sul pelo morbido del render.
+                filter: 'blur(0.6px)',
               }}
             />
           )}

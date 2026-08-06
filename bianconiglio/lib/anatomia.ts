@@ -34,7 +34,10 @@ export const ANATOMIA = {
    * che cade, non un buco che cresce dal centro. `y` è la linea del sorriso.
    */
   bocca: {
-    x: 46.4,
+    // La x sta sull'asse del muso (il filtro sotto il naso, misurato dal
+    // verificatore a ~43.1%), non a metà degli occhi: il sorriso del disegno
+    // è un filo asimmetrico e la bocca aperta deve cadere dov'è il disegno.
+    x: 44.0,
     y: 45.4,
     larghezza: 11.0,
     altezzaChiusa: 0,
@@ -55,8 +58,13 @@ export const COLORI_OCCHIO = {
   luce: 'rgba(255, 250, 240, 0.92)',
 };
 
-/** Il colore dentro la bocca quando si apre. */
-export const COLORE_BOCCA = '#4A2028';
+/**
+ * L'interno della bocca quando si apre: scuro in alto dove c'è la cavità,
+ * più caldo in basso dove s'intuisce la lingua. Un colore piatto sembrava un
+ * adesivo incollato sul render.
+ */
+export const GRADIENTE_BOCCA =
+  'radial-gradient(ellipse at 50% 26%, #23090E 0%, #401A22 52%, #6B3440 100%)';
 
 /**
  * Percorso della seconda posa, a bocca aperta.

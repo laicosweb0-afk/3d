@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { NextResponse } from 'next/server';
-import { SISTEMA, MODELLO, TETTO_TOKEN, SCUSA } from '@/lib/personaggio';
+import { SISTEMA, MODELLO, TETTO_TOKEN } from '@/lib/personaggio.server';
+import { SCUSA } from '@/lib/personaggio';
 
 // Il cervello del coniglio.
 //
