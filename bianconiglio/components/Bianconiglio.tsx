@@ -1,21 +1,17 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import {
-  ANATOMIA,
-  COLORI_OCCHIO,
-  GRADIENTE_BOCCA,
-  POSA_BASE,
-  POSA_BOCCA_APERTA,
-} from '@/lib/anatomia';
+import { ANATOMIA, GRADIENTE_BOCCA, POSA_BASE, POSA_BOCCA_APERTA } from '@/lib/anatomia';
 import { creaPittore, RITAGLIO_FILMATO, type Pittore } from '@/lib/filmato';
 
 // Il coniglio.
 //
-// L'immagine è un PNG fermo: quello che lo rende vivo sta tutto qui sopra —
-// due pupille che seguono il dito o il mouse, e una bocca che si apre sul
-// volume della voce. Sono elementi posizionati in percentuale sul riquadro
-// dell'immagine, quindi restano al loro posto a qualsiasi dimensione.
+// Quando non parla è il girato vero, dipinto senza fondo dal canvas WebGL
+// (vedi lib/filmato.ts). Quando parla si torna allo sprite fermo, su cui
+// vivono solo due sovraimpressioni: le palpebre del battito e la bocca che
+// si apre sul volume della voce. Gli occhi sono quelli DISEGNATI — niente
+// iridi rifatte, niente sguardo che insegue il dito: su richiesta del
+// titolare del progetto, il viso resta quello del character sheet.
 //
 // Tutte le coordinate vengono da `lib/anatomia.ts`: qui non c'è un numero da
 // ritoccare quando arriva l'immagine definitiva.
@@ -31,9 +27,6 @@ type Proprieta = {
   calibra: boolean;
 };
 
-/** Quanto lontano deve andare il puntatore perché l'occhio sia a fine corsa. */
-const PORTATA = 420;
-
 /** Quanto dura l'animazione d'ingresso: il filmato parte quando è atterrato. */
 const DURATA_INGRESSO = 1700;
 
@@ -41,7 +34,6 @@ export function Bianconiglio({ arrivato, livello, parla, calibra }: Proprieta) {
   const riquadroRef = useRef<HTMLDivElement>(null);
   const immagineRef = useRef<HTMLImageElement>(null);
   const [misure, setMisure] = useState({ larghezza: 0, altezza: 0 });
-  const [sguardo, setSguardo] = useState({ sx: 0, sy: 0, dx: 0, dy: 0 });
   const [immagineMancante, setImmagineMancante] = useState(false);
   const [palpebre, setPalpebre] = useState(false);
 
@@ -71,9 +63,24 @@ export function Bianconiglio({ arrivato, livello, parla, calibra }: Proprieta) {
     const pittore = pittoreRef.current;
     if (!pittore) return; // niente WebGL: resta lo sprite, la demo di prima
 
+    // La tela alla risoluzione vera del video scelto dal browser: mai
+    // dipingere 720 pixel su una tela più piccola.
+    const misuraTela = () => {
+      if (video.videoWidth) {
+        tela.width = video.videoWidth;
+        tela.height = video.videoHeight / 2;
+      }
+    };
+    misuraTela();
+    video.addEventListener('loadedmetadata', misuraTela);
+
     let quadro = 0;
     let acceso = false;
-    void video.play().catch(() => {});
+    // Se un browser puntiglioso rifiuta il play automatico (risparmio
+    // energetico, webview severe), si riprova al primo tocco: quello è un
+    // gesto, e un video muto non si può rifiutare.
+    const riprova = () => void video.play().catch(() => {});
+    void video.play().catch(() => window.addEventListener('pointerdown', riprova, { once: true }));
     const giro = () => {
       // La tela si mostra solo quando un fotogramma è stato davvero dipinto:
       // mai una dissolvenza verso un canvas vuoto.
@@ -87,6 +94,8 @@ export function Bianconiglio({ arrivato, livello, parla, calibra }: Proprieta) {
 
     return () => {
       cancelAnimationFrame(quadro);
+      video.removeEventListener('loadedmetadata', misuraTela);
+      window.removeEventListener('pointerdown', riprova);
       setDalvivo(false);
       video.pause();
       // Il nastro torna all'inizio: il fotogramma 0 ha la posa dello sprite,
@@ -156,53 +165,10 @@ export function Bianconiglio({ arrivato, livello, parla, calibra }: Proprieta) {
     return () => osservatore.disconnect();
   }, []);
 
-  // Lo sguardo. `pointermove` copre sia il mouse sul desktop sia il dito che
-  // striscia sul telefono; `pointerdown` fa scattare gli occhi anche su un
-  // tocco secco, che altrimenti non genererebbe movimento.
-  useEffect(() => {
-    if (!arrivato) return;
-
-    function segui(evento: PointerEvent) {
-      const nodo = riquadroRef.current;
-      if (!nodo) return;
-      const riquadro = nodo.getBoundingClientRect();
-      if (!riquadro.width) return;
-
-      const corsa = (riquadro.width * ANATOMIA.corsaPupilla) / 100;
-
-      const versoOcchio = (percentualeX: number, percentualeY: number) => {
-        const centroX = riquadro.left + (riquadro.width * percentualeX) / 100;
-        const centroY = riquadro.top + (riquadro.height * percentualeY) / 100;
-        const scartoX = evento.clientX - centroX;
-        const scartoY = evento.clientY - centroY;
-        const distanza = Math.hypot(scartoX, scartoY) || 1;
-        // Oltre la portata l'occhio è già a fine corsa: continuare a muoverlo
-        // lo farebbe uscire dall'iride.
-        const quanto = Math.min(1, distanza / PORTATA);
-        return {
-          x: (scartoX / distanza) * quanto * corsa,
-          y: (scartoY / distanza) * quanto * corsa,
-        };
-      };
-
-      const sinistro = versoOcchio(ANATOMIA.occhioSinistro.x, ANATOMIA.occhioSinistro.y);
-      const destro = versoOcchio(ANATOMIA.occhioDestro.x, ANATOMIA.occhioDestro.y);
-      setSguardo({ sx: sinistro.x, sy: sinistro.y, dx: destro.x, dy: destro.y });
-    }
-
-    window.addEventListener('pointermove', segui, { passive: true });
-    window.addEventListener('pointerdown', segui, { passive: true });
-    return () => {
-      window.removeEventListener('pointermove', segui);
-      window.removeEventListener('pointerdown', segui);
-    };
-  }, [arrivato]);
-
   const larghezza = misure.larghezza;
   const inPixel = (percentuale: number) => (larghezza * percentuale) / 100;
 
   const diametroIride = inPixel(ANATOMIA.raggioIride * 2);
-  const diametroPupilla = inPixel(ANATOMIA.raggioPupilla * 2);
 
   const bocca = ANATOMIA.bocca;
   // La radice del livello: le aperture medie contano più dei picchi, e la
@@ -212,15 +178,14 @@ export function Bianconiglio({ arrivato, livello, parla, calibra }: Proprieta) {
     (bocca.altezzaAperta - bocca.altezzaChiusa) * Math.pow(Math.min(1, Math.max(0, livello)), 0.7);
 
   const occhi = [
-    { chiave: 'sinistro', punto: ANATOMIA.occhioSinistro, x: sguardo.sx, y: sguardo.sy },
-    { chiave: 'destro', punto: ANATOMIA.occhioDestro, x: sguardo.dx, y: sguardo.dy },
+    { chiave: 'sinistro', punto: ANATOMIA.occhioSinistro },
+    { chiave: 'destro', punto: ANATOMIA.occhioDestro },
   ];
 
   return (
     <div
       ref={riquadroRef}
       className={`coniglio${arrivato ? ' arrivato' : ''}${dalvivo ? ' dalvivo' : ''}`}
-      style={{ ['--luce-occhio' as string]: COLORI_OCCHIO.luce }}
     >
       {/* Due strati di vita sopra lo sprite fermo: il respiro (sempre, via
           CSS) e il molleggio da cartone che accompagna la voce (qui, dal
@@ -309,41 +274,21 @@ export function Bianconiglio({ arrivato, livello, parla, calibra }: Proprieta) {
           galleggerebbero nel vuoto. */}
       {!immagineMancante && larghezza > 0 && (
         <>
+          {/* Solo le palpebre del battito: gli occhi sotto sono quelli del
+              disegno, e non si toccano. */}
           {occhi.map((occhio) => (
-            <div key={occhio.chiave}>
-              <div
-                className="occhio"
-                style={{
-                  left: `${occhio.punto.x}%`,
-                  top: `${occhio.punto.y}%`,
-                  width: diametroIride,
-                  height: diametroIride,
-                  background: COLORI_OCCHIO.iride,
-                }}
-              />
-              <div
-                className="pupilla"
-                style={{
-                  left: `${occhio.punto.x}%`,
-                  top: `${occhio.punto.y}%`,
-                  width: diametroPupilla,
-                  height: diametroPupilla,
-                  background: COLORI_OCCHIO.pupilla,
-                  transform: `translate(calc(-50% + ${occhio.x}px), calc(-50% + ${occhio.y}px))`,
-                }}
-              />
-              <div
-                className="palpebra"
-                style={{
-                  left: `${occhio.punto.x}%`,
-                  top: `${occhio.punto.y}%`,
-                  width: diametroIride * 1.18,
-                  height: diametroIride * 1.18,
-                  transform: `translate(-50%, -50%) scaleY(${palpebre ? 1 : 0.02})`,
-                  opacity: palpebre ? 1 : 0,
-                }}
-              />
-            </div>
+            <div
+              key={occhio.chiave}
+              className="palpebra"
+              style={{
+                left: `${occhio.punto.x}%`,
+                top: `${occhio.punto.y}%`,
+                width: diametroIride * 1.18,
+                height: diametroIride * 1.18,
+                transform: `translate(-50%, -50%) scaleY(${palpebre ? 1 : 0.02})`,
+                opacity: palpebre ? 1 : 0,
+              }}
+            />
           ))}
 
           {!POSA_BOCCA_APERTA && (
