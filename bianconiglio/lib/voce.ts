@@ -5,21 +5,24 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 /**
  * La voce del coniglio, e il livello che muove la bocca.
  *
- * Due strade, nello stesso ordine sempre:
+ * Tre strade, provate sempre nello stesso ordine:
  *
- *  1. ElevenLabs. Il testo va alla nostra route `/api/tts`, torna un mp3, lo
- *     suoniamo passando per un AnalyserNode. Da lì leggiamo il volume istante
- *     per istante, ed è quello che apre e chiude la bocca: il labiale non è
- *     inventato, è la voce vera.
+ *  1. L'audio recitato, se la battuta ce l'ha (`/voce/<id>.mp3`): è la strada
+ *     del prototipo — voce da cartone registrata una volta, zero servizi a
+ *     pagamento al momento della visita.
  *
- *  2. La voce del browser, con il tono alzato. Serve finché il Voice ID non è
- *     stato scelto, e come rete se ElevenLabs non risponde. Qui il volume non
- *     si può leggere — `speechSynthesis` non passa dal grafo audio — quindi la
- *     bocca si muove su un'onda finta. Da lontano non si distingue; da vicino
- *     sì, ed è il motivo per cui è la seconda strada e non la prima.
+ *  2. ElevenLabs, se il progetto gira col server e le chiavi (`/api/tts`).
  *
- * In nessuno dei due casi un guasto ferma la conversazione: il testo nel
- * fumetto è già a schermo prima che la voce parta.
+ *  In entrambi i casi l'audio passa da un AnalyserNode: il volume letto
+ *  istante per istante è quello che apre e chiude la bocca — il labiale non è
+ *  inventato, è la voce vera.
+ *
+ *  3. La voce del browser, con il tono alzato: la rete di sicurezza. Qui il
+ *     volume non si può leggere — `speechSynthesis` non passa dal grafo
+ *     audio — quindi la bocca si muove su un'onda finta.
+ *
+ * In nessun caso un guasto ferma la conversazione: il testo nel fumetto è già
+ * a schermo prima che la voce parta.
  */
 
 type FinestraConAudio = Window & { webkitAudioContext?: typeof AudioContext };
@@ -126,13 +129,20 @@ export function useVoce() {
   }, [fermaMisura]);
 
   const vocePropria = useCallback(
-    async (testo: string): Promise<boolean> => {
-      const risposta = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ testo }),
-      });
+    async (testo: string, urlAudio?: string): Promise<boolean> => {
+      // Prima l'audio recitato della battuta, se esiste; poi il TTS del
+      // server. Un file mancante risponde 404 (o una pagina HTML): entrambi i
+      // casi cadono nel `return false` e si passa alla strada successiva.
+      const risposta = urlAudio
+        ? await fetch(urlAudio)
+        : await fetch('/api/tts', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ testo }),
+          });
       if (!risposta.ok) return false;
+      const tipo = risposta.headers.get('content-type') ?? '';
+      if (urlAudio && !tipo.startsWith('audio/')) return false;
 
       const suono = await risposta.blob();
       if (!suono.size) return false;
@@ -174,7 +184,7 @@ export function useVoce() {
       const battuta = new SpeechSynthesisUtterance(testo);
       battuta.lang = 'it-IT';
       // Tono alto e passo svelto: è il segnaposto della voce cartoonesca, non
-      // la voce definitiva. Quella arriva da ElevenLabs.
+      // la voce definitiva. Quella arriva dalle battute recitate.
       battuta.pitch = 1.75;
       battuta.rate = 1.06;
 
@@ -183,21 +193,39 @@ export function useVoce() {
 
       misuraAFinta();
       await new Promise<void>((risolvi) => {
-        battuta.onend = () => risolvi();
-        battuta.onerror = () => risolvi();
+        // Alcuni browser (o un sistema senza voci installate) non chiamano mai
+        // `onend`: senza paracadute la demo resterebbe «occupata» per sempre.
+        // Il tempo massimo è proporzionale alla lunghezza della battuta.
+        const paracadute = setTimeout(risolvi, Math.max(4000, testo.length * 110));
+        const chiudi = () => {
+          clearTimeout(paracadute);
+          risolvi();
+        };
+        battuta.onend = chiudi;
+        battuta.onerror = chiudi;
         speechSynthesis.speak(battuta);
       });
     },
     [misuraAFinta],
   );
 
-  /** Fa parlare il coniglio. Ritorna quando ha finito, comunque sia andata. */
+  /**
+   * Fa parlare il coniglio. Ritorna quando ha finito, comunque sia andata.
+   * `urlAudio` è la battuta recitata, se esiste; `conTts` dice se ha senso
+   * tentare anche il server (nel prototipo statico non c'è: si salta).
+   */
   const di = useCallback(
-    async (testo: string) => {
+    async (testo: string, opzioni?: { urlAudio?: string; conTts?: boolean }) => {
       taci();
       setStaParlando(true);
       try {
-        const riuscito = await vocePropria(testo).catch(() => false);
+        let riuscito = false;
+        if (opzioni?.urlAudio) {
+          riuscito = await vocePropria(testo, opzioni.urlAudio).catch(() => false);
+        }
+        if (!riuscito && (opzioni?.conTts ?? true)) {
+          riuscito = await vocePropria(testo).catch(() => false);
+        }
         if (!riuscito) await voceDelBrowser(testo);
       } finally {
         fermaMisura();

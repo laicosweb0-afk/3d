@@ -5,7 +5,18 @@ import { Bianconiglio } from './Bianconiglio';
 import { Fumetto } from './Fumetto';
 import { Barra } from './Barra';
 import { BENVENUTO, CLAIM, SCUSA } from '@/lib/personaggio';
+import { rispondi } from '@/lib/repertorio';
+import { sigilla, combacia } from '@/lib/sigillo';
 import { useVoce } from '@/lib/voce';
+
+/**
+ * Modalità prototipo: nessun server, nessuna chiave, nessun costo a visita.
+ * Il cervello è il repertorio recitato, la voce sono gli mp3 in /voce, la
+ * porta d'ingresso è verificata nel browser. Si accende alla costruzione con
+ * NEXT_PUBLIC_PROTOTIPO=1 (lo fa lo script `npm run prototipo`).
+ */
+const PROTOTIPO = process.env.NEXT_PUBLIC_PROTOTIPO === '1';
+const SIGILLO_PROTOTIPO = process.env.NEXT_PUBLIC_SIGILLO ?? '';
 
 // La regia della demo.
 //
@@ -78,16 +89,27 @@ export function Esperienza() {
       setPensa(true);
 
       let risposta = SCUSA;
-      try {
-        const esito = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ battute: conLaDomanda }),
-        });
-        const dati = await esito.json().catch(() => ({}));
-        if (typeof dati?.testo === 'string' && dati.testo.trim()) risposta = dati.testo.trim();
-      } catch {
-        // `risposta` resta la scusa in personaggio.
+      let audio: string | undefined;
+
+      if (PROTOTIPO) {
+        // Il pensiero è finto ma il «tic tac» deve respirare: mezzo secondo
+        // abbondante di orologio che oscilla prima della risposta.
+        await new Promise((r) => setTimeout(r, 650 + Math.random() * 550));
+        const battuta = rispondi(domanda);
+        risposta = battuta.testo;
+        audio = `/voce/${battuta.id}.mp3`;
+      } else {
+        try {
+          const esito = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ battute: conLaDomanda }),
+          });
+          const dati = await esito.json().catch(() => ({}));
+          if (typeof dati?.testo === 'string' && dati.testo.trim()) risposta = dati.testo.trim();
+        } catch {
+          // `risposta` resta la scusa in personaggio.
+        }
       }
 
       setPensa(false);
@@ -95,12 +117,65 @@ export function Esperienza() {
       setBattute([...conLaDomanda, { ruolo: 'coniglio', testo: risposta }]);
 
       // La voce arriva dopo il testo, e se fallisce non lo sa nessuno.
-      await di(risposta);
+      await di(risposta, { urlAudio: audio, conTts: !PROTOTIPO });
     },
     [battute, di],
   );
 
   const occupato = pensa || staParlando;
+
+  // La porta del prototipo: senza server la parola si verifica qui, nel
+  // browser, confrontando l'impronta e mai la parola. È una serratura da
+  // prototipo — tiene fuori i curiosi, non un attacco determinato — e la
+  // versione col server, che resta nel progetto, ha quella vera.
+  const [aperto, setAperto] = useState(!PROTOTIPO);
+  const [parola, setParola] = useState('');
+  const [erroreParola, setErroreParola] = useState('');
+  useEffect(() => {
+    if (PROTOTIPO && sessionStorage.getItem('bianconiglio_aperto') === '1') setAperto(true);
+  }, []);
+
+  if (!aperto) {
+    const prova = async (evento: React.FormEvent) => {
+      evento.preventDefault();
+      if (combacia(await sigilla(parola), SIGILLO_PROTOTIPO)) {
+        sessionStorage.setItem('bianconiglio_aperto', '1');
+        setAperto(true);
+      } else {
+        setErroreParola('Non è questa la parola.');
+      }
+    };
+    return (
+      <main className="porta">
+        <div className="rombo">
+          <span />
+        </div>
+        <h1>Serve una parola.</h1>
+        <form onSubmit={prova}>
+          <label className="visivamente-nascosto" htmlFor="parola-prototipo">
+            Parola d&rsquo;accesso
+          </label>
+          <div className="riga-ingresso" style={{ width: '100%' }}>
+            <input
+              id="parola-prototipo"
+              type="password"
+              autoFocus
+              value={parola}
+              onChange={(e) => setParola(e.target.value)}
+              placeholder="…"
+            />
+            <button className="tasto" type="submit" disabled={!parola}>
+              <span aria-hidden="true">→</span>
+              <span className="visivamente-nascosto">Entra</span>
+            </button>
+          </div>
+        </form>
+        <p className="errore" role="status">
+          {erroreParola}
+        </p>
+      </main>
+    );
+  }
 
   return (
     <main className="scena">

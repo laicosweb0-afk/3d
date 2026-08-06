@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "prototipo": "node scripts/prototipo.mjs",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },
