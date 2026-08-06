@@ -67,19 +67,21 @@ export function Esperienza() {
     return () => clearTimeout(attesa);
   }, []);
 
-  // Il benvenuto, poco dopo che è sbucato: prima si vede arrivare, poi parla.
+  // Il benvenuto, poco dopo che è sbucato — E PARLATO, non solo scritto.
+  // Il gesto che i browser esigono prima dell'audio c'è già stato: la
+  // password. Chi entra ha appena toccato lo schermo, quindi il coniglio può
+  // accogliere a voce prima che l'ospite faccia qualsiasi cosa. Se un browser
+  // dovesse comunque bloccare l'audio, resta il testo: nessun guasto visibile.
   useEffect(() => {
     if (!arrivato || benvenutoDetto.current) return;
     benvenutoDetto.current = true;
     const attesa = setTimeout(() => {
       setFumetto(BENVENUTO);
       setBattute([{ ruolo: 'coniglio', testo: BENVENUTO }]);
-      // Niente voce qui: senza un gesto dell'utente il browser la bloccherebbe,
-      // e un blocco silenzioso al primo secondo sembra un guasto. Il coniglio
-      // apre la bocca dalla prima risposta in poi.
+      void di(BENVENUTO, { urlAudio: '/voce/benvenuto.mp3', conTts: false }).catch(() => {});
     }, 900);
     return () => clearTimeout(attesa);
-  }, [arrivato]);
+  }, [arrivato, di]);
 
   const chiedi = useCallback(
     async (domanda: string) => {

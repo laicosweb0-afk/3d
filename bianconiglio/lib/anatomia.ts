@@ -39,9 +39,12 @@ export const ANATOMIA = {
     // è un filo asimmetrico e la bocca aperta deve cadere dov'è il disegno.
     x: 44.0,
     y: 45.4,
-    larghezza: 11.0,
+    larghezza: 10.0,
     altezzaChiusa: 0,
-    altezzaAperta: 5.2,
+    // Ridotta (era 5.2): spalancata sembrava «un buco», parola del titolare
+    // del progetto. Un'apertura più contenuta con i bordi più morbidi legge
+    // come bocca che articola, non come voragine.
+    altezzaAperta: 3.8,
   },
 } as const;
 
@@ -64,7 +67,7 @@ export const COLORI_OCCHIO = {
  * adesivo incollato sul render.
  */
 export const GRADIENTE_BOCCA =
-  'radial-gradient(ellipse at 50% 26%, #23090E 0%, #401A22 52%, #6B3440 100%)';
+  'radial-gradient(ellipse at 50% 30%, #2A1216 0%, #47232B 55%, #6B3440 100%)';
 
 /**
  * Percorso della seconda posa, a bocca aperta.

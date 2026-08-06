@@ -144,8 +144,11 @@ export function Bianconiglio({ arrivato, livello, calibra }: Proprieta) {
   const diametroPupilla = inPixel(ANATOMIA.raggioPupilla * 2);
 
   const bocca = ANATOMIA.bocca;
+  // La radice del livello: le aperture medie contano più dei picchi, e la
+  // bocca articola sulle sillabe invece di alternare chiuso/spalancato.
   const aperturaBocca =
-    bocca.altezzaChiusa + (bocca.altezzaAperta - bocca.altezzaChiusa) * Math.min(1, Math.max(0, livello));
+    bocca.altezzaChiusa +
+    (bocca.altezzaAperta - bocca.altezzaChiusa) * Math.pow(Math.min(1, Math.max(0, livello)), 0.7);
 
   const occhi = [
     { chiave: 'sinistro', punto: ANATOMIA.occhioSinistro, x: sguardo.sx, y: sguardo.sy },
@@ -262,9 +265,10 @@ export function Bianconiglio({ arrivato, livello, calibra }: Proprieta) {
                 width: inPixel(bocca.larghezza),
                 height: inPixel(aperturaBocca),
                 background: GRADIENTE_BOCCA,
-                // Un filo di sfocatura sul contorno: il bordo netto di un div
-                // stonava sul pelo morbido del render.
-                filter: 'blur(0.6px)',
+                // Sfocatura e trasparenza sul contorno: il bordo netto di un
+                // div leggeva come «un buco», non come una bocca.
+                filter: 'blur(1.1px)',
+                opacity: 0.92,
               }}
             />
           )}

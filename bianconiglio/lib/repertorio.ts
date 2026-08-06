@@ -82,6 +82,25 @@ const REGOLE: Regola[] = [
       'Un segreto c’è, eccome! Ma un coniglio che spiffera i segreti è un pessimo coniglio. Torna a trovarmi, e a ogni visita… un indizio in più.',
   },
   {
+    id: 'comestai',
+    parole: ['come stai', 'come va', 'tutto bene', 'come ti senti'],
+    testo:
+      'Ih ih, benissimo — le giornate qui profumano! E adesso che ci sei tu, anche meglio. Dimmi tutto.',
+  },
+  {
+    // Dati veri dal retro del biglietto (§1.4): niente di inventato.
+    id: 'indirizzo',
+    parole: ['dove siete', 'dove vi trovo', 'indirizzo', 'dove sta il negozio', 'dove e il negozio', 'sant agata', 'santerno', 'lugo', 'ravenna'],
+    testo:
+      'Ci trovi in Via San Martino 1, a Sant’Agata sul Santerno, in Romagna — a due passi da Lugo. È da lì che profumiamo il mondo dal 1989: vieni, ti aspetto sulla porta.',
+  },
+  {
+    id: 'sito',
+    parole: ['sito', 'catalogo', 'online', 'comprare', 'acquist', 'ordina', 'spedizion'],
+    testo:
+      'Tutto il mondo di Woman è su womanparfume punto com — oppure tocca «Continua» qui sotto: la porta è quella. Io resto qui a farti strada.',
+  },
+  {
     id: 'seguire',
     parole: ['seguir', 'ti seguo', 'dove andiamo', 'portami', 'guidami', 'strada'],
     testo:
