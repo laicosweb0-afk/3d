@@ -1,5 +1,9 @@
 # Bianconiglio — demo privata (FASE 1)
 
+> **Per mettere la demo online senza sapere niente di tecnico:**
+> segui [MESSA-ONLINE.md](./MESSA-ONLINE.md) — è la ricetta completa,
+> bottone per bottone, ~25 minuti.
+
 Il link privato da mostrare al titolare: la hero col claim del biglietto, il
 Bianconiglio che sbuca, gli occhi che seguono il dito, e una conversazione a
 voce con un sommelier olfattivo che consiglia fragranze vere del catalogo.
