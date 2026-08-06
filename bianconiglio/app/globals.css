@@ -17,6 +17,12 @@
 
   /* Il respiro laterale: sul telefono stretto, largo sul desktop. */
   --margine: clamp(1.25rem, 5vw, 3.5rem);
+
+  /* Quanto è grande il coniglio. È l'unica manopola per dosarne la presenza,
+     ed è un compromesso con una direzione sola: più è grande, più la testa
+     riempie la scena — e più corpo resta tagliato sotto il bordo. Uscire dallo
+     schermo è voluto: sbuca dalla tana, non è in posa dentro una cornice. */
+  --coniglio: clamp(17rem, 82vw, 34rem);
 }
 
 * {
@@ -207,7 +213,7 @@ input {
   left: 50%;
   bottom: 0;
   transform: translateX(-50%);
-  width: clamp(15rem, 62vw, 26rem);
+  width: var(--coniglio);
   max-height: 100%;
   overflow: hidden;
 }
