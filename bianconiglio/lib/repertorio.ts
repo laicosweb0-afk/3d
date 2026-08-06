@@ -1,21 +1,16 @@
 // Il cervello del prototipo: un repertorio recitato, non un'intelligenza.
 //
-// Decisione del 6/8: il prototipo non chiama nessun servizio a pagamento.
-// Il coniglio risponde con battute scritte qui, scelte per parole chiave.
-// È dichiaratamente semplice — «anche domande non tanto intelligenti» — e va
-// bene così: quello che deve funzionare è il personaggio e la voce. Il
-// cervello vero (Claude, in `app/api/chat`) resta pronto nel progetto e si
-// riaccende quando ci saranno le chiavi.
+// Decisione del 6/8 (seconda stesura): la demo racconta IL PERSONAGGIO e il
+// mistero del biglietto — il primo passo, l'orologio, il segreto — non il
+// catalogo. Niente consigli-profumo: chi chiede dei profumi riceve uno
+// svicolo di carattere che riporta al gioco. Tono da cartone: frasi corte,
+// «ih ih», tic tac. Il cervello vero (Claude) resta in `app/api/chat`,
+// pronto per quando si vorrà l'intelligenza.
 //
-// Ogni battuta rispetta le regole del personaggio (§2.3): 2-4 frasi, mai
-// elenchi, italiano, riferimenti sottili al tempo e al «seguirmi», mai le
-// parole vietate. I profumi citati sono fragranze celebri dei marchi che la
-// profumeria tratta davvero — nessun prodotto inventato.
-//
-// Ogni battuta ha un `id`: se in `public/voce/<id>.mp3` esiste l'audio
-// recitato, il coniglio parla con quello; altrimenti ripiega sulla voce del
-// browser. Per aggiungere una battuta: entry qui + (facoltativo) mp3 con lo
-// stesso nome.
+// REGOLA D'ORO: ogni testo qui sotto deve combaciare ALLA LETTERA con
+// l'audio recitato in `public/voce/<id>.mp3` — il fumetto scrive questo
+// testo mentre l'audio lo dice. Se cambi una battuta, va rigenerato il suo
+// audio.
 
 export type Battuta = { id: string; testo: string };
 
@@ -26,7 +21,7 @@ type Regola = {
   testo: string;
 };
 
-/** Minuscole e senza accenti: «caffè» e «Caffe» devono essere la stessa parola. */
+/** Minuscole e senza accenti: «perché» e «perche» devono essere la stessa parola. */
 function normalizza(testo: string): string {
   return testo
     .toLowerCase()
@@ -34,87 +29,102 @@ function normalizza(testo: string): string {
     .replace(/[̀-ͯ]/g, '');
 }
 
-// L'ordine è la priorità: la prima regola che scatta vince. Le famiglie
-// olfattive stanno PRIMA della richiesta generica («che profumo mi
-// consigli?»), così «un profumo legnoso» va sui legni e non sulla domanda di
-// ritorno; i saluti stanno in fondo perché «buonasera, cerco un profumo» deve
-// parlare di profumi, non salutare.
+// L'ordine è la priorità: la prima regola che scatta vince. Le domande sul
+// mistero stanno in cima; i saluti in fondo, perché «ciao, e adesso cosa
+// faccio?» deve parlare del passo, non salutare.
 const REGOLE: Regola[] = [
   {
     id: 'tictac',
     parole: [
       'chi sei', 'chi ti manda', 'cosa succede', 'cosa succedera', 'che succede',
-      'perche sei qui', 'cosa sei', 'come ti chiami', 'chi e dietro', 'dove porta',
-      'cosa significa', 'perche un coniglio', 'sei vero',
+      'cosa sei', 'come ti chiami', 'chi e dietro', 'sei vero', 'cosa significa',
     ],
     testo:
       'Tic tac… ogni cosa a suo tempo. Per ora, seguimi: parliamo di profumi, che è la cosa che so fare meglio.',
   },
   {
+    id: 'primopasso',
+    parole: [
+      'primo passo', 'secondo passo', 'passo', 'prossimo', 'continua', 'e adesso',
+      'ora cosa', 'poi cosa', 'che devo fare', 'cosa devo fare', 'cosa si fa',
+    ],
+    testo:
+      'Il primo passo l’hai fatto — evviva, lo sapevo che eri sveglio! Il secondo passo? Eh no, non si svela: si scopre. Tic tac… seguimi e basta!',
+  },
+  {
+    id: 'comemai',
+    parole: [
+      'come mai sei', 'perche sei qui', 'cosa ci fai', 'da dove vieni',
+      'come sei arrivato', 'dove siamo', 'che posto',
+    ],
+    testo:
+      'Come mai sono qui? Ih ih… io ci sono sempre stato! Sei tu che oggi mi hai trovato. E adesso che mi hai trovato, non ti perdo più di vista!',
+  },
+  {
+    id: 'biglietto',
+    parole: ['biglietto', 'qr', 'codice', 'pacco', 'pacchetto', 'scatola', 'cartolin'],
+    testo:
+      'L’hai trovato nel pacchetto, vero? Quello non era un biglietto: era un invito. E tu l’hai capito al volo — sei proprio dei nostri.',
+  },
+  {
+    id: 'orologio',
+    parole: ['orologio', 'che ore', 'il tempo', 'tic tac', 'ticchett'],
+    testo:
+      'Il mio orologio è speciale: non segna le ore, segna le occasioni. E senti senti… proprio adesso ne sta ticchettando una. Tic tac… tic tac…',
+  },
+  {
+    id: 'segreto',
+    parole: [
+      'segreto', 'sorpresa', 'nascond', 'mistero', 'gennaio', 'novita',
+      'cosa arriva', 'cosa bolle',
+    ],
+    testo:
+      'Un segreto c’è, eccome! Ma un coniglio che spiffera i segreti è un pessimo coniglio. Torna a trovarmi, e a ogni visita… un indizio in più.',
+  },
+  {
+    id: 'seguire',
+    parole: ['seguir', 'ti seguo', 'dove andiamo', 'portami', 'guidami', 'strada'],
+    testo:
+      'Seguirmi? Ma sei già sulla strada giusta! Resta con me: al momento giusto ti faccio strada io. Il tempo, qui, sa sempre quello che fa.',
+  },
+  {
+    id: 'complimento',
+    parole: [
+      'bello', 'bellissimo', 'carino', 'tenero', 'dolcissimo', 'fantastico',
+      'wow', 'incredibile', 'magia', 'adorabile', 'stupendo',
+    ],
+    testo:
+      'Ih ih, grazie! Ma non hai ancora visto niente: le sorprese più belle le tengo per dopo. A chi sa aspettare, il tempo regala meraviglie!',
+  },
+  {
     id: 'arrivederci',
     parole: ['arrivederci', 'a presto', 'ci vediamo', 'devo andare', 'buonanotte', 'vado via'],
     testo:
-      'Tic tac… già suona l’ora dei saluti? Torna presto: i profumi cambiano con le stagioni, e io non mi muovo da qui.',
+      'Già vai? Uffa… E va bene: ma torna, eh! Io resto qui, con l’orologio in zampa e un pensiero per te. Tic tac…',
   },
   {
     id: 'grazie',
     parole: ['grazie', 'gentile', 'sei bravo', 'bravissimo'],
     testo:
-      'Ma figurati, per questo son qui — tra un giro d’orologio e l’altro. Quando vuoi, sai dove trovarmi: basta seguire il coniglio.',
+      'Prego, prego — piacere tutto mio! Lo sai che quasi nessuno ringrazia un coniglio? Tu sì. Sei proprio uno di quelli giusti.',
   },
   {
+    // L'unico consiglio vero rimasto in repertorio: era già recitato e pagato,
+    // e a chi nomina proprio i legni fa fare al coniglio un figurone.
     id: 'legnoso',
-    parole: ['legn', 'sandalo', 'cedro', 'vetiver', 'bosco'],
+    parole: ['legn', 'sandalo', 'cedro', 'vetiver'],
     testo:
       'Ah, i legni… chi li ama sa aspettare. Prova Molecule 01 di Escentric Molecules: una sola nota, morbida e magnetica, che ti segue tutto il giorno come un’ombra elegante. Fidati del coniglio.',
   },
   {
-    id: 'caffe',
-    parole: ['caffe', 'cioccolat', 'goloso', 'gourmand'],
+    // Tutte le altre domande sui profumi: svicolo di carattere, si torna al gioco.
+    id: 'consiglio',
+    parole: [
+      'profum', 'consigli', 'fragranz', 'essenz', 'vanigl', 'dolce', 'fresco',
+      'agrum', 'fiorito', 'per lei', 'per lui', 'regalo', 'sera',
+    ],
     testo:
-      'Golosa idea… Intense Café di Montale: rosa e caffè, come un salotto d’inverno col camino acceso. Il tempo di un tic tac, e la pelle se lo prende per sé.',
-  },
-  {
-    id: 'dolce',
-    parole: ['dolce', 'vanigl', 'tonka', 'zuccher', 'caramell'],
-    testo:
-      'Allora ti serve Arabians Tonka di Montale: fava tonka, un velo di rum e uno zucchero scuro che non stanca mai. Dolce sì, ingenuo mai.',
-  },
-  {
-    id: 'fresco',
-    parole: ['fresc', 'agrum', 'limone', 'estate', 'estiv', 'leggero', 'pulito', 'mare', 'bergamotto', 'giorno', 'ufficio'],
-    testo:
-      'Aria pulita, dici? Molecule 02 di Escentric Molecules: pelle e brezza, come una camicia bianca stirata dal vento. Chi ti passa accanto si volta — e non capisce perché.',
-  },
-  {
-    id: 'sera',
-    parole: ['sera', 'notte', 'serata', 'appuntamento', 'cena', 'intenso', 'forte', 'seduttiv', 'sensual', 'conquist'],
-    testo:
-      'Per la sera serve coraggio: Side Effect di Initio. Tabacco, rum e un velo di cannella — entra nella stanza dopo di te, ma ne esce per ultimo. Maneggiare con cura: il tempo vola.',
-  },
-  {
-    id: 'orientale',
-    parole: ['oriental', 'spezi', 'tabacco', 'incenso', 'ambra', 'patchouli', 'miele', 'particolare', 'strano', 'diverso', 'nicchia', 'raro'],
-    testo:
-      'Allora ti porto da Serge Lutens: Chergui. Miele, tabacco e fieno, un tramonto in una stanza di velluto. Non è per tutti — ed è esattamente il suo pregio.',
-  },
-  {
-    id: 'lei',
-    parole: ['per lei', 'moglie', 'fidanzata', 'ragazza', 'mamma', 'donna', 'femminil', 'signora', 'rosa', 'fiorit', 'fiori'],
-    testo:
-      'Per lei c’è Delina di Parfums de Marly: rosa turca, litchi e un velluto di vaniglia. È il tipo di fiore che non appassisce nella memoria.',
-  },
-  {
-    id: 'lui',
-    parole: ['per lui', 'marito', 'fidanzato', 'ragazzo', 'papa', 'uomo', 'maschil', 'babbo'],
-    testo:
-      'Per lui, Layton di Parfums de Marly: mela, lavanda e un caffè cremoso sotto la vaniglia. Un classico che non chiede permesso, d’inverno come d’estate.',
-  },
-  {
-    id: 'generico',
-    parole: ['consigli', 'che profumo', 'un profumo', 'quale profumo', 'cosa mi', 'aiutami', 'non so', 'suggeris', 'profumo per me', 'regalo'],
-    testo:
-      'Volentieri — ma prima una sola domanda, ché il tempo è prezioso: ti chiamano di più i legni caldi e le spezie, o il dolce morbido della vaniglia?',
+      'I profumi! Il mio argomento del cuore… ma oggi ho la bocca cucita: sono il coniglio del benvenuto, mica del negozio. Chiedimi del primo passo… o del mio orologio!',
   },
   {
     id: 'saluto',
@@ -124,11 +134,11 @@ const REGOLE: Regola[] = [
   },
 ];
 
-/** Quando nessuna regola scatta: si svicola con garbo e si torna ai profumi (§2.3). */
+/** Quando nessuna regola scatta: si resta nel personaggio e si offre la strada. */
 const FUORI_TEMA: Battuta = {
   id: 'fuoritema',
   testo:
-    'Curiosa domanda… ma il mio regno sono le essenze, e lì sì che so farti strada. Dimmi piuttosto: che profumo porti oggi?',
+    'Uh, che domandona! Io sono solo un coniglio col panciotto… però ascolto benissimo. Prova a chiedermi del primo passo, o del mio orologio!',
 };
 
 /** Il cervello del prototipo: la prima regola che scatta vince. */
