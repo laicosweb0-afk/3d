@@ -37,6 +37,26 @@ export function Bianconiglio({ arrivato, livello, calibra }: Proprieta) {
   const [misure, setMisure] = useState({ larghezza: 0, altezza: 0 });
   const [sguardo, setSguardo] = useState({ sx: 0, sy: 0, dx: 0, dy: 0 });
   const [immagineMancante, setImmagineMancante] = useState(false);
+  const [palpebre, setPalpebre] = useState(false);
+
+  // Il battito di palpebre: ogni 3-6 secondi, per 140 millisecondi, due
+  // "palpebre" color pelo coprono gli occhi. È il dettaglio che fa scattare
+  // il «è vivo»: un viso che non sbatte mai le palpebre è un poster.
+  useEffect(() => {
+    if (!arrivato) return;
+    let apri: ReturnType<typeof setTimeout>;
+    let prossimo: ReturnType<typeof setTimeout>;
+    const batti = () => {
+      setPalpebre(true);
+      apri = setTimeout(() => setPalpebre(false), 140);
+      prossimo = setTimeout(batti, 3000 + Math.random() * 3000);
+    };
+    prossimo = setTimeout(batti, 1800);
+    return () => {
+      clearTimeout(apri);
+      clearTimeout(prossimo);
+    };
+  }, [arrivato]);
 
   // Se il PNG non c'è, il riquadro resta alto zero e la scena si accartoccia:
   // niente coniglio, niente occhi, niente bocca, e nemmeno il segnaposto che
@@ -138,6 +158,17 @@ export function Bianconiglio({ arrivato, livello, calibra }: Proprieta) {
       className={`coniglio${arrivato ? ' arrivato' : ''}`}
       style={{ ['--luce-occhio' as string]: COLORI_OCCHIO.luce }}
     >
+      {/* Due strati di vita sopra lo sprite fermo: il respiro (sempre, via
+          CSS) e il molleggio da cartone che accompagna la voce (qui, dal
+          volume). Sono separati perché una transform inline schiaccerebbe
+          l'animazione CSS del respiro. */}
+      <div className="respiro">
+        <div
+          className="vita"
+          style={{
+            transform: `translateY(${(-livello * 0.9).toFixed(3)}%) rotate(${(livello * 0.5).toFixed(3)}deg) scale(${(1 + livello * 0.012).toFixed(4)}, ${(1 - livello * 0.006).toFixed(4)})`,
+          }}
+        >
       {immagineMancante ? (
         <div className="segnaposto">
           <strong>Manca il Bianconiglio.</strong>
@@ -208,6 +239,17 @@ export function Bianconiglio({ arrivato, livello, calibra }: Proprieta) {
                   transform: `translate(calc(-50% + ${occhio.x}px), calc(-50% + ${occhio.y}px))`,
                 }}
               />
+              <div
+                className="palpebra"
+                style={{
+                  left: `${occhio.punto.x}%`,
+                  top: `${occhio.punto.y}%`,
+                  width: diametroIride * 1.18,
+                  height: diametroIride * 1.18,
+                  transform: `translate(-50%, -50%) scaleY(${palpebre ? 1 : 0.02})`,
+                  opacity: palpebre ? 1 : 0,
+                }}
+              />
             </div>
           ))}
 
@@ -255,6 +297,8 @@ export function Bianconiglio({ arrivato, livello, calibra }: Proprieta) {
           />
         </>
       )}
+        </div>
+      </div>
     </div>
   );
 }

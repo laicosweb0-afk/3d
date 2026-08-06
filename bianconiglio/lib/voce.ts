@@ -81,6 +81,7 @@ export function useVoce() {
     const analisi = analisiRef.current;
     if (!analisi) return;
     const campioni = new Uint8Array(analisi.fftSize);
+    let inviluppo = 0;
     const passo = () => {
       analisi.getByteTimeDomainData(campioni);
       let somma = 0;
@@ -92,7 +93,11 @@ export function useVoce() {
       // molto sotto il fondo scala, e senza amplificarlo la bocca resterebbe
       // quasi ferma per tutta la frase.
       const intensita = Math.min(1, Math.sqrt(somma / campioni.length) * 4.2);
-      setLivello(intensita);
+      // Attacco immediato, rilascio morbido: la bocca si apre di scatto sulla
+      // sillaba e si richiude accompagnando — a inseguire il volume nudo
+      // sbatterebbe come una tapparella.
+      inviluppo = intensita > inviluppo ? intensita : inviluppo * 0.86;
+      setLivello(inviluppo);
       frameRef.current = requestAnimationFrame(passo);
     };
     frameRef.current = requestAnimationFrame(passo);
