@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>AureaClub — Proposta di convenzione</title>
+
+<!-- I titoli: Playfair Display, variabile, incorporato in base64 (font-titoli.css).
+     Il testo: Hanken Grotesk, lo stesso carattere del brand già incorporato nel
+     progetto — si riusa il file, non se ne aggiunge una copia. -->
+<link rel="stylesheet" href="./font-titoli.css">
+<link rel="stylesheet" href="../../app/brand-font.css">
+
+<style>
+/* ---------------------------------------------------------------------------
+   Proposta di convenzione AureaClub — sorgente del PDF.
+
+   Si stampa con `node tools/aurea/pdf.mjs` (Chromium headless, --print-to-pdf).
+   Ogni <section class="foglio"> è una pagina A4 esatta: la paginazione è
+   decisa qui, non lasciata al motore di stampa, perché un documento che si
+   manda a un ufficio non può cambiare impaginazione a seconda di chi lo apre.
+
+   ⚠️ Il marchio AureaClub NON compare: il file vettoriale ufficiale non è in
+   nostro possesso e ridisegnarlo a occhio sarebbe una falsificazione (stessa
+   regola dichiarata in components/mediapro/three/Aurea.tsx). Qui il nome è
+   composto in tipografia, ed è visibile che è tipografia. Quando arriva l'SVG
+   si sostituisce il blocco .wordmark e il resto resta com'è.
+
+   ⚠️ I CAMPI IN ORO sono vuoti per scelta, non per dimenticanza: sono i punti
+   che nessuno qui può riempire senza inventare (condizioni economiche, dati
+   societari, oggetto della convenzione). Vanno compilati prima dell'invio.
+   --------------------------------------------------------------------------- */
+
+:root{
+  /* Carta e inchiostro. Il fondo non è bianco puro: un avorio caldo regge
+     l'oro, il bianco lo fa sembrare giallo. */
+  --carta:#faf8f4;
+  --inchiostro:#14141a;
+  --smorzato:#5d574e;
+  /* Due ori, non uno. Quello chiaro vive solo sul nero e nei corpi grandi;
+     sulla carta, in corpo piccolo, non arriverebbe al contrasto leggibile,
+     quindi il testo in oro usa la versione scura. */
+  --oro:#c9a25f;
+  --oro-scuro:#8a6a20;
+  --notte:#07070b;
+  --filo:#ded6c8;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+html{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+body{
+  font-family:'Hanken Grotesk',system-ui,sans-serif;
+  color:var(--inchiostro);
+  background:#8d8d95;           /* solo per l'anteprima a schermo */
+  font-size:10.2pt;
+  line-height:1.62;
+  font-feature-settings:'ss01','cv01';
+}
+
+@page{ size:A4; margin:0; }
+
+.foglio{
+  position:relative;
+  width:210mm; height:297mm;
+  padding:26mm 22mm 20mm;
+  background:var(--carta);
+  overflow:hidden;
+  page-break-after:always;
+  break-after:page;
+  margin:0 auto 6mm;            /* il margine sparisce in stampa */
+  display:flex; flex-direction:column;
+}
+.foglio:last-child{ page-break-after:auto; break-after:auto; }
+
+@media print{ body{background:none} .foglio{margin:0} }
+
+/* --- tipografia ---------------------------------------------------------- */
+
+h1,h2,h3,.wordmark,.cifra{ font-family:'Playfair Display',Georgia,serif; font-weight:400; }
+
+.occhiello{
+  font-size:7.6pt; letter-spacing:.19em; text-transform:uppercase;
+  color:var(--oro-scuro); font-weight:600;
+}
+h2{
+  font-size:23pt; line-height:1.14; letter-spacing:-.01em;
+  margin:5mm 0 6mm; max-width:132mm;
+}
+h3{ font-size:12.4pt; line-height:1.3; margin-bottom:2mm; }
+p{ max-width:142mm; }
+p + p{ margin-top:3.4mm; }
+.guida{ color:var(--smorzato); }
+strong{ font-weight:600; }
+
+/* Il filo d'oro: una regola sottile, mai un blocco pieno. Sulla carta un
+   fondo oro diventa senape; una linea resta oro. */
+.filo{ height:.5pt; background:var(--oro-scuro); opacity:.55; margin:6mm 0; }
+
+.piede{
+  margin-top:auto; padding-top:5mm; border-top:.5pt solid var(--filo);
+  display:flex; justify-content:space-between; align-items:baseline;
+  font-size:7.4pt; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--smorzato);
+}
+.piede .num{ font-family:'Playfair Display',serif; letter-spacing:.04em; font-size:9pt; }
+
+/* --- il campo da compilare ----------------------------------------------- */
+
+/* Un campo vuoto deve sembrare vuoto. Niente «XXX», niente «Lorem»: una riga
+   d'oro chiaro e, sopra, la sua etichetta. Chi compila vede subito dove
+   scrivere; chi legge senza compilare vede subito che manca. */
+.campo{
+  display:inline-block; min-width:38mm;
+  border-bottom:.8pt solid var(--oro);
+  color:var(--oro-scuro);
+  padding:0 1.5mm;
+}
+.campo.lungo{ min-width:78mm; }
+.campo.corto{ min-width:18mm; }
+/* «entro ___ giorni» deve restare tutto sulla stessa riga: un campo che va a
+   capo da solo si stacca dalla frase che lo governa e sembra un refuso. */
+.insieme{ white-space:nowrap; }
+.etichetta{
+  display:block; font-size:7.2pt; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--smorzato); margin-bottom:1.2mm;
+}
+
+/* --- copertina ----------------------------------------------------------- */
+
+.copertina{
+  background:var(--notte); color:#efeae0;
+  padding:30mm 22mm 20mm;
+}
+.copertina .occhiello{ color:var(--oro); }
+.copertina .wordmark{
+  font-size:56pt; line-height:1; color:var(--oro);
+  letter-spacing:.02em; margin:4mm 0 1mm;
+}
+.copertina .claim{
+  font-size:9.4pt; letter-spacing:.22em; text-transform:uppercase;
+  color:#b9b1a2;
+}
+.copertina h1{
+  font-size:34pt; line-height:1.12; margin-top:auto; color:#f7f3ea;
+  max-width:150mm;
+}
+/* Il destinatario resta attaccato al titolo: sono la stessa frase — «proposta
+   di convenzione, per voi». Lo spazio vuoto sta sopra il titolo e sotto il
+   blocco, non in mezzo ai due. */
+.copertina .destinatario{ margin-top:10mm; margin-bottom:12mm; max-width:120mm; }
+.copertina .campo{ border-bottom-color:var(--oro); color:var(--oro); }
+.copertina .etichetta{ color:#8e8779; }
+.copertina .piede{ border-top-color:#2a2820; color:#8e8779; }
+
+/* La lemniscata: il segno matematico dell'infinito, non il marchio. È la
+   stessa dichiarazione fatta nella stanza 3D del portfolio. */
+.segno{ width:26mm; height:13mm; display:block; }
+
+/* --- blocchi ------------------------------------------------------------- */
+
+.tre{ display:grid; grid-template-columns:repeat(3,1fr); gap:7mm; margin-top:2mm; }
+.tre h3{ font-size:11.4pt; }
+.tre .occhiello{ display:block; margin-bottom:2.5mm; }
+.tre p{ font-size:9.4pt; color:var(--smorzato); }
+
+.passi{ list-style:none; margin-top:2mm; }
+.passi li{
+  display:grid; grid-template-columns:14mm 1fr; gap:4mm;
+  padding:4.6mm 0; border-top:.5pt solid var(--filo);
+}
+/* Nessun bordo sull'ultimo passo: sotto c'è già il filo d'oro, e due righe
+   ravvicinate diventano un errore di stampa. */
+.passi .cifra{ font-size:19pt; color:var(--oro-scuro); line-height:1; }
+.passi p{ font-size:9.5pt; color:var(--smorzato); margin-top:1mm; }
+
+table{ width:100%; border-collapse:collapse; margin-top:3mm; }
+th,td{ text-align:left; padding:3.6mm 3mm; border-bottom:.5pt solid var(--filo); vertical-align:top; }
+th{
+  font-size:7.4pt; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--smorzato); font-weight:600; border-bottom:.8pt solid var(--oro-scuro);
+}
+td.voce{ width:62mm; font-weight:600; }
+td .nota{ display:block; font-size:8.6pt; color:var(--smorzato); font-weight:400; margin-top:.8mm; }
+
+.due{ display:grid; grid-template-columns:1fr 1fr; gap:9mm; margin-top:3mm; }
+.due ul{ list-style:none; margin-top:3mm; }
+.due li{ padding:2.8mm 0 2.8mm 6mm; border-top:.5pt solid var(--filo); position:relative; font-size:9.5pt; }
+.due li::before{ content:'—'; position:absolute; left:0; color:var(--oro-scuro); }
+
+.clausole{ counter-reset:c; margin-top:2mm; }
+.clausole > div{ padding:3.4mm 0; border-top:.5pt solid var(--filo); }
+.clausole h3{ font-size:10pt; letter-spacing:.02em; }
+.clausole h3::before{
+  counter-increment:c; content:counter(c,decimal-leading-zero) ' ';
+  color:var(--oro-scuro); margin-right:2.5mm;
+}
+.clausole p{ font-size:9.2pt; color:var(--smorzato); max-width:150mm; }
+
+.modulo{ margin-top:5mm; }
+.riga{ display:grid; grid-template-columns:1fr 1fr; gap:7mm; margin-bottom:6.5mm; }
+.riga.piena{ grid-template-columns:1fr; }
+/* La riga da compilare vive da sola, fuori da .modulo: la usa anche il blocco
+   delle firme, e legarla al genitore l'aveva già fatta sparire una volta. */
+.linea{ display:block; border-bottom:.8pt solid var(--oro); height:7mm; }
+.firme{ display:grid; grid-template-columns:1fr 1fr; gap:12mm; margin-top:6mm; }
+.firme .linea{ height:17mm; }
+
+/* I dati di AureaClub in fondo al modulo: chi firma deve sapere con chi sta
+   firmando. Sono campi perché la ragione sociale e la P.IVA del club non le
+   possiamo scrivere noi senza chiederle. */
+.nostri{ margin-top:auto; padding-top:6mm; }
+.nostri .riga{ margin-bottom:4mm; }
+
+/* `margin-top:auto` anche qui: insieme a quello del piede, lo spazio che
+   avanza si divide fra i due e la pagina non resta vuota nel terzo basso. */
+.avviso{
+  margin-top:auto; padding:4mm 5mm;
+  border-left:1.4pt solid var(--oro-scuro); background:#f3efe6;
+  font-size:8.8pt; color:var(--smorzato); max-width:150mm;
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════ 1 · COPERTINA ══════════════════════════ -->
+<section class="foglio copertina">
+  <svg class="segno" viewBox="0 0 200 100" fill="none" aria-hidden="true">
+    <!-- Lemniscata di Bernoulli, tracciata come curva: è la forma matematica,
+         non il segno del brand. -->
+    <path d="M 192.0,50.0 L 191.6,54.8 L 190.5,59.5 L 188.7,63.9 L 186.3,67.9 L 183.3,71.6 L 179.9,74.7 L 176.1,77.3 L 172.1,79.3 L 168.0,80.9 L 163.7,81.9 L 159.5,82.4 L 155.3,82.5 L 151.2,82.2 L 147.2,81.6 L 143.4,80.7 L 139.7,79.5 L 136.1,78.1 L 132.7,76.4 L 129.4,74.7 L 126.3,72.8 L 123.3,70.7 L 120.4,68.6 L 117.6,66.4 L 114.9,64.2 L 112.3,61.9 L 109.8,59.6 L 107.3,57.2 L 104.8,54.8 L 102.4,52.4 L 100.0,50.0 L 97.6,47.6 L 95.2,45.2 L 92.7,42.8 L 90.2,40.4 L 87.7,38.1 L 85.1,35.8 L 82.4,33.6 L 79.6,31.4 L 76.7,29.3 L 73.7,27.2 L 70.6,25.3 L 67.3,23.6 L 63.9,21.9 L 60.3,20.5 L 56.6,19.3 L 52.8,18.4 L 48.8,17.8 L 44.7,17.5 L 40.5,17.6 L 36.3,18.1 L 32.0,19.1 L 27.9,20.7 L 23.9,22.7 L 20.1,25.3 L 16.7,28.4 L 13.7,32.1 L 11.3,36.1 L 9.5,40.5 L 8.4,45.2 L 8.0,50.0 L 8.4,54.8 L 9.5,59.5 L 11.3,63.9 L 13.7,67.9 L 16.7,71.6 L 20.1,74.7 L 23.9,77.3 L 27.9,79.3 L 32.0,80.9 L 36.3,81.9 L 40.5,82.4 L 44.7,82.5 L 48.8,82.2 L 52.8,81.6 L 56.6,80.7 L 60.3,79.5 L 63.9,78.1 L 67.3,76.4 L 70.6,74.7 L 73.7,72.8 L 76.7,70.7 L 79.6,68.6 L 82.4,66.4 L 85.1,64.2 L 87.7,61.9 L 90.2,59.6 L 92.7,57.2 L 95.2,54.8 L 97.6,52.4 L 100.0,50.0 L 102.4,47.6 L 104.8,45.2 L 107.3,42.8 L 109.8,40.4 L 112.3,38.1 L 114.9,35.8 L 117.6,33.6 L 120.4,31.4 L 123.3,29.3 L 126.3,27.2 L 129.4,25.3 L 132.7,23.6 L 136.1,21.9 L 139.7,20.5 L 143.4,19.3 L 147.2,18.4 L 151.2,17.8 L 155.3,17.5 L 159.5,17.6 L 163.7,18.1 L 168.0,19.1 L 172.1,20.7 L 176.1,22.7 L 179.9,25.3 L 183.3,28.4 L 186.3,32.1 L 188.7,36.1 L 190.5,40.5 L 191.6,45.2 L 192.0,50.0 Z"
+          stroke="#c9a25f" stroke-width="1.4" stroke-linejoin="round"/>
+  </svg>
+
+  <div class="wordmark">Aurea</div>
+  <div class="claim">The intelligence of beauty</div>
+
+  <h1>Proposta di<br>convenzione</h1>
+
+  <div class="destinatario">
+    <span class="etichetta">Spettabile</span>
+    <span class="campo lungo">&nbsp;</span>
+    <span class="etichetta" style="margin-top:6mm">Alla cortese attenzione di</span>
+    <span class="campo lungo">&nbsp;</span>
+  </div>
+
+  <div class="piede">
+    <span>Documento riservato · Bozza</span>
+    <span>Data <span class="campo corto">&nbsp;</span></span>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 2 · LA PROPOSTA ══════════════════════════ -->
+<section class="foglio">
+  <span class="occhiello">La proposta</span>
+  <h2>Un accordo che non costa nulla<br>all'ente e vale per tutti i suoi membri.</h2>
+
+  <p>AureaClub propone a <span class="campo">&nbsp;</span> un accordo di convenzione:
+  le persone che fanno parte della vostra realtà — dipendenti, associati, iscritti,
+  clienti — accedono a condizioni riservate, non pubbliche, valide per l'intero
+  periodo dell'accordo.</p>
+
+  <p class="guida">L'attivazione è affidata a un <strong>codice dedicato</strong>,
+  intestato alla vostra organizzazione. Nessuna tessera da stampare, nessun elenco
+  di nomi da consegnarci, nessun dato dei vostri membri che passi di mano: il codice
+  è l'unica cosa che circola, e basta lui a riconoscere chi ha diritto alle
+  condizioni riservate.</p>
+
+  <div class="filo"></div>
+
+  <div class="tre">
+    <div>
+      <span class="occhiello">Per l'ente</span>
+      <h3>Un beneficio da offrire, a costo zero</h3>
+      <p>Nessuna quota, nessun impegno di spesa, nessun minimo garantito. La
+      convenzione è un vantaggio che l'ente mette a disposizione dei suoi, non un
+      servizio che compra.</p>
+    </div>
+    <div>
+      <span class="occhiello">Per i membri</span>
+      <h3>Condizioni che fuori non esistono</h3>
+      <p>Lo stesso trattamento riservato ai clienti del club, riconosciuto per il
+      solo fatto di appartenere alla vostra realtà. Si attiva in un gesto, con il
+      codice.</p>
+    </div>
+    <div>
+      <span class="occhiello">Per AureaClub</span>
+      <h3>Persone giuste, non pubblico generico</h3>
+      <p>Lo diciamo apertamente: la convenzione ci porta persone presentate da chi
+      già si fidano. È il motivo per cui possiamo riservare condizioni che non
+      pubblichiamo.</p>
+    </div>
+  </div>
+
+  <div class="avviso">
+    <strong>Oggetto della convenzione</strong> — i servizi e i prodotti compresi
+    nell'accordo sono elencati a pagina 4. Ciò che non è elencato resta a listino
+    pieno: nessuna ambiguità al momento del conto.
+  </div>
+
+  <div class="piede"><span>AureaClub · Proposta di convenzione</span><span class="num">02</span></div>
+</section>
+
+<!-- ══════════════════════════ 3 · IL MECCANISMO ══════════════════════════ -->
+<section class="foglio">
+  <span class="occhiello">Come funziona</span>
+  <h2>Quattro passaggi, poi<br>funziona da solo.</h2>
+
+  <ol class="passi">
+    <li>
+      <span class="cifra">01</span>
+      <div>
+        <h3>Si firma l'accordo</h3>
+        <p>Il modulo in fondo a questo documento. Una firma, nessun allegato
+        tecnico, nessuna piattaforma da installare.</p>
+      </div>
+    </li>
+    <li>
+      <span class="cifra">02</span>
+      <div>
+        <h3>Emettiamo il codice dedicato</h3>
+        <p>Un codice riservato alla vostra organizzazione, riconoscibile nel nome.
+        Vale solo per la convenzione e solo per il periodo concordato.</p>
+      </div>
+    </li>
+    <li>
+      <span class="cifra">03</span>
+      <div>
+        <h3>Lo comunicate ai vostri</h3>
+        <p>Sui canali che già usate: bacheca, newsletter interna, gruppo, intranet.
+        I materiali pronti — testo, immagine, locandina — li forniamo noi, nel
+        formato che vi serve.</p>
+      </div>
+    </li>
+    <li>
+      <span class="cifra">04</span>
+      <div>
+        <h3>Il membro lo usa, lo sconto si applica</h3>
+        <p>In sede o online, indifferentemente. Il codice fa da riconoscimento: chi
+        lo porta è dei vostri, e le condizioni riservate scattano senza che debba
+        spiegare nulla.</p>
+      </div>
+    </li>
+  </ol>
+
+  <div style="margin-top:auto">
+    <div class="filo"></div>
+    <p class="guida">Ogni <span class="insieme"><span class="campo corto">&nbsp;</span> mesi</span>
+    vi mandiamo un riepilogo: quante persone hanno usato il codice e quanto vale
+    il vantaggio riconosciuto ai vostri membri.
+    <strong>Numeri aggregati, mai nominativi</strong> — chi ha usato la
+    convenzione resta un fatto fra la persona e noi.</p>
+  </div>
+
+  <div class="piede"><span>AureaClub · Proposta di convenzione</span><span class="num">03</span></div>
+</section>
+
+<!-- ══════════════════════════ 4 · LE CONDIZIONI ══════════════════════════ -->
+<section class="foglio">
+  <span class="occhiello">Condizioni</span>
+  <h2>Le condizioni riservate.</h2>
+
+  <p class="guida">I valori qui sotto sono quelli dell'accordo commerciale
+  approvato. Prima dell'invio vanno compilati: un documento che gira con un campo
+  vuoto in questa pagina non è una proposta, è una domanda.</p>
+
+  <table>
+    <tr><th>Voce</th><th>Condizione riservata</th></tr>
+    <tr>
+      <td class="voce">Sconto riservato ai membri
+        <span class="nota">Sull'intero listino o sulle voci elencate sotto.</span></td>
+      <td><span class="campo corto">&nbsp;</span> %</td>
+    </tr>
+    <tr>
+      <td class="voce">Servizi e prodotti compresi
+        <span class="nota">Ciò che non è elencato resta a listino pieno.</span></td>
+      <td><span class="campo lungo">&nbsp;</span></td>
+    </tr>
+    <tr>
+      <td class="voce">Esclusioni
+        <span class="nota">Promozioni in corso, saldi, pacchetti già scontati.</span></td>
+      <td><span class="campo lungo">&nbsp;</span></td>
+    </tr>
+    <tr>
+      <td class="voce">Spesa minima
+        <span class="nota">Se non prevista, si scrive «nessuna»: un minimo taciuto
+        si scopre alla cassa ed è lì che si perde la fiducia.</span></td>
+      <td><span class="campo">&nbsp;</span></td>
+    </tr>
+    <tr>
+      <td class="voce">Cumulabilità con altre offerte</td>
+      <td><span class="campo">&nbsp;</span></td>
+    </tr>
+    <tr>
+      <td class="voce">Validità del codice</td>
+      <td>dal <span class="campo corto">&nbsp;</span> al <span class="campo corto">&nbsp;</span></td>
+    </tr>
+    <tr>
+      <td class="voce">Dove si usa</td>
+      <td><span class="campo lungo">&nbsp;</span>
+        <span class="nota">Sede, sedi affiliate, canale online.</span></td>
+    </tr>
+    <tr>
+      <td class="voce">Estensione ai familiari
+        <span class="nota">Convivente e figli, dove previsto.</span></td>
+      <td><span class="campo">&nbsp;</span></td>
+    </tr>
+  </table>
+
+  <div class="piede"><span>AureaClub · Proposta di convenzione</span><span class="num">04</span></div>
+</section>
+
+<!-- ══════════════════════════ 5 · GLI IMPEGNI ══════════════════════════ -->
+<section class="foglio">
+  <span class="occhiello">Impegni reciproci</span>
+  <h2>Chi fa cosa,<br>scritto prima.</h2>
+
+  <div class="due">
+    <div>
+      <h3>AureaClub si impegna a</h3>
+      <ul>
+        <li>Emettere il codice dedicato <span class="insieme">entro <span class="campo corto">&nbsp;</span> giorni</span> dalla firma.</li>
+        <li>Riconoscere le condizioni della pagina precedente a chiunque presenti il codice, senza ulteriori verifiche a carico della persona.</li>
+        <li>Fornire i materiali di comunicazione pronti all'uso: testo per la bacheca, immagine per i canali interni, locandina stampabile.</li>
+        <li>Indicare un referente unico, raggiungibile direttamente, per qualunque questione nasca dalla convenzione.</li>
+        <li>Mandare il riepilogo periodico in forma aggregata.</li>
+        <li>Non usare il nome o il marchio del partner al di fuori di ciò che il partner ha approvato per iscritto.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Il partner si impegna a</h3>
+      <ul>
+        <li>Comunicare la convenzione ai propri membri sui canali interni, <span class="insieme">almeno <span class="campo corto">&nbsp;</span> volte</span> nel periodo.</li>
+        <li>Non diffondere il codice al di fuori della propria base: il codice riservato che diventa pubblico non è più una convenzione, è uno sconto.</li>
+        <li>Indicare un referente per la comunicazione interna.</li>
+        <li>Segnalare tempestivamente la cessazione dei presupposti (fusione, scioglimento, cambio di natura giuridica).</li>
+      </ul>
+      <p class="guida" style="font-size:9pt;margin-top:5mm">Nessun obbligo di
+      acquisto, nessun volume minimo, nessuna esclusiva richiesta al partner —
+      salvo quanto eventualmente concordato al punto <span class="campo corto">&nbsp;</span>.</p>
+    </div>
+  </div>
+
+  <div class="piede"><span>AureaClub · Proposta di convenzione</span><span class="num">05</span></div>
+</section>
+
+<!-- ══════════════════════════ 6 · LE REGOLE ══════════════════════════ -->
+<section class="foglio">
+  <span class="occhiello">Durata e regole</span>
+  <h2>Le clausole, in una pagina.</h2>
+
+  <div class="clausole">
+    <div>
+      <h3>Durata</h3>
+      <p>L'accordo decorre dalla data di sottoscrizione e resta valido fino al
+      <span class="campo corto">&nbsp;</span>, salvo recesso.</p>
+    </div>
+    <div>
+      <h3>Rinnovo</h3>
+      <p>Alla scadenza l'accordo <span class="campo">&nbsp;</span> per un periodo di
+      pari durata, salvo disdetta di una delle parti comunicata almeno
+      <span class="campo corto">&nbsp;</span> giorni prima.</p>
+    </div>
+    <div>
+      <h3>Recesso</h3>
+      <p>Ciascuna parte può recedere in qualsiasi momento con comunicazione scritta,
+      con preavviso di <span class="campo corto">&nbsp;</span> giorni. Le condizioni
+      riservate restano valide per gli acquisti già avviati.</p>
+    </div>
+    <div>
+      <h3>Uso dei marchi</h3>
+      <p>Ciascuna parte autorizza l'altra a usare nome e marchio ai soli fini della
+      comunicazione della convenzione, nella forma approvata per iscritto, e per il
+      solo periodo di validità dell'accordo.</p>
+    </div>
+    <div>
+      <h3>Dati personali</h3>
+      <p>La convenzione non comporta alcuna comunicazione di dati dei membri fra le
+      parti: il partner non ci consegna elenchi, noi non gli restituiamo nominativi.
+      Ciascuna parte resta titolare autonomo dei trattamenti che effettua, ai sensi
+      del Regolamento UE 2016/679.</p>
+    </div>
+    <div>
+      <h3>Natura dell'accordo</h3>
+      <p>Il presente accordo non costituisce mandato, agenzia, associazione né
+      rapporto di lavoro fra le parti, e non comporta alcun onere economico a carico
+      del partner.</p>
+    </div>
+    <div>
+      <h3>Modifiche</h3>
+      <p>Ogni modifica delle condizioni riservate è efficace solo se concordata per
+      iscritto e comunicata ai membri con almeno
+      <span class="campo corto">&nbsp;</span> giorni di preavviso.</p>
+    </div>
+    <div>
+      <h3>Foro competente</h3>
+      <p>Per ogni controversia è competente il foro di <span class="campo">&nbsp;</span>.</p>
+    </div>
+  </div>
+
+  <div class="piede"><span>AureaClub · Proposta di convenzione</span><span class="num">06</span></div>
+</section>
+
+<!-- ══════════════════════════ 7 · ADESIONE ══════════════════════════ -->
+<section class="foglio">
+  <span class="occhiello">Adesione</span>
+  <h2>Se la proposta vi convince,<br>serve questa pagina.</h2>
+
+  <p class="guida">Compilata e firmata, va rimandata a
+  <span class="campo lungo">&nbsp;</span>. Il codice dedicato arriva entro i giorni
+  indicati a pagina 5.</p>
+
+  <div class="modulo">
+    <div class="riga piena">
+      <div><span class="etichetta">Denominazione dell'ente, azienda o associazione</span><span class="linea"></span></div>
+    </div>
+    <div class="riga">
+      <div><span class="etichetta">Partita IVA / Codice fiscale</span><span class="linea"></span></div>
+      <div><span class="etichetta">Numero di membri (indicativo)</span><span class="linea"></span></div>
+    </div>
+    <div class="riga piena">
+      <div><span class="etichetta">Sede</span><span class="linea"></span></div>
+    </div>
+    <div class="riga">
+      <div><span class="etichetta">Referente</span><span class="linea"></span></div>
+      <div><span class="etichetta">Ruolo</span><span class="linea"></span></div>
+    </div>
+    <div class="riga">
+      <div><span class="etichetta">Email</span><span class="linea"></span></div>
+      <div><span class="etichetta">Telefono</span><span class="linea"></span></div>
+    </div>
+    <div class="riga piena">
+      <div><span class="etichetta">Canali su cui la convenzione sarà comunicata ai membri</span><span class="linea"></span></div>
+    </div>
+  </div>
+
+  <div class="firme">
+    <div><span class="etichetta">Per il partner — data e firma</span><span class="linea"></span></div>
+    <div><span class="etichetta">Per AureaClub — data e firma</span><span class="linea"></span></div>
+  </div>
+
+  <div class="nostri">
+    <span class="occhiello">I nostri dati</span>
+    <div class="riga" style="margin-top:3mm">
+      <div><span class="etichetta">Ragione sociale</span><span class="linea"></span></div>
+      <div><span class="etichetta">Partita IVA</span><span class="linea"></span></div>
+    </div>
+    <div class="riga">
+      <div><span class="etichetta">Sede</span><span class="linea"></span></div>
+      <div><span class="etichetta">Email e telefono</span><span class="linea"></span></div>
+    </div>
+  </div>
+
+  <div class="piede"><span>AureaClub · Proposta di convenzione</span><span class="num">07</span></div>
+</section>
+
+</body>
+</html>
