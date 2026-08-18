@@ -1,0 +1,508 @@
+<title>Funnel AureaClub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Hanken+Grotesk:wght@300;400;500&display=swap">
+
+<style>
+/* ============================================================
+   AureaClub — schema del funnel di acquisizione.
+
+   Tema unico, per scelta: il mondo di Aurea è vetro nero e oro
+   satinato (gli stessi valori di components/mediapro/three/worlds.ts),
+   e su fondo chiaro non è più Aurea. Ogni colore è dichiarato,
+   compreso il fondo del body: la pagina non eredita niente dall'host.
+   ============================================================ */
+
+:root {
+  --ink:        #06060a;   /* vetro nero, la nebbia della stanza Aurea */
+  --ink-2:      #0c0c12;
+  --glass:      rgba(255, 255, 255, 0.028);
+  --glass-line: rgba(255, 255, 255, 0.075);
+  --gold:       #c9a25f;
+  --gold-lit:   #f3dcae;
+  --gold-line:  rgba(201, 162, 95, 0.22);
+  --text:       #f4efe6;   /* avorio, non bianco */
+  --text-2:     #a29a8c;   /* grigio piegato verso l'oro */
+  --text-3:     #6d6659;
+  --loss:       #9c6257;   /* rame spento: l'abbandono si vede, non grida */
+}
+
+* { box-sizing: border-box; margin: 0; }
+
+body {
+  background: var(--ink);
+  color: var(--text);
+  font-family: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  font-weight: 300;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  /* alone d'oro dietro l'imbuto: la luce della stanza, non un gradiente decorativo */
+  background-image: radial-gradient(120% 62% at 50% -8%, rgba(201, 162, 95, 0.10), transparent 62%);
+  background-repeat: no-repeat;
+}
+
+.wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 72px 28px 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 76px;
+}
+
+/* ---------- tipografia ---------- */
+
+.kicker {
+  font-size: 10.5px;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.kicker::before {
+  content: '';
+  width: 34px;
+  height: 1px;
+  background: var(--gold);
+  opacity: 0.55;
+  flex: none;
+}
+
+h1 {
+  font-family: 'Bodoni Moda', 'Didot', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(34px, 5.4vw, 58px);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  margin-top: 22px;
+}
+h1 em { font-style: italic; color: var(--gold-lit); }
+
+h2 {
+  font-family: 'Bodoni Moda', 'Didot', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.lede {
+  max-width: 60ch;
+  color: var(--text-2);
+  font-size: 16.5px;
+  margin-top: 20px;
+}
+
+.head-meta {
+  margin-top: 30px;
+  padding-top: 18px;
+  border-top: 1px solid var(--glass-line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 34px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.head-meta b { color: var(--text-2); font-weight: 400; }
+
+/* i figli di un contenitore flex non si stringono sotto il proprio contenuto
+   se non glielo si dice: senza questo, l'imbuto a larghezza minima allarga
+   l'intera pagina e sul telefono il testo esce dallo schermo */
+.wrap > *, section > * { min-width: 0; }
+
+section { display: flex; flex-direction: column; gap: 26px; }
+.sec-head { display: flex; flex-direction: column; gap: 12px; }
+.sec-head p { color: var(--text-2); max-width: 62ch; font-size: 15px; }
+
+/* ---------- imbuto ---------- */
+
+.funnel-scroll { overflow-x: auto; padding-bottom: 6px; }
+.funnel-scroll svg { display: block; width: 100%; min-width: 780px; height: auto; }
+
+.band { animation: rise 720ms cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+.band:nth-child(1) { animation-delay: 60ms; }
+.band:nth-child(2) { animation-delay: 150ms; }
+.band:nth-child(3) { animation-delay: 240ms; }
+.band:nth-child(4) { animation-delay: 330ms; }
+.band:nth-child(5) { animation-delay: 420ms; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+
+.s-title { font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; }
+.s-sub   { font-size: 12.5px; font-weight: 300; }
+.s-pct   { font-size: 12px; font-weight: 400; letter-spacing: 0.05em; font-variant-numeric: tabular-nums; }
+.s-num   { font-size: 10.5px; letter-spacing: 0.24em; font-variant-numeric: tabular-nums; }
+.s-side  { font-size: 10.5px; letter-spacing: 0.2em; text-transform: uppercase; }
+
+/* ---------- schede metriche ---------- */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  background: var(--glass-line);
+  border: 1px solid var(--glass-line);
+}
+.card {
+  background: var(--ink-2);
+  padding: 26px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 176px;
+}
+.card.is-lead { background: linear-gradient(165deg, rgba(201, 162, 95, 0.14), rgba(201, 162, 95, 0.03)); }
+.card dt {
+  font-size: 9.5px;
+  line-height: 1.5;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  /* due righe di spazio riservate: le cifre delle cinque schede
+     partono dalla stessa quota anche quando l'etichetta va a capo */
+  min-height: 30px;
+  min-height: 2lh;
+}
+.card dd {
+  font-family: 'Bodoni Moda', 'Didot', Georgia, serif;
+  font-size: 30px;
+  line-height: 1.05;
+  color: var(--gold-lit);
+  font-variant-numeric: tabular-nums;
+}
+.card.is-loss dd { color: var(--loss); }
+.card small { color: var(--text-2); font-size: 12.5px; line-height: 1.5; margin-top: auto; }
+
+/* ---------- la matematica ---------- */
+
+.math {
+  border: 1px solid var(--glass-line);
+  background: var(--glass);
+  padding: 34px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.chain {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 22px;
+}
+.step { display: flex; flex-direction: column; gap: 6px; position: relative; }
+.step + .step::before {
+  content: '';
+  position: absolute;
+  left: -13px;
+  top: 26px;
+  width: 5px;
+  height: 5px;
+  border-top: 1px solid var(--gold-line);
+  border-right: 1px solid var(--gold-line);
+  transform: rotate(45deg);
+}
+.step b {
+  font-family: 'Bodoni Moda', 'Didot', Georgia, serif;
+  font-size: 27px;
+  font-weight: 400;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.step span { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); }
+.step i { font-style: normal; font-size: 12.5px; color: var(--text-2); }
+
+.cac {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px 24px;
+  padding-top: 26px;
+  border-top: 1px solid var(--gold-line);
+}
+.cac b {
+  font-family: 'Bodoni Moda', 'Didot', Georgia, serif;
+  font-size: 42px;
+  font-weight: 400;
+  color: var(--gold-lit);
+  font-variant-numeric: tabular-nums;
+}
+.cac span { font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--text-3); }
+.cac i { font-style: normal; color: var(--text-2); font-size: 14px; max-width: 46ch; }
+
+/* ---------- sequenza ---------- */
+
+.seq { display: flex; flex-direction: column; }
+.beat {
+  display: grid;
+  grid-template-columns: 74px 108px 1fr;
+  gap: 20px;
+  align-items: baseline;
+  padding: 17px 0;
+  border-top: 1px solid var(--glass-line);
+}
+.beat:last-child { border-bottom: 1px solid var(--glass-line); }
+.beat.is-head { padding: 0 0 10px; border-top: none; }
+.beat.is-head .ch { color: var(--gold); opacity: 0.75; }
+.beat .day {
+  font-family: 'Bodoni Moda', 'Didot', Georgia, serif;
+  font-size: 21px;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+.beat .ch {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.beat .what { color: var(--text); font-size: 15px; }
+.beat .what em { font-style: normal; color: var(--text-2); display: block; font-size: 13px; margin-top: 3px; }
+
+/* ---------- avvertenza ---------- */
+
+.note {
+  border-left: 2px solid var(--gold);
+  padding: 4px 0 4px 22px;
+  color: var(--text-2);
+  font-size: 14.5px;
+  max-width: 68ch;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.note b { color: var(--text); font-weight: 400; }
+
+footer {
+  border-top: 1px solid var(--glass-line);
+  padding-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+@media (max-width: 860px) {
+  .wrap { padding: 52px 20px 72px; gap: 60px; }
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .card { min-height: 150px; }
+  /* cinque schede su due colonne: l'ultima prende la riga intera
+     invece di lasciare una cella vuota accanto a sé */
+  .card:last-child { grid-column: span 2; min-height: 0; }
+  .chain { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .step + .step::before { display: none; }
+  .beat { grid-template-columns: 56px 1fr; }
+  .beat .ch { grid-column: 2; margin-top: -4px; }
+  /* sul telefono la riga d'intestazione non ha colonne a cui riferirsi:
+     le tre voci si sovrapporrebbero nella stessa cella */
+  .beat.is-head { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .band { animation: none; }
+}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="kicker">AureaClub · Schema di acquisizione</div>
+    <h1>Dal click al socio:<br>dove si <em>guadagna</em> e dove si perde</h1>
+    <p class="lede">Il funnel completo di AureaClub in un quadro solo. Cinque gradini, quattro punti di abbandono, un gradino che vale più di tutti gli altri messi insieme: la landing page.</p>
+    <div class="head-meta">
+      <span>Progetto <b>AureaClub</b></span>
+      <span>Tipo <b>Membership · alto ticket</b></span>
+      <span>Documento <b>AUREA-FUNNEL.md</b></span>
+      <span>Studio <b>MediaPro</b></span>
+    </div>
+  </header>
+
+  <section>
+    <div class="sec-head">
+      <h2>I cinque gradini</h2>
+      <p>Ogni fascia perde persone: è normale, è il mestiere. Quello che non è normale è perderle senza sapere dove — per questo ogni gradino ha una percentuale attesa e un solo lavoro da fare.</p>
+    </div>
+
+    <div class="funnel-scroll">
+      <svg viewBox="0 0 1300 600" role="img" aria-labelledby="funnel-title funnel-desc">
+        <title id="funnel-title">Funnel di acquisizione AureaClub</title>
+        <desc id="funnel-desc">Imbuto a cinque fasce: traffico (100% dei visitatori), landing page (40–60% resta oltre 30 secondi), candidatura (6–12% dei visitatori si dichiara), selezione (40–60% dei candidati arriva alla call), socio (20–35% delle call firma). Fra una fascia e l'altra, quattro punti di abbandono.</desc>
+
+        <defs>
+          <linearGradient id="au-gold" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#c9a25f"/>
+            <stop offset="52%" stop-color="#f3dcae"/>
+            <stop offset="100%" stop-color="#c9a25f"/>
+          </linearGradient>
+        </defs>
+
+        <g transform="translate(150 12)">
+
+          <!-- 01 TRAFFICO -->
+          <g class="band">
+            <polygon points="50,0 950,0 894.1,108 105.9,108" fill="rgba(201,162,95,0.09)" stroke="rgba(201,162,95,0.26)"/>
+            <text class="s-num" x="88" y="34" fill="#6d6659">01</text>
+            <text class="s-title" x="500" y="42" fill="#f4efe6" text-anchor="middle">Traffico</text>
+            <text class="s-sub" x="500" y="66" fill="#a29a8c" text-anchor="middle">Meta · Google · Instagram · passaparola dei soci</text>
+            <text class="s-pct" x="500" y="90" fill="#c9a25f" text-anchor="middle">100% dei visitatori</text>
+            <line x1="954" y1="54" x2="1000" y2="54" stroke="rgba(201,162,95,0.3)" stroke-dasharray="2 4"/>
+            <text class="s-side" x="1010" y="40" fill="#6d6659">Meta / Instagram</text>
+            <text class="s-side" x="1010" y="58" fill="#6d6659">Google Search</text>
+            <text class="s-side" x="1010" y="76" fill="#6d6659">Passaparola</text>
+          </g>
+
+          <!-- 02 LANDING PAGE -->
+          <g class="band">
+            <polygon points="110,116 890,116 834.1,224 165.9,224" fill="rgba(201,162,95,0.16)" stroke="rgba(201,162,95,0.4)"/>
+            <text class="s-num" x="146" y="150" fill="#6d6659">02</text>
+            <text class="s-title" x="500" y="158" fill="#f4efe6" text-anchor="middle">Landing page</text>
+            <text class="s-sub" x="500" y="182" fill="#a29a8c" text-anchor="middle">Una promessa, una azione, nessuna via di fuga</text>
+            <text class="s-pct" x="500" y="206" fill="#c9a25f" text-anchor="middle">40–60% resta oltre i 30 secondi</text>
+            <line x1="866" y1="170" x2="998" y2="170" stroke="rgba(201,162,95,0.45)" stroke-dasharray="2 4"/>
+            <rect x="1004" y="157" width="86" height="26" rx="13" fill="rgba(201,162,95,0.16)" stroke="rgba(201,162,95,0.5)"/>
+            <text class="s-side" x="1047" y="174" fill="#f3dcae" text-anchor="middle">Focus</text>
+          </g>
+
+          <!-- 03 CANDIDATURA -->
+          <g class="band">
+            <polygon points="170,232 830,232 774.1,340 225.9,340" fill="rgba(201,162,95,0.24)" stroke="rgba(201,162,95,0.52)"/>
+            <text class="s-num" x="206" y="266" fill="#6d6659">03</text>
+            <text class="s-title" x="500" y="274" fill="#f4efe6" text-anchor="middle">Candidatura</text>
+            <text class="s-sub" x="500" y="298" fill="#a29a8c" text-anchor="middle">Sei campi, conferma su email e WhatsApp</text>
+            <text class="s-pct" x="500" y="322" fill="#f3dcae" text-anchor="middle">6–12% dei visitatori si dichiara</text>
+          </g>
+
+          <!-- 04 SELEZIONE -->
+          <g class="band">
+            <polygon points="230,348 770,348 714.1,456 285.9,456" fill="rgba(201,162,95,0.34)" stroke="rgba(201,162,95,0.62)"/>
+            <text class="s-num" x="266" y="382" fill="#8a8274">04</text>
+            <text class="s-title" x="500" y="390" fill="#f4efe6" text-anchor="middle">Selezione</text>
+            <text class="s-sub" x="500" y="414" fill="#b0a795" text-anchor="middle">Sette contatti in quattordici giorni, fino alla call</text>
+            <text class="s-pct" x="500" y="438" fill="#f3dcae" text-anchor="middle">40–60% dei candidati arriva alla call</text>
+          </g>
+
+          <!-- 05 SOCIO -->
+          <g class="band">
+            <polygon points="290,464 710,464 654.1,572 345.9,572" fill="url(#au-gold)"/>
+            <text class="s-num" x="326" y="498" fill="rgba(10,9,6,0.45)">05</text>
+            <text class="s-title" x="500" y="506" fill="#0a0906" text-anchor="middle">Socio</text>
+            <text class="s-sub" x="500" y="530" fill="rgba(10,9,6,0.72)" text-anchor="middle">Ingresso a numero chiuso, per città</text>
+            <text class="s-pct" x="500" y="554" fill="rgba(10,9,6,0.86)" text-anchor="middle">20–35% delle call firma</text>
+          </g>
+
+          <!-- abbandono -->
+          <g>
+            <line x1="-72" y1="112" x2="92" y2="112" stroke="rgba(156,98,87,0.42)" stroke-dasharray="2 5"/>
+            <text class="s-side" x="-140" y="116" fill="#9c6257">Abbandono</text>
+            <line x1="-72" y1="228" x2="148" y2="228" stroke="rgba(156,98,87,0.42)" stroke-dasharray="2 5"/>
+            <text class="s-side" x="-140" y="232" fill="#9c6257">Abbandono</text>
+            <line x1="-72" y1="344" x2="212" y2="344" stroke="rgba(156,98,87,0.42)" stroke-dasharray="2 5"/>
+            <text class="s-side" x="-140" y="348" fill="#9c6257">Abbandono</text>
+            <line x1="-72" y1="460" x2="272" y2="460" stroke="rgba(156,98,87,0.42)" stroke-dasharray="2 5"/>
+            <text class="s-side" x="-140" y="464" fill="#9c6257">Abbandono</text>
+          </g>
+
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Perché il secondo gradino vale più degli altri</h2>
+      <p>La homepage di un club deve rispondere a chiunque arrivi, e ha sette uscite perché serve che ne abbia sette. La landing ne ha una. È tutta qui la differenza fra spendere in pubblicità e acquisire soci.</p>
+    </div>
+
+    <dl class="cards">
+      <div class="card">
+        <dt>Obiettivo della landing</dt>
+        <dd>Dichiararsi</dd>
+        <small>Trasformare un click anonimo in un nome, un centro, una città.</small>
+      </div>
+      <div class="card">
+        <dt>Metrica chiave</dt>
+        <dd>CVR</dd>
+        <small>Visitatori che diventano candidature. Tutto il resto è contorno.</small>
+      </div>
+      <div class="card is-loss">
+        <dt>Su homepage generica</dt>
+        <dd>0,5–2%</dd>
+        <small>La pagina risponde a tutti e non convince nessuno.</small>
+      </div>
+      <div class="card">
+        <dt>Su landing dedicata</dt>
+        <dd>6–12%</dd>
+        <small>La pagina continua la frase dell'annuncio invece di ricominciarne un'altra.</small>
+      </div>
+      <div class="card is-lead">
+        <dt>Moltiplicatore</dt>
+        <dd>6×–10×</dd>
+        <small>A parità di budget speso. Nessun'altra leva rende altrettanto a costo zero.</small>
+      </div>
+    </dl>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>La matematica</h2>
+      <p>Il funnel serve a rispondere a una domanda sola: quanto costa un socio. Finché quella cifra non sta accanto a quanto vale un socio, si sta facendo comunicazione, non acquisizione.</p>
+    </div>
+
+    <div class="math">
+      <div class="chain">
+        <div class="step"><span>Budget mensile</span><b>2.000 €</b><i>CPC medio 0,60 €</i></div>
+        <div class="step"><span>Visitatori</span><b>3.333</b><i>traffico in target</i></div>
+        <div class="step"><span>Candidature</span><b>266</b><i>CVR 8%</i></div>
+        <div class="step"><span>Call sostenute</span><b>133</b><i>50% dei candidati</i></div>
+        <div class="step"><span>Soci</span><b>33</b><i>chiusura 25%</i></div>
+      </div>
+      <div class="cac">
+        <span>Costo di acquisizione</span>
+        <b>60 €</b>
+        <i>per socio. Sano se il valore nel tempo lo supera almeno di tre volte: con permanenza media 18 mesi, la quota mensile deve stare sopra i 10 €.</i>
+      </div>
+    </div>
+
+    <div class="note">
+      <span><b>Portare la conversione della landing dal 6% al 12% dimezza il costo per socio senza toccare il budget.</b> Nessuna ottimizzazione di targeting produce quel salto: è per questo che la landing è il gradino critico, e per questo si testa prima il titolo e poi tutto il resto.</span>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Sette contatti in quattordici giorni</h2>
+      <p>La fase di selezione non è una sequenza di email: è mista, perché nel beauty italiano WhatsApp si legge e l'email si archivia. Ogni contatto ha uno scopo dichiarato — se non ce l'ha, si toglie.</p>
+    </div>
+
+    <div class="seq">
+      <div class="beat is-head"><span class="ch">Giorno</span><span class="ch">Canale</span><span class="ch">Contenuto e scopo</span></div>
+      <div class="beat"><span class="day">0</span><span class="ch">Email</span><span class="what">Candidatura ricevuta, ecco cosa succede adesso<em>Ancorare l'aspettativa: entro quando, e chi chiamerà</em></span></div>
+      <div class="beat"><span class="day">0</span><span class="ch">WhatsApp</span><span class="what">Un messaggio breve, firmato da una persona<em>Far esistere un interlocutore, non un mittente</em></span></div>
+      <div class="beat"><span class="day">1</span><span class="ch">Email</span><span class="what">Perché è nato il club<em>Dare un motivo di esistere che non sia commerciale</em></span></div>
+      <div class="beat"><span class="day">3</span><span class="ch">Email</span><span class="what">Un caso reale: centro, città, cosa è cambiato e in quanto tempo<em>Prova, con nome e cognome</em></span></div>
+      <div class="beat"><span class="day">5</span><span class="ch">Email</span><span class="what">Cosa AureaClub non è<em>Credibilità per sottrazione: chi si esclude da solo si fa credere</em></span></div>
+      <div class="beat"><span class="day">8</span><span class="ch">WhatsApp</span><span class="what">«Ti va se sentiamo giovedì alle 15?»<em>La call si prenota con un orario, non si valuta</em></span></div>
+      <div class="beat"><span class="day">12</span><span class="ch">Email</span><span class="what">Le città in cui i posti sono chiusi<em>Scarsità — e vale solo se è vera</em></span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="note">
+      <span><b>Le percentuali di questo schema sono benchmark di settore per funnel ad alto ticket, non dati misurati di AureaClub.</b> Servono a dimensionare il lavoro e ad avere un metro il giorno che arrivano i numeri veri. Quel giorno si sostituiscono, e questo schema smette di essere una previsione per diventare un consuntivo.</span>
+      <span>Lo schema poggia su quattro ipotesi — chi paga è un professionista del beauty, si vende l'ingresso nella rete, il ticket giustifica una call, il club seleziona davvero. Sono elencate in apertura di <b>AUREA-FUNNEL.md</b>: se una cambia, cambia il disegno.</span>
+    </div>
+  </section>
+
+  <footer>
+    <span>AureaClub · The intelligence of beauty</span>
+    <span>MediaPro — Content &amp; Creative Studio</span>
+  </footer>
+
+</div>
