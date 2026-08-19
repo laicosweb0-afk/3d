@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Woman — che cos'è un funnel</title>
+<style>
+:root{
+  --paper:#ffffff; --ink:#1c1815; --ink-2:#5b544c; --ink-3:#8e8579;
+  --rule:rgba(28,24,21,.16); --hair:rgba(28,24,21,.09);
+  --granata:#b4184f; --ottone:#a8730a; --verde:#008573; --wash:#faf7f2;
+}
+@page { size: A4; margin: 17mm 15mm 15mm; }
+*{box-sizing:border-box;margin:0;}
+body{font-family:'Hanken Grotesk',Arial,sans-serif;font-weight:300;color:var(--ink);background:var(--paper);
+  font-size:10.5pt;line-height:1.55;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+h1,h2,h3.serif,.num,.big{font-family:'Fraunces',Georgia,serif;font-weight:400;}
+h1{font-size:27pt;line-height:1.05;letter-spacing:-.02em;margin-bottom:6pt;}
+h1 em{font-style:italic;color:var(--granata);}
+h2{font-size:16pt;line-height:1.15;letter-spacing:-.012em;}
+h3{font-size:11pt;font-weight:500;margin:0 0 4pt;}
+p{margin:0 0 7pt;max-width:64em;}
+.eyebrow{font-size:7.5pt;letter-spacing:.24em;text-transform:uppercase;color:var(--granata);font-weight:500;}
+.lede{font-size:11.5pt;color:var(--ink-2);max-width:54em;}
+.meta{margin-top:10pt;padding-top:7pt;border-top:1px solid var(--rule);font-size:7.5pt;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);display:flex;gap:16pt;flex-wrap:wrap;}
+.meta b{color:var(--ink-2);font-weight:500;}
+section{margin-top:15pt;break-inside:auto;}
+.sec-title{display:flex;align-items:baseline;gap:9pt;border-bottom:1px solid var(--rule);padding-bottom:5pt;margin-bottom:9pt;}
+.sec-title .n{font-family:'Fraunces',serif;font-size:13pt;color:var(--granata);}
+table{width:100%;border-collapse:collapse;margin:5pt 0 9pt;font-size:9.5pt;break-inside:avoid;}
+th{text-align:left;font-weight:500;font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
+  border-bottom:1px solid var(--rule);padding:0 7pt 4pt 0;vertical-align:bottom;}
+td{padding:5pt 7pt 5pt 0;border-bottom:1px solid var(--hair);vertical-align:top;color:var(--ink-2);}
+td b{color:var(--ink);font-weight:500;}
+td.term{color:var(--ink);font-weight:500;width:22%;}
+.box{background:var(--wash);border:1px solid var(--hair);padding:9pt 11pt;margin:7pt 0;break-inside:avoid;}
+.box.stop{border-left:2px solid var(--granata);}
+.box.ok{border-left:2px solid var(--verde);}
+.box.gold{border-left:2px solid var(--ottone);}
+.box .k{font-size:7.5pt;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4pt;}
+.box p:last-child{margin-bottom:0;}
+.script{font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:11pt;line-height:1.5;color:var(--ink);}
+ul{margin:0 0 7pt;padding-left:13pt;}
+li{margin-bottom:3pt;color:var(--ink-2);}
+li b{color:var(--ink);font-weight:500;}
+.fig{margin:9pt 0 5pt;break-inside:avoid;}
+.fig img{width:100%;border:1px solid var(--hair);}
+.fig svg{width:100%;height:auto;}
+.cap{font-size:8.5pt;color:var(--ink-3);margin-top:4pt;}
+.pagebreak{break-before:page;}
+.win{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9pt;margin:7pt 0 9pt;break-inside:avoid;}
+.w{border-top:2px solid var(--c);background:var(--wash);padding:8pt 9pt;}
+.w.a{--c:var(--granata);} .w.b{--c:var(--verde);} .w.c{--c:var(--ottone);}
+.w .n{font-size:7.5pt;letter-spacing:.18em;text-transform:uppercase;color:var(--c);font-weight:500;margin-bottom:3pt;}
+.w p{font-size:9pt;margin-bottom:4pt;}
+.w .q{font-size:8.5pt;color:var(--ink-3);border-top:1px solid var(--hair);padding-top:4pt;margin-top:5pt;}
+.states{display:grid;grid-template-columns:repeat(4,1fr);gap:7pt;margin:6pt 0 8pt;break-inside:avoid;}
+.st{border:1px solid var(--hair);border-top:2px solid var(--granata);padding:7pt 8pt;background:var(--wash);}
+.st b{display:block;font-size:10pt;font-weight:500;margin-bottom:2pt;}
+.st span{font-size:8.5pt;color:var(--ink-2);}
+footer{margin-top:14pt;padding-top:7pt;border-top:1px solid var(--rule);font-size:7.5pt;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);display:flex;justify-content:space-between;gap:10pt;}
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Woman · Documento di struttura</div>
+  <h1>Che cos'è un funnel,<br>e come lo facciamo <em>noi</em></h1>
+  <p class="lede">Prima le parole, poi la struttura. Questo documento serve a una cosa sola: che quando diciamo «finestra», «scrematura» o «interessato», tutti intendano la stessa cosa. Poi c'è come lo costruiamo con quello che Woman ha davvero.</p>
+  <div class="meta">
+    <span>Woman Srl · <b>Sant'Agata sul Santerno (RA)</b></span>
+    <span>Le tre finestre · <b>Social · Eventi · Internet</b></span>
+    <span>Agosto <b>2026</b></span>
+  </div>
+</header>
+
+<section>
+  <div class="sec-title"><span class="n">1</span><h2>Che cos'è un funnel</h2></div>
+
+  <p><b>Funnel vuol dire imbuto.</b> In cima entrano tante persone, in fondo ne esce poca, e a ogni passaggio se ne perde un pezzo. Non è un difetto: succede a chiunque venda qualcosa, sempre, anche al banco del negozio.</p>
+
+  <p>Allora a cosa serve disegnarlo? A una cosa sola, e non è la teoria: <b>a sapere in quale punto preciso si perde la gente.</b> Senza imbuto si dice «non funziona»; con l'imbuto si dice «si fermano al terzo passaggio», e si sistema quello.</p>
+
+  <div class="box ok">
+    <div class="k">La differenza che vale più di tutte</div>
+    <p>Una <b>homepage</b> è una piazza con dieci uscite: chi arriva può andare al catalogo, ai contatti, al blog, ai social, o uscire. Una <b>landing page</b> è un corridoio con un solo portone in fondo: nessuna via laterale, una sola azione possibile.</p>
+    <p>La guida di Alessandro Pedrazzoli lo quantifica così: una pagina generica converte fra lo <b>0,5% e il 2%</b>, una pagina dedicata fra il <b>10% e il 30%</b>. <i>Quei numeri non sono verificabili su una fonte primaria e non vanno promessi a nessuno</i> — ma la direzione non dipende dai numeri, e l'operazione costa zero: si tratta di togliere il menu.</p>
+  </div>
+
+  <p>Un funnel non è un software e non è una campagna. È <b>una sequenza di passaggi con un nome ciascuno</b>, dove ogni passaggio ha una regola di ingresso, un responsabile e un numero che lo misura. Tutto il resto — grafica, testi, annunci — è materiale che si appoggia sopra.</p>
+</section>
+
+<section>
+  <div class="sec-title"><span class="n">2</span><h2>Le parole che usiamo</h2></div>
+
+  <p>Questa è la parte che serve prima di tutte le altre. Finché ognuno chiama le stesse cose con nomi diversi, ogni riunione ricomincia da capo.</p>
+
+  <table>
+    <tr><th>Parola</th><th>Che cosa significa esattamente</th><th style="width:22%">Come si misura</th></tr>
+    <tr><td class="term">Finestra d'ingresso</td><td>Il modo in cui una persona ci incontra la prima volta. Ne abbiamo tre: <b>social, eventi, internet</b>. Non sono tre pubblici: sono tre modi di consegnare la stessa cosa</td><td>Quante persone ha raggiunto</td></tr>
+    <tr><td class="term">Gancio</td><td>Quello che facciamo per farla fermare: <b>«lo scopri»</b> (curiosità), <b>un regalo</b>, <b>una pagina</b></td><td>Quanti si fermano</td></tr>
+    <tr><td class="term">Pagina</td><td>La landing: una pagina sola, senza menu, con una sola azione possibile. Non è il sito — <b>il sito non è una finestra, è la stanza</b> dove arrivano tutti</td><td>Quanti restano oltre 30 secondi</td></tr>
+    <tr><td class="term">Scrematura</td><td>Il punto in cui da «tutti quelli raggiunti» restano solo «gli interessati». Non è un'impressione: è <b>un'azione compiuta o no</b></td><td>Quanti passano allo stato dopo</td></tr>
+    <tr><td class="term">Interessato</td><td>Chi ha fatto un gesto che costa qualcosa: un clic, un dato lasciato, una prenotazione. <b>Il «mi piace» non conta</b></td><td>Sì / no, per ogni contatto</td></tr>
+    <tr><td class="term">Codice</td><td>La chiave che dà il vantaggio e dice da quale finestra è entrata. <b>Uno diverso per ogni ente</b>, mai uno generico</td><td>Attivazioni per codice</td></tr>
+    <tr><td class="term">Telefonata</td><td>Il ramo alternativo alla pagina, per i casi che valgono: convenzioni, gift card aziendali, trattamenti</td><td>Chiamate fatte e chiuse</td></tr>
+    <tr><td class="term">Modulo</td><td>I campi che chiediamo. Tre sulla pagina, cinque al telefono. <b>Se un campo non cambia la decisione, non ci va</b></td><td>Quanti lo completano</td></tr>
+    <tr><td class="term">Conversione</td><td>Il gesto che vale davvero: <b>il primo acquisto</b>, in negozio o online. Non l'iscrizione</td><td>Acquisti per fonte</td></tr>
+    <tr><td class="term">Fonte</td><td>Il campo obbligatorio su ogni contatto: da quale finestra è entrato e con quale codice</td><td>È il campo che regge tutto</td></tr>
+  </table>
+
+  <div class="box">
+    <div class="k">Perché «finestre» e non «porte»</div>
+    <p>Perché è la parola usata in riunione — <i>«quali sono i canali d'ingresso su cui posso agire con la comunicazione»</i>. Quando due persone hanno due parole per la stessa cosa, si tiene quella di chi deve venderla.</p>
+  </div>
+</section>
+
+<section class="pagebreak">
+  <div class="sec-title"><span class="n">3</span><h2>Le nostre tre finestre</h2></div>
+
+  <p>Sono tre modi di consegnare la stessa cosa — la convenzione con il suo codice, il regalo di Natale, l'invito alla serata. Cambia chi le apre e quanto costano; non cambia dove portano.</p>
+
+  <div class="win">
+    <div class="w a">
+      <div class="n">Internet</div>
+      <p><b>Che cos'è.</b> La mail diretta, il link che un'azienda gira ai suoi, la ricerca su Google, l'e-commerce.</p>
+      <p><b>Chi ci arriva.</b> Chi ci sta cercando, o a cui qualcuno ha messo il link in mano.</p>
+      <p><b>Cosa ci mettiamo.</b> La DEM alla base clienti, le pagine di convenzione, la pagina della gift card.</p>
+      <div class="q">È l'unica finestra che raggiunge <b>chi ha già comprato da noi</b>. Per questo si apre per prima.</div>
+    </div>
+    <div class="w b">
+      <div class="n">Eventi</div>
+      <p><b>Che cos'è.</b> La serata in negozio, il banco, la fiera, la consulenza su appuntamento.</p>
+      <p><b>Chi ci arriva.</b> Poche persone, ma le migliori: ti hanno visto in faccia.</p>
+      <p><b>Cosa ci mettiamo.</b> Serate a posti limitati su prenotazione, e la serata riservata ai dipendenti di un'azienda convenzionata.</p>
+      <div class="q">Costa cara se la paghiamo noi, <b>quasi nulla se la paga il brand</b> (Chanel, Dior, YSL: sono loro a finanziare le giornate di consulenza).</div>
+    </div>
+    <div class="w c">
+      <div class="n">Social</div>
+      <p><b>Che cos'è.</b> Il post, la storia, l'annuncio a pagamento.</p>
+      <p><b>Chi ci arriva.</b> Estranei: non ci stavano cercando, gli arriviamo addosso mentre scorrono.</p>
+      <p><b>Cosa ci mettiamo.</b> I quattro post della convenzione, il catalogo di Natale, i contenuti aspirazionali.</p>
+      <div class="q">Oggi il profilo ha <b>una cinquantina di follower</b>: in organico non esiste. Si accende per ultimo, e a pagamento.</div>
+    </div>
+  </div>
+
+  <div class="box gold">
+    <div class="k">La regola che tiene insieme le tre</div>
+    <p><b>Message match.</b> Se il post dice «Gift Card Woman a importo libero», la pagina su cui atterra deve dire <i>esattamente</i> «Gift Card Woman a importo libero», con la stessa immagine. Se la mail promette il 20% ai dipendenti di un'azienda, la pagina deve avere il nome di quell'azienda nel titolo.</p>
+    <p>È l'errore più costoso e il più facile da evitare: <b>ogni finestra ha la sua pagina</b>, e la pagina continua la frase da cui si arriva invece di ricominciarne un'altra.</p>
+  </div>
+</section>
+<section>
+  <div class="sec-title"><span class="n">4</span><h2>La scrematura: da «tutti» a «interessati»</h2></div>
+
+  <p>In cima ci sono tutti quelli che abbiamo raggiunto. Più sotto devono restare solo gli interessati. Il punto delicato è <b>come si decide chi passa</b>: non con un'impressione, ma con un gesto che la persona ha compiuto o no.</p>
+
+  <div class="states">
+    <div class="st"><b>1 · Toccato</b><span>Ha visto il post, ha ricevuto la mail, era alla serata. Non ha fatto niente.</span></div>
+    <div class="st"><b>2 · Curioso</b><span>Ha cliccato, ha aperto la pagina, ha chiesto informazioni.</span></div>
+    <div class="st"><b>3 · Dichiarato</b><span>Ha lasciato i suoi dati e attivato il codice. <b>Qui passa la linea.</b></span></div>
+    <div class="st"><b>4 · Cliente</b><span>Ha comprato almeno una volta, in negozio o online.</span></div>
+  </div>
+
+  <table>
+    <tr><th style="width:26%">Passaggio</th><th>La regola: si passa solo se…</th><th style="width:22%">Chi lo registra</th></tr>
+    <tr><td class="term">Toccato → Curioso</td><td>Ha cliccato il link o è entrato in negozio col volantino in mano</td><td>Il sito, in automatico</td></tr>
+    <tr><td class="term">Curioso → Dichiarato</td><td>Ha compilato i tre campi e ha ricevuto il codice</td><td>Il modulo</td></tr>
+    <tr><td class="term">Dichiarato → Cliente</td><td>Ha usato il codice almeno una volta</td><td>La cassa o l'e-commerce</td></tr>
+  </table>
+
+  <div class="box stop">
+    <div class="k">La cosa che si sbaglia sempre</div>
+    <p><b>Un codice attivato e mai usato non è un cliente</b>, è una riga in un foglio. Il numero da leggere il lunedì non è «quanti si sono iscritti», è <b>quanti hanno comprato</b>. Tutto il resto serve solo ad arrivarci.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-title"><span class="n">5</span><h2>I tre ganci, nell'ordine giusto</h2></div>
+
+  <p>Sono tre e sono già stati scelti in riunione: <b>«lo scopri», un regalo, una pagina.</b> Messi nell'ordine sbagliato non funzionano, perché ognuno risponde a una domanda diversa che la persona si fa.</p>
+
+  <table>
+    <tr><th style="width:20%">Gancio</th><th>A che domanda risponde</th><th style="width:34%">Come lo facciamo noi</th></tr>
+    <tr><td class="term">① «Lo scopri»<br><span style="font-weight:300;color:var(--ink-3);font-size:8.5pt">curiosità</span></td><td><i>«Questa cosa mi riguarda?»</i> — è la parte aspirazionale: non vende, fa desiderare e fa capire alla persona dove si trova</td><td>Una domanda, non uno sconto: <b>«Qual è il tuo profumo?»</b> Sei domande, e alla fine tre proposte scelte per lei</td></tr>
+    <tr><td class="term">② Il regalo<br><span style="font-weight:300;color:var(--ink-3);font-size:8.5pt">reciprocità</span></td><td><i>«Cosa ci guadagno adesso?»</i> — deve costare poco a noi e valere molto per lei</td><td><b>Tre campioni scelti in base alle risposte</b>, spediti a casa e scalati dal primo acquisto. I campioni li danno i brand: costano quasi nulla e risolvono l'unica obiezione vera — «non lo posso provare»</td></tr>
+    <tr><td class="term">③ La pagina<br><span style="font-weight:300;color:var(--ink-3);font-size:8.5pt">azione</span></td><td><i>«Cosa devo fare?»</i> — una sola azione possibile, ripetuta tre o quattro volte</td><td>Una pagina per finestra e per ente, con il codice già dentro e tre campi da compilare</td></tr>
+  </table>
+
+  <div class="box ok">
+    <div class="k">Perché una domanda batte uno sconto</div>
+    <p>Tutti aprono con «-20%». Chi apre con <b>«Qual è il tuo profumo?»</b> ottiene tre cose in un colpo solo: si fa notare, <b>si fa scremare da sola</b> la persona che risponde, e raccoglie la profilazione che servirà al CRM — senza chiederla come un modulo. E lo sconto resta in tasca per dopo, quando serve a chiudere invece che ad attirare.</p>
+  </div>
+</section>
+
+<section class="pagebreak">
+  <div class="sec-title"><span class="n">6</span><h2>La pagina, pezzo per pezzo</h2></div>
+
+  <p>La guida di Pedrazzoli la scompone in sette elementi. Sono giusti, e questi sono i nostri.</p>
+
+  <table>
+    <tr><th style="width:26%">Elemento</th><th>Per noi vuol dire</th></tr>
+    <tr><td class="term">1 · Intestazione pulita</td><td>Logo e basta. <b>Nessun menu, nessun link ai social, nessun «chi siamo»</b>: le uniche uscite sono il pulsante e la X del browser</td></tr>
+    <tr><td class="term">2 · Titolo e sottotitolo</td><td>Otto-dodici parole, dirette, non creative. Ci va <b>il nome dell'ente e il numero</b>: «I dipendenti di [Azienda] hanno il 20% da Woman». Sotto, i reparti: profumeria, estetica, acconciatura</td></tr>
+    <tr><td class="term">3 · Immagine vera</td><td>Il negozio o il banco, non una modella d'archivio. La foto del negozio dice «esiste, è a dieci minuti da te»</td></tr>
+    <tr><td class="term">4 · Tre benefici</td><td>Tre, non otto. Lo sconto sui prodotti, lo sconto sui trattamenti, e che vale <b>anche per i familiari conviventi</b></td></tr>
+    <tr><td class="term">5 · Prova</td><td>«Dal 1989», i marchi trattati, il logo dell'ente (con autorizzazione) e — appena ci sono — testimonianze con <b>nome, foto e città veri</b>. Mai «Mario R., Italia»</td></tr>
+    <tr><td class="term">6 · Il pulsante</td><td>Uno solo, ripetuto tre o quattro volte, <b>sempre con le stesse parole</b>: «Attiva il mio codice». Mai «Invia»</td></tr>
+    <tr><td class="term">7 · Cinque domande</td><td>Quelle vere: devo pagare qualcosa · vale per mio marito · posso usarlo online · si somma alle promozioni · fino a quando</td></tr>
+  </table>
+
+  <div class="box gold">
+    <div class="k">Due vincoli tecnici che valgono più della grafica</div>
+    <p><b>Sotto i tre secondi di caricamento.</b> Il link della convenzione si apre al lavoro, in pausa, su un telefono, con una linea qualunque. Foto compresse, niente carosello in cima, niente video che parte da solo.</p>
+    <p><b>Prima il telefono, poi il computer.</b> Il nostro pubblico sarà mobile ben oltre l'80%: la pagina si disegna sul telefono e si adatta dopo, mai il contrario.</p>
+  </div>
+
+  <p><b>Il modulo: tre campi.</b> Nome, email, ente di appartenenza. Il terzo sembra sacrificabile e invece è il più importante: valida il diritto alla convenzione e ci dice da quale finestra è entrata. Telefono, data di nascita, preferenze: si chiedono dopo, in negozio.</p>
+
+  <p><b>Due caselle separate, mai già spuntate:</b> una per le comunicazioni commerciali, una per le proposte personalizzate. La seconda è quella che un domani renderà legittimo il CRM di Aurea.</p>
+
+  <p><b>La pagina del grazie.</b> È la più sottovalutata e per un negozio è la più importante: ci vanno il codice grande da salvare, la mappa con i minuti di distanza, gli orari, e un motivo per venire questa settimana. Non «grazie, controlla la mail».</p>
+</section>
+
+<section>
+  <div class="sec-title"><span class="n">7</span><h2>Il ramo telefonata</h2></div>
+
+  <p>Non tutto si chiude su una pagina. Quando il valore è alto — una convenzione da firmare, una gift card aziendale, un percorso di trattamenti — si chiama. Ma <b>non si chiama tutti</b>: si chiama chi è già «Dichiarato».</p>
+
+  <table>
+    <tr><th style="width:26%">Domanda</th><th>Risposta operativa</th></tr>
+    <tr><td class="term">Chi si chiama</td><td>Solo chi ha lasciato il numero <b>e</b> vale la chiamata: aziende, enti, gift card corporate, trattamenti</td></tr>
+    <tr><td class="term">Entro quando</td><td><b>24 ore.</b> Oltre, la probabilità di risposta crolla: non è un dettaglio operativo, è metà del risultato</td></tr>
+    <tr><td class="term">Chi risponde</td><td>Una persona sola, con nome e cognome, sempre la stessa. Va deciso <b>prima</b> di pubblicare la pagina</td></tr>
+    <tr><td class="term">Con che modulo</td><td>Cinque campi, sempre gli stessi: chi è · da quale finestra arriva · cosa gli serve · cosa gli abbiamo detto · quando risentirsi</td></tr>
+    <tr><td class="term">Come finisce</td><td>Ogni chiamata si chiude con una data, non con un «ci risentiamo»</td></tr>
+  </table>
+</section>
+<section class="pagebreak">
+  <div class="sec-title"><span class="n">8</span><h2>Tutto insieme</h2></div>
+
+  <div class="fig">
+    <img src="woman-funnel-chiaro.png" alt="La tavola del funnel di Woman">
+    <div class="cap">Le tre finestre convergono su una pagina sola; l'imbuto scende fino al primo acquisto; l'anello tratteggiato riporta all'inizio perché chi torna porta il prossimo.</div>
+  </div>
+
+  <p>Da leggere in cinque passaggi: <b>le tre finestre</b> in alto → le tre righe scomode sotto di esse (quale conviene e perché) → <b>le linee che convergono</b>: qualunque finestra prendano, arrivano tutti sulla stessa pagina → <b>l'imbuto</b>, dove il gradino che conta è il primo acquisto e non l'iscrizione → <b>l'anello</b>, che è il punto di tutto: finché ci fermiamo alla prima vendita ogni cliente costa, quando i clienti tornano e portano qualcuno il costo scende da solo.</p>
+</section>
+
+<section>
+  <div class="sec-title"><span class="n">9</span><h2>Cosa ci serve per partire</h2></div>
+
+  <p>Diviso in tre: quello che ha solo Woman, quello che si costruisce, quello che si decide una volta e vale per sempre.</p>
+
+  <table>
+    <tr><th style="width:30%">Quello che ha solo Woman</th><th>Perché serve</th></tr>
+    <tr><td class="term">I numeri della rubrica</td><td>Quante anagrafiche, quante con email, quante con <b>acquisto documentato</b>, quante con informativa raccolta. Decide se i contatti sono già in casa o vanno comprati — ed è un pomeriggio di lavoro sul gestionale</td></tr>
+    <tr><td class="term">Scontrino medio e ritorni</td><td>Quanto spende un cliente e quante volte torna in un anno. Senza, ogni conto sul valore di un contatto è aria</td></tr>
+    <tr><td class="term">Lo sconto sostenibile</td><td>Quanto si può dare, reparto per reparto. Profumeria e trattamenti possono avere percentuali diverse</td></tr>
+    <tr><td class="term">Chi risponde</td><td>Nome e cognome della persona che richiama entro 24 ore</td></tr>
+  </table>
+
+  <table>
+    <tr><th style="width:30%">Quello che si costruisce</th><th>Cosa contiene</th></tr>
+    <tr><td class="term">La pagina modello</td><td>Una volta sola, poi si duplica in un quarto d'ora per ogni ente: nome dell'ente nel titolo, codice già dentro, tre campi, due consensi</td></tr>
+    <tr><td class="term">Il kit di lancio</td><td>Quello che si consegna all'ente: locandina A4 con QR, immagine per la chat interna, testo email già scritto, e una seconda locandina per il rilancio dopo trenta giorni</td></tr>
+    <tr><td class="term">Il fascicolo convenzione</td><td>Lettera di proposta, accordo di due pagine, e i quattro elenchi (CRAL, aziende, ordini, enti pubblici)</td></tr>
+    <tr><td class="term">Il catalogo di Natale</td><td>Un solo prodotto — la gift card — nelle due varianti: al portatore per i regali, nominativa per le aziende</td></tr>
+    <tr><td class="term">Il tracciamento</td><td>Cinque eventi con il campo <b>fonte</b> obbligatorio</td></tr>
+  </table>
+
+  <table>
+    <tr><th style="width:30%">Quello che si decide una volta</th><th>La decisione</th></tr>
+    <tr><td class="term">Dove vivono le pagine</td><td>Sul dominio dell'e-commerce o su uno dedicato</td></tr>
+    <tr><td class="term">Come si scrivono i codici</td><td>Uno per ente, con un nome leggibile. Mai un codice unico</td></tr>
+    <tr><td class="term">Chi tiene i numeri</td><td>Una persona, un foglio, sette righe, ogni lunedì</td></tr>
+  </table>
+</section>
+
+<section>
+  <div class="sec-title"><span class="n">10</span><h2>Come si misura</h2></div>
+
+  <p>Cinque eventi, con lo stesso nome ovunque, e su ognuno un campo obbligatorio: <b>da quale finestra è entrato</b>.</p>
+
+  <table>
+    <tr><th style="width:26%">Evento</th><th>Che domanda risponde</th></tr>
+    <tr><td class="term">visita</td><td>Quante persone sono arrivate sulla pagina</td></tr>
+    <tr><td class="term">inizio modulo</td><td>Quanti hanno cominciato a compilare — distingue «non interessa» da «modulo troppo lungo»</td></tr>
+    <tr><td class="term">iscrizione</td><td>Quanti si sono dichiarati. <b>Con il campo fonte</b>: convenzione:nome-ente · negozio · evento:data · dem · social · giftcard</td></tr>
+    <tr><td class="term">primo acquisto</td><td>La conversione vera</td></tr>
+    <tr><td class="term">riacquisto</td><td>Se il progetto sta in piedi oppure no</td></tr>
+  </table>
+
+  <div class="box ok">
+    <div class="k">Il principio che vale per tutto il documento</div>
+    <p>Le percentuali che circolano nel settore — le mediane più citate, i tassi «per PMI italiane», le conversioni per canale — <b>non reggono a un controllo serio</b>: campioni di piattaforma stranieri, dati pubblicati da chi vende lo strumento misurato, incoerenze interne.</p>
+    <p>Quindi <b>non promettiamo una percentuale: promettiamo una misura.</b> Le prime tre-cinque convenzioni si trattano come un esperimento, con un codice e una pagina ciascuna. Dopo quattro-sei settimane il numero è nostro — e quello nessuno può contestarlo, perché è di Woman.</p>
+  </div>
+
+  <div class="box stop">
+    <div class="k">Le due frasi da non dire mai</div>
+    <p><b>«Convertiremo il 10%.»</b> È una frase che si può solo perdere: se va meglio nessuno se lo ricorda, se va peggio è colpa nostra.</p>
+    <p><b>«Con la rete Aurea…»</b> Oggi si promette Woman: negozio, e-commerce, trattamenti. Cose che esistono e che si possono vedere. I contatti raccolti adesso, con i consensi giusti, sono esattamente quelli che riempiranno Aurea quando ci sarà.</p>
+  </div>
+</section>
+
+<footer>
+  <span>Woman Srl · Via San Martino 1, Sant'Agata sul Santerno (RA)</span>
+  <span>Documento di struttura · le tre finestre</span>
+</footer>
+</body>
+</html>
