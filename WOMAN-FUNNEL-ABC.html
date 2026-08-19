@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Il funnel spiegato dall'inizio</title>
+<style>
+:root{
+  --paper:#ffffff; --ink:#1c1815; --ink-2:#544d45; --ink-3:#8b8278;
+  --rule:rgba(28,24,21,.18); --hair:rgba(28,24,21,.10);
+  --granata:#b4184f; --ottone:#a8730a; --verde:#008573;
+  --wash:#faf7f2; --wash2:#f5efe6;
+}
+@page { size: A4; margin: 16mm 15mm 14mm; }
+*{box-sizing:border-box;margin:0;}
+body{font-family:'Hanken Grotesk',Arial,sans-serif;font-weight:300;color:var(--ink);background:var(--paper);
+  font-size:11pt;line-height:1.62;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+b,strong{font-weight:500;color:var(--ink);}
+
+h1{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:30pt;line-height:1.03;letter-spacing:-.022em;margin-bottom:8pt;}
+h1 em{font-style:italic;color:var(--granata);}
+.eyebrow{font-size:8pt;letter-spacing:.26em;text-transform:uppercase;color:var(--granata);font-weight:500;margin-bottom:9pt;}
+.lede{font-size:12pt;color:var(--ink-2);max-width:52em;}
+.meta{margin-top:12pt;padding-top:8pt;border-top:1px solid var(--rule);font-size:8pt;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-3);display:flex;gap:18pt;flex-wrap:wrap;}
+.meta b{color:var(--ink-2);font-weight:500;}
+
+.lez{margin-top:20pt;}
+.lez-h{display:flex;align-items:baseline;gap:10pt;border-bottom:1.5px solid var(--ink);padding-bottom:6pt;margin-bottom:11pt;}
+.lez-h .n{font-family:'Fraunces',serif;font-size:9pt;letter-spacing:.2em;text-transform:uppercase;color:var(--granata);
+  font-weight:400;white-space:nowrap;}
+.lez-h h2{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:18pt;line-height:1.1;letter-spacing:-.015em;}
+h3{font-family:'Hanken Grotesk',Arial,sans-serif;font-size:11.5pt;font-weight:500;margin:11pt 0 4pt;}
+p{margin:0 0 8pt;max-width:60em;}
+.small{font-size:10pt;color:var(--ink-2);}
+
+.frase{border-left:3px solid var(--granata);background:var(--wash);padding:10pt 13pt;margin:10pt 0 12pt;break-inside:avoid;}
+.frase .k{font-size:8pt;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4pt;}
+.frase p{font-family:'Fraunces',Georgia,serif;font-size:12.5pt;line-height:1.42;margin:0;color:var(--ink);}
+
+.nota{background:var(--wash);border:1px solid var(--hair);padding:9pt 12pt;margin:9pt 0;break-inside:avoid;font-size:10pt;}
+.nota.gold{border-left:3px solid var(--ottone);}
+.nota.ok{border-left:3px solid var(--verde);}
+.nota .k{font-size:8pt;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4pt;}
+.nota p{margin-bottom:5pt;}.nota p:last-child{margin-bottom:0;}
+
+.due{display:grid;grid-template-columns:1fr 1fr;gap:12pt;margin:10pt 0 12pt;break-inside:avoid;}
+.col{border-top:2.5px solid var(--c);padding-top:8pt;}
+.col.a{--c:var(--verde);} .col.b{--c:var(--granata);}
+.col .t{font-size:8.5pt;letter-spacing:.16em;text-transform:uppercase;color:var(--c);font-weight:500;margin-bottom:5pt;}
+.col .big{font-family:'Fraunces',Georgia,serif;font-size:14pt;line-height:1.18;margin-bottom:6pt;}
+.col p{font-size:10pt;margin-bottom:5pt;}
+.col .dom{font-size:9.5pt;color:var(--ink-3);border-top:1px solid var(--hair);padding-top:5pt;margin-top:6pt;font-style:italic;}
+
+.scheda{border:1px solid var(--hair);border-left:3px solid var(--c);padding:11pt 13pt;margin:10pt 0;break-inside:avoid;}
+.scheda.a{--c:var(--granata);} .scheda.b{--c:var(--verde);} .scheda.c{--c:var(--ottone);}
+.scheda .num{font-family:'Fraunces',serif;font-size:8.5pt;letter-spacing:.2em;text-transform:uppercase;color:var(--c);margin-bottom:3pt;}
+.scheda .tit{font-family:'Fraunces',Georgia,serif;font-size:15pt;line-height:1.15;margin-bottom:7pt;}
+.riga{display:grid;grid-template-columns:118pt 1fr;gap:10pt;padding:5pt 0;border-top:1px solid var(--hair);font-size:10pt;}
+.riga .et{font-size:8.5pt;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);padding-top:2pt;}
+.riga .vl{color:var(--ink-2);}
+.riga .vl b{color:var(--ink);}
+
+.passi{counter-reset:p;margin:10pt 0 12pt;}
+.passo{display:grid;grid-template-columns:26pt 1fr;gap:10pt;padding:8pt 0;border-top:1px solid var(--hair);break-inside:avoid;}
+.passo:last-child{border-bottom:1px solid var(--hair);}
+.passo .c{font-family:'Fraunces',serif;font-size:17pt;color:var(--granata);line-height:1;padding-top:1pt;}
+.passo .txt b{display:block;font-size:11.5pt;margin-bottom:2pt;}
+.passo .txt span{font-size:10pt;color:var(--ink-2);}
+
+.regole{margin:10pt 0 12pt;break-inside:avoid;}
+.reg{display:grid;grid-template-columns:1fr;gap:2pt;padding:8pt 0;border-top:1px solid var(--hair);break-inside:avoid;}
+.reg:last-child{border-bottom:1px solid var(--hair);}
+.reg b{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:12.5pt;}
+.reg span{font-size:10pt;color:var(--ink-2);}
+
+.copione{background:var(--wash2);padding:12pt 14pt;margin:10pt 0;break-inside:auto;}
+.copione p{break-inside:avoid;}
+.copione .k{font-size:8pt;letter-spacing:.18em;text-transform:uppercase;color:var(--ottone);margin-bottom:6pt;font-weight:500;}
+.copione p{font-family:'Fraunces',Georgia,serif;font-size:11.5pt;line-height:1.5;margin-bottom:7pt;}
+.copione p:last-child{margin-bottom:0;}
+.copione .reg-i{font-family:'Hanken Grotesk',Arial,sans-serif;font-style:normal;font-size:8.5pt;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3);margin:9pt 0 3pt;}
+
+table{width:100%;border-collapse:collapse;margin:8pt 0 10pt;font-size:10pt;break-inside:auto;}
+tr{break-inside:avoid;}
+thead{break-after:avoid;}
+th{text-align:left;font-weight:500;font-size:8pt;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
+  border-bottom:1px solid var(--rule);padding:0 8pt 5pt 0;vertical-align:bottom;}
+td{padding:6pt 8pt 6pt 0;border-bottom:1px solid var(--hair);vertical-align:top;color:var(--ink-2);}
+td b{color:var(--ink);}
+td.term{color:var(--ink);font-weight:500;width:26%;}
+
+.fig{margin:12pt 0 6pt;break-inside:avoid;}
+.fig svg{width:100%;height:auto;display:block;}
+.cap{font-size:9pt;color:var(--ink-3);margin-top:6pt;}
+.pagebreak{break-before:page;}
+ul{margin:0 0 8pt;padding-left:14pt;}
+li{margin-bottom:4pt;color:var(--ink-2);}
+footer{margin-top:16pt;padding-top:8pt;border-top:1px solid var(--rule);font-size:8pt;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);display:flex;justify-content:space-between;gap:10pt;}
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Woman · foglio di scuola</div>
+  <h1>Il funnel, spiegato <em>dall'inizio</em></h1>
+  <p class="lede">Niente termini inglesi se non servono, niente teoria. Nove lezioni corte. Alla fine c'è
+  il copione per rispiegarlo a un'altra persona in tre minuti, che è il vero modo per sapere se l'hai capito.</p>
+  <div class="meta">
+    <span><b>Woman Srl</b> · Sant'Agata sul Santerno (RA)</span>
+    <span>Le tre sorgenti · <b>social · eventi · internet</b></span>
+    <span>Agosto <b>2026</b></span>
+  </div>
+</header>
+
+<div class="lez">
+  <div class="lez-h"><span class="n">Lezione 1</span><h2>Che cos'è un funnel</h2></div>
+
+  <p><b>Funnel è la parola inglese per imbuto.</b> Non è un programma, non è un sito, non è una campagna
+  pubblicitaria. È il disegno del viaggio che una persona fa da quando ti incontra la prima volta a quando
+  ti dà dei soldi — e di tutti i punti in cui, lungo quel viaggio, se ne va.</p>
+
+  <p>Si chiama imbuto perché in cima è largo e in fondo è stretto. In cima entrano tante persone, in fondo
+  ne esce poca. <b>Questo non è un difetto: è la normalità.</b> Succede a chiunque venda qualcosa, da sempre,
+  anche senza internet.</p>
+
+  <p>Pensa alla profumeria in una giornata qualsiasi. Passano davanti alla vetrina duecento persone.
+  Venti entrano. Otto si fanno servire davvero. Tre comprano. Una torna il mese dopo.
+  <b>Quello è già un funnel</b> — esiste da quando il negozio ha aperto, nessuno l'ha mai disegnato,
+  e proprio per questo nessuno sa dove si rompe.</p>
+
+  <div class="frase">
+    <div class="k">In una frase</div>
+    <p>Il funnel non è una cosa che si costruisce da zero: esiste già. Quello che si costruisce
+    è la capacità di <b>vederlo</b>.</p>
+  </div>
+</div>
+
+<div class="lez pagebreak">
+  <div class="lez-h"><span class="n">Lezione 2</span><h2>A che cosa serve</h2></div>
+
+  <p>Qui c'è l'equivoco più comune, e va tolto di mezzo subito. <b>Il funnel non porta clienti.</b>
+  Non è una macchina che produce vendite. Se ti aspetti quello, resterai deluso e lo abbandonerai
+  dopo un mese.</p>
+
+  <p>Il funnel serve a <b>capire dove si perde la gente</b>. È uno strumento di diagnosi, come i conti
+  divisi per reparto. L'incasso unico ti dice se il mese è andato bene o male. I conti divisi per reparto
+  ti dicono <b>dove intervenire</b>. È tutta lì la differenza.</p>
+
+  <p>In pratica il suo mestiere è uno solo: trasformare una frase inutile in una frase utile.</p>
+
+  <div class="due">
+    <div class="col b">
+      <div class="t">Senza imbuto si dice</div>
+      <div class="big">«Non funziona.»</div>
+      <p>Non ci puoi fare niente. Puoi solo rifare tutto da capo, o smettere. E di solito si smette.</p>
+    </div>
+    <div class="col a">
+      <div class="t">Con l'imbuto si dice</div>
+      <div class="big">«Si rompe al terzo passaggio.»</div>
+      <p>Su cento che arrivano, quaranta lasciano il contatto, ma solo tre entrano in negozio. Sai già
+      dove guardare: non è la pubblicità, non è la pagina, è che nessuno li richiama.</p>
+    </div>
+  </div>
+
+  <div class="nota ok">
+    <div class="k">Perché questo cambia tutto</div>
+    <p>La prima frase costa un mese di lavoro rifatto da zero. La seconda costa un pomeriggio,
+    perché sai esattamente su quale pezzo mettere le mani. <b>Il funnel non ti fa vendere di più:
+    ti fa sbagliare di meno, e molto più in fretta.</b></p>
+  </div>
+</div>
+<div class="lez pagebreak">
+  <div class="lez-h"><span class="n">Lezione 3</span><h2>Le due cose da non confondere mai</h2></div>
+
+  <p>Questo è il punto in cui quasi tutti si imbrogliano, e conviene fermarcisi sopra.
+  Nel disegno ci sono <b>due famiglie di cose diverse</b>, che stanno in due posti diversi
+  e servono a due scopi opposti.</p>
+
+  <div class="due">
+    <div class="col a">
+      <div class="t">In cima, in orizzontale</div>
+      <div class="big">Le tre sorgenti</div>
+      <p><b>Social · Eventi · Internet.</b> Sono i modi in cui una persona ti incontra la prima volta.
+      Il nome tecnico è «canali di acquisizione»; in riunione le abbiamo chiamate <b>finestre</b>.</p>
+      <p><b>Non filtrano niente: aprono.</b> Il loro unico mestiere è far entrare gente.</p>
+      <div class="dom">La domanda che fai a una sorgente: quante persone mi porti, e quanto mi costi?</div>
+    </div>
+    <div class="col b">
+      <div class="t">Sotto, in verticale</div>
+      <div class="big">I quattro filtri</div>
+      <p><b>La pagina · Il contatto · Il primo acquisto · Il ritorno.</b> Sono i gradini dell'imbuto,
+      i passaggi che la persona deve fare una dopo l'altro.</p>
+      <p><b>Non aprono niente: tolgono.</b> Ogni filtro lascia passare una parte e perde il resto.</p>
+      <div class="dom">La domanda che fai a un filtro: dove me le perdi, e perché?</div>
+    </div>
+  </div>
+
+  <p>Quindi lo schema completo è <b>tre sorgenti per quattro filtri</b>. Le persone entrano da tre parti
+  diverse, ma poi passano tutte dentro lo stesso tubo. Ed è per questo che <b>la pagina è una sola,
+  non tre</b>: cambia il modo in cui le persone arrivano, non quello che trovano quando sono arrivate.</p>
+
+  <div class="nota">
+    <div class="k">Una correzione utile</div>
+    <p>Si dice spesso: «il funnel funziona se funzionano tutte e tre le sorgenti». <b>Non è vero, ed è
+    un'idea che fa spendere soldi inutili.</b> Non serve che funzionino tutte e tre: serve sapere
+    <b>quale delle tre rende</b>, per spegnere le altre due e mettere i soldi su quella. All'inizio
+    ne funzionerà una sola, ed è normale. Il problema non è che le altre due vadano male —
+    il problema è non sapere quale delle tre sta andando bene.</p>
+  </div>
+
+  <div class="fig">
+    <svg viewBox="0 0 900 572" role="img" aria-label="Schema: in alto tre sorgenti — social, evento, internet — che convergono in un unico punto; sotto quattro filtri a imbuto sempre più stretti — la pagina, il contatto, il primo acquisto, il ritorno — con tre punti di perdita sulla destra e un anello tratteggiato che dal ritorno risale all'inizio.">
+      <style>
+        .sv-lab{font-family:'Hanken Grotesk',Arial,sans-serif;font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;}
+        .sv-sub{font-family:'Hanken Grotesk',Arial,sans-serif;font-size:11.5px;font-weight:300;}
+        .sv-name{font-family:'Hanken Grotesk',Arial,sans-serif;font-size:15px;font-weight:500;}
+        .sv-band{font-family:'Hanken Grotesk',Arial,sans-serif;font-size:15px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;}
+        .sv-bsub{font-family:'Hanken Grotesk',Arial,sans-serif;font-size:11.5px;font-weight:300;}
+        .sv-mini{font-family:'Hanken Grotesk',Arial,sans-serif;font-size:10.5px;font-weight:300;}
+        .sv-n{font-family:'Fraunces',Georgia,serif;font-size:13px;}
+      </style>
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#b4184f"/>
+        </marker>
+        <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#a89a90"/>
+        </marker>
+        <marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#a8730a"/>
+        </marker>
+      </defs>
+
+      <text class="sv-lab" x="95" y="26" fill="#008573">Le sorgenti — fanno entrare</text>
+
+      <g>
+        <rect x="95" y="42" width="210" height="66" rx="2" fill="#ffffff" stroke="#008573" stroke-width="1.4"/>
+        <text class="sv-name" x="112" y="70" fill="#1c1815">Social</text>
+        <text class="sv-sub" x="112" y="92" fill="#544d45">il post, l'annuncio</text>
+      </g>
+      <g>
+        <rect x="345" y="42" width="210" height="66" rx="2" fill="#ffffff" stroke="#008573" stroke-width="1.4"/>
+        <text class="sv-name" x="362" y="70" fill="#1c1815">Evento dal vivo</text>
+        <text class="sv-sub" x="362" y="92" fill="#544d45">la serata, il banco, la fiera</text>
+      </g>
+      <g>
+        <rect x="595" y="42" width="210" height="66" rx="2" fill="#ffffff" stroke="#008573" stroke-width="1.4"/>
+        <text class="sv-name" x="612" y="70" fill="#1c1815">Internet</text>
+        <text class="sv-sub" x="612" y="92" fill="#544d45">la mail, il link, la ricerca</text>
+      </g>
+
+      <path d="M 200 108 V 134 Q 200 148 214 148 H 440" fill="none" stroke="#008573" stroke-width="1.4"/>
+      <path d="M 450 108 V 148" fill="none" stroke="#008573" stroke-width="1.4"/>
+      <path d="M 700 108 V 134 Q 700 148 686 148 H 460" fill="none" stroke="#008573" stroke-width="1.4"/>
+      <circle cx="450" cy="148" r="4" fill="#b4184f"/>
+      <path d="M 450 148 V 184" fill="none" stroke="#b4184f" stroke-width="1.8" marker-end="url(#ar)"/>
+      <text class="sv-mini" x="466" y="174" fill="#544d45">tutte e tre finiscono nello stesso posto</text>
+
+      <text class="sv-lab" x="52" y="204" fill="#b4184f">I filtri</text>
+      <text class="sv-mini" x="52" y="222" fill="#544d45">tolgono</text>
+
+      <polygon points="250,196 650,196 625,262 275,262" fill="#f6dfe6" stroke="rgba(180,24,79,.28)"/>
+      <text class="sv-n" x="262" y="226" fill="#8b8278">1</text>
+      <text class="sv-band" x="450" y="226" fill="#1c1815" text-anchor="middle">La pagina</text>
+      <text class="sv-bsub" x="450" y="246" fill="#544d45" text-anchor="middle">arriva e capisce se è il posto giusto</text>
+
+      <polygon points="280,270 620,270 595,336 305,336" fill="#efc3d1" stroke="rgba(180,24,79,.28)"/>
+      <text class="sv-n" x="292" y="300" fill="#8b8278">2</text>
+      <text class="sv-band" x="450" y="300" fill="#1c1815" text-anchor="middle">Il contatto</text>
+      <text class="sv-bsub" x="450" y="320" fill="#544d45" text-anchor="middle">lascia nome e mail, prende il codice</text>
+
+      <polygon points="310,344 590,344 565,410 335,410" fill="#dd8ba8" stroke="rgba(180,24,79,.28)"/>
+      <text class="sv-n" x="322" y="374" fill="#6b3149">3</text>
+      <text class="sv-band" x="450" y="374" fill="#1c1815" text-anchor="middle">Il primo acquisto</text>
+      <text class="sv-bsub" x="450" y="394" fill="#3d1c2a" text-anchor="middle">entra e compra: qui diventa cliente</text>
+
+      <polygon points="340,418 560,418 535,484 365,484" fill="#a8730a" stroke="rgba(168,115,10,.4)"/>
+      <text class="sv-n" x="352" y="448" fill="#e8d5b0">4</text>
+      <text class="sv-band" x="450" y="448" fill="#ffffff" text-anchor="middle">Il ritorno</text>
+      <text class="sv-bsub" x="450" y="468" fill="#f6e8cf" text-anchor="middle">torna, e porta qualcuno con sé</text>
+
+      <path d="M 660 266 H 742" fill="none" stroke="#a89a90" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#ag)"/>
+      <text class="sv-mini" x="750" y="270" fill="#8b8278">se ne va</text>
+      <path d="M 630 340 H 742" fill="none" stroke="#a89a90" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#ag)"/>
+      <text class="sv-mini" x="750" y="344" fill="#8b8278">se ne va</text>
+      <path d="M 600 414 H 742" fill="none" stroke="#a89a90" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#ag)"/>
+      <text class="sv-mini" x="750" y="418" fill="#8b8278">se ne va</text>
+
+      <path d="M 450 490 V 522 H 26 V 66 H 86" fill="none" stroke="#a8730a" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#ao)"/>
+      <text class="sv-mini" x="200" y="540" fill="#a8730a">chi torna porta qualcuno: qui il costo di acquisizione scende da solo</text>
+    </svg>
+    <div class="cap"><b>Come si legge.</b> Le tre sorgenti in alto non sono tre pubblici diversi: sono tre
+    modi di consegnare la stessa cosa, e finiscono tutte sulla stessa pagina. Sotto, ogni gradino è più
+    stretto del precedente: è normale. Le frecce a destra sono le persone che si perdono — <b>il funnel
+    serve a sapere quale delle tre frecce è la più grossa.</b> L'anello tratteggiato in basso è il pezzo
+    che quasi tutti dimenticano, ed è quello che decide se il progetto sta in piedi.</div>
+  </div>
+
+</div>
+<div class="lez">
+  <div class="lez-h"><span class="n">Lezione 4</span><h2>Le tre sorgenti, una per una</h2></div>
+
+  <p>Si giudicano tutte con lo stesso metro: <b>quante persone portano</b> e <b>quanto costano</b>.
+  Non con le impressioni.</p>
+
+  <div class="scheda b">
+    <div class="num">Sorgente 1</div>
+    <div class="tit">Internet</div>
+    <div class="riga"><div class="et">Che cos'è</div><div class="vl">La mail che mandi alla tua rubrica, il link che un'azienda gira ai suoi dipendenti, chi ti cerca su Google, l'e-commerce.</div></div>
+    <div class="riga"><div class="et">Chi ci arriva</div><div class="vl">Gente che ti sta già cercando, o a cui qualcuno di fidato ha messo il link in mano. <b>Sono i più caldi di tutti.</b></div></div>
+    <div class="riga"><div class="et">Quanto costa</div><div class="vl">Pochissimo. Scrivere una mail alla tua base clienti costa il tempo di scriverla.</div></div>
+    <div class="riga"><div class="et">Il limite</div><div class="vl">Raggiunge solo chi ti conosce già. Non ti fa conoscere a nessuno di nuovo.</div></div>
+    <div class="riga"><div class="et">Quindi</div><div class="vl"><b>È la prima da aprire, sempre.</b> È l'unica che ti dà un numero vero senza spendere niente.</div></div>
+  </div>
+
+  <div class="scheda b">
+    <div class="num">Sorgente 2</div>
+    <div class="tit">Eventi dal vivo</div>
+    <div class="riga"><div class="et">Che cos'è</div><div class="vl">La serata in negozio, il banco alla fiera, la consulenza su appuntamento, la serata riservata ai dipendenti di un'azienda convenzionata.</div></div>
+    <div class="riga"><div class="et">Chi ci arriva</div><div class="vl">Poche persone, ma le migliori: <b>ti hanno visto in faccia.</b> Nessun altro canale fa questo.</div></div>
+    <div class="riga"><div class="et">Quanto costa</div><div class="vl">Cara se la paghi tu. <b>Quasi zero se la paga il brand</b> — sono loro a finanziare le giornate di consulenza.</div></div>
+    <div class="riga"><div class="et">Il limite</div><div class="vl">Non scala. Una serata sono trenta persone, non tremila, e ti costa una sera del tuo tempo.</div></div>
+    <div class="riga"><div class="et">Quindi</div><div class="vl">È la seconda. E la regola è una: <b>si apre quando la paga qualcun altro.</b></div></div>
+  </div>
+
+  <div class="scheda b">
+    <div class="num">Sorgente 3</div>
+    <div class="tit">Social</div>
+    <div class="riga"><div class="et">Che cos'è</div><div class="vl">Il post, la storia, l'annuncio a pagamento su Instagram o Facebook.</div></div>
+    <div class="riga"><div class="et">Chi ci arriva</div><div class="vl">Estranei. Non ti stavano cercando: <b>gli arrivi addosso mentre scorrono.</b> Sono i più freddi di tutti.</div></div>
+    <div class="riga"><div class="et">Quanto costa</div><div class="vl">Oggi il profilo ha una cinquantina di follower: <b>in organico non esiste.</b> O si paga, o non porta nessuno.</div></div>
+    <div class="riga"><div class="et">Il limite</div><div class="vl">È l'unica che ti fa pagare ogni singola persona, e a scatola chiusa se non sai ancora quanto vale un contatto.</div></div>
+    <div class="riga"><div class="et">Quindi</div><div class="vl"><b>È l'ultima, non la prima.</b> Si accende quando le altre due ti hanno già detto quanto puoi permetterti di pagare per un contatto.</div></div>
+  </div>
+
+  <div class="nota gold">
+    <div class="k">La trappola</div>
+    <p>Il social <em>sembra</em> gratis, quindi è quello da cui tutti vogliono partire. In realtà è il più
+    caro dei tre, perché è l'unico dove parli a gente che non ti conosce e non ti stava cercando.
+    <b>Si parte sempre da chi ti conosce già, e si allarga verso l'esterno</b> — mai il contrario.</p>
+  </div>
+</div>
+<div class="lez pagebreak">
+  <div class="lez-h"><span class="n">Lezione 5</span><h2>I quattro filtri, uno per uno</h2></div>
+
+  <p>Ogni filtro si guarda con quattro domande sempre uguali: <b>che cosa fa</b>, <b>perché perde gente</b>,
+  <b>quale numero lo misura</b>, <b>su cosa si mette le mani</b>. Se impari queste quattro domande hai
+  imparato il mestiere.</p>
+
+  <div class="scheda a">
+    <div class="num">Filtro 1</div>
+    <div class="tit">La pagina</div>
+    <div class="riga"><div class="et">Che cosa fa</div><div class="vl">Trasforma l'attenzione in interesse. La persona ha cliccato: adesso in tre secondi decide se è nel posto giusto.</div></div>
+    <div class="riga"><div class="et">Perché perde</div><div class="vl"><b>Perché non trova la stessa cosa che le era stata promessa.</b> Se il post diceva «convenzione per i dipendenti Bonfiglioli» e la pagina dice «benvenuti in Woman, profumeria dal 1989», l'hai persa. Quello che c'era scritto prima deve esserci scritto <b>identico</b> dopo.</div></div>
+    <div class="riga"><div class="et">L'altra perdita</div><div class="vl">Le vie di fuga. Il menu, i link ai social, «chi siamo». Una pagina che vende deve avere <b>una porta sola</b>: ogni link in più è una porta laterale.</div></div>
+    <div class="riga"><div class="et">Il numero</div><div class="vl">Quanti restano oltre trenta secondi, e quanti cominciano a compilare il modulo.</div></div>
+    <div class="riga"><div class="et">La leva</div><div class="vl"><b>Togliere.</b> Questo filtro si migliora sempre togliendo roba, mai aggiungendone. Ed è gratis.</div></div>
+  </div>
+
+  <div class="scheda a">
+    <div class="num">Filtro 2</div>
+    <div class="tit">Il contatto e il codice</div>
+    <div class="riga"><div class="et">Che cosa fa</div><div class="vl">Trasforma l'interesse in una <b>dichiarazione</b>. Fino a qui la persona non ha pagato niente. Adesso le chiedi un prezzo piccolo ma vero: il suo nome e la sua mail.</div></div>
+    <div class="riga"><div class="et">Perché perde</div><div class="vl">Perché il prezzo che chiedi è più alto del regalo che offri. <b>Sette campi da riempire per uno sconto sono troppi.</b> E perché il consenso è scritto in modo confuso: chi non capisce cosa sta firmando, chiude.</div></div>
+    <div class="riga"><div class="et">Il numero</div><div class="vl">Quanti aprono il modulo contro quanti lo finiscono. <b>Se in molti lo aprono e in pochi lo finiscono, il problema è il modulo.</b> Se in pochi lo aprono, il problema non è qui: è il filtro 1.</div></div>
+    <div class="riga"><div class="et">La leva</div><div class="vl">Tre campi soli. Due consensi <b>separati</b> — uno per la convenzione, uno per le comunicazioni. E il campo «da dove arriva» compilato in automatico, che è quello che regge tutta la misurazione.</div></div>
+  </div>
+
+  <div class="scheda a">
+    <div class="num">Filtro 3</div>
+    <div class="tit">Il primo acquisto</div>
+    <div class="riga"><div class="et">Che cosa fa</div><div class="vl">Trasforma la dichiarazione in soldi. <b>È l'unico gradino che conta davvero.</b></div></div>
+    <div class="riga"><div class="et">Perché perde</div><div class="vl"><b>Perché non c'è nessun motivo per farlo adesso.</b> Nessuna scadenza, nessuna telefonata, nessun promemoria. Il codice resta lì, buono per sempre — e quello che è buono per sempre non si usa mai.</div></div>
+    <div class="riga"><div class="et">Attenzione</div><div class="vl">È qui che muore quasi tutto, ed è qui che ci si illude. <b>Un codice attivato e mai usato non è un cliente: è una riga in un foglio.</b> Se il lunedì mattina guardi «quanti si sono iscritti» invece di «quanti hanno comprato», ti stai raccontando una favola.</div></div>
+    <div class="riga"><div class="et">Il numero</div><div class="vl">Acquisti, divisi per sorgente. <b>È l'unico numero che vale la pena portare in riunione.</b></div></div>
+    <div class="riga"><div class="et">La leva</div><div class="vl">Una scadenza vera, scritta sulla pagina. Il codice che <b>si attiva da solo</b> invece di doverlo ricordare alla cassa. E la telefonata entro ventiquattro ore per i casi che la meritano.</div></div>
+  </div>
+
+  <div class="scheda c">
+    <div class="num">Filtro 4</div>
+    <div class="tit">Il ritorno</div>
+    <div class="riga"><div class="et">Che cosa fa</div><div class="vl">Trasforma il cliente in un cliente <b>che torna e che porta qualcuno</b>.</div></div>
+    <div class="riga"><div class="et">Perché conta</div><div class="vl"><b>È il filtro che decide se il progetto sta in piedi.</b> I primi tre costano soldi: pubblicità, tempo, sconto. Il quarto è l'unico che li restituisce.</div></div>
+    <div class="riga"><div class="et">Il conto</div><div class="vl">Se un cliente compra una volta sola, ogni cliente nuovo ti costa quanto il primo, per sempre. Se torna tre volte e ne porta uno, <b>il costo per farne uno nuovo scende da solo</b>, senza che tu faccia niente.</div></div>
+    <div class="riga"><div class="et">Perché perde</div><div class="vl">Perché non gli hai dato <b>una seconda ragione</b> per tornare. Il profumo lo compri e per un anno non ci pensi più. Il trattamento, la gift card, la serata riservata: quelle sono seconde ragioni.</div></div>
+    <div class="riga"><div class="et">Il numero</div><div class="vl">Quanti hanno ricomprato entro tre mesi.</div></div>
+  </div>
+
+  <div class="frase">
+    <div class="k">In una frase</div>
+    <p>I primi tre filtri <b>consumano</b> i soldi. Il quarto è l'unico che li <b>restituisce</b>.
+    Chi guarda solo i primi tre lavora tanto e non guadagna mai.</p>
+  </div>
+</div>
+<div class="lez pagebreak">
+  <div class="lez-h"><span class="n">Lezione 6</span><h2>Come si costruisce — e perché l'ordine sorprende</h2></div>
+
+  <p>La cosa che sembra logica è partire dall'alto: prima faccio la pubblicità, poi vedo dove finisce.
+  <b>È il modo più veloce per buttare via i soldi.</b> Un funnel si costruisce dal basso verso l'alto:
+  prima si decide dove si deve arrivare, poi si apre il rubinetto.</p>
+
+  <div class="passi">
+    <div class="passo"><div class="c">1</div><div class="txt"><b>Decidi che cosa deve succedere. Una cosa sola.</b><span>«Il cliente entra in negozio e usa il codice.» Non tre obiettivi, non «farci conoscere»: una frase sola, con un verbo dentro. Se non sai rispondere a questa, tutto il resto è inutile.</span></div></div>
+    <div class="passo"><div class="c">2</div><div class="txt"><b>Costruisci la pagina che chiede esattamente quella cosa.</b><span>Un titolo, un motivo, un pulsante. Nessun menu. Se la pagina propone due cose, non ne fa nessuna.</span></div></div>
+    <div class="passo"><div class="c">3</div><div class="txt"><b>Metti il conta-persone prima di aprire, non dopo.</b><span>Il tracciamento e il campo «da dove arriva» vanno messi prima che entri il primo visitatore. Se li metti dopo, il primo mese di dati è perso e non torna più indietro.</span></div></div>
+    <div class="passo"><div class="c">4</div><div class="txt"><b>Apri una sorgente sola. La più economica.</b><span>Nel nostro caso: internet — la mail alla base clienti — più una convenzione pilota con una sola azienda. Costo vicino allo zero.</span></div></div>
+    <div class="passo"><div class="c">5</div><div class="txt"><b>Aspetta quattro-sei settimane. Poi leggi, e aggiusta un pezzo solo.</b><span>Quello che perde di più. Non tre pezzi insieme, altrimenti non saprai quale ha funzionato.</span></div></div>
+    <div class="passo"><div class="c">6</div><div class="txt"><b>Solo adesso apri la seconda sorgente.</b><span>E si ricomincia: leggi, aggiusta, poi la terza.</span></div></div>
+  </div>
+
+  <div class="nota">
+    <div class="k">La regola che vale più di tutte le altre</div>
+    <p><b>Si apre una sorgente per volta.</b> Se le apri tutte insieme e qualcosa va bene, non sai che cosa
+    è andato bene — e hai speso tre volte tanto per non saperlo. Sembra prudenza da contabili: è invece
+    l'unico modo per imparare qualcosa dal primo tentativo.</p>
+  </div>
+</div>
+
+<div class="lez">
+  <div class="lez-h"><span class="n">Lezione 7</span><h2>Le cinque regole da tenere a mente</h2></div>
+  <div class="regole">
+    <div class="reg"><b>1. Una pagina, un'azione.</b><span>Ogni link in più è una porta da cui la gente esce. Si migliora togliendo.</span></div>
+    <div class="reg"><b>2. Quello che prometti prima, lo mantieni identico dopo.</b><span>Stesse parole nell'annuncio e nella pagina. È gratis, ed è la cosa che rende di più.</span></div>
+    <div class="reg"><b>3. Il numero è chi compra, non chi si iscrive.</b><span>Le iscrizioni sono gratis, quindi non dicono niente. Solo lo scontrino dice qualcosa.</span></div>
+    <div class="reg"><b>4. Ogni contatto porta scritto da dove arriva.</b><span>Senza quel campo il funnel non esiste: hai un mucchio di nomi e nessuna diagnosi.</span></div>
+    <div class="reg"><b>5. Si parte da chi ti conosce già.</b><span>Prima la rubrica, poi le aziende, poi gli estranei a pagamento. Mai il contrario.</span></div>
+  </div>
+</div>
+<div class="lez">
+  <div class="lez-h"><span class="n">Lezione 8</span><h2>Perché è difficile — e non è colpa di nessuno</h2></div>
+
+  <p>Vale la pena capirlo, perché quando proponi un funnel a chi ha un'attività avviata trovi sempre
+  le stesse sei resistenze. Non sono pigrizia: sono ragioni vere. Se le conosci in anticipo, sai
+  rispondere invece di insistere.</p>
+
+  <table>
+    <thead><tr><th>La resistenza</th><th>Da dove nasce</th></tr></thead>
+    <tbody>
+      <tr><td class="term">«Il funnel, in negozio, sono io»</td><td>Entra una persona, lui la guarda, capisce e vende. Funziona benissimo. Ma non è scritto da nessuna parte, quindi non è misurabile, quindi non è delegabile e non si moltiplica. <b>Chiedergli un funnel vuol dire chiedergli di mettere per iscritto quello che fa a istinto</b> — che è difficilissimo, perché chi è bravo non sa più perché è bravo.</td></tr>
+      <tr><td class="term">Mancano le parole</td><td>Se uno dice «canali», un altro «porte» e un terzo «touchpoint», ogni riunione ricomincia da zero e nessuna decisione resta presa. <b>Il vocabolario condiviso non è un vezzo: è la prima cosa da costruire</b>, prima di qualunque pagina.</td></tr>
+      <tr><td class="term">Manca il numero di partenza</td><td>Non sa quanti nomi ha in rubrica, quanti con la mail valida, quanti col consenso raccolto. Senza quel numero ogni piano è un'ipotesi — e lo sente, e quindi non decide.</td></tr>
+      <tr><td class="term">Costruirlo vuol dire dire di no</td><td>Una pagina sola, un'azione sola, un messaggio solo. Per chi ha costruito tutto <b>aggiungendo</b> — un reparto, un servizio, un marchio, un progetto nuovo — togliere è il gesto più innaturale che esista.</td></tr>
+      <tr><td class="term">Il negozio allena al subito</td><td>Al banco vendi e vedi il risultato in tre minuti. Il funnel te lo dà dopo sei settimane, e le prime due sembrano tempo buttato. <b>Il momento in cui sembra «troppo lento» è esattamente il momento in cui sta iniziando a funzionare.</b></td></tr>
+      <tr><td class="term">La testa è già sul progetto dopo</td><td>Si progetta la cosa nuova mentre il funnel dovrebbe girare su quella che c'è già. Ed è un peccato, perché è il contrario: <b>i contatti raccolti adesso, con i consensi giusti, sono esattamente quelli che riempiranno il progetto nuovo quando ci sarà.</b></td></tr>
+    </tbody>
+  </table>
+
+  <div class="nota ok">
+    <div class="k">Come si scioglie</div>
+    <p>Non convincendolo a parole, ma <b>facendogli fare un pilota piccolo</b>: una convenzione sola,
+    una pagina sola, un codice solo, quattro settimane. Costa quasi niente e produce l'unica cosa che
+    toglie ogni discussione — <b>un numero suo</b>, che nessuno può contestare.</p>
+  </div>
+</div>
+<div class="lez">
+  <div class="lez-h"><span class="n">Lezione 9</span><h2>Come lo rispieghi a un'altra persona in tre minuti</h2></div>
+
+  <p>Questo è il vero esame. Se riesci a dire queste cose in fila, senza guardare il foglio,
+  l'hai capito. Il trucco è <b>non partire dalla parola «funnel»</b>: parti da una scena che l'altro
+  ha già in testa.</p>
+
+  <div class="copione">
+    <div class="k">Il copione</div>
+    <div class="reg-i">Primo minuto — la scena</div>
+    <p>«Guarda la vetrina. Oggi ci passano davanti duecento persone. Venti entrano, otto si fanno servire,
+    tre comprano, una torna il mese prossimo. Questo è un imbuto, e ce l'abbiamo già: nessuno l'ha
+    disegnato, ed è per questo che <b>non sappiamo dove si perde la gente</b>.»</p>
+
+    <div class="reg-i">Secondo minuto — le due famiglie</div>
+    <p>«Nel disegno ci sono due cose diverse. In alto ci sono <b>tre sorgenti</b>: il social, gli eventi
+    dal vivo e internet. Quelle non filtrano niente, fanno solo entrare gente, e a ognuna chiedi una cosa
+    sola: quante me ne porti e quanto mi costi. Sotto ci sono <b>quattro filtri</b>: la pagina,
+    il contatto, il primo acquisto, il ritorno. Quelli non fanno entrare nessuno, tolgono e basta —
+    e a quelli chiedi: dove me le perdi?»</p>
+
+    <p>«Le tre sorgenti finiscono tutte sulla stessa pagina. Cambia come arrivano, non cosa trovano.»</p>
+
+    <div class="reg-i">Terzo minuto — a cosa serve, davvero</div>
+    <p>«Il funnel non porta clienti. Serve a smettere di dire ‘non funziona’ e cominciare a dire
+    <b>‘si rompe al terzo passaggio’</b>. La prima frase costa un mese di lavoro rifatto da capo,
+    la seconda costa un pomeriggio.»</p>
+
+    <p>«E il gradino che conta non è il secondo, è il terzo: <b>uno che si iscrive e non compra non è un
+    cliente, è una riga in un foglio</b>. Il numero da guardare il lunedì mattina è quanti hanno comprato,
+    non quanti si sono iscritti.»</p>
+
+    <p>«Partiamo da una sorgente sola, la più economica, con una convenzione pilota. Fra un mese abbiamo
+    un numero nostro. <b>Non promettiamo una percentuale: promettiamo una misura.</b>»</p>
+  </div>
+
+  <div class="nota gold">
+    <div class="k">Le due frasi da non dire mai</div>
+    <p><b>«Convertiremo il dieci per cento.»</b> È una frase che si può solo perdere: se va meglio nessuno
+    se lo ricorda, se va peggio è colpa nostra. I numeri che girano nel settore vengono quasi sempre da
+    chi vende lo strumento che sta misurando.</p>
+    <p><b>«Poi lo colleghiamo al progetto nuovo.»</b> Si promette quello che esiste oggi: il negozio,
+    l'e-commerce, i trattamenti. Cose che si possono vedere e toccare.</p>
+  </div>
+</div>
+
+<div class="lez">
+  <div class="lez-h"><span class="n">Ripasso</span><h2>Le sette parole, in due righe l'una</h2></div>
+  <table>
+    <thead><tr><th>Parola</th><th>Che cosa vuol dire, senza giri</th></tr></thead>
+    <tbody>
+      <tr><td class="term">Funnel</td><td>Imbuto. Il viaggio della persona da quando ti incontra a quando compra, con tutti i punti in cui se ne va.</td></tr>
+      <tr><td class="term">Sorgente</td><td>Il modo in cui ti incontra la prima volta. Ne abbiamo tre: social, eventi, internet. Fanno entrare, non filtrano.</td></tr>
+      <tr><td class="term">Filtro</td><td>Un gradino dell'imbuto. Ne abbiamo quattro. Tolgono gente: il loro mestiere è quello.</td></tr>
+      <tr><td class="term">Pagina</td><td>La pagina unica dove finiscono tutte e tre le sorgenti. Una sola azione possibile, nessun menu.</td></tr>
+      <tr><td class="term">Contatto</td><td>Nome e mail lasciati di sua volontà, con i consensi giusti. Non è ancora un cliente.</td></tr>
+      <tr><td class="term">Conversione</td><td>Il primo acquisto. L'unico gesto che vale davvero. Non l'iscrizione.</td></tr>
+      <tr><td class="term">Sorgente d'origine</td><td>Il campo scritto su ogni contatto che dice da dove è entrato. Senza, il funnel non si può leggere.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<footer>
+  <span>Woman Srl · Via San Martino 1, Sant'Agata sul Santerno (RA)</span>
+  <span>Foglio di scuola · il funnel dall'inizio</span>
+</footer>
+</body>
+</html>
