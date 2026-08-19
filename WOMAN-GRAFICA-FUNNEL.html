@@ -1,0 +1,245 @@
+<title>Il funnel di Woman — la tavola</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Hanken+Grotesk:wght@300;400;500&display=swap">
+
+<style>
+/* ============================================================
+   Woman — la tavola del funnel.
+   Una figura sola, pensata per essere proiettata, stampata o
+   messa in una slide. Stessi colori del piano: carta avorio,
+   inchiostro caldo, granata per il percorso, ottone per il
+   punto in cui il funnel smette di essere un costo.
+   ============================================================ */
+
+:root {
+  --paper: #faf7f2;
+  --panel: #fffdfa;
+  --ink: #1c1815;
+  --ink-2: #6b6259;
+  --ink-3: #9a9088;
+  --rule: rgba(28, 24, 21, 0.16);
+  --hair: rgba(28, 24, 21, 0.08);
+  --granata: #b4184f;
+  --ottone: #a8730a;
+  --verde: #008573;
+  --drop: #a89a90;
+
+  --b1: #f6dfe6; --b2: #efc3d1; --b3: #dd8ba8; --b4: #a8730a;
+  --on-b1: #1c1815; --on-b2: #1c1815; --on-b3: #1c1815; --on-b4: #ffffff;
+  --band-line: rgba(180, 24, 79, 0.3);
+  --door-bg: #fffdfa;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #16130f; --panel: #1d1915; --ink: #f3ede4; --ink-2: #a89e92; --ink-3: #776d63;
+    --rule: rgba(243, 237, 228, 0.18); --hair: rgba(243, 237, 228, 0.09);
+    --granata: #e0578a; --ottone: #c08a1e; --verde: #2e9e8a; --drop: #6b6259;
+    --b1: #33161f; --b2: #481c2b; --b3: #7c2e4c; --b4: #c08a1e;
+    --on-b1: #f3ede4; --on-b2: #f3ede4; --on-b3: #f3ede4; --on-b4: #17120a;
+    --band-line: rgba(224, 87, 138, 0.36);
+    --door-bg: #241f1a;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #16130f; --panel: #1d1915; --ink: #f3ede4; --ink-2: #a89e92; --ink-3: #776d63;
+  --rule: rgba(243, 237, 228, 0.18); --hair: rgba(243, 237, 228, 0.09);
+  --granata: #e0578a; --ottone: #c08a1e; --verde: #2e9e8a; --drop: #6b6259;
+  --b1: #33161f; --b2: #481c2b; --b3: #7c2e4c; --b4: #c08a1e;
+  --on-b1: #f3ede4; --on-b2: #f3ede4; --on-b3: #f3ede4; --on-b4: #17120a;
+  --band-line: rgba(224, 87, 138, 0.36);
+  --door-bg: #241f1a;
+}
+
+* { box-sizing: border-box; margin: 0; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  font-weight: 300;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 1240px; margin: 0 auto; padding: 44px 22px 72px; display: flex; flex-direction: column; gap: 30px; }
+.wrap > * { min-width: 0; }
+
+figure { margin: 0; display: flex; flex-direction: column; gap: 16px; }
+.canvas { overflow-x: auto; }
+.canvas svg { display: block; width: 100%; min-width: 900px; height: auto; }
+figcaption { color: var(--ink-2); font-size: 14.5px; max-width: 74ch; }
+figcaption b { color: var(--ink); font-weight: 500; }
+
+.legenda { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.voce { border-top: 2px solid var(--c); background: var(--panel); border-left: 1px solid var(--hair); border-right: 1px solid var(--hair); border-bottom: 1px solid var(--hair); padding: 16px 16px 14px; }
+.voce.a { --c: var(--granata); } .voce.b { --c: var(--verde); } .voce.c { --c: var(--ottone); }
+.voce b { display: block; font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.voce span { font-size: 13.5px; color: var(--ink-2); }
+
+.foot { border-top: 1px solid var(--rule); padding-top: 16px; font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+
+@media (max-width: 760px) {
+  .wrap { padding: 32px 14px 56px; }
+  .legenda { grid-template-columns: 1fr; }
+}
+
+/* classi tipografiche della tavola */
+.t-eyebrow { font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase; }
+.t-title { font-family: 'Fraunces', Georgia, serif; font-size: 38px; }
+.t-sub { font-size: 16px; }
+.d-name { font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 500; }
+.d-title { font-size: 19px; font-weight: 500; }
+.d-note { font-size: 13.5px; }
+.b-title { font-family: 'Hanken Grotesk', sans-serif; font-size: 21px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; }
+.b-sub { font-size: 14px; opacity: 0.82; }
+.b-pct { font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.b-num { font-size: 12px; letter-spacing: 0.2em; opacity: 0.5; font-variant-numeric: tabular-nums; }
+.side { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; }
+.loop { font-size: 13.5px; }
+.k-lab { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; }
+.k-val { font-family: 'Fraunces', Georgia, serif; font-size: 27px; font-variant-numeric: tabular-nums; }
+.k-note { font-size: 12.5px; }
+.credit { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
+</style>
+
+<div class="wrap">
+
+  <figure>
+    <div class="canvas">
+      <svg viewBox="0 0 1500 1046" role="img" aria-label="Il funnel di Woman: tre porte — internet, evento dal vivo e social — convergono su un'unica pagina; da lì il percorso scende attraverso pagina, codice e contatto, primo acquisto e ritorno, con quattro punti di abbandono; dal ritorno un anello riporta al principio perché chi torna porta il cliente successivo.">
+
+        <defs>
+          <marker id="fr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--granata)"/>
+          </marker>
+          <marker id="fo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ottone)"/>
+          </marker>
+          <marker id="fd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--drop)"/>
+          </marker>
+        </defs>
+
+        <!-- intestazione -->
+        <text class="t-eyebrow" x="60" y="52" fill="var(--granata)">Schema — funnel di acquisizione</text>
+        <text class="t-title" x="60" y="102" fill="var(--ink)">Tre porte, una pagina, un cliente che torna</text>
+        <text class="t-sub" x="60" y="136" fill="var(--ink-2)">Woman · profumeria e beauty center · Sant'Agata sul Santerno, dal 1989</text>
+        <line x1="60" y1="160" x2="1440" y2="160" stroke="var(--rule)"/>
+
+        <!-- le tre porte -->
+        <g>
+          <rect x="105" y="196" width="400" height="98" rx="3" fill="var(--door-bg)" stroke="var(--granata)" stroke-width="1.5"/>
+          <text class="d-name" x="130" y="228" fill="var(--granata)">Internet</text>
+          <text class="d-title" x="130" y="256" fill="var(--ink)">La mail, il link, la ricerca</text>
+          <text class="d-note" x="130" y="279" fill="var(--ink-2)">Ti stanno cercando, o hanno il tuo link in mano</text>
+          <text class="side" x="130" y="322" fill="var(--granata)">13× rispetto al social</text>
+        </g>
+        <g>
+          <rect x="550" y="196" width="400" height="98" rx="3" fill="var(--door-bg)" stroke="var(--verde)" stroke-width="1.5"/>
+          <text class="d-name" x="575" y="228" fill="var(--verde)">Evento dal vivo</text>
+          <text class="d-title" x="575" y="256" fill="var(--ink)">La serata, il banco, la fiera</text>
+          <text class="d-note" x="575" y="279" fill="var(--ink-2)">Ti incontrano di persona, la tessera è in mano</text>
+          <text class="side" x="575" y="322" fill="var(--verde)">Conviene se lo paga il brand</text>
+        </g>
+        <g>
+          <rect x="995" y="196" width="400" height="98" rx="3" fill="var(--door-bg)" stroke="var(--ottone)" stroke-width="1.5"/>
+          <text class="d-name" x="1020" y="228" fill="var(--ottone)">Social</text>
+          <text class="d-title" x="1020" y="256" fill="var(--ink)">Il post e l'annuncio</text>
+          <text class="d-note" x="1020" y="279" fill="var(--ink-2)">Non ti stavano cercando: gli arrivi addosso</text>
+          <text class="side" x="1020" y="322" fill="var(--ottone)">Oggi 52 follower: per ultimo</text>
+        </g>
+
+        <!-- convergenza -->
+        <path d="M 305 340 V 356 Q 305 372 325 372 H 730" fill="none" stroke="var(--granata)" stroke-width="1.5"/>
+        <path d="M 750 340 V 372" fill="none" stroke="var(--verde)" stroke-width="1.5"/>
+        <path d="M 1195 340 V 356 Q 1195 372 1175 372 H 770" fill="none" stroke="var(--ottone)" stroke-width="1.5"/>
+        <circle cx="750" cy="372" r="4.5" fill="var(--granata)"/>
+        <path d="M 750 372 V 404" fill="none" stroke="var(--granata)" stroke-width="2" marker-end="url(#fr)"/>
+        <text class="loop" x="770" y="396" fill="var(--ink-2)">tutte e tre portano allo stesso posto</text>
+
+        <!-- imbuto -->
+        <g>
+          <polygon class="band" points="300,416 1200,416 1136.5,502 363.5,502" fill="var(--b1)" stroke="var(--band-line)"/>
+          <text class="b-num" x="330" y="448" fill="var(--on-b1)">01</text>
+          <text class="b-title" x="750" y="456" fill="var(--on-b1)" text-anchor="middle">La pagina</text>
+          <text class="b-sub" x="750" y="480" fill="var(--on-b1)" text-anchor="middle">Una per porta · niente menu · una sola azione possibile</text>
+        </g>
+        <g>
+          <polygon points="369,510 1131,510 1067.4,596 432.6,596" fill="var(--b2)" stroke="var(--band-line)"/>
+          <text class="b-num" x="400" y="542" fill="var(--on-b2)">02</text>
+          <text class="b-title" x="750" y="550" fill="var(--on-b2)" text-anchor="middle">Codice e contatto</text>
+          <text class="b-sub" x="750" y="574" fill="var(--on-b2)" text-anchor="middle">Tre campi · due consensi separati · 8–12% è l'obiettivo</text>
+        </g>
+        <g>
+          <polygon points="438,604 1061,604 998.1,690 501.9,690" fill="var(--b3)" stroke="var(--band-line)"/>
+          <text class="b-num" x="470" y="636" fill="var(--on-b3)">03</text>
+          <text class="b-title" x="750" y="644" fill="var(--on-b3)" text-anchor="middle">Primo acquisto</text>
+          <text class="b-sub" x="750" y="668" fill="var(--on-b3)" text-anchor="middle">In negozio o su womanparfumestore.com — la conversione vera</text>
+        </g>
+        <g>
+          <polygon points="508,698 992,698 928.8,784 571.2,784" fill="var(--b4)"/>
+          <text class="b-num" x="540" y="730" fill="var(--on-b4)">04</text>
+          <text class="b-title" x="750" y="738" fill="var(--on-b4)" text-anchor="middle">Ritorno</text>
+          <text class="b-sub" x="750" y="762" fill="var(--on-b4)" text-anchor="middle">Qui il funnel smette di essere un costo</text>
+        </g>
+
+        <!-- abbandoni -->
+        <g stroke="var(--drop)" stroke-dasharray="3 5">
+          <path d="M 1150 506 H 1290" fill="none" marker-end="url(#fd)"/>
+          <path d="M 1080 600 H 1290" fill="none" marker-end="url(#fd)"/>
+          <path d="M 1012 694 H 1290" fill="none" marker-end="url(#fd)"/>
+        </g>
+        <text class="side" x="1300" y="510" fill="var(--drop)">Abbandono</text>
+        <text class="side" x="1300" y="604" fill="var(--drop)">Abbandono</text>
+        <text class="side" x="1300" y="698" fill="var(--drop)">Abbandono</text>
+
+        <!-- anello di ritorno -->
+        <path d="M 750 790 V 838 H 60 V 245 H 96" fill="none" stroke="var(--ottone)" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#fo)"/>
+        <text class="loop" x="240" y="862" fill="var(--ottone)">il passaparola: chi torna porta il prossimo — è così che il costo di acquisizione scende</text>
+
+        <!-- fascia dei numeri -->
+        <line x1="60" y1="906" x2="1440" y2="906" stroke="var(--rule)"/>
+        <g>
+          <text class="k-lab" x="60" y="944" fill="var(--ink-3)">Pagina generica</text>
+          <text class="k-val" x="60" y="988" fill="var(--ink-2)">0,5–2%</text>
+          <text class="k-note" x="60" y="1018" fill="var(--ink-2)">Dieci uscite: si disperde</text>
+        </g>
+        <line x1="405" y1="924" x2="405" y2="1024" stroke="var(--hair)"/>
+        <g>
+          <text class="k-lab" x="435" y="944" fill="var(--ink-3)">Pagina dedicata</text>
+          <text class="k-val" x="435" y="988" fill="var(--granata)">8–12%</text>
+          <text class="k-note" x="435" y="1018" fill="var(--ink-2)">Sotto il 4% è allarme</text>
+        </g>
+        <line x1="780" y1="924" x2="780" y2="1024" stroke="var(--hair)"/>
+        <g>
+          <text class="k-lab" x="810" y="944" fill="var(--ink-3)">Costo per contatto</text>
+          <text class="k-val" x="810" y="988" fill="var(--ink-2)">≈0 € · 30–50 €</text>
+          <text class="k-note" x="810" y="1018" fill="var(--ink-2)">Convenzione contro evento</text>
+        </g>
+        <line x1="1155" y1="924" x2="1155" y2="1024" stroke="var(--hair)"/>
+        <g>
+          <text class="k-lab" x="1185" y="944" fill="var(--ink-3)">La regola</text>
+          <text class="k-val" x="1185" y="988" fill="var(--ottone)">Si attiva</text>
+          <text class="k-note" x="1185" y="1018" fill="var(--ink-2)">Il codice non si digita</text>
+        </g>
+
+      </svg>
+    </div>
+
+    <figcaption><b>Come si legge.</b> Le tre porte non sono tre pubblici: sono tre modi di consegnare la stessa cosa, e finiscono tutte sulla stessa pagina. Il gradino che conta non è il secondo ma il terzo — un codice attivato e mai usato non è un cliente. L'anello in basso è il punto del disegno: finché il funnel si ferma al primo acquisto ogni cliente costa; quando i clienti tornano e portano qualcuno, il costo scende da solo.</figcaption>
+  </figure>
+
+  <div class="legenda">
+    <div class="voce a"><b>Il percorso</b><span>In granata quello che porta avanti la persona: la porta più forte, la pagina, i gradini.</span></div>
+    <div class="voce b"><b>L'incontro</b><span>In verde l'evento dal vivo: pochi contatti, ma i migliori — e quasi gratis se lo paga il brand.</span></div>
+    <div class="voce c"><b>Il valore</b><span>In ottone il punto in cui il funnel si ripaga: il ritorno, e l'anello che riporta al principio.</span></div>
+  </div>
+
+  <div class="foot">
+    <span>Woman Srl · Via San Martino 1, Sant'Agata sul Santerno (RA) · womanparfumestore.com</span>
+    <span>Percentuali: benchmark di mercato, non misurazioni di Woman</span>
+  </div>
+
+</div>
