@@ -1,0 +1,528 @@
+<title>Il funnel di Woman</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Hanken+Grotesk:wght@300;400;500&display=swap">
+
+<style>
+/* ============================================================
+   Woman — mappa del funnel di acquisizione.
+
+   Registro: profumeria selettiva, non piattaforma tecnologica.
+   Carta avorio, inchiostro caldo, tre tinte con un lavoro
+   preciso — granata (le porte e il percorso), ottone (i soldi
+   e il Natale), smeraldo (i fatti verificati). Le tre tinte
+   passano i controlli di contrasto e daltonismo in entrambi
+   i temi: sono state ricalibrate per questo.
+   ============================================================ */
+
+:root {
+  --paper:   #faf7f2;
+  --panel:   #fffdfa;
+  --ink:     #1c1815;
+  --ink-2:   #6b6259;
+  --ink-3:   #9a9088;
+  --rule:    rgba(28, 24, 21, 0.14);
+  --hair:    rgba(28, 24, 21, 0.07);
+
+  --granata: #b4184f;
+  --ottone:  #a8730a;
+  --verde:   #008573;
+
+  --granata-w: rgba(180, 24, 79, 0.07);
+  --ottone-w:  rgba(168, 115, 10, 0.09);
+  --verde-w:   rgba(0, 133, 115, 0.08);
+
+  /* fasce dell'imbuto: una rampa sola, l'ultima cambia natura */
+  --b1: #f6dfe6; --b2: #efc3d1; --b3: #e39fb6; --b4: #cf5c85; --b5: #a8730a;
+  --on-b1: #1c1815; --on-b2: #1c1815; --on-b3: #1c1815; --on-b4: #ffffff; --on-b5: #ffffff;
+  --band-line: rgba(180, 24, 79, 0.28);
+  --drop: #a89a90;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #16130f;
+    --panel: #1d1915;
+    --ink:   #f3ede4;
+    --ink-2: #a89e92;
+    --ink-3: #776d63;
+    --rule:  rgba(243, 237, 228, 0.16);
+    --hair:  rgba(243, 237, 228, 0.08);
+
+    --granata: #e0578a;
+    --ottone:  #c08a1e;
+    --verde:   #2e9e8a;
+
+    --granata-w: rgba(224, 87, 138, 0.12);
+    --ottone-w:  rgba(192, 138, 30, 0.13);
+    --verde-w:   rgba(46, 158, 138, 0.12);
+
+    --b1: #33161f; --b2: #451b2a; --b3: #5f2439; --b4: #9c3a62; --b5: #c08a1e;
+    --on-b1: #f3ede4; --on-b2: #f3ede4; --on-b3: #f3ede4; --on-b4: #ffffff; --on-b5: #17120a;
+    --band-line: rgba(224, 87, 138, 0.34);
+    --drop: #6b6259;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #16130f;
+  --panel: #1d1915;
+  --ink:   #f3ede4;
+  --ink-2: #a89e92;
+  --ink-3: #776d63;
+  --rule:  rgba(243, 237, 228, 0.16);
+  --hair:  rgba(243, 237, 228, 0.08);
+
+  --granata: #e0578a;
+  --ottone:  #c08a1e;
+  --verde:   #2e9e8a;
+
+  --granata-w: rgba(224, 87, 138, 0.12);
+  --ottone-w:  rgba(192, 138, 30, 0.13);
+  --verde-w:   rgba(46, 158, 138, 0.12);
+
+  --b1: #33161f; --b2: #451b2a; --b3: #5f2439; --b4: #9c3a62; --b5: #c08a1e;
+  --on-b1: #f3ede4; --on-b2: #f3ede4; --on-b3: #f3ede4; --on-b4: #ffffff; --on-b5: #17120a;
+  --band-line: rgba(224, 87, 138, 0.34);
+  --drop: #6b6259;
+}
+
+* { box-sizing: border-box; margin: 0; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  font-weight: 300;
+  font-size: 16.5px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 1100px; margin: 0 auto; padding: 72px 26px 96px; display: flex; flex-direction: column; gap: 74px; }
+.wrap > *, section > * { min-width: 0; }
+
+/* ---------- tipografia ---------- */
+
+h1, h2, .fig, .stat b, .beat .day { font-family: 'Fraunces', Georgia, 'Times New Roman', serif; font-weight: 400; }
+
+.eyebrow { font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--granata); display: flex; align-items: center; gap: 14px; }
+.eyebrow::before { content: ''; width: 30px; height: 1px; background: var(--granata); opacity: 0.6; flex: none; }
+
+h1 { font-size: clamp(38px, 6vw, 66px); line-height: 1.03; letter-spacing: -0.022em; text-wrap: balance; margin-top: 20px; }
+h1 em { font-style: italic; color: var(--granata); }
+
+h2 { font-size: clamp(24px, 3.2vw, 34px); line-height: 1.14; letter-spacing: -0.015em; text-wrap: balance; }
+h3 { font-size: 15px; font-weight: 500; letter-spacing: 0.01em; }
+
+.lede { max-width: 60ch; color: var(--ink-2); font-size: 18px; margin-top: 20px; }
+
+.meta { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--rule); display: flex; flex-wrap: wrap; gap: 8px 32px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); }
+.meta b { color: var(--ink-2); font-weight: 500; }
+
+section { display: flex; flex-direction: column; gap: 26px; }
+.head { display: flex; flex-direction: column; gap: 12px; }
+.head p { color: var(--ink-2); max-width: 64ch; }
+
+/* ---------- porte ---------- */
+
+.doors { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.door { background: var(--panel); border: 1px solid var(--rule); border-top: 3px solid var(--c); padding: 22px 20px; display: flex; flex-direction: column; gap: 13px; }
+.door.d1 { --c: var(--granata); background: linear-gradient(var(--granata-w), transparent 60%), var(--panel); }
+.door.d2 { --c: var(--verde);   background: linear-gradient(var(--verde-w), transparent 60%), var(--panel); }
+.door.d3 { --c: var(--ottone);  background: linear-gradient(var(--ottone-w), transparent 60%), var(--panel); }
+.door .k { font-size: 10.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--c); font-weight: 500; }
+.door h3 { font-size: 18px; }
+.door p { font-size: 14.5px; color: var(--ink-2); }
+.door .v { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--hair); font-size: 13px; color: var(--ink-2); }
+.door .v b { color: var(--c); font-weight: 500; }
+
+/* ---------- grafico fonti ---------- */
+
+.chart { background: var(--panel); border: 1px solid var(--rule); padding: 28px 26px 22px; display: flex; flex-direction: column; gap: 20px; }
+.chart-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 20px; }
+.chart-head h3 { font-size: 17px; }
+.chart-head span { font-size: 12.5px; color: var(--ink-3); }
+.bars { display: flex; flex-direction: column; gap: 15px; }
+.bar { display: grid; grid-template-columns: 168px 1fr 74px; gap: 16px; align-items: center; position: relative; }
+.bar .lab { font-size: 14px; color: var(--ink-2); }
+.bar .track { display: block; height: 22px; border-left: 1px solid var(--rule); }
+.bar .fill { display: block; height: 100%; border-radius: 0 4px 4px 0; background: var(--granata); }
+/* serie unica: l'accento marca la fonte su cui si decide, le altre restano neutre */
+.bar.b .fill, .bar.c .fill { background: var(--ink-3); }
+.bar .val { font-family: 'Fraunces', Georgia, serif; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; }
+.bar .tip { position: absolute; left: 184px; bottom: 100%; margin-bottom: 6px; background: var(--ink); color: var(--paper); font-size: 12.5px; padding: 5px 9px; border-radius: 4px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 120ms ease; z-index: 3; }
+.bar:hover .tip, .bar:focus-within .tip { opacity: 1; }
+.chart-note { font-size: 14px; color: var(--ink-2); border-top: 1px solid var(--hair); padding-top: 14px; }
+.chart-note b { color: var(--ink); font-weight: 500; }
+
+/* ---------- imbuto ---------- */
+
+.scroll { overflow-x: auto; }
+.scroll svg { display: block; width: 100%; min-width: 800px; height: auto; }
+.f1 { fill: var(--b1); } .f2 { fill: var(--b2); } .f3 { fill: var(--b3); } .f4 { fill: var(--b4); } .f5 { fill: var(--b5); }
+.f1, .f2, .f3, .f4 { stroke: var(--band-line); }
+.x1 { fill: var(--on-b1); } .x2 { fill: var(--on-b2); } .x3 { fill: var(--on-b3); } .x4 { fill: var(--on-b4); } .x5 { fill: var(--on-b5); }
+.s-t { font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; }
+.s-s { font-size: 12.5px; opacity: 0.8; }
+.s-p { font-size: 12.5px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.s-n { font-size: 10.5px; letter-spacing: 0.2em; opacity: 0.55; font-variant-numeric: tabular-nums; }
+.s-side { font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; }
+
+/* ---------- statistiche ---------- */
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+.stat { background: var(--panel); padding: 24px 20px; display: flex; flex-direction: column; gap: 10px; min-height: 168px; }
+.stat dt { font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-3); line-height: 1.5; min-height: 30px; min-height: 2lh; }
+.stat b { font-size: 30px; line-height: 1.05; color: var(--granata); font-variant-numeric: tabular-nums; }
+
+.stat small { color: var(--ink-2); font-size: 13px; line-height: 1.5; margin-top: auto; }
+
+/* ---------- calendario ---------- */
+
+.cal { display: flex; flex-direction: column; }
+.beat { display: grid; grid-template-columns: 128px 1fr 150px; gap: 20px; padding: 15px 0; border-top: 1px solid var(--hair); align-items: baseline; }
+.beat:last-child { border-bottom: 1px solid var(--hair); }
+.beat .day { font-size: 17px; color: var(--ottone); }
+.beat .what { font-size: 15px; }
+.beat .what em { font-style: normal; color: var(--ink-2); display: block; font-size: 13.5px; margin-top: 2px; }
+.beat .tag { font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); text-align: right; }
+
+/* ---------- blocchi ---------- */
+
+.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.panel { background: var(--panel); border: 1px solid var(--rule); padding: 24px 22px; display: flex; flex-direction: column; gap: 14px; }
+.panel.stop, .panel.ok { border-left: 3px solid var(--rule); }
+.panel .k { font-size: 10.5px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500; }
+.panel .k { color: var(--ink-3); }
+.panel h3 { font-size: 17px; }
+.panel p { font-size: 14.5px; color: var(--ink-2); }
+.panel p b { color: var(--ink); font-weight: 500; }
+
+ul.plain { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+ul.plain li { font-size: 14.5px; color: var(--ink-2); padding-left: 17px; position: relative; }
+ul.plain li::before { content: ''; position: absolute; left: 0; top: 0.6em; width: 6px; height: 6px; border-radius: 50%; background: var(--granata); }
+ul.plain li b { color: var(--ink); font-weight: 500; }
+
+.note { border-left: 3px solid var(--ottone); padding: 3px 0 3px 20px; color: var(--ink-2); max-width: 72ch; display: flex; flex-direction: column; gap: 10px; font-size: 15px; }
+.note b { color: var(--ink); font-weight: 500; }
+
+footer { border-top: 1px solid var(--rule); padding-top: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); }
+
+@media (max-width: 900px) {
+  .wrap { padding: 48px 18px 68px; gap: 56px; }
+  .doors, .stats, .duo { grid-template-columns: 1fr; }
+  .stat { min-height: 0; }
+  .bar { grid-template-columns: 104px 1fr 64px; gap: 10px; }
+  .bar .tip { left: 0; }
+  .beat { grid-template-columns: 96px 1fr; }
+  .beat .tag { grid-column: 2; text-align: left; }
+}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Woman · Sant'Agata sul Santerno, dal 1989</div>
+    <h1>Tre porte, una stanza,<br><em>un Natale</em></h1>
+    <p class="lede">La mappa dell'acquisizione di Woman: da dove entrano le persone, dove atterrano, cosa le fa comprare la prima volta. Costruita sui documenti del progetto e su una ricerca di mercato con fonti verificate.</p>
+    <div class="meta">
+      <span>Impresa <b>Woman Srl · P.IVA 02321910396</b></span>
+      <span>Canali <b>Negozio · womanparfumestore.com</b></span>
+      <span>Documenti <b>WOMAN-FUNNEL · CONVENZIONE · LANDING · NATALE</b></span>
+    </div>
+  </header>
+
+  <section>
+    <div class="head">
+      <h2>Le tre porte</h2>
+      <p>L'imprenditore le ha chiamate social, internet ed evento dal vivo. Non sono tre pubblici: sono tre modi di consegnare la stessa cosa — la convenzione con il suo codice. Il sito non è una porta: è la stanza dove atterrano tutte e tre.</p>
+    </div>
+
+    <div class="doors">
+      <div class="door d1">
+        <div class="k">Internet</div>
+        <h3>La mail, il link, la ricerca</h3>
+        <p>La DEM alla base clienti, il link che l'azienda convenzionata gira ai suoi, Google, l'e-commerce. Ti stanno cercando, o qualcuno gli ha messo il link in mano.</p>
+        <div class="v"><b>Il canale più forte che avete oggi.</b></div>
+      </div>
+      <div class="door d2">
+        <div class="k">Evento dal vivo</div>
+        <h3>La serata, il banco, la fiera</h3>
+        <p>Ti incontrano di persona e la tessera gliela metti in mano lì. Conversione altissima, volume limitato dalle persone che passano.</p>
+        <div class="v"><b>Alto per contatto, basso per volume.</b></div>
+      </div>
+      <div class="door d3">
+        <div class="k">Social</div>
+        <h3>Il post e l'annuncio</h3>
+        <p>Non ti stavano cercando: gli arrivi addosso mentre scorrono. Organico oggi ≈ zero: l'account ha una cinquantina di follower.</p>
+        <div class="v"><b>Da accendere per ultimo, e a pagamento.</b></div>
+      </div>
+    </div>
+
+    <div class="chart">
+      <div class="chart-head">
+        <h3>Conversione media per fonte di traffico</h3>
+        <span>Benchmark 2026 — Leadpages</span>
+      </div>
+      <div class="bars">
+        <div class="bar" tabindex="0">
+          <span class="lab">Email a lista propria</span>
+          <span class="track"><span class="fill" style="width:100%"></span></span>
+          <span class="val">19,3%</span>
+          <span class="tip">Email a lista propria · 19,3% · il canale più efficiente in assoluto</span>
+        </div>
+        <div class="bar b" tabindex="0">
+          <span class="lab">Ricerca organica</span>
+          <span class="track"><span class="fill" style="width:14%"></span></span>
+          <span class="val">2,7%</span>
+          <span class="tip">Ricerca organica · 2,7% · chi vi cerca per nome o per categoria</span>
+        </div>
+        <div class="bar c" tabindex="0">
+          <span class="lab">Social a pagamento</span>
+          <span class="track"><span class="fill" style="width:18%"></span></span>
+          <span class="val">1–6%</span>
+          <span class="tip">Social a pagamento · 1–6% · fascia bassa = pubblico freddo</span>
+        </div>
+      </div>
+      <p class="chart-note"><b>Un visitatore che arriva dalla vostra lista è stimato circa tredici volte più propenso a convertire di uno che arriva dai social.</b> È il motivo per cui l'ordine è obbligato: prima si scrive a chi vi conosce già, poi gli eventi, e solo alla fine la pubblicità. Chi parte dai social compra al prezzo più alto la merce che ha già in magazzino.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head">
+      <h2>Il percorso, gradino per gradino</h2>
+      <p>Il gradino che conta è il quarto, non il terzo: un codice attivato e mai usato non è un cliente, è una riga in un foglio.</p>
+    </div>
+
+    <div class="scroll">
+      <svg viewBox="0 0 1300 600" role="img" aria-labelledby="ft fd">
+        <title id="ft">Il funnel di acquisizione di Woman</title>
+        <desc id="fd">Cinque fasce: porta (100% di chi riceve il messaggio), landing dedicata (una pagina per porta), codice e contatto (obiettivo 8–12% dei visitatori), primo acquisto in negozio o online, ritorno. Fra una fascia e l'altra, quattro punti di abbandono.</desc>
+        <g transform="translate(150 12)">
+          <g>
+            <polygon class="f1" points="50,0 950,0 894.1,108 105.9,108"/>
+            <text class="s-n x1" x="88" y="34">01</text>
+            <text class="s-t x1" x="500" y="42" text-anchor="middle">La porta</text>
+            <text class="s-s x1" x="500" y="66" text-anchor="middle">Convenzione · negozio · evento · DEM · social</text>
+            <text class="s-p x1" x="500" y="90" text-anchor="middle">100% di chi riceve il messaggio</text>
+            <line x1="954" y1="54" x2="1000" y2="54" stroke="var(--drop)" stroke-dasharray="2 4"/>
+            <text class="s-side" fill="var(--ink-3)" x="1010" y="42">Cinque porte</text>
+            <text class="s-side" fill="var(--ink-3)" x="1010" y="60">Una a pagamento</text>
+          </g>
+          <g>
+            <polygon class="f2" points="110,116 890,116 834.1,224 165.9,224"/>
+            <text class="s-n x2" x="146" y="150">02</text>
+            <text class="s-t x2" x="500" y="158" text-anchor="middle">La landing</text>
+            <text class="s-s x2" x="500" y="182" text-anchor="middle">Una pagina per porta: niente menu, una sola azione</text>
+            <text class="s-p x2" x="500" y="206" text-anchor="middle">40–60% resta oltre i 30 secondi</text>
+            <line x1="866" y1="170" x2="998" y2="170" stroke="var(--granata)" stroke-dasharray="2 4"/>
+            <rect x="1004" y="157" width="132" height="26" rx="13" fill="var(--granata-w)" stroke="var(--granata)"/>
+            <text class="s-side" fill="var(--granata)" x="1070" y="174" text-anchor="middle">Gradino critico</text>
+          </g>
+          <g>
+            <polygon class="f3" points="170,232 830,232 774.1,340 225.9,340"/>
+            <text class="s-n x3" x="206" y="266">03</text>
+            <text class="s-t x3" x="500" y="274" text-anchor="middle">Codice e contatto</text>
+            <text class="s-s x3" x="500" y="298" text-anchor="middle">Tre campi, due consensi separati</text>
+            <text class="s-p x3" x="500" y="322" text-anchor="middle">8–12% obiettivo · sotto il 4% è allarme</text>
+          </g>
+          <g>
+            <polygon class="f4" points="230,348 770,348 714.1,456 285.9,456"/>
+            <text class="s-n x4" x="266" y="382">04</text>
+            <text class="s-t x4" x="500" y="390" text-anchor="middle">Primo acquisto</text>
+            <text class="s-s x4" x="500" y="414" text-anchor="middle">In negozio o su womanparfumestore.com</text>
+            <text class="s-p x4" x="500" y="438" text-anchor="middle">La conversione vera</text>
+          </g>
+          <g>
+            <polygon class="f5" points="290,464 710,464 654.1,572 345.9,572"/>
+            <text class="s-n x5" x="326" y="498">05</text>
+            <text class="s-t x5" x="500" y="506" text-anchor="middle">Ritorno</text>
+            <text class="s-s x5" x="500" y="530" text-anchor="middle">WhatsApp, promemoria, seconda vendita</text>
+            <text class="s-p x5" x="500" y="554" text-anchor="middle">Qui il funnel smette di essere un costo</text>
+          </g>
+          <g>
+            <line x1="-72" y1="112" x2="92" y2="112" stroke="var(--drop)" stroke-dasharray="2 5"/>
+            <text class="s-side" fill="var(--drop)" x="-140" y="116">Abbandono</text>
+            <line x1="-72" y1="228" x2="148" y2="228" stroke="var(--drop)" stroke-dasharray="2 5"/>
+            <text class="s-side" fill="var(--drop)" x="-140" y="232">Abbandono</text>
+            <line x1="-72" y1="344" x2="212" y2="344" stroke="var(--drop)" stroke-dasharray="2 5"/>
+            <text class="s-side" fill="var(--drop)" x="-140" y="348">Abbandono</text>
+            <line x1="-72" y1="460" x2="272" y2="460" stroke="var(--drop)" stroke-dasharray="2 5"/>
+            <text class="s-side" fill="var(--drop)" x="-140" y="464">Abbandono</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <div class="note">
+      <span><b>Perché una pagina dedicata e non la home.</b> Una pagina generica converte fra lo 0,5% e il 2%; una dedicata a una sola azione arriva al 10–30% secondo la guida di Pedrazzoli, e al doppio della home nei benchmark più prudenti. Qualunque sia il moltiplicatore vero, l'operazione costa zero: si tratta di togliere il menu.</span>
+    </div>
+  </section>
+
+  <section>
+    <div class="head">
+      <h2>Le convenzioni: perché adesso</h2>
+      <p>Su Instagram compri una persona alla volta. Con una convenzione ne prendi duecento con una firma, e arrivano presentate da qualcuno di cui si fidano. Ma la ragione per cui funziona <em>quest'anno</em> è fiscale, ed è verificata.</p>
+    </div>
+
+    <dl class="stats">
+      <div class="stat v">
+        <dt>Per l'azienda</dt>
+        <b>Zero</b>
+        <small>Costo, adempimenti e ritenute. Lo sconto in convenzione non è reddito da lavoro — Ris. AdE 26/E/2010.</small>
+      </div>
+      <div class="stat o">
+        <dt>Plafond esentasse<br>per dipendente</dt>
+        <b>1.000 €</b>
+        <small>2.000 € con figli a carico, per 2025-2026-2027. L. 207/2024, art. 1 commi 390-391.</small>
+      </div>
+      <div class="stat o">
+        <dt>Quota del welfare<br>in fringe benefit</dt>
+        <b>55,1%</b>
+        <small>Era il 16,2% nel 2017. È il segmento che cresce di più — Osservatorio Edenred 2026.</small>
+      </div>
+      <div class="stat">
+        <dt>HR che non<br>comunica i benefit</dt>
+        <b>59%</b>
+        <small>Le convenzioni non falliscono per lo sconto: falliscono perché nessuno sa che esistono.</small>
+      </div>
+    </dl>
+
+    <div class="duo">
+      <div class="panel ok">
+        <div class="k">La mossa</div>
+        <h3>Non consegnare un PDF: consegnare il lancio</h3>
+        <p>Se il 59% degli HR non comunica, chi arriva con la comunicazione <b>già fatta</b> vince. Nel fascicolo: locandina A4 con QR, immagine per la chat interna, testo email pronto da inoltrare, card col codice, e una seconda locandina da appendere dopo trenta giorni.</p>
+      </div>
+      <div class="panel stop">
+        <div class="k">La trappola</div>
+        <h3>I trattamenti estetici non entrano nel welfare</h3>
+        <p>Sono <b>espressamente esclusi</b> dal welfare detassato (art. 51 c. 2 lett. f TUIR — interpello AdE 522/2019). Non perdete tempo a farvi accreditare sulle piattaforme welfare: per l'estetica non passa. La porta giusta è quella dei fringe benefit e della gift card, che non hanno vincoli di categoria.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head">
+      <h2>Natale: un quinto dell'anno in sei settimane</h2>
+      <p>Per una profumeria Natale e Black Friday valgono <em>oltre il 20% delle vendite annue</em>, con picchi del 25% sulle fragranze. A dicembre l'80% dei prodotti è comprato per essere regalato.</p>
+    </div>
+
+    <dl class="stats">
+      <div class="stat">
+        <dt>Destinatari che entrano<br>per la prima volta</dt>
+        <b>31%</b>
+        <small>Chi riceve la card è un contatto nuovo, e il costo di acquisizione l'ha pagato un altro cliente.</small>
+      </div>
+      <div class="stat o">
+        <dt>Chi spende più<br>del valore della card</dt>
+        <b>61–75%</b>
+        <small>In media +27 € o +38% del valore. Una card da 50 € vale uno scontrino da ~65 €.</small>
+      </div>
+      <div class="stat v">
+        <dt>Riscatti entro<br>un mese</dt>
+        <b>&gt;90%</b>
+        <small>L'onda in negozio arriva fra il 26 dicembre e fine gennaio, non a dicembre.</small>
+      </div>
+      <div class="stat o">
+        <dt>Budget di Natale<br>bruciato sul Black Friday</dt>
+        <b>47%</b>
+        <small>7 italiani su 10 comprano, spesa media 268 €. La card deve essere online prima del 26 novembre.</small>
+      </div>
+    </dl>
+
+    <div class="duo">
+      <div class="panel stop">
+        <div class="k">Da correggere nel piano</div>
+        <h3>La gift card su Amazon non si può vendere</h3>
+        <p>Amazon <b>vieta espressamente</b> ai venditori terzi buoni regalo, gift card e codici di riscatto: sono nella lista dei prodotti proibiti insieme al contante. Non è una zona grigia.</p>
+        <p><b>Cosa si può fare:</b> vendere un prodotto fisico — una <b>Beauty Box</b> con dentro due o tre prodotti e un cartoncino con il codice da attivare. È il modello Smartbox. E comunque da Amazon <b>non arriva nessun contatto</b>: il venditore riceve solo un alias email criptato, e usarlo per marketing è vietato.</p>
+      </div>
+      <div class="panel ok">
+        <div class="k">La regola che fa la differenza</div>
+        <h3>Il codice si attiva, non si digita alla cassa</h3>
+        <p>Email al destinatario → un solo pulsante, <b>«attiva la tua card»</b> → email e cellulare con consenso → poi il codice diventa spendibile.</p>
+        <p>Se il codice funziona senza attivazione avete venduto un buono e non avete acquisito nessuno. È l'unica differenza fra un'operazione di fatturato e un'operazione di crescita.</p>
+      </div>
+    </div>
+
+    <div class="cal">
+      <div class="beat"><span class="day">Ottobre</span><span class="what">Proposta gift card corporate alle aziende<em>«Mille euro a testa esentasse: usateli bene»</em></span><span class="tag">Nominativa</span></div>
+      <div class="beat"><span class="day">10 novembre</span><span class="what">Apre il catalogo: la gift card è online<em>Prima del Black Friday, non dopo</em></span><span class="tag">Fisica + e-gift</span></div>
+      <div class="beat"><span class="day">26 nov – 2 dic</span><span class="what">Black Friday<em>Non scontare la card: aggiungere valore</em></span><span class="tag">Primo picco</span></div>
+      <div class="beat"><span class="day">16–24 dicembre</span><span class="what">Il negozio fisico sale al 62% degli acquisti<em>«Regalo risolto in trenta secondi»</em></span><span class="tag">e-gift immediata</span></div>
+      <div class="beat"><span class="day">1–12 gennaio</span><span class="what">Ultima chiamata alle aziende<em>Il plafond 2026 vale fino al 12 gennaio — cassa allargata, art. 51 TUIR</em></span><span class="tag">Mentre tutti hanno chiuso</span></div>
+      <div class="beat"><span class="day">26 dic – 31 gen</span><span class="what">L'onda dei riscatti in negozio<em>Stock e personale vanno pianificati qui</em></span><span class="tag">Il vero incasso</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head">
+      <h2>La base clienti: cosa si può fare, e cosa no</h2>
+      <p>È la correzione più importante di tutto il lavoro, perché il piano attuale prevede una cosa che non è lecita.</p>
+    </div>
+
+    <div class="duo">
+      <div class="panel stop">
+        <div class="k">Da correggere nel piano</div>
+        <h3>Il WhatsApp massivo alla rubrica storica non si può fare</h3>
+        <p>L'eccezione del <em>soft spam</em> (art. 130 c. 4 Codice Privacy) vale <b>solo per l'email</b>: non si applica a SMS né a WhatsApp. Per il Garante — Linee guida antispam 2013, ribadite nell'ottobre 2025 — la messaggistica richiede <b>consenso specifico</b>, e il legittimo interesse non è una base valida per il marketing diretto.</p>
+        <p><b>E la re-permission è una trappola:</b> l'email con cui chiedi il consenso è essa stessa una comunicazione promozionale. Mandarla a chi non ha mai consentito può essere proprio l'illecito che vorresti sanare.</p>
+      </div>
+      <div class="panel ok">
+        <div class="k">Cosa si può fare, ed è tanto</div>
+        <h3>Email a chi ha comprato davvero</h3>
+        <p>Senza raccogliere un nuovo consenso, se ricorrono <b>tutte e cinque</b> le condizioni: vendita conclusa · stesso titolare · prodotti o servizi <b>analoghi</b> · informativa data alla raccolta · disiscrizione facile in ogni messaggio.</p>
+        <p>Quindi la rubrica si spacca in due: <b>chi ha comprato</b> riceve un'email lecita — e dentro quella email si chiede il consenso per WhatsApp. <b>Chi ha solo lasciato la mail</b> si riprende in negozio, con il modulo.</p>
+      </div>
+    </div>
+
+    <dl class="stats">
+      <div class="stat">
+        <dt>Open rate email<br>Italia 2025</dt>
+        <b>23,4%</b>
+        <small>CTOR 5,9%, delivery 97,8% — Osservatorio MailUp/TeamSystem su ~19 miliardi di email.</small>
+      </div>
+      <div class="stat">
+        <dt>Flussi automatici<br>nel beauty</dt>
+        <b>50%</b>
+        <small>Contro il 30,5% delle campagne, e 4,62% di click contro 1,24% (Klaviyo 2026). I flussi valgono 3–4 volte.</small>
+      </div>
+      <div class="stat">
+        <dt>Indirizzi non validi<br>su una lista ferma</dt>
+        <b>10–25%</b>
+        <small>Prima di scrivere: SPF, DKIM, DMARC e pulizia della lista, o le email vengono rifiutate.</small>
+      </div>
+      <div class="stat">
+        <dt>Costo di un invio<br>WhatsApp a 5.000</dt>
+        <b>~330 €</b>
+        <small>Si paga a messaggio dal luglio 2025. Ottimo canale, ma non gratis e non il primo.</small>
+      </div>
+    </dl>
+  </section>
+
+  <section>
+    <div class="head">
+      <h2>Cosa resta da decidere</h2>
+    </div>
+    <ul class="plain">
+      <li><b>Ethos Be You.</b> A dicembre 2025 Ethos si è fusa con Unibee: ~500 milioni di fatturato e oltre 450 negozi, il 25% della profumeria italiana. Il consorzio offre già CRM, e-commerce, programma fedeltà e potere d'acquisto. Se Woman è dentro — o può entrarci — <b>una parte di ciò che Aurea vuole costruire esiste già, e costa una quota associativa invece di 170.000 € l'anno.</b> È la domanda da mettere sul tavolo prima di finanziare lo sviluppo.</li>
+      <li><b>Una tessera in più non entra in tasca a nessuno.</b> Il 90% degli italiani è già iscritto ad almeno un programma fedeltà e il 65% ne ha al massimo quattro. Una tessera che offre solo punti o sconto non entra nella top-4. Il Beauty Passport ha senso solo se eroga <b>servizi</b>: prenotazione prioritaria, scheda dei trattamenti, storico. Cose fattibili oggi, senza app.</li>
+      <li><b>Monouso o multiuso.</b> Se la card è spendibile solo su cose al 22%, l'IVA si versa alla vendita; se no, al riscatto. Cambia il flusso di cassa di un trimestre: mezz'ora di commercialista a settembre.</li>
+      <li><b>Quanti contatti ci sono già in rubrica</b>, e quanti con consenso valido. Senza questo numero l'obiettivo dei cinquemila resta aritmetica.</li>
+      <li><b>Quanto sconto</b>, reparto per reparto: profumeria e trattamenti possono avere percentuali diverse, ed è normale che le abbiano.</li>
+      <li><b>Chi risponde</b> a chi si iscrive, e in quanto tempo.</li>
+    </ul>
+
+    <div class="note">
+      <span><b>Sui numeri di questa pagina.</b> Le cifre fiscali e normative vengono da fonti primarie citate per esteso nei documenti. I benchmark di conversione sono dati di mercato, non misurazioni di Woman: servono a dimensionare il lavoro e ad avere un metro il giorno che arrivano i numeri veri.</span>
+    </div>
+  </section>
+
+  <footer>
+    <span>Woman Srl · Profumeria &amp; Beauty Center · dal 1989</span>
+    <span>Aurea Club — la destinazione, non il mittente</span>
+  </footer>
+
+</div>
