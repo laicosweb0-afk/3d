@@ -1,0 +1,379 @@
+<title>Il funnel per intero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Hanken+Grotesk:wght@300;400;500&display=swap">
+<style>
+:root{
+  --paper:#faf7f2; --panel:#fffdfa;
+  --ink:#1c1815; --ink-2:#57504a; --ink-3:#857c72;
+  --rule:rgba(28,24,21,.20); --hair:rgba(28,24,21,.11);
+  --granata:#b4184f; --ottone:#8a5e06; --verde:#00705e;
+  --b1:#f6dfe6; --b2:#efc3d1; --b3:#dd8ba8; --b4:#8a5e06;
+  --on-b1:#1c1815; --on-b2:#1c1815; --on-b3:#25101a; --on-b4:#ffffff;
+  --band-line:rgba(180,24,79,.30);
+  --shadow:0 1px 2px rgba(28,24,21,.05), 0 12px 34px rgba(28,24,21,.07);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#14110e; --panel:#1d1915;
+    --ink:#f3ece2; --ink-2:#b8aea2; --ink-3:#8d8478;
+    --rule:rgba(243,236,226,.22); --hair:rgba(243,236,226,.12);
+    --granata:#f4799f; --ottone:#e6ac45; --verde:#4ec8ae;
+    --b1:#33202a; --b2:#472834; --b3:#6a3549; --b4:#5e3f05;
+    --on-b1:#f3ece2; --on-b2:#f3ece2; --on-b3:#f9ecf1; --on-b4:#f7ecd8;
+    --band-line:rgba(244,121,159,.34);
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 14px 40px rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#14110e; --panel:#1d1915;
+  --ink:#f3ece2; --ink-2:#b8aea2; --ink-3:#8d8478;
+  --rule:rgba(243,236,226,.22); --hair:rgba(243,236,226,.12);
+  --granata:#f4799f; --ottone:#e6ac45; --verde:#4ec8ae;
+  --b1:#33202a; --b2:#472834; --b3:#6a3549; --b4:#5e3f05;
+  --on-b1:#f3ece2; --on-b2:#f3ece2; --on-b3:#f9ecf1; --on-b4:#f7ecd8;
+  --band-line:rgba(244,121,159,.34);
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 14px 40px rgba(0,0,0,.45);
+}
+
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:'Hanken Grotesk',-apple-system,Segoe UI,Arial,sans-serif;font-weight:300;
+  font-size:16px;line-height:1.6;}
+.wrap{max-width:1180px;margin:0 auto;padding:44px 22px 72px;}
+.wrap > *{min-width:0;}
+.top{border-bottom:1px solid var(--rule);padding-bottom:22px;margin-bottom:30px;}
+.kicker{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--granata);font-weight:500;}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:clamp(30px,5.2vw,46px);
+  line-height:1.04;letter-spacing:-.02em;margin:12px 0 10px;text-wrap:balance;}
+h1 em{font-style:italic;color:var(--granata);}
+.stand{font-size:clamp(15px,2.1vw,18px);color:var(--ink-2);max-width:60ch;margin:0;}
+.meta{display:flex;flex-wrap:wrap;gap:10px 26px;margin-top:18px;
+  font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);}
+.meta b{color:var(--ink-2);font-weight:500;}
+
+figure{margin:0;}
+.frame{background:var(--panel);border:1px solid var(--hair);box-shadow:var(--shadow);
+  padding:clamp(10px,2vw,26px);overflow-x:auto;}
+svg.dia{display:block;width:100%;min-width:900px;height:auto;}
+figcaption{margin-top:16px;font-size:14.5px;color:var(--ink-2);max-width:78ch;}
+figcaption b{color:var(--ink);font-weight:500;}
+
+.read{margin-top:44px;display:grid;gap:0;border-top:1px solid var(--rule);}
+.read h2{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:24px;margin:26px 0 4px;letter-spacing:-.01em;}
+.step{display:grid;grid-template-columns:34px 1fr;gap:16px;padding:15px 0;border-bottom:1px solid var(--hair);align-items:start;}
+.step .n{font-family:'Fraunces',Georgia,serif;font-size:19px;color:var(--granata);line-height:1.25;}
+.step p{margin:0;font-size:15.5px;color:var(--ink-2);}
+.step p b{color:var(--ink);font-weight:500;}
+.foot{margin-top:34px;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
+  display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+
+/* testo dentro la tavola */
+.dia text{font-family:'Hanken Grotesk',Arial,sans-serif;font-weight:300;}
+.dia .d-eyebrow{font-size:13px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;}
+.dia .d-title{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:46px;letter-spacing:-.02em;}
+.dia .d-sub{font-size:18px;}
+.dia .d-meta{font-size:12px;letter-spacing:.13em;text-transform:uppercase;}
+.dia .d-colhead{font-size:13px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;}
+.dia .d-cardname{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:27px;}
+.dia .d-lab{font-size:11.5px;font-weight:500;letter-spacing:.17em;text-transform:uppercase;}
+.dia .d-txt{font-size:15px;}
+.dia .d-mini{font-size:14px;}
+.dia .d-bandnum{font-family:'Fraunces',Georgia,serif;font-size:22px;opacity:.55;}
+.dia .d-bandtitle{font-size:23px;font-weight:500;letter-spacing:.1em;}
+.dia .d-bandsub{font-size:16px;}
+.dia .d-bandnote{font-size:13.5px;opacity:.82;}
+.dia .d-week{font-family:'Fraunces',Georgia,serif;font-size:16px;}
+.dia .d-mil{font-size:15px;font-weight:500;}
+.dia .d-rowno{font-family:'Fraunces',Georgia,serif;font-size:15px;}
+.dia .d-sheet{font-size:15.5px;font-weight:400;}
+.dia .d-lettura{font-family:'Fraunces',Georgia,serif;font-size:18px;}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="kicker">Woman Srl · Sant'Agata sul Santerno</div>
+    <h1>Il funnel <em>per intero</em></h1>
+    <p class="stand">Una tavola sola con tutto quello che serve: da dove entra la gente, dove si perde,
+    che cosa si fa a ogni passaggio e perché. Pensata per stare su un tavolo durante la riunione.</p>
+    <div class="meta">
+      <span>Tre sorgenti · <b>internet · eventi · social</b></span>
+      <span>Quattro filtri · <b>pagina · contatto · acquisto · ritorno</b></span>
+      <span>Pilota a <b>otto settimane</b></span>
+    </div>
+  </div>
+
+  <figure>
+    <div class="frame">
+<svg class="dia" viewBox="0 0 1600 2678" role="img" aria-label="Schema completo del funnel di Woman: in alto tre sorgenti — internet, eventi dal vivo, social — che convergono su un'unica pagina; al centro quattro filtri a imbuto, la pagina, il contatto e il codice, il primo acquisto, il ritorno, ognuno con a sinistra che cosa si fa e a destra perché si perde gente e quale numero lo misura; un anello tratteggiato riporta dal ritorno alla prima sorgente; sotto la linea del tempo delle otto settimane, il foglio dei numeri a sette righe e le tre letture possibili alla settimana sette.">
+<defs>
+<marker id="fr-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--granata)"/></marker>
+<marker id="fr-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ottone)"/></marker>
+</defs>
+<text class="d-eyebrow" x="70" y="84" fill="var(--granata)">Woman Srl · schema di acquisizione</text>
+<text class="d-title" x="70" y="146" fill="var(--ink)">Il funnel per intero</text>
+<text class="d-sub" x="70" y="192" fill="var(--ink-2)">Tre sorgenti che fanno entrare, quattro filtri che tolgono. Per ogni filtro: che cosa si fa, perché si perde gente, quale numero lo misura.</text>
+<line x1="70" y1="214" x2="1530" y2="214" stroke="var(--rule)" stroke-width="1"/>
+<text class="d-meta" x="70" y="240" fill="var(--ink-3)">Via San Martino 1 · Sant'Agata sul Santerno (RA)</text>
+<text class="d-meta" x="1530" y="240" fill="var(--ink-3)" text-anchor="end">Pilota a otto settimane · agosto 2026</text>
+<text class="d-colhead" x="70" y="300" fill="var(--verde)">Le tre sorgenti — fanno entrare, non filtrano</text>
+<line x1="70" y1="316" x2="1530" y2="316" stroke="var(--hair)" stroke-width="1"/>
+<rect x="70" y="336" width="472" height="368" fill="var(--panel)" stroke="var(--hair)"/>
+<rect x="70" y="336" width="472" height="3" fill="var(--granata)"/>
+<text class="d-lab" x="96" y="372" fill="var(--granata)">SI APRE PER PRIMA</text>
+<text class="d-cardname" x="96" y="410" fill="var(--ink)">Internet</text>
+<line x1="96" y1="430" x2="516" y2="430" stroke="var(--hair)"/>
+<text class="d-lab" x="96" y="454" fill="var(--ink-3)">CHE COS'È</text>
+<text class="d-txt" x="96" y="476" fill="var(--ink-2)">La mail alla vostra rubrica, il link che</text>
+<text class="d-txt" x="96" y="497" fill="var(--ink-2)">l'azienda gira ai suoi, Google, l'e-commerce.</text>
+<text class="d-lab" x="96" y="548" fill="var(--ink-3)">CHI CI ARRIVA</text>
+<text class="d-txt" x="96" y="570" fill="var(--ink-2)">Chi vi conosce già, o ha il link in mano</text>
+<text class="d-txt" x="96" y="591" fill="var(--ink-2)">da qualcuno di cui si fida. I più caldi.</text>
+<line x1="96" y1="622" x2="516" y2="622" stroke="var(--hair)"/>
+<text class="d-lab" x="96" y="644" fill="var(--ink-3)">QUANTO COSTA</text>
+<text class="d-txt" x="96" y="666" fill="var(--ink-2)">Quasi zero: il tempo di scrivere la mail.</text>
+<rect x="564" y="336" width="472" height="368" fill="var(--panel)" stroke="var(--hair)"/>
+<rect x="564" y="336" width="472" height="3" fill="var(--verde)"/>
+<text class="d-lab" x="590" y="372" fill="var(--verde)">SI APRE PER SECONDA</text>
+<text class="d-cardname" x="590" y="410" fill="var(--ink)">Eventi dal vivo</text>
+<line x1="590" y1="430" x2="1010" y2="430" stroke="var(--hair)"/>
+<text class="d-lab" x="590" y="454" fill="var(--ink-3)">CHE COS'È</text>
+<text class="d-txt" x="590" y="476" fill="var(--ink-2)">La serata in negozio, il banco in fiera,</text>
+<text class="d-txt" x="590" y="497" fill="var(--ink-2)">la serata riservata a un'azienda.</text>
+<text class="d-lab" x="590" y="548" fill="var(--ink-3)">CHI CI ARRIVA</text>
+<text class="d-txt" x="590" y="570" fill="var(--ink-2)">Poche persone, ma le migliori:</text>
+<text class="d-txt" x="590" y="591" fill="var(--ink-2)">vi hanno visto in faccia.</text>
+<line x1="590" y1="622" x2="1010" y2="622" stroke="var(--hair)"/>
+<text class="d-lab" x="590" y="644" fill="var(--ink-3)">QUANTO COSTA</text>
+<text class="d-txt" x="590" y="666" fill="var(--ink-2)">Cara se la pagate voi. Quasi zero se la</text>
+<text class="d-txt" x="590" y="687" fill="var(--ink-2)">finanzia il marchio.</text>
+<rect x="1058" y="336" width="472" height="368" fill="var(--panel)" stroke="var(--hair)"/>
+<rect x="1058" y="336" width="472" height="3" fill="var(--ottone)"/>
+<text class="d-lab" x="1084" y="372" fill="var(--ottone)">SI APRE PER ULTIMA</text>
+<text class="d-cardname" x="1084" y="410" fill="var(--ink)">Social</text>
+<line x1="1084" y1="430" x2="1504" y2="430" stroke="var(--hair)"/>
+<text class="d-lab" x="1084" y="454" fill="var(--ink-3)">CHE COS'È</text>
+<text class="d-txt" x="1084" y="476" fill="var(--ink-2)">Il post, la storia, l'annuncio a</text>
+<text class="d-txt" x="1084" y="497" fill="var(--ink-2)">pagamento su Instagram e Facebook.</text>
+<text class="d-lab" x="1084" y="548" fill="var(--ink-3)">CHI CI ARRIVA</text>
+<text class="d-txt" x="1084" y="570" fill="var(--ink-2)">Estranei: non vi stavano cercando,</text>
+<text class="d-txt" x="1084" y="591" fill="var(--ink-2)">gli arrivate addosso mentre scorrono.</text>
+<line x1="1084" y1="622" x2="1504" y2="622" stroke="var(--hair)"/>
+<text class="d-lab" x="1084" y="644" fill="var(--ink-3)">QUANTO COSTA</text>
+<text class="d-txt" x="1084" y="666" fill="var(--ink-2)">Con una cinquantina di follower, in</text>
+<text class="d-txt" x="1084" y="687" fill="var(--ink-2)">organico non esiste: o si paga, o niente.</text>
+<path d="M 306 704 V 722 Q 306 736 320 736 H 786" fill="none" stroke="var(--verde)" stroke-width="1.4"/>
+<path d="M 800 704 V 736" fill="none" stroke="var(--verde)" stroke-width="1.4"/>
+<path d="M 1294 704 V 722 Q 1294 736 1280 736 H 814" fill="none" stroke="var(--verde)" stroke-width="1.4"/>
+<circle cx="800" cy="736" r="5" fill="var(--granata)"/>
+<path d="M 800 736 V 776" fill="none" stroke="var(--granata)" stroke-width="2" marker-end="url(#fr-g)"/>
+<text class="d-mini" x="822" y="766" fill="var(--ink-2)">qualunque sorgente prendano, arrivano tutti sulla stessa pagina</text>
+<text class="d-colhead" x="70" y="804" fill="var(--granata)">Che cosa si fa</text>
+<text class="d-colhead" x="1530" y="804" fill="var(--granata)" text-anchor="end">Perché si perde qui, e che numero guardare</text>
+<line x1="70" y1="820" x2="400" y2="820" stroke="var(--hair)"/>
+<line x1="1200" y1="820" x2="1530" y2="820" stroke="var(--hair)"/>
+<polygon points="430,866 1170,866 1120,1034 480,1034" fill="var(--b1)" stroke="var(--band-line)"/>
+<text class="d-bandnum" x="464" y="912" fill="var(--on-b1)">01</text>
+<text class="d-bandtitle" x="800" y="932" fill="var(--on-b1)" text-anchor="middle">LA PAGINA</text>
+<text class="d-bandsub" x="800" y="972" fill="var(--on-b1)" text-anchor="middle">Arriva, e in tre secondi decide se è nel posto giusto</text>
+<text class="d-bandnote" x="800" y="1066" fill="var(--ink-2)" text-anchor="middle">Si migliora togliendo, non aggiungendo. E costa zero.</text>
+<line x1="404" y1="950" x2="424" y2="950" stroke="var(--hair)" stroke-dasharray="3 4"/>
+<line x1="1176" y1="950" x2="1196" y2="950" stroke="var(--hair)" stroke-dasharray="3 4"/>
+<rect x="70" y="858" width="2.5" height="194" fill="var(--granata)"/>
+<circle cx="88" cy="879" r="2.6" fill="var(--granata)"/>
+<text class="d-txt" x="102" y="884" fill="var(--ink-2)">Una pagina per ogni ente, col suo nome nel titolo.</text>
+<circle cx="88" cy="912" r="2.6" fill="var(--granata)"/>
+<text class="d-txt" x="102" y="917" fill="var(--ink-2)">Nessun menu, nessun link ai social, nessun</text>
+<text class="d-txt" x="102" y="938" fill="var(--ink-2)">«chi siamo»: le uniche uscite sono il pulsante</text>
+<text class="d-txt" x="102" y="959" fill="var(--ink-2)">e la X del browser.</text>
+<circle cx="88" cy="987" r="2.6" fill="var(--granata)"/>
+<text class="d-txt" x="102" y="992" fill="var(--ink-2)">Le stesse identiche parole del messaggio</text>
+<text class="d-txt" x="102" y="1013" fill="var(--ink-2)">che l'ha portata qui.</text>
+<circle cx="88" cy="1041" r="2.6" fill="var(--granata)"/>
+<text class="d-txt" x="102" y="1046" fill="var(--ink-2)">Il conta-persone acceso prima di pubblicare,</text>
+<text class="d-txt" x="102" y="1067" fill="var(--ink-2)">non dopo.</text>
+<text class="d-lab" x="1200" y="884" fill="var(--granata)">PERCHÉ SI PERDE</text>
+<text class="d-txt" x="1200" y="908" fill="var(--ink-2)">Non trova quello che le era stato</text>
+<text class="d-txt" x="1200" y="929" fill="var(--ink-2)">promesso — oppure trova dieci uscite</text>
+<text class="d-txt" x="1200" y="950" fill="var(--ink-2)">e ne prende una.</text>
+<text class="d-lab" x="1200" y="989" fill="var(--granata)">IL NUMERO</text>
+<text class="d-txt" x="1200" y="1013" fill="var(--ink-2)">Quanti restano oltre trenta secondi.</text>
+<polygon points="480,1116 1120,1116 1070,1284 530,1284" fill="var(--b2)" stroke="var(--band-line)"/>
+<text class="d-bandnum" x="514" y="1162" fill="var(--on-b2)">02</text>
+<text class="d-bandtitle" x="800" y="1182" fill="var(--on-b2)" text-anchor="middle">IL CONTATTO E IL CODICE</text>
+<text class="d-bandsub" x="800" y="1222" fill="var(--on-b2)" text-anchor="middle">Lascia nome e mail, e riceve il codice del suo ente</text>
+<text class="d-bandnote" x="800" y="1316" fill="var(--ink-2)" text-anchor="middle">Tanti aprono e pochi finiscono: è il modulo. Pochi aprono: è la pagina sopra.</text>
+<line x1="404" y1="1200" x2="474" y2="1200" stroke="var(--hair)" stroke-dasharray="3 4"/>
+<line x1="1126" y1="1200" x2="1196" y2="1200" stroke="var(--hair)" stroke-dasharray="3 4"/>
+<rect x="70" y="1108" width="2.5" height="194" fill="var(--granata)"/>
+<circle cx="88" cy="1129" r="2.6" fill="var(--granata)"/>
+<text class="d-txt" x="102" y="1134" fill="var(--ink-2)">Tre campi: nome, mail, azienda. Nient'altro.</text>
+<circle cx="88" cy="1162" r="2.6" fill="var(--granata)"/>
+<text class="d-txt" x="102" y="1167" fill="var(--ink-2)">Due caselle separate davvero: una per</text>
+<text class="d-txt" x="102" y="1188" fill="var(--ink-2)">attivare la convenzione, una per le</text>
+<text class="d-txt" x="102" y="1209" fill="var(--ink-2)">comunicazioni.</text>
+<circle cx="88" cy="1237" r="2.6" fill="var(--granata)"/>
+<text class="d-txt" x="102" y="1242" fill="var(--ink-2)">Il campo «da dove arriva» compilato in</text>
+<text class="d-txt" x="102" y="1263" fill="var(--ink-2)">automatico, che la persona non vede.</text>
+<circle cx="88" cy="1291" r="2.6" fill="var(--granata)"/>
+<text class="d-txt" x="102" y="1296" fill="var(--ink-2)">Pagina del grazie: codice grande, scadenza,</text>
+<text class="d-txt" x="102" y="1317" fill="var(--ink-2)">indirizzo del negozio, orari.</text>
+<text class="d-lab" x="1200" y="1134" fill="var(--granata)">PERCHÉ SI PERDE</text>
+<text class="d-txt" x="1200" y="1158" fill="var(--ink-2)">Il prezzo che chiedete è più alto del</text>
+<text class="d-txt" x="1200" y="1179" fill="var(--ink-2)">regalo che offrite: sette campi per</text>
+<text class="d-txt" x="1200" y="1200" fill="var(--ink-2)">uno sconto sono troppi.</text>
+<text class="d-lab" x="1200" y="1239" fill="var(--granata)">IL NUMERO</text>
+<text class="d-txt" x="1200" y="1263" fill="var(--ink-2)">Quanti aprono il modulo contro</text>
+<text class="d-txt" x="1200" y="1284" fill="var(--ink-2)">quanti lo finiscono.</text>
+<polygon points="530,1366 1070,1366 1020,1534 580,1534" fill="var(--b3)" stroke="var(--band-line)"/>
+<text class="d-bandnum" x="564" y="1412" fill="var(--on-b3)">03</text>
+<text class="d-bandtitle" x="800" y="1432" fill="var(--on-b3)" text-anchor="middle">IL PRIMO ACQUISTO</text>
+<text class="d-bandsub" x="800" y="1472" fill="var(--on-b3)" text-anchor="middle">Entra in negozio e compra: qui, e solo qui, diventa cliente</text>
+<text class="d-bandnote" x="800" y="1566" fill="var(--ink-2)" text-anchor="middle">Un codice attivato e mai usato non è un cliente: è una riga in un foglio.</text>
+<line x1="404" y1="1450" x2="524" y2="1450" stroke="var(--hair)" stroke-dasharray="3 4"/>
+<line x1="1076" y1="1450" x2="1196" y2="1450" stroke="var(--hair)" stroke-dasharray="3 4"/>
+<rect x="70" y="1358" width="2.5" height="194" fill="var(--granata)"/>
+<circle cx="88" cy="1379" r="2.6" fill="var(--granata)"/>
+<text class="d-txt" x="102" y="1384" fill="var(--ink-2)">Una scadenza vera, scritta sulla pagina,</text>
+<text class="d-txt" x="102" y="1405" fill="var(--ink-2)">sul grazie e sulla locandina.</text>
+<circle cx="88" cy="1433" r="2.6" fill="var(--granata)"/>
+<text class="d-txt" x="102" y="1438" fill="var(--ink-2)">Il codice non si digita: si mostra dal</text>
+<text class="d-txt" x="102" y="1459" fill="var(--ink-2)">telefono, o si dice il nome dell'ente.</text>
+<circle cx="88" cy="1487" r="2.6" fill="var(--granata)"/>
+<text class="d-txt" x="102" y="1492" fill="var(--ink-2)">Richiamata entro ventiquattro ore, sempre</text>
+<text class="d-txt" x="102" y="1513" fill="var(--ink-2)">dalla stessa persona.</text>
+<circle cx="88" cy="1541" r="2.6" fill="var(--granata)"/>
+<text class="d-txt" x="102" y="1546" fill="var(--ink-2)">In cassa lo riconoscono tutti, e si segna</text>
+<text class="d-txt" x="102" y="1567" fill="var(--ink-2)">lo scontrino.</text>
+<text class="d-lab" x="1200" y="1384" fill="var(--granata)">PERCHÉ SI PERDE</text>
+<text class="d-txt" x="1200" y="1408" fill="var(--ink-2)">Non c'è nessun motivo per farlo</text>
+<text class="d-txt" x="1200" y="1429" fill="var(--ink-2)">adesso: niente scadenza, nessuno</text>
+<text class="d-txt" x="1200" y="1450" fill="var(--ink-2)">che richiama, un codice scomodo.</text>
+<text class="d-lab" x="1200" y="1489" fill="var(--granata)">IL NUMERO</text>
+<text class="d-txt" x="1200" y="1513" fill="var(--ink-2)">Gli acquisti, divisi per sorgente.</text>
+<polygon points="580,1616 1020,1616 970,1784 630,1784" fill="var(--b4)" stroke="var(--band-line)"/>
+<text class="d-bandnum" x="614" y="1662" fill="var(--on-b4)">04</text>
+<text class="d-bandtitle" x="800" y="1682" fill="var(--on-b4)" text-anchor="middle">IL RITORNO</text>
+<text class="d-bandsub" x="800" y="1722" fill="var(--on-b4)" text-anchor="middle">Torna una seconda volta, e porta qualcuno con sé</text>
+<line x1="404" y1="1700" x2="574" y2="1700" stroke="var(--hair)" stroke-dasharray="3 4"/>
+<line x1="1026" y1="1700" x2="1196" y2="1700" stroke="var(--hair)" stroke-dasharray="3 4"/>
+<rect x="70" y="1608" width="2.5" height="194" fill="var(--granata)"/>
+<circle cx="88" cy="1629" r="2.6" fill="var(--granata)"/>
+<text class="d-txt" x="102" y="1634" fill="var(--ink-2)">Una seconda ragione per tornare:</text>
+<text class="d-txt" x="102" y="1655" fill="var(--ink-2)">il trattamento, la gift card, la serata.</text>
+<circle cx="88" cy="1683" r="2.6" fill="var(--granata)"/>
+<text class="d-txt" x="102" y="1688" fill="var(--ink-2)">La serata riservata ai dipendenti</text>
+<text class="d-txt" x="102" y="1709" fill="var(--ink-2)">dell'azienda del pilota.</text>
+<circle cx="88" cy="1737" r="2.6" fill="var(--granata)"/>
+<text class="d-txt" x="102" y="1742" fill="var(--ink-2)">La proposta di Natale entro i primi</text>
+<text class="d-txt" x="102" y="1763" fill="var(--ink-2)">dieci giorni di novembre.</text>
+<text class="d-lab" x="1200" y="1634" fill="var(--granata)">PERCHÉ SI PERDE</text>
+<text class="d-txt" x="1200" y="1658" fill="var(--ink-2)">Non gli avete dato una seconda</text>
+<text class="d-txt" x="1200" y="1679" fill="var(--ink-2)">ragione: il profumo si compra, e per</text>
+<text class="d-txt" x="1200" y="1700" fill="var(--ink-2)">un anno non ci si pensa più.</text>
+<text class="d-lab" x="1200" y="1739" fill="var(--granata)">IL NUMERO</text>
+<text class="d-txt" x="1200" y="1763" fill="var(--ink-2)">Quanti hanno ricomprato entro</text>
+<text class="d-txt" x="1200" y="1784" fill="var(--ink-2)">tre mesi.</text>
+<path d="M 800 1784 V 1842 H 34 V 520 H 62" fill="none" stroke="var(--ottone)" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#fr-o)"/>
+<text class="d-mini" x="120" y="1866" fill="var(--ottone)">i primi tre filtri consumano i soldi, questo è l'unico che li restituisce: chi torna rientra dalla sorgente più economica, e porta il prossimo</text>
+<text class="d-colhead" x="70" y="1984" fill="var(--granata)">Le otto settimane — chi fa che cosa</text>
+<line x1="70" y1="2000" x2="1530" y2="2000" stroke="var(--hair)"/>
+<rect x="628" y="2104" width="690" height="20" fill="var(--b1)"/>
+<text class="d-mini" x="972.5" y="2036" fill="var(--ink-2)" text-anchor="middle">quattro settimane di raccolta — non si tocca niente, nemmeno se viene voglia</text>
+<path d="M 972 2044 V 2100" stroke="var(--b3)" stroke-width="1" stroke-dasharray="3 3" fill="none"/>
+<line x1="110" y1="2114" x2="1490" y2="2114" stroke="var(--ink)" stroke-width="1.4"/>
+<line x1="110" y1="2107" x2="110" y2="2121" stroke="var(--ink-3)" stroke-width="1"/>
+<text class="d-week" x="110" y="2148" fill="var(--ink-3)" text-anchor="middle">0</text>
+<line x1="282" y1="2107" x2="282" y2="2121" stroke="var(--ink-3)" stroke-width="1"/>
+<text class="d-week" x="282" y="2148" fill="var(--ink-3)" text-anchor="middle">1</text>
+<line x1="455" y1="2107" x2="455" y2="2121" stroke="var(--ink-3)" stroke-width="1"/>
+<text class="d-week" x="455" y="2148" fill="var(--ink-3)" text-anchor="middle">2</text>
+<line x1="628" y1="2107" x2="628" y2="2121" stroke="var(--ink-3)" stroke-width="1"/>
+<text class="d-week" x="628" y="2148" fill="var(--ink-3)" text-anchor="middle">3</text>
+<line x1="800" y1="2107" x2="800" y2="2121" stroke="var(--ink-3)" stroke-width="1"/>
+<text class="d-week" x="800" y="2148" fill="var(--ink-3)" text-anchor="middle">4</text>
+<line x1="972" y1="2107" x2="972" y2="2121" stroke="var(--ink-3)" stroke-width="1"/>
+<text class="d-week" x="972" y="2148" fill="var(--ink-3)" text-anchor="middle">5</text>
+<line x1="1145" y1="2107" x2="1145" y2="2121" stroke="var(--ink-3)" stroke-width="1"/>
+<text class="d-week" x="1145" y="2148" fill="var(--ink-3)" text-anchor="middle">6</text>
+<line x1="1318" y1="2107" x2="1318" y2="2121" stroke="var(--ink-3)" stroke-width="1"/>
+<text class="d-week" x="1318" y="2148" fill="var(--ink-3)" text-anchor="middle">7</text>
+<line x1="1490" y1="2107" x2="1490" y2="2121" stroke="var(--ink-3)" stroke-width="1"/>
+<text class="d-week" x="1490" y="2148" fill="var(--ink-3)" text-anchor="middle">8</text>
+<text class="d-lab" x="110" y="2172" fill="var(--ink-3)" text-anchor="middle">SETTIMANA</text>
+<circle cx="110" cy="2114" r="5.5" fill="var(--granata)"/>
+<text class="d-mil" x="102" y="2088" fill="var(--ink)">si conta quello che c'è in casa</text>
+<circle cx="455" cy="2114" r="5.5" fill="var(--granata)"/>
+<text class="d-mil" x="455" y="2088" fill="var(--ink)" text-anchor="middle">la pagina è pronta</text>
+<circle cx="1490" cy="2114" r="5.5" fill="var(--granata)"/>
+<text class="d-mil" x="1498" y="2088" fill="var(--ink)" text-anchor="end">si apre la seconda sorgente</text>
+<circle cx="282" cy="2114" r="5.5" fill="var(--granata)"/>
+<text class="d-mil" x="282" y="2196" fill="var(--ink)" text-anchor="middle">si sceglie l'azienda</text>
+<circle cx="628" cy="2114" r="5.5" fill="var(--granata)"/>
+<text class="d-mil" x="628" y="2196" fill="var(--ink)" text-anchor="middle">si parte: l'azienda gira il link</text>
+<circle cx="1318" cy="2114" r="5.5" fill="var(--granata)"/>
+<text class="d-mil" x="1318" y="2196" fill="var(--ink)" text-anchor="middle">il lunedì dei numeri</text>
+<rect x="70" y="2248" width="720" height="322" fill="var(--panel)" stroke="var(--hair)"/>
+<rect x="810" y="2248" width="720" height="322" fill="var(--panel)" stroke="var(--hair)"/>
+<text class="d-lab" x="96" y="2282" fill="var(--granata)">IL FOGLIO DEI NUMERI · OGNI LUNEDÌ, DIECI MINUTI</text>
+<line x1="96" y1="2296" x2="764" y2="2296" stroke="var(--hair)"/>
+<text class="d-rowno" x="96" y="2330" fill="var(--granata)">1</text>
+<text class="d-sheet" x="120" y="2330" fill="var(--ink)">Arrivati sulla pagina</text>
+<text class="d-txt" x="370" y="2330" fill="var(--ink-2)">se è piccolo, il link non è girato</text>
+<text class="d-rowno" x="96" y="2366" fill="var(--granata)">2</text>
+<text class="d-sheet" x="120" y="2366" fill="var(--ink)">Hanno cominciato il modulo</text>
+<text class="d-txt" x="370" y="2366" fill="var(--ink-2)">distingue «non convince» da «troppo lungo»</text>
+<text class="d-rowno" x="96" y="2402" fill="var(--granata)">3</text>
+<text class="d-sheet" x="120" y="2402" fill="var(--ink)">Lo hanno finito</text>
+<text class="d-txt" x="370" y="2402" fill="var(--ink-2)">i contatti veri, col campo da dove arrivano</text>
+<text class="d-rowno" x="96" y="2438" fill="var(--granata)">4</text>
+<text class="d-sheet" x="120" y="2438" fill="var(--ink)">Hanno chiesto la chiamata</text>
+<text class="d-txt" x="370" y="2438" fill="var(--ink-2)">dice se una persona sola basta</text>
+<text class="d-rowno" x="96" y="2474" fill="var(--granata)">5</text>
+<text class="d-sheet" x="120" y="2474" fill="var(--ink)">Hanno comprato</text>
+<text class="d-txt" x="370" y="2474" fill="var(--ink-2)">la riga che conta: le altre spiegano questa</text>
+<text class="d-rowno" x="96" y="2510" fill="var(--granata)">6</text>
+<text class="d-sheet" x="120" y="2510" fill="var(--ink)">Quanto hanno speso</text>
+<text class="d-txt" x="370" y="2510" fill="var(--ink-2)">se portano acquisti o solo sconti</text>
+<text class="d-rowno" x="96" y="2546" fill="var(--granata)">7</text>
+<text class="d-sheet" x="120" y="2546" fill="var(--ink)">Sono tornati</text>
+<text class="d-txt" x="370" y="2546" fill="var(--ink-2)">si legge a tre mesi: decide se si ripaga</text>
+<text class="d-lab" x="836" y="2282" fill="var(--granata)">LE TRE LETTURE · ALLA SETTIMANA SETTE</text>
+<line x1="836" y1="2296" x2="1504" y2="2296" stroke="var(--hair)"/>
+<rect x="836" y="2314" width="3" height="62" fill="var(--granata)"/>
+<text class="d-lettura" x="852" y="2332" fill="var(--ink)">Pochi sono arrivati sulla pagina.</text>
+<text class="d-txt" x="852" y="2358" fill="var(--ink-2)">Non è la pagina: il link non è girato. Si telefona</text>
+<text class="d-txt" x="852" y="2379" fill="var(--ink-2)">all'azienda e si chiede il promemoria.</text>
+<rect x="836" y="2410" width="3" height="62" fill="var(--ottone)"/>
+<text class="d-lettura" x="852" y="2428" fill="var(--ink)">Tanti arrivati, pochi contatti.</text>
+<text class="d-txt" x="852" y="2454" fill="var(--ink-2)">È la pagina o il modulo — la riga 2 dice quale.</text>
+<text class="d-txt" x="852" y="2475" fill="var(--ink-2)">Si accorcia, o si allineano le parole.</text>
+<rect x="836" y="2506" width="3" height="62" fill="var(--verde)"/>
+<text class="d-lettura" x="852" y="2524" fill="var(--ink)">Tanti contatti, pochi acquisti.</text>
+<text class="d-txt" x="852" y="2550" fill="var(--ink-2)">Manca il motivo per farlo adesso: scadenza,</text>
+<text class="d-txt" x="852" y="2571" fill="var(--ink-2)">chiamata a ventiquattro ore, codice comodo.</text>
+<line x1="70" y1="2610" x2="1530" y2="2610" stroke="var(--rule)"/>
+<text class="d-meta" x="70" y="2638" fill="var(--ink-3)">Woman Srl · profumeria e beauty center · dal 1989</text>
+<text class="d-meta" x="1530" y="2638" fill="var(--ink-3)" text-anchor="end">Non promettiamo una percentuale: promettiamo una misura</text>
+</svg>
+    </div>
+    <figcaption><b>Le tre colonne si leggono in riga, non in colonna.</b> Al centro il passaggio,
+    a sinistra che cosa si fa per farlo funzionare, a destra perché la gente si perde lì e quale
+    numero se ne accorge. La riga più stretta è sempre quella che decide il risultato.</figcaption>
+  </figure>
+
+  <div class="read">
+    <h2>Come si legge ad alta voce, in sei passaggi</h2>
+    <div class="step"><div class="n">1</div><p><b>Si parte dall'alto, da sinistra a destra.</b> Le tre sorgenti non sono tre pubblici: sono tre modi di consegnare la stessa cosa. Cambia chi le apre e quanto costano — non cambia dove portano.</p></div>
+    <div class="step"><div class="n">2</div><p><b>Le tre linee che convergono.</b> Qualunque sorgente prendano, arrivano tutti sulla stessa pagina. Ed è per questo che la pagina è una sola, non tre.</p></div>
+    <div class="step"><div class="n">3</div><p><b>Poi si scende, e a ogni gradino si legge la riga per intero.</b> Passaggio al centro, azioni a sinistra, motivo della perdita a destra. Il gradino che conta non è il secondo ma il terzo: <b>un codice attivato e mai usato non è un cliente.</b></p></div>
+    <div class="step"><div class="n">4</div><p><b>L'anello tratteggiato in basso è il punto del disegno.</b> Finché il funnel si ferma al primo acquisto, ogni cliente costa. Quando i clienti tornano e portano qualcuno, il costo scende da solo — e rientrano dalla sorgente più economica delle tre.</p></div>
+    <div class="step"><div class="n">5</div><p><b>La linea del tempo dice quando.</b> Otto settimane, una sola azienda, un solo codice. Le quattro settimane centrali non si toccano: se si cambia la pagina a metà, alla fine si hanno due mezze misure e nessuna misura intera.</p></div>
+    <div class="step"><div class="n">6</div><p><b>In fondo, le due cose che si guardano il lunedì.</b> Sette righe da compilare in dieci minuti, e le tre sole letture possibili alla settimana sette. Tre situazioni che da fuori sembrano identiche — «è andata male» — e che invece chiedono tre interventi completamente diversi.</p></div>
+  </div>
+
+  <div class="foot">
+    <span>Woman Srl · Via San Martino 1, Sant'Agata sul Santerno (RA)</span>
+    <span>Non promettiamo una percentuale: promettiamo una misura</span>
+  </div>
+</div>
