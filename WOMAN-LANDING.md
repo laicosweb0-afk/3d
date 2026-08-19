@@ -40,15 +40,23 @@ un evento. È traffico **caldo e qualificato in partenza**, e questo alza la
 conversione attesa — ma soprattutto significa che **la pagina non deve
 convincere che siamo affidabili**: quello l'ha già fatto chi ha girato il link.
 
-**② Il numero da promettere non è il 10–30%.**
-Il benchmark più solido sul mercato è la mediana di **6,6%** (Unbounce, 41.000
-landing page, 57 milioni di conversioni); il sotto-settore più vicino a noi,
-*wellness*, ha mediana **8,2%**. Le fonti italiane danno **2–3%** per la landing
-media di una PMI e **8–15%** per quelle ottimizzate. Quindi:
+**② Non c'è nessun numero da promettere.**
+Qui va detta una cosa scomoda: **i benchmark di conversione che tutti citano non
+reggono a un controllo serio.** La mediana "6,6%" più famosa del settore ha
+un'incoerenza aritmetica interna, è un campione di piattaforma nordamericana e
+misura *lead*, non vendite; le percentuali italiane per PMI vengono da blog di
+agenzie, non da istituti statistici; il confronto "landing 4% contro homepage
+2,3%" mette insieme due metriche diverse ed è pubblicato da chi vende software
+per landing page.
 
-> **Obiettivo realistico della landing convenzione: 8–12%. Soglia di allarme:
-> sotto il 4%.** Il 10–30% della guida vale per pagine ottimizzate con offerta
-> gratuita e traffico già scaldato: è il tetto, non la base di partenza.
+> **Quindi la pagina non promette una percentuale: promette una misura.**
+> Codice univoco per convenzione, URL distinta per fonte, e dopo quattro-sei
+> settimane sulla prima convenzione pilota si ha il numero vero di Woman. Da
+> quel momento è quello il benchmark, ed è l'unico non contestabile.
+>
+> Se serve un'ipotesi di lavoro per fare i conti prima del pilota, si può
+> partire da un **8%** — ma va scritto che è un'ipotesi, non un dato, e va
+> sostituita alla prima misura reale.
 
 **③ La conversione non è un'email, è una visita.**
 Nella guida il lead è un indirizzo email da coltivare. Da noi il lead vero è
@@ -63,9 +71,10 @@ inventate, ma con i trentacinque anni, i marchi trattati, il nome dell'azienda
 convenzionata e le recensioni Google raccolte da qui a novembre.
 
 **⑤ I test A/B, per ora, non si fanno.**
-Servono circa **1.000 conversioni** e almeno **14 giorni** per un test valido, e
-il **78% dei test finisce inconcludente**. Con i nostri volumi qualsiasi
-differenza fra due versioni sarebbe rumore. Si testa **in sequenza** — due
+Un test valido ha bisogno di un numero di conversioni che con i nostri volumi
+non arriva prima di mesi, e la maggior parte dei test finisce comunque
+inconcludente. Con poche decine di iscrizioni qualsiasi differenza fra due
+versioni è rumore. Si testa **in sequenza** — due
 settimane una versione, due settimane l'altra — e solo cose grosse: prima la
 headline, poi il pulsante, poi l'entità dello sconto.
 
@@ -169,9 +178,11 @@ lunga: **[ Attiva il mio codice ]**, sempre uguale. Cambiare le parole confonde.
 
 ## 5. Il form: tre campi, e come averne di più senza pagarli
 
-La curva è netta: **1 campo 13,4% · 3 campi 10,1% · 5 campi 7,8% · 7 campi
-5,3%**, e l'**81%** di chi inizia a compilare abbandona. Ogni campo in più costa
-circa il **4%** di conversione.
+Su questo le fonti si contraddicono sui livelli — una dà il 10% per un form a
+tre campi, un'altra oltre il 25% per lo stesso form — quindi **si usa la forma
+della curva, mai i valori**: ogni campo in più costa conversione, e il costo
+cresce in fretta. La direzione è concorde in tutte le fonti; i numeri assoluti
+non sono utilizzabili.
 
 **I nostri tre campi:** Nome · Email · **Azienda di appartenenza**.
 Il terzo sembra sacrificabile e invece è il più importante: valida il diritto
@@ -180,8 +191,9 @@ alla convenzione e ci dice da quale porta è entrata la persona.
 **Fuori dal form:** telefono, data di nascita, città, preferenze, indirizzo.
 Si raccolgono dopo, in negozio o con una seconda email.
 
-**Se servono davvero più dati per il futuro CRM**, si usa il form multi-step:
-stessi campi, **+21% di conversione** in media rispetto al form unico.
+**Se servono davvero più dati per il futuro CRM**, si usa il form multi-step
+invece di un form lungo: stessi campi, ma il primo passo è una micro-domanda a
+un clic e l'impegno scatta prima che si chiedano i dati personali.
 - *Step 1 (un clic, zero attrito):* «Cosa ti interessa di più? Profumeria ·
   Estetica · Entrambe»
 - *Step 2:* Nome, Email, Azienda

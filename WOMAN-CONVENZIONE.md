@@ -19,7 +19,7 @@ Lugo: verificare quale indirizzo va in intestazione.)*
 
 ## 1. Perché un'azienda dovrebbe dire di sì
 
-Tre argomenti, in quest'ordine. Il primo è quello che chiude.
+Due argomenti, in quest'ordine. Il primo è quello che chiude.
 
 **Non costa niente e non crea adempimenti.** Lo sconto praticato tramite
 convenzione **non è reddito di lavoro dipendente**: l'Agenzia delle Entrate lo
@@ -27,28 +27,40 @@ ha chiarito con la Risoluzione n. 26/E del 29 marzo 2010, che riconosce il
 prezzo scontato praticato in base a convenzioni ricorrenti nella prassi
 commerciale — comprese quelle stipulate dal datore di lavoro con soggetti terzi
 — come "valore normale" ai sensi dell'art. 9 TUIR. Per l'azienda: zero costo,
-zero ritenute, zero comunicazioni. È la frase che va scritta nella prima riga
-della proposta, perché è la prima obiezione dell'ufficio del personale.
+zero ritenute, zero comunicazioni. È la frase che va nella prima riga della
+proposta, perché è la prima obiezione dell'ufficio del personale.
 
 **Risolve un problema che l'HR ha davvero.** Secondo l'Osservatorio Welfare 2026
 (Double You Zucchetti, oltre 3.000 aziende e più di 500.000 lavoratori), il
 **59% degli HR ammette di non comunicare in modo strutturato** ai dipendenti il
-pacchetto di benefit. Le convenzioni esistono e nessuno le usa perché nessuno
-sa che ci sono. Woman non arriva a chiedere: arriva portando la comunicazione
-già fatta (§4).
+pacchetto di benefit, e solo il 41% dei lavoratori si dichiara informato. Le
+convenzioni esistono e nessuno le usa perché nessuno sa che ci sono. Woman non
+arriva a chiedere: arriva portando la comunicazione già fatta (§4).
+*(Il dato viene da un fornitore di software welfare: la direzione è solida, la
+cifra esatta va presa per quello che è.)*
 
-**C'è un budget che esiste già.** Per il 2025, 2026 e 2027 il limite di
-esenzione dei fringe benefit è di **1.000 € per dipendente, 2.000 € per chi ha
-figli fiscalmente a carico** (L. 207/2024, art. 1 commi 390-391, in deroga
-all'art. 51 comma 3 TUIR; la Legge di Bilancio 2026 non l'ha modificato). E i
-fringe benefit sono oggi la **prima voce del welfare italiano: il 55,1% della
-spesa** (Osservatorio Welfare Edenred 2026, dati 2025), contro il 16,2% del
-2017. Non è un budget da creare: è quello che cresce di più.
+---
 
-⚠️ **Attenzione al superamento della soglia:** se il totale annuo dei fringe
-benefit supera il limite, diventa tassabile **l'intero importo**, non solo
-l'eccedenza. Molte aziende hanno già impegnato parte del plafond in buoni
-benzina o rimborsi utenze: proponete tagli piccoli (25-50-100 €), non da 500.
+### ⚠️ Convenzione e gift card sono due offerte diverse. Non mescolarle.
+
+È l'errore che farebbe fallire la trattativa al primo commercialista, e vale la
+pena capirlo bene.
+
+| | **Convenzione a codice sconto** | **Gift card come fringe benefit** |
+|---|---|---|
+| Chi paga | Il dipendente, di tasca propria | **L'azienda**, con fattura intestata a lei |
+| Il plafond di 1.000 €/2.000 € | **Non si applica**: l'azienda non eroga nulla, non sostiene alcun costo, non c'è reddito da tassare | **Si applica**, e conta a valore facciale |
+| Con chi si parla | Referente convenzioni, CRAL, segreteria dell'Ordine | HR o ufficio welfare |
+| L'argomento che apre | «Nessun costo, nessuna erogazione, kit già pronto» | «Il plafond ce l'avete già, e vale fino al 12 gennaio» |
+
+**Citare il plafond dei fringe benefit dentro la proposta di convenzione è un
+autogol:** confonde l'interlocutore e apre un'obiezione fiscale che non
+esisteva. Il plafond riguarda solo i beni e servizi che **il datore acquista ed
+eroga** — quindi la gift card, non lo sconto.
+
+E c'è un corollario che conta per il targeting: verso **ordini professionali e
+associazioni il fringe benefit non esiste come categoria**, perché i soci non
+sono dipendenti. Lì l'unica offerta possibile è la convenzione.
 
 ---
 

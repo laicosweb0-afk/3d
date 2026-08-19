@@ -24,12 +24,17 @@ gradito e la categoria più regalata.** L'idea è giusta.
 
 ## 2. Le due cose che nel piano attuale non funzionano
 
-### ⛔ 1. La gift card su Amazon non si può fare
+### ⛔ 1. La gift card su Amazon quasi certamente non si può fare
 
-**Amazon vieta espressamente ai venditori terzi di vendere buoni regalo, gift
-card, certificati regalo e codici di riscatto.** Sono nella lista dei prodotti
-proibiti insieme a denaro contante e strumenti equivalenti. Non è una zona
-grigia: è policy scritta, e la violazione costa la sospensione dell'account.
+Le policy Amazon sui prodotti vietati elencano **buoni regalo, gift card,
+certificati regalo e codici di riscatto** insieme a denaro contante e strumenti
+equivalenti, e la violazione costa la sospensione dell'account.
+
+⚠️ **Una precisazione onesta:** non siamo riusciti ad aprire la pagina
+ufficiale della policy — il proxy di rete la blocca — quindi questa resta una
+verifica da chiudere. **Chiedete conferma scritta ad Amazon Seller Support
+prima di costruire il catalogo su quel canale**: è una domanda da cinque minuti
+che evita di riprogettare a novembre.
 
 **Cosa si può fare invece.** Su Amazon si vende un **prodotto fisico**. Il
 precedente esiste ed è enorme: Smartbox e Wonderbox vendono su Amazon.it dei
@@ -54,13 +59,16 @@ vietato**. Amazon porta fatturato e visibilità, **non database**.
 
 ## 3. Perché la gift card è un funnel e non un prodotto
 
-Tre numeri, e diventa evidente:
+Tre meccaniche, e diventa evidente. *(Le percentuali che circolano su questi
+punti sono stime di settore anglosassoni: la direzione è solida e coerente fra
+le fonti, le cifre esatte non sono verificabili e non vanno messe in un
+documento per il cliente.)*
 
 | | |
 |---|---|
-| **Il 31% dei destinatari** entra per la prima volta in quel negozio grazie alla card. Il 44% dice di aver visitato un negozio che non frequentava | **Chi riceve è un cliente nuovo, e non vi è costato niente** |
-| **Il 61–75% spende più del valore della card**: in media **+27 €**, o **+38%** del valore facciale | Una card da 50 € vale uno scontrino da ~65 € |
-| **Riscatto 80–90%**, e oltre il **90% riscatta entro un mese** | L'onda in negozio arriva **fra il 26 dicembre e fine gennaio** |
+| Circa **un terzo dei destinatari** entra per la prima volta in quel negozio grazie alla card | **Chi riceve è un cliente nuovo, e non vi è costato niente** |
+| La maggioranza di chi riscatta **spende più del valore della card** | Una card da 50 € vale uno scontrino più alto: quanto, lo direte voi dopo il primo Natale |
+| Il riscatto si concentra **nelle settimane subito dopo la consegna** | L'onda in negozio arriva **fra il 26 dicembre e fine gennaio** |
 
 **La meccanica del funnel è questa:** chi compra è un cliente che avete già, chi
 riceve è il contatto nuovo. Ogni card venduta a un cliente noto deve produrre
@@ -174,7 +182,7 @@ codice deve essere **veloce** da usare; e siccome chi riscatta spende in media
 il 38% in più, l'addetta deve sapere che quello è il momento del consiglio, non
 della fretta.
 
-**Il breakage — le card mai riscattate, 5–15% del venduto — non è margine.**
+**Il breakage — le card mai riscattate — non è margine.**
 Contabilmente resta un debito finché non scade. Non mettetelo a budget.
 
 ---

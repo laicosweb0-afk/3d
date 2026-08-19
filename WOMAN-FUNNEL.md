@@ -47,14 +47,23 @@ L'imprenditore le ha chiamate **social, internet, evento dal vivo**. Non sono tr
 pubblici: sono **tre modi di consegnare la stessa cosa** — la convenzione con il
 suo codice. **Il sito non è una porta: è la stanza dove atterrano tutte e tre.**
 
-Un dato mette le porte in ordine da solo. Conversione media per fonte di
-traffico: **email 19,3% · organico 2,7% · social a pagamento 1–6%**. Un
-visitatore che arriva dalla vostra lista è stimato **circa tredici volte** più
-propenso a convertire di uno che arriva dai social.
+Le tre porte non pesano uguale, e la ragione è strutturale, non statistica:
+**internet è l'unica che raggiunge persone che hanno già comprato da Woman.**
+Il social parte da estranei, l'evento da chi passa di lì; la mail parte da un
+rapporto che esiste già.
 
 > **Ordine obbligato:** prima si scrive a chi vi conosce già, poi gli eventi,
 > **solo alla fine** la pubblicità. Chi parte dai social compra al prezzo più
 > alto la merce che ha già in magazzino.
+
+⚠️ **Sui numeri di conversione per canale non ci si può appoggiare.** I
+benchmark che circolano (le mediane Unbounce, i tassi "per fonte di traffico",
+le percentuali delle agenzie italiane) non hanno superato la verifica: sono
+campioni di piattaforma nordamericani, dati di fornitori che vendono lo
+strumento misurato, o cifre con incoerenze aritmetiche interne. **Il solo
+benchmark non contestabile per Woman è Woman**: codice univoco per convenzione,
+URL distinta per fonte, e dopo quattro-sei settimane di pilota si hanno i numeri
+veri — che nessuno può contestare perché sono vostri.
 
 ---
 
@@ -100,11 +109,15 @@ La ragione per cui funziona *quest'anno* è fiscale, ed è verificata:
 non è reddito di lavoro dipendente — Risoluzione Agenzia delle Entrate **26/E
 del 29/3/2010**. È la frase che sblocca l'ufficio del personale.
 
-**② Il budget esiste già ed è quello che cresce di più.** Fringe benefit
-esentasse fino a **1.000 € per dipendente, 2.000 € con figli a carico**, per
-2025-2026-2027 (L. 207/2024, art. 1 commi 390-391). I fringe benefit sono oggi
-il **55,1% della spesa welfare** italiana, contro il 16,2% del 2017
-(Osservatorio Edenred 2026).
+**② Attenzione: la convenzione e la gift card sono due offerte diverse.** Nel
+modello a codice sconto **il dipendente paga di tasca propria**: l'azienda non
+eroga nulla, non sostiene costi, e **il plafond dei fringe benefit non
+c'entra**. Citarlo lì confonde l'HR e apre un'obiezione fiscale che non
+esisteva. Il plafond — **1.000 € per dipendente, 2.000 € con figli a carico**,
+per 2025-2026-2027 (L. 207/2024, art. 1 commi 390-391) — riguarda la **gift
+card che l'azienda compra e regala**: altra offerta, altro interlocutore, altro
+materiale. Verso ordini e associazioni non esiste affatto, perché i soci non
+sono dipendenti.
 
 **③ Falliscono per comunicazione, non per sconto.** Il **59% degli HR** non
 comunica in modo strutturato il pacchetto ai dipendenti (Osservatorio Welfare
@@ -112,10 +125,15 @@ comunica in modo strutturato il pacchetto ai dipendenti (Osservatorio Welfare
 la comunicazione già pronta vince: per questo si consegna un **kit di lancio**,
 non un PDF.
 
-**④ La trappola:** i **trattamenti estetici sono esclusi** dal welfare detassato
-(art. 51 c. 2 lett. f TUIR — interpello AdE **522/2019**). Non perdete tempo a
-farvi accreditare sulle piattaforme welfare: per l'estetica non passa. La porta
-giusta è quella dei fringe benefit e della gift card, senza vincoli di categoria.
+**④ La porta giusta nelle piattaforme welfare non è quella che sembra.** I
+trattamenti estetici non rientrano fra i servizi welfare detassati dell'art. 51
+c. 2 lett. f) TUIR: l'esclusione è interpretativa, quindi in un documento
+destinato a un HR va detta senza citare numeri di interpello. Ma la conclusione
+«Woman non può stare nelle piattaforme welfare» **è sbagliata**: le piattaforme
+hanno una sezione *buoni acquisto e gift card* dove il dipendente spende il
+plafond, e lì Woman ci può stare — non come servizio, **come merchant a
+catalogo**. Meglio ancora: vendere la gift card **direttamente all'azienda**,
+senza commissioni di circuito.
 
 Canali in ordine di velocità: **CRAL** (si apre con una email) → **aziende
 private** → **ordini professionali** (manifestazione di interesse) → **enti
@@ -144,12 +162,18 @@ conclusa · stesso titolare · prodotti o servizi **analoghi** a quanto acquista
 · informativa data al momento della raccolta · disiscrizione facile in ogni
 messaggio.
 
-**La rubrica va spaccata in due**, contatto per contatto:
+**La rubrica va divisa in quattro gruppi**, contatto per contatto:
 
-| | Cosa si può fare |
+| Gruppo | Cosa si può fare |
 |---|---|
-| **Ha comprato** (scontrino, fattura, tessera con acquisto) | Email in soft spam. E **dentro quella email**, che è già lecita, si chiede il consenso per WhatsApp |
-| **Ha solo lasciato la mail** (evento, «per informazioni») | Niente invii. Il consenso si riprende **in negozio**, con il modulo |
+| **A** — email + acquisto documentato + informativa presente, nessun opt-out | Email commerciale su prodotti e servizi analoghi, con opt-out in ogni invio. **Usabile subito** |
+| **B** — email + consenso marketing esplicito e documentato | Tutto, anche offerte non analoghe |
+| **C** — email, ma informativa non dimostrabile o acquisto non documentato | Un solo invio non commerciale che chiede di confermare l'iscrizione. Chi non risponde esce dalla lista |
+| **D** — solo telefono, dato cartaceo, nessuna email | Si riprende in negozio, alla cassa, con il modulo. Non si recupera a tavolino |
+
+**Nessuno dei quattro gruppi ha oggi il consenso alla profilazione**: si raccoglie
+alla prima occasione utile — attivazione del codice, riscatto della card,
+evento — con la sua casella dedicata.
 
 ⚠️ **La trappola della re-permission:** l'email con cui si chiede il consenso è
 essa stessa una comunicazione promozionale. Mandarla a chi non ha mai dato
@@ -164,11 +188,12 @@ rientra nel soft spam.
 2. **Pulizia della lista** — su un database fermo da anni ci si aspetta il
    **10–25% di indirizzi non validi**.
 
-**I numeri con cui misurare** (mercato italiano, non americano): open rate
-**23,4%**, CTOR **5,9%**, delivery **97,8%** (Osservatorio MailUp/TeamSystem
-2025, ~19 miliardi di email). Nel beauty specifico: campagne **30,5% open,
-1,24% click**; **flussi automatici 50% open, 4,62% click** (Klaviyo 2026,
-183.000 aziende).
+**I numeri con cui misurare** — da usare come ordine di grandezza, non come
+promessa: open rate intorno al **23%** e CTOR intorno al **6%** sul mercato
+italiano (Osservatorio MailUp/TeamSystem 2025); nel beauty, i **flussi
+automatici aprono circa il doppio delle campagne** e cliccano circa tre volte
+tanto (Klaviyo 2026). Entrambe le fonti sono di fornitori di piattaforme email:
+la direzione è affidabile, il decimale no.
 
 > **I flussi valgono tre o quattro volte le campagne.** Prima ancora del
 > catalogo di Natale, per Woman valgono di più cinque automazioni sempre
@@ -198,11 +223,15 @@ negozio. In più, il **61–75% spende oltre il valore della card**, in media
 Due cose del piano vanno corrette, e stanno per esteso in
 [`WOMAN-NATALE.md`](./WOMAN-NATALE.md):
 
-- ⛔ **La gift card su Amazon non si può vendere.** Amazon vieta espressamente ai
-  venditori terzi buoni regalo, gift card e codici di riscatto. Si può vendere
-  un **prodotto fisico** — una *Beauty Box* con dentro prodotti e un cartoncino
-  col codice. E da Amazon **non arriva nessun contatto**: solo un alias email
-  criptato, con marketing vietato.
+- ⛔ **La gift card su Amazon quasi certamente non si può vendere.** Le policy
+  Amazon sui prodotti vietati elencano buoni regalo, gift card e codici di
+  riscatto — ma **non siamo riusciti ad aprire la pagina ufficiale** (il proxy
+  di rete la blocca), quindi va chiesta **conferma scritta a Seller Support
+  prima di costruirci sopra il catalogo**. Il piano B è già pronto e funziona
+  comunque meglio: vendere un **prodotto fisico** — una *Beauty Box* con dentro
+  prodotti e un cartoncino col codice — che per giunta genera recensioni, cosa
+  che una card nuda non fa. E da Amazon **non arriva nessun contatto**: solo un
+  alias email criptato, con marketing vietato.
 - ✅ **Il codice si attiva, non si digita alla cassa.** Se funziona senza
   attivazione avete venduto un buono e non avete acquisito nessuno.
 
