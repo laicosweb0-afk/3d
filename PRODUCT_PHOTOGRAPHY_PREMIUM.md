@@ -104,3 +104,74 @@ direzione. Si rifiuta passando `declined_preset_id` e si esplicita
 - Video Seedance 2.5, 8s 1080p: **72 crediti**
 
 Un set completo da 12 immagini + 5 clip: circa 385 crediti.
+
+---
+
+# Reel 15 secondi — tre divani
+
+## Modello e costi
+
+Kling 3.0 costa un quarto di Seedance ed è il modello marcato "multi-shot,
+cinematic". Per il verticale è la scelta giusta.
+
+| Modello | Durata | Qualità | Crediti |
+|---|---|---|---|
+| Kling 3.0 | 5s | pro | 8,75 |
+| Kling 3.0 | 10s | std | 15 |
+| Kling 3.0 | 10s | pro | 17,5 |
+| Kling 3.0 | 15s | pro | 26,25 |
+| Seedance 2.5 | 8s | 1080p | 72 |
+| Seedance 2.5 | 10s | 480p | 25 |
+| reframe (16:9 → 9:16) | 8s | 1080p | 78 |
+
+Il reframe costa più che rigenerare: non conviene mai convertire una clip
+orizzontale, si rifà direttamente in verticale.
+
+## Perché tre clip e non una
+
+I modelli video generano **una ripresa continua sola**. Non sanno fare lo
+stacco fra prodotti diversi: se chiedi tre divani in un video, restituiscono
+un ammasso di divani inventati in una stanza sola. Lo stacco lo fa il
+montaggio, non il modello. Quindi una clip per prodotto, poi si uniscono.
+
+## Impostazioni
+
+Kling 3.0 · 5s · modalità pro · audio off · 9:16 · 8,75 crediti a clip
+
+## Frame di partenza
+
+| Clip | job_id |
+|---|---|
+| Grigio | `9c983396-d4b7-4a17-b53c-47236319710c` |
+| Nero | `0999afe0-9d7b-4566-85be-ce65ae87b1cc` |
+| Blu | `b688c3db-794b-4e9a-9cda-e65a364604b6` |
+
+Attenzione: solo i frame in 9:16 vanno bene come start_image di un verticale.
+Un frame 4:5 o 16:9 viene tagliato.
+
+## Struttura del prompt video
+
+Tre vincoli vanno ripetuti sempre, altrimenti il modello inventa:
+
+1. **un solo movimento continuo** — descritto per esteso (spinta in avanti,
+   discesa, deriva laterale), mai "zoom" che il modello interpreta come zoom
+   digitale;
+2. **il divano non si muove, non si deforma, non cambia in nessun frame** —
+   con l'elenco di silhouette, numero bottoni, colore velluto, finiture oro;
+3. **la scena resta chiara e avorio** — `never dark, never moody`. Serve
+   davvero: senza, il modello vira al moody da solo.
+
+Chiudere con: `One continuous take. No cuts, no scene change, no people, no
+hands, no text, no typography, no logos, no watermarks.`
+
+## Montaggio
+
+Grigio → nero → blu, quindici secondi. **Taglio secco fra le clip**, non
+dissolvenza: sul lusso lo stacco netto funziona, la dissolvenza fa
+presentazione aziendale.
+
+Il logo va nei primi 2 secondi, dove il grigio ha la parete vuota in alto.
+Indirizzo e telefono negli ultimi 2 secondi sul blu.
+
+Il testo non va mai generato dall'AI: storpia l'italiano. Si monta sopra
+in CapCut o Canva con il logo vero.
