@@ -17,7 +17,10 @@
 | Ore | nessuna struttura, "lavoro tantissimo per niente" |
 | Volto e voce | disponibili |
 | Budget 90 gg | 0 – 500 € |
-| Obiettivo | 2.000 €/mese entro l'inverno |
+| Obiettivo | 2.000 €/mese entro l'inverno (~24.000 €/anno) |
+| Inquadramento | **nessuna partita IVA** — apertura prevista "l'anno prossimo" |
+| Esperienza | 8 anni di lavori, nessun caso studio confezionato |
+| Clienti target | 3–4 clienti per arrivare a 2.000 €/mese totali |
 
 ---
 
@@ -45,14 +48,20 @@ invece di una sensazione.
 fisso, l'obiettivo vero non è 2.000 ma 2.800–3.000, e il piano a 90 giorni si allunga
 di circa un mese.
 
-### Sul fisco
+### Sul fisco — non più una domanda, un'azione
 
-**4. Hai partita IVA, e con quale regime?**
-*Assunzione usata: forfettario.* A 24.000 €/anno di ricavi in forfettario con
-aliquota startup al 5% ti restano in tasca circa **19–20.000 €**, che è la
-condizione migliore possibile e va sfruttata per anni. Se la partita IVA non c'è, va
-aperta **prima** di arrivare a 2.000 €/mese, non dopo. Trenta minuti col
-commercialista, questa settimana.
+**4. Partita IVA: risposto.** Non ce l'hai, e il piano non parte senza.
+Il ragionamento completo è in `00B-LA-PARTITA-IVA.md`. Quello che resta da fare non
+è rispondermi, è **una call col commercialista con questa domanda esatta**:
+
+> *"Con l'attività che faccio — video, grafica, contenuti, siti per aziende — posso
+> aprire come libero professionista in gestione separata, o mi inquadrate per forza
+> come impresa in gestione commercianti? E in forfettario, quale codice ATECO mi dà
+> il coefficiente migliore? Ho i requisiti per l'aliquota al 5%?"*
+
+Le tre risposte che ti riporta valgono più di qualunque altra cosa in questi
+documenti: decidono se il tuo costo d'ingresso è **zero contributi fissi** o
+**4.400 € l'anno anche a fatturato zero**.
 
 ### Sui numeri di dettaglio
 
@@ -80,3 +89,13 @@ propone il retainer sopra; dove non c'era niente, si usa lo scambio del
   con la cifra e le parole esatte.
 
 Se hai tempo per rispondere solo a due: **la 1 e la 6.**
+
+---
+
+## Le tre azioni che non aspettano nessuna risposta
+
+1. **Call col commercialista** con la domanda del punto 4. Questa settimana.
+2. **Tre ore sull'archivio** → 5 casi studio (`00C-ARCHIVIO-E-CASI-STUDIO.md`).
+3. **La lista** di tutti quelli che ti conoscono da 8 anni e non ti comprano niente.
+
+Tutte e tre costano zero euro e si fanno prima che la partita IVA sia aperta.

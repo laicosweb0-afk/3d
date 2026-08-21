@@ -18,7 +18,17 @@ I prezzi e le fasi restano, gli obiettivi e le priorità cambiano.
 | Team | tu + 1 closer + 1 amministrativo (lento, poco operativo) |
 | Costo strumenti | basso (Higgsfield, Claude) |
 | Origine clienti | conoscenza diretta e passaparola — **canale fermo** |
+| Inquadramento | **nessuna partita IVA, lavoro in nero** |
+| Esperienza | **8 anni di lavori svolti**, nessuno confezionato come caso studio |
 | Obiettivo | **2.000 €/mese entro l'inverno** |
+
+**Il vincolo che viene prima di tutti gli altri:** non hai partita IVA. Non è un
+dettaglio amministrativo da sistemare più avanti — è la cosa che impedisce
+materialmente al resto del piano di partire, perché non puoi firmare un retainer da
+650 €/mese con un'azienda a cui non puoi emettere fattura. Il ragionamento completo,
+con i numeri, è in **`00B-LA-PARTITA-IVA.md`**. In sintesi: aprire costa meno di
+quanto ti sono costati i tre lavori non incassati di quest'anno, e ti permette di
+alzare il listino del 30% senza che il cliente spenda un euro in più.
 
 **L'obiettivo è giusto.** Non è modesto e non è irrealistico: è la tappa corretta
 per chi parte da 400 €/mese. Chi da 400 punta a 8.000 non ci arriva e smette; chi
@@ -162,21 +172,29 @@ non rifare il tuo sito; non aggiungere persone.
 
 ---
 
-## 4. Due cose che vanno verificate subito
+## 4. Le due cose che stai già pagando senza saperlo
 
-**Partita IVA e regime fiscale.** Non me l'hai detto. A 5.500 €/anno è un dettaglio;
-a 24.000 €/anno non lo è più. Se sei in **forfettario con aliquota startup al 5%**,
-a 24.000 € di ricavi ti resta in tasca intorno ai **19–20.000 €** — ed è la
-condizione migliore possibile, da sfruttare per anni. Se non hai partita IVA e stai
-incassando in altro modo, va sistemato **prima** di andare a 2.000 €/mese, non dopo.
-Trenta minuti col commercialista.
+**Il nero ti è costato tre lavori quest'anno.** Woman/Aurea, Bufala, Mondial
+Service: lavoro consegnato, incasso zero. Senza partita IVA e senza contratto non
+hai nessuno strumento per esigerli — non puoi fatturare, non puoi sollecitare
+formalmente, puoi solo chiedere. Non è sfortuna e non sono clienti cattivi: è il
+costo della struttura, arrivato tutto insieme. Vale probabilmente più della partita
+IVA per due anni. `00B-LA-PARTITA-IVA.md`.
 
-La soglia degli 85.000 € di cui parlava la v1 di questo documento è un problema che
-incontrerai fra tre o quattro anni. **Ignorala per ora**: era la risposta giusta a
-una domanda che non è la tua.
+**Otto anni di archivio che non stai usando.** Hai detto di non avere casi studio, e
+subito dopo di lavorare da prima del Covid. Non ti manca il materiale, ti manca il
+confezionamento: cinque casi studio si costruiscono in **tre ore** dai file che hai
+già, e quattro su cinque escono dai clienti che stai per chiamare. Dentro
+quell'archivio c'è anche la cosa che vale di più — **quaranta o cinquanta persone
+che ti hanno visto lavorare e che oggi non ti comprano niente.** È il canale che ti
+ha portato tutti i clienti che hai, ed è fermo solo perché nessuno lo muove.
+`00C-ARCHIVIO-E-CASI-STUDIO.md`.
 
-**Cosa ricevono davvero Bazar Marrakech e Rama Ceramiche per i loro 350 €/mese.**
-Se stanno ricevendo più di quanto pagano — cosa frequente quando un rapporto nasce
-per conoscenza — quei due clienti ti stanno costando ore che servono altrove.
-Verificalo e, se serve, riallinea al rinnovo. Sono anche i due su cui puoi provare
-per primo il listino nuovo, perché il rapporto regge una conversazione franca.
+## 5. Cosa ricevono Bazar Marrakech e Rama per i loro 350 €
+
+Da verificare. Se stanno ricevendo più di quanto pagano — cosa frequente quando un
+rapporto nasce da una conoscenza — quei due clienti ti stanno costando ore che
+servono altrove. Sono anche i due su cui puoi provare per primo il listino nuovo,
+perché il rapporto regge una conversazione franca. E con la fattura in mano, per
+loro il costo reale **scende** anche se il prezzo sale (`00B` §3): è la trattativa
+più facile che avrai quest'anno.

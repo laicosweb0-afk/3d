@@ -1,8 +1,10 @@
 # FASE 6 — Piano di implementazione
 
 **Ricalibrato sui dati reali.** Punto di partenza: ~450 €/mese di fatturato,
-350 €/mese di ricorrente, 2 clienti paganti, 3 lavori finiti e non incassati.
-Obiettivo dichiarato: **2.000 €/mese entro l'inverno.**
+350 €/mese di ricorrente, 2 clienti paganti, 3 lavori finiti e non incassati,
+**nessuna partita IVA**, 8 anni di archivio non confezionato.
+Obiettivo dichiarato: **2.000 €/mese entro l'inverno** — cioè ~24.000 €/anno, non
+100k. Tutti i numeri qui sotto puntano lì.
 
 ---
 
@@ -27,53 +29,55 @@ sei clienti a 350.
 
 ---
 
-## 30 GIORNI (entro fine settembre) — Incassare
+## 30 GIORNI (entro fine settembre) — Aprire e incassare
 
-Il mese non serve a trovare clienti. Serve a chiudere quelli che hai e a mettere in
-piedi la sequenza corretta, così che nessun lavoro futuro finisca come i tre attuali.
+Il mese non serve a trovare clienti. Serve a mettersi in condizione di **incassare**
+quelli che hai già, e a chiudere la falla che quest'anno ti è costata tre lavori.
 
-### Settimana 1 — Le tre chiamate
-- [ ] Woman / Aurea → conversazione + proposta retainer (script in `00A`)
-- [ ] Mondial Service → conversazione + proposta retainer
-- [ ] Preventivo scritto **entro 24 h** da ogni chiamata, con data di partenza dentro
-- [ ] 30 minuti col commercialista: partita IVA e regime a posto per arrivare a 24k/anno
+### Settimana 1 — La struttura e l'archivio
+- [ ] **Commercialista**, con la domanda esatta del `00B` §4: professionista in
+      gestione separata o impresa in gestione commercianti? Quale ATECO in forfettario?
+- [ ] **Le tre ore sull'archivio** (`00C`): 5 casi studio scritti, formato fisso,
+      pronti sul telefono
+- [ ] Lista di tutti quelli che ti conoscono da 8 anni e non ti comprano niente
+- [ ] Modello di preventivo e contratto standard (`04-PREZZI.md` §5.2)
 
-### Settimana 2 — Il terzo e il sistema
-- [ ] Bufala / mozzarella → conversazione + proposta retainer
-- [ ] Modello di preventivo standard, scritto una volta sola (`04-PREZZI.md` §5.2):
-      tre opzioni, 50/50, due revisioni incluse, file al saldo
+### Settimana 2 — Aprire
+- [ ] **Apertura partita IVA in forfettario** (modello AA9/12, gratuito, si fa in giornata)
+- [ ] Nuovo listino sui retainer: 450 / **650** / 950
 - [ ] Regola in vigore: **nessuna ora di produzione senza acconto incassato**
-- [ ] Mansione unica e misurabile all'amministrativo: preventivi in 24 h, fatture il
-      giorno della consegna, solleciti a 7 e 15 giorni
-
-### Settimana 3 — Firme e incassi
-- [ ] Un solo richiamo a chi non ha risposto. Poi si passa oltre
-- [ ] **Acconto incassato** su almeno due dei tre
-- [ ] Verifica cosa ricevono davvero Bazar Marrakech e Rama per i loro 350 €
+- [ ] Mansione unica all'amministrativo: preventivi in 24 h, fatture il giorno della
+      consegna, solleciti a 7 e 15 giorni
 - [ ] Primi 3 contenuti pubblicati (prima/dopo, dietro le quinte, caso studio)
 
-### Settimana 4 — Riempire l'agenda del closer
-- [ ] Lista di tutti quelli che ti conoscono e non ti hanno mai comprato niente
-- [ ] 10 chiamate di riattivazione
-- [ ] 4 caffè con potenziali partner (tipografia, fotografo, web agency, commercialista)
+### Settimana 3 — Le tre chiamate
+- [ ] Woman / Aurea → conversazione + proposta retainer (script in `00A`)
+- [ ] Mondial Service → conversazione + proposta retainer
+- [ ] Bufala / mozzarella → conversazione + proposta retainer
+- [ ] Preventivo scritto **entro 24 h** da ogni chiamata, data di partenza già dentro
+
+### Settimana 4 — Firmare e riempire l'agenda
+- [ ] Un solo richiamo a chi non ha risposto. Poi si passa oltre
+- [ ] **Acconto incassato** su almeno due dei tre
+- [ ] 10 chiamate di riattivazione dall'archivio (`00C` §4)
+- [ ] Verifica cosa ricevono davvero Bazar Marrakech e Rama per i loro 350 €
 - [ ] Due ore fisse a settimana di sola attività commerciale, in calendario
 
 ### KPI a 30 giorni
 
 | Metrica | Oggi | Target |
 |---|---|---|
+| Partita IVA | no | **sì** |
 | Ricorrente/mese | 350 € | **1.200 – 1.800 €** |
-| Clienti paganti | 2 | **4 – 5** |
+| Clienti paganti **con fattura** | 0 | **3 – 5** |
 | Lavori finiti e non fatturati | 3 | **0** |
 | Euro incassati ÷ euro di lavoro consegnato | ~20% | **100%** |
+| Casi studio pronti | 0 | **5** |
 | Contenuti pubblicati | 0 | 12 |
-| Conversazioni commerciali nuove | ~0 | **4** |
+| Chiamate di riattivazione | 0 | **10** |
 
-La riga **euro incassati ÷ euro consegnati** è la metrica più importante dei
-prossimi 30 giorni. Se resta sotto il 100%, nessun'altra cosa in questo documento
-funziona.
-
----
+La riga **euro incassati ÷ euro consegnati** è la metrica più importante del mese.
+Se resta sotto il 100%, nessun'altra cosa in questo documento funziona.
 
 ## 90 GIORNI (entro fine novembre) — Superare l'obiettivo prima dell'inverno
 
