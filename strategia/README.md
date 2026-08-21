@@ -13,6 +13,17 @@ quello, e tutto il resto serve a quello.
 
 ---
 
+## Il documento completo
+
+**[`pdf/Piano-Crescita-Lugo-Romagna.pdf`](pdf/Piano-Crescita-Lugo-Romagna.pdf)** — 29
+pagine, tutto il piano in un unico documento impaginato, con in più la **mappa del
+tessuto produttivo della Bassa Romagna**: i sei bacini di clienti con nomi reali, la
+griglia per riconoscere un cliente buono, il metodo per costruire la lista dei 50 in due
+ore, il calendario di mercati e fiere, e gli script pronti.
+
+Sorgente: `pdf/piano.html` — si rigenera con
+`chrome --headless --no-pdf-header-footer --print-to-pdf=... file://.../piano.html`
+
 ## L'ordine in cui va letto
 
 I primi tre file sono le prossime tre settimane. Il resto è il piano.
