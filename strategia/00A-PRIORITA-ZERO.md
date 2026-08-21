@@ -1,141 +1,161 @@
-# PRIORITÀ ZERO — I soldi che hai già guadagnato e non hai incassato
+# PRIORITÀ ZERO — Le una tantum: incassarle, e smettere di viverci
 
-**Leggi questo prima di ogni altro file. Le prossime tre settimane si giocano qui,
-non sull'acquisizione.**
+**Correzione alla versione precedente.** Avevo scritto che chiudere i tre lavori
+pendenti come retainer valeva +1.350–1.800 €/mese. Mi hai detto che Mondial Service
+e il progetto Bufala sono **una tantum**, e che Mondial partirà comunque più avanti.
+Quel numero non esiste. Lo tolgo e rifaccio il conto vero.
 
 ---
 
-## Cosa mi hai detto, messo in fila
+## 1. Il quadro reale, senza sconti
 
-| Cliente | Stato | Ricavo |
+| | |
+|---|---|
+| Clienti ricorrenti | **2** |
+| Ricorrente totale | **~500 – 600 €/mese** |
+| Bufala | **una tantum** — da fatturare e incassare |
+| Mondial Service | **una tantum, e slitta** — progetto futuro |
+| Woman / Aurea | da chiudere — l'unica con potenziale continuativo |
+| **Obiettivo** | **2.000 €/mese** |
+| **Gap reale** | **~1.400 – 1.500 €/mese** |
+
+**Il gap non si copre con i clienti che hai.** Va coperto con **2–3 clienti nuovi
+a retainer**, e questa è la vera notizia di oggi. È un lavoro diverso — e più lungo —
+di tre telefonate.
+
+Non è una brutta notizia: 2–3 clienti nuovi in 90 giorni è un obiettivo normale,
+raggiungibile e misurabile. È solo che va fatto il lavoro giusto, e il lavoro giusto
+è **generare conversazioni**, non chiudere quelle già aperte.
+
+## 2. Il problema vero non è quest'anno: è il modello
+
+Otto anni di lavoro, 5.500 € nell'ultimo anno. La spiegazione non è che lavori poco
+— hai consegnato tre progetti finiti in pochi mesi, e uno di questi è un'esperienza
+3D completa con sito, art direction e brief creativo. È che **vendi progetti, non
+mesi**.
+
+Guarda cosa succede con le due strade, a parità di 2.000 €/mese:
+
+| | Solo una tantum | 3 retainer da 650 |
 |---|---|---|
-| Bazar Marrakech | attivo, paga | ~175 €/mese `[da confermare]` |
-| Rama Ceramiche | attivo, paga | ~175 €/mese `[da confermare]` |
-| **Woman / Aurea** | **lavoro fatto, da preventivare e chiudere** | **0 €** |
-| **Bufala / mozzarella** | **lavoro fatto, da monetizzare** | **0 €** |
-| **Mondial Service** | **lavoro risolto, da preventivare e chiudere** | **0 €** |
+| Ricavo annuo | 24.000 € | 23.400 € |
+| Progetti da vendere in un anno | **12 – 16** | **3** |
+| Trattative da fare | 12 – 16 | 3 |
+| Brief, preventivi, revisioni | 12 – 16 volte | 3 volte |
+| Cosa succede se un mese non vendi | **incassi zero** | incassi lo stesso |
+| Cosa succede a gennaio | ricominci da capo | è già firmato |
 
-Fatturato medio dichiarato: **400–500 €/mese**, cioè **~5.500 €/anno**.
+**Stessi soldi. Dodici vendite contro tre.** E la riga che conta di più è la
+penultima: con le una tantum, ogni mese in cui produci è un mese in cui non vendi, e
+quel mese ti si presenta come un buco sessanta giorni dopo. È esattamente il grafico
+a denti di sega che ti ha portato a 5.500 €.
 
-Tre progetti su cinque hanno il lavoro **finito** e l'incasso **a zero**. Con le tue
-parole: *"tante volte lavoro tantissimo per niente."* Non è un modo di dire — è la
-descrizione esatta di cosa è successo quest'anno.
+La una tantum non è sbagliata. È sbagliata **come modello**. Va bene come cassa
+aggiuntiva sopra una base ricorrente, non come base.
 
-## La diagnosi, in una riga
+## 3. Cosa fare con i tre lavori, uno per uno
 
-**Non hai un problema di clienti. Hai un problema di sequenza.**
+### Bufala / mozzarella — fattura e chiudi bene
 
-Stai facendo: *lavoro → poi preventivo → poi (forse) incasso.*
-La sequenza che regge è: *preventivo → acconto incassato → lavoro → saldo → consegna.*
+- **Fattura a prezzo pieno.** È un lavoro grosso: guarda cosa hai prodotto — sito,
+  esperienza 3D, direzione creativa, brief. A listino (`04-PREZZI.md`) è un lavoro
+  da **4.000–7.000 €**, non da 800. Se hai concordato una cifra più bassa, incassa
+  quella, ma **dilla comunque** la cifra vera: *"un lavoro così, a listino, sono
+  cinquemila euro."* Serve a te per il prossimo, e a lui per capire cosa ha in mano.
+- **Alla consegna, una sola domanda:** *"E adesso? Quel sito, se non ci esce niente
+  sopra, fra sei mesi è fermo. Vuoi che lo tenga vivo io?"* → proposta da 450 €/mese
+  (contenuti + manutenzione). Se dice no, hai perso due minuti. Se dice sì, hai
+  trasformato una una tantum in una rendita.
+- **In ogni caso: diventa il tuo miglior caso studio.** È il lavoro più completo che
+  hai fatto quest'anno.
 
-Tutto il resto — i social, l'outbound, le fiere, il listino — è inutile finché la
-sequenza è invertita, perché ogni cliente nuovo che porti dentro entra nello stesso
-imbuto e finisce nello stesso posto: lavoro consegnato, soldi no.
+### Mondial Service — non è di adesso, tienilo caldo
 
-E c'è un secondo effetto, peggiore del primo: quando consegni prima di aver
-concordato il prezzo, **non stai più vendendo, stai chiedendo**. Il cliente ha già
-il valore in mano. Da lì in poi qualunque cifra tu dica è una richiesta di favore, e
-il prezzo lo fa lui. È il motivo per cui il tuo ticket è a 300 €/mese e non a 600.
+Se parte più avanti, non è nel piano dei 90 giorni. Due cose però vanno fatte ora:
 
-## Il conto di cosa vale sistemarlo
+- **Il lavoro già svolto va fatturato adesso**, non quando parte il progetto grosso.
+  Il lavoro finito e non pagato non migliora con il tempo.
+- **Fissa tu la data del richiamo**, non lasciarla al "ci sentiamo": *"Ti richiamo
+  il 15 di ottobre per capire come siamo messi."* Poi chiama il 15 di ottobre.
+  Un progetto futuro senza una data in agenda è un progetto che non esiste.
 
-I tre lavori pendenti, chiusi bene, valgono **da soli** quasi tutto il tuo obiettivo:
+### Woman / Aurea — questa sì, provala a retainer
 
-| | Oggi | Se chiudi i tre pendenti a retainer |
-|---|---|---|
-| Bazar Marrakech + Rama | 350 €/mese | 350 €/mese |
-| Woman / Aurea | 0 | 450 – 600 €/mese |
-| Bufala | 0 | 450 – 600 €/mese |
-| Mondial Service | 0 | 450 – 600 €/mese |
-| **Totale ricorrente** | **350 €/mese** | **1.700 – 2.150 €/mese** |
+È l'unica delle tre che avevi descritto come *"cliente per tutto il tempo"*, ed è
+anche lo stesso imprenditore di due attività. Qui la proposta mensile ha senso:
+un titolare con due aziende ha due volte il bisogno di contenuti e un solo
+interlocutore da convincere.
 
-**Il tuo obiettivo di 2.000 € al mese entro l'inverno si raggiunge quasi
-interamente con i clienti che hai già in mano.** Ti serve un cliente nuovo, forse
-due. Non cinque.
+Proposta: **650 €/mese** per gestire entrambe le attività, invece di due preventivi
+separati. Per lui è un risparmio evidente, per te è un cliente solo da gestire.
+Se dice di no al mensile, ripiega su un pacchetto trimestrale rinnovabile — ma
+chiedi prima il mensile.
 
-Questo è il numero più importante che ho da darti, e ribalta la priorità: **nelle
-prossime tre settimane non cercare un solo cliente nuovo.** Chiudi questi tre.
+## 4. Le una tantum servono a tre cose. Nessuna è "campare"
 
-## L'errore da non fare adesso
+**1. Cassa immediata.** Fatturate, i tre lavori valgono probabilmente
+**4.000–9.000 €** in una volta. Quella cassa serve a una cosa precisa: **finanziare
+l'apertura della partita IVA e i primi mesi**, che è il blocco di cui parla
+`00B-LA-PARTITA-IVA.md`. È la risposta al tuo "avevo bisogno di fare cassa" — la
+cassa ce l'hai già, è ferma nei lavori non fatturati.
 
-L'istinto sarà: *"mando il preventivo per il lavoro fatto, incasso 1.500 € e sono a
-posto."*
+**2. Casi studio.** Tre progetti finiti = tre casi studio, che è esattamente quello
+che ti serve per chiudere i clienti nuovi (`00C-ARCHIVIO-E-CASI-STUDIO.md`).
 
-Se fai così, a gennaio sei di nuovo a 350 €/mese e ricominci da capo. Un incasso una
-tantum non risolve niente: **il lavoro già fatto non è la merce, è la prova.** La
-merce è quello che succede da settembre in poi.
+**3. Porta d'ingresso.** Ogni una tantum consegnata bene è un cliente che ti ha
+pagato e si fida. **La domanda "e adesso?" va fatta a ognuno**, sempre, alla
+consegna. Non converte ogni volta — realisticamente uno su tre — ma uno su tre è
+comunque il canale con il tasso di chiusura più alto che avrai mai, perché non devi
+convincere nessuno che sai lavorare.
 
-## Come si chiudono, in pratica
+## 5. Le regole, che restano identiche
 
-Per ognuno dei tre, una conversazione sola — di persona o al telefono, **mai per
-email**, e la proposta si mette per iscritto dopo, non prima.
+Queste non cambiano, anzi contano di più adesso che sai che ogni progetto è una
+vendita separata:
 
-**La struttura, in quattro mosse:**
+1. **Nessuna ora di produzione per chi non ha firmato e versato l'acconto.** Su un
+   modello a una tantum, lavorare prima di vendere è fatale: ogni progetto regalato
+   è un mese di fatturato perso, non una consegna in anticipo.
+2. **Il preventivo esce entro 24 ore.**
+3. **50% all'accettazione, 50% alla consegna. I file al saldo.**
+4. **A ogni consegna, la domanda "e adesso?".** Trenta secondi. È il modo in cui una
+   una tantum diventa una base.
 
-**1. Metti il lavoro fatto sul tavolo come valore, non come credito.**
-> *"Ti ho portato quello che abbiamo costruito. Guardalo con calma."*
-Non partire dai soldi. Fai vedere. Chi ha il risultato davanti valuta diversamente
-da chi legge una cifra in un'email.
+## 6. Il calendario ricalibrato
 
-**2. Dì il prezzo pieno di quello che hai fatto.**
-> *"Un lavoro così, a listino, sono [1.800 / 2.500] euro."*
-Dirlo serve anche se poi non lo incassi tutto: fissa il valore. Se salti questo
-passaggio, il cliente penserà per sempre che quel lavoro valeva zero, perché è
-quello che gli è costato.
+**Settimane 1–2 — Incassare e aprire**
+- [ ] Fattura per Bufala, Mondial (lavoro già svolto), Aurea → **cassa**
+- [ ] Commercialista + apertura P.IVA (`00B`)
+- [ ] 5 casi studio dall'archivio (`00C`)
 
-**3. Fai lo scambio.**
-> *"Facciamo così: quel lavoro te lo metto dentro — non te lo fatturo a parte — se
-> da settembre partiamo con il mensile. [500] euro al mese, e ogni mese esce
-> [tot]. Perché quello che ti ho fatto, da solo, fra tre mesi non se lo ricorda
-> nessuno. Serve che esca roba in continuazione."*
+**Settimane 3–4 — Aprire il canale**
+- [ ] Proposta retainer ad Aurea — 650 €/mese per le due attività
+- [ ] Proposta "tenerlo vivo" al cliente Bufala — 450 €/mese
+- [ ] **20 chiamate** dall'archivio degli 8 anni
+- [ ] 4 caffè con potenziali partner
 
-Questa mossa fa tre cose insieme: trasforma un credito che faresti fatica a esigere
-(perché non c'era un preventivo firmato) in un contratto ricorrente; ti fa sembrare
-generoso invece che creditore; e sposta la conversazione dal passato al futuro, dove
-hai il coltello dalla parte del manico.
+**Da lì in poi: il lavoro vero è generare conversazioni.** Servono 2–3 clienti nuovi
+a retainer, e il conto è questo:
 
-**4. Chiudi sulla data, non sul sì.**
-> *"Partiamo dal primo, o dal quindici?"*
-Chi chiede "che ne pensi?" riceve "ci penso". Chi chiede quale delle due date
-riceve una data.
+| | |
+|---|---|
+| Chiamate/contatti necessari | **40 – 60 in 90 giorni** |
+| Conversazioni serie che ne escono | 10 – 15 |
+| Clienti che ne escono | **2 – 4** |
+| Ricorrente aggiunto (a 650 €) | **1.300 – 2.600 €/mese** |
 
-**Variante se il cliente vuole solo il lavoro fatto e niente mensile:** allora quel
-lavoro si fattura a prezzo pieno, tutto, senza sconti. Lo sconto esisteva solo in
-cambio del retainer. Dirlo con calma: *"Lo sconto era legato al mensile. Da solo,
-è [2.500]."* Non è una ritorsione, è coerenza — ed è la prima volta quest'anno che
-un tuo prezzo ha una logica visibile.
+Sono **5 contatti a settimana**. Non è un piano ambizioso: è il minimo sindacale per
+un'attività che deve trovare tre clienti. E hai un ragazzo che chiude — il tuo lavoro
+è mettergli davanti quelle conversazioni.
 
-## Le tre regole che entrano in vigore oggi
+## 7. Dove sei davvero, e dove arrivi
 
-**1. Nessuna ora di produzione su un cliente che non ha firmato un preventivo e
-pagato l'acconto.** Nessuna eccezione, nemmeno "è un amico", nemmeno "è veloce",
-nemmeno "così poi si convince". Questa singola regola, applicata a gennaio,
-ti avrebbe fatto chiudere l'anno con tre o quattro volte il fatturato che hai fatto.
+| | Oggi | 90 giorni | Come |
+|---|---|---|---|
+| Ricorrente | 500 – 600 € | **1.800 – 2.300 €** | +2/3 clienti nuovi, +Aurea |
+| Una tantum (media/mese) | irregolare | 300 – 600 € | dai contatti dell'archivio |
+| **Totale/mese** | ~600 € | **2.100 – 2.900 €** | |
 
-**2. Il preventivo parte entro 24 ore dalla conversazione.** Non entro la settimana.
-La disponibilità a comprare ha una temperatura, e si raffredda in tre giorni.
-
-**3. 50% all'accettazione, 50% alla consegna. I file si consegnano al saldo.**
-Non è diffidenza: è la ragione per cui non ti ritrovi con tre lavori finiti e zero
-euro. Chi ha i file non ha più motivo di pagare in fretta.
-
-## Il calendario delle prossime tre settimane
-
-**Settimana 1**
-- [ ] Chiamata a Woman / Aurea → proposta retainer
-- [ ] Chiamata a Mondial Service → proposta retainer
-- [ ] Preventivo scritto entro 24 h da ogni chiamata, con la data di partenza già dentro
-
-**Settimana 2**
-- [ ] Chiamata sul progetto Bufala → proposta retainer
-- [ ] Richiamo su chi non ha risposto (uno solo, poi basta)
-- [ ] Bazar Marrakech e Rama: verifica cosa stanno pagando davvero e cosa ricevono
-
-**Settimana 3**
-- [ ] Firma e **acconto incassato** su almeno due dei tre
-- [ ] Modello di preventivo standard scritto una volta per tutte (`04-PREZZI.md` §5.2)
-- [ ] Da qui in poi: nessun lavoro inizia senza acconto
-
-**Obiettivo misurabile a 21 giorni: ricorrente da 350 €/mese a 1.200 €/mese.**
-Se ne chiudi tre su tre, sei a 1.700–2.150 e l'obiettivo dell'inverno è già in
-cassaforte a settembre.
+L'obiettivo dell'inverno regge. Ma non si raggiunge con tre telefonate ai clienti che
+hai: si raggiunge con **una cinquantina di contatti in tre mesi**, e con la fattura
+che ti permette di chiedere 650 invece di 400.

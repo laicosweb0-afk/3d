@@ -11,9 +11,10 @@ I prezzi e le fasi restano, gli obiettivi e le priorità cambiano.
 | Metrica | Valore |
 |---|---|
 | Fatturato ultimi 12 mesi | **~5.500 €** (400–500 €/mese) |
-| Ricorrente sicuro | **~350 €/mese** (Bazar Marrakech + Rama Ceramiche) |
-| Clienti che pagano | **2** |
-| Clienti con lavoro fatto e non incassato | **3** (Woman/Aurea, Bufala, Mondial Service) |
+| Ricorrente sicuro | **~500 – 600 €/mese** (Bazar Marrakech + Rama Ceramiche) |
+| Clienti ricorrenti | **2** |
+| Lavori fatti e non incassati | **3** — Bufala e Mondial sono **una tantum**, Mondial slitta |
+| Gap verso l'obiettivo | **~1.400 €/mese, da clienti nuovi** |
 | Ticket medio | 300 – 500 €/mese |
 | Team | tu + 1 closer + 1 amministrativo (lento, poco operativo) |
 | Costo strumenti | basso (Higgsfield, Claude) |
@@ -31,40 +32,54 @@ quanto ti sono costati i tre lavori non incassati di quest'anno, e ti permette d
 alzare il listino del 30% senza che il cliente spenda un euro in più.
 
 **L'obiettivo è giusto.** Non è modesto e non è irrealistico: è la tappa corretta
-per chi parte da 400 €/mese. Chi da 400 punta a 8.000 non ci arriva e smette; chi
-punta a 2.000 ci arriva e poi punta a 4.000. E soprattutto: **2.000 €/mese è
-raggiungibile con i clienti che hai già in mano**, senza un piano di acquisizione da
-zero. Il conto è in `00A-PRIORITA-ZERO.md` — leggilo prima di tutto il resto.
+per chi parte da 500 €/mese. Chi da 500 punta a 8.000 non ci arriva e smette; chi
+punta a 2.000 ci arriva, e poi punta a 4.000.
+
+Ma va detto com'è: **i clienti che hai non ci arrivano.** Bufala e Mondial sono una
+tantum, Mondial slitta più avanti, e restano due clienti ricorrenti da ~550 €/mese
+in tutto. Il gap di 1.400 €/mese si copre con **2–3 clienti nuovi a retainer**, e
+quello è il lavoro dei prossimi 90 giorni. Il conto rifatto è in
+`00A-PRIORITA-ZERO.md`.
 
 ---
 
 ## 1. Il collo di bottiglia vero
 
 Ci sono quattro colli di bottiglia possibili — lead, chiusura, delivery, prezzo — e
-si risolvono in ordine. Nel tuo caso l'ordine è chiaro, ed è diverso da quello che
-ti aspetti.
+si risolvono in ordine.
 
-**Il tuo collo di bottiglia n. 1 è la sequenza di vendita, non i lead.**
+**Il tuo è il primo: non hai un flusso di conversazioni commerciali.** Hai due
+clienti ricorrenti, un pugno di una tantum, e — parole tue — sull'acquisizione
+*"siamo molto fermi"*. Con un ragazzo che chiude in squadra, questo è il problema più
+assurdo che potresti avere: **hai chi chiude e non hai chi far chiudere.**
 
-Produci benissimo (tre lavori finiti, uno è questo repository), ma produci **prima**
-di aver venduto. Il risultato è che la delivery è al 100% e l'incasso al 20%. Non è
-un problema di quanti clienti conosci: è che i clienti che hai attraversano tutto il
-processo produttivo senza mai passare dalla cassa.
+Sopra questo ci sono due blocchi che vanno rimossi per primi, non perché siano il
+collo di bottiglia ma perché lo tengono chiuso a chiave:
 
-**Il collo di bottiglia n. 2 è il volume di conversazioni commerciali.** Hai detto
-che sul fronte acquisizione *"siamo molto fermi"*. Con un closer in squadra questo è
-il problema più assurdo che potresti avere: hai chi chiude e non hai chi far
-chiudere. Ma è il n. 2, non il n. 1 — riempire di lead un imbuto che perde soldi in
-fondo peggiora le cose.
+- **La partita IVA** (`00B`). Non puoi firmare un retainer da 650 €/mese con
+  un'azienda a cui non puoi emettere fattura. Il canale può anche riempirsi: in
+  fondo non ci passa niente.
+- **Il modello a una tantum** (`00A` §2). Vendi progetti, non mesi. Per fare 2.000 €
+  al mese con le una tantum servono 12–16 vendite l'anno; con i retainer ne servono
+  3. Stessi soldi, un quinto della fatica commerciale — che è esattamente la fatica
+  che oggi non riesci a sostenere.
 
-**Non è un problema di prezzo, e non ancora.** 300–500 €/mese è basso, ma alzarlo
-adesso su una base di due clienti sposta 200 €. Alzarlo su una base di sei clienti
-sposta 1.200 €. Il prezzo si sistema al punto 3, non al punto 1 — è l'unica cosa
-che ho invertito rispetto alla v1, e l'ho invertita perché il tuo problema non è
-essere sottopagato: è **non essere pagato affatto**.
+**Non è un problema di prezzo, e non ancora.** 350–500 €/mese è basso, ma alzarlo su
+due clienti sposta 300 €. Il prezzo si sistema mentre acquisisci, con la leva della
+fattura (`00B` §3) che vale da sola un +30% a costo zero per il cliente.
 
-**La delivery non è un problema oggi. Lo diventerà a gennaio**, quando avrai 6–7
-clienti a retainer e le stesse ore. Ci arriviamo nel piano.
+**La delivery non è un problema oggi.** Lo diventerà quando avrai 6–7 clienti a
+retainer e le stesse ore.
+
+### La sequenza invertita resta il difetto operativo
+
+Anche se non è il collo di bottiglia principale, va corretto oggi perché su un
+modello a una tantum è ancora più caro: stai facendo *lavoro → poi preventivo →
+poi (forse) incasso*. Tre progetti finiti, incasso zero.
+
+E c'è l'effetto secondario, peggiore del primo: quando consegni prima di aver
+concordato il prezzo, **non stai più vendendo, stai chiedendo**. Il cliente ha già
+il valore in mano, e da lì qualunque cifra tu dica è una richiesta di favore.
 
 ### Le tue ore
 
@@ -140,9 +155,11 @@ team: sono o dei soci che scommettono, o un costo che non puoi permetterti.**
 
 Cinque azioni. In quest'ordine, non in un altro.
 
-**1. Chiudi i tre lavori pendenti, come retainer e non come progetti.**
-`00A-PRIORITA-ZERO.md`. Vale **+1.350–1.800 €/mese** e non richiede un cliente
-nuovo. È il 70% del tuo obiettivo dell'inverno, in tre conversazioni. Costo: zero.
+**1. Fattura e incassa i tre lavori finiti.** `00A-PRIORITA-ZERO.md`. Non ti danno
+ricorrente — sono una tantum — ma valgono **4.000–9.000 € di cassa in una volta**,
+e quella cassa è esattamente quella che dicevi ti servisse per aprire la partita
+IVA. Ce l'hai già: è ferma nei lavori non fatturati. A ognuno, alla consegna, la
+domanda da trenta secondi: *"e adesso?"*
 
 **2. Metti in vigore la sequenza corretta.**
 Preventivo → acconto incassato → lavoro → saldo → consegna dei file. Tre righe in un
@@ -155,8 +172,10 @@ quelli che verranno. Fai il conto di cosa cambia: sei clienti a 350 sono 2.100 �
 sei clienti a 600 sono 3.600 €. **Stesso numero di clienti, stesso lavoro di
 vendita, 1.500 € di differenza al mese.** Il listino è in `04-PREZZI.md`.
 
-**4. Riempi l'agenda del closer.**
-Obiettivo minimo: **8 conversazioni commerciali nuove al mese**. Da dove escono, in
+**4. Riempi l'agenda del closer. Questa è l'azione principale, non la quarta.**
+Ti servono **2–3 clienti nuovi a retainer** per coprire il gap: sono 40–60 contatti
+in 90 giorni, cioè **5 a settimana**. Obiettivo minimo: **8–10 conversazioni
+commerciali nuove al mese**. Da dove escono, in
 ordine di velocità: riattivazione di chi ti conosce già (§4.1), 8 partner
 complementari (tipografie, fotografi, web agency, commercialisti), outbound con
 demo personalizzata su un settore per volta. Costo: zero, ~5 ore a settimana.

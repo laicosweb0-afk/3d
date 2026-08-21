@@ -3,13 +3,13 @@
 Piano di crescita per agenzia di marketing 3D e contenuti AI.
 **Versione 3 — 21/08/2026.**
 
-**Punto di partenza:** ~5.500 €/anno · 350 €/mese di ricorrente · 2 clienti paganti ·
-**3 lavori finiti e mai incassati** · **nessuna partita IVA** · 8 anni di archivio
-non confezionato.
+**Punto di partenza:** **~550 €/mese di ricorrente da 2 clienti** · 3 lavori finiti
+e mai fatturati (**una tantum**, non convertibili in mensili) · **nessuna partita
+IVA** · 8 anni di archivio non confezionato.
 
-**Obiettivo:** 2.000 €/mese entro l'inverno — cioè **3–4 clienti a 500–650 €/mese**,
-non 100k l'anno. È la tappa giusta e si raggiunge quasi interamente con i clienti che
-sono già in mano.
+**Obiettivo:** 2.000 €/mese entro l'inverno. Gap: **~1.450 €/mese**, che si copre
+solo con **2–3 clienti nuovi a retainer**. Il lavoro dei prossimi 90 giorni è
+quello, e tutto il resto serve a quello.
 
 ---
 
@@ -20,7 +20,7 @@ I primi tre file sono le prossime tre settimane. Il resto è il piano.
 | File | Contenuto |
 |---|---|
 | [`00B-LA-PARTITA-IVA.md`](00B-LA-PARTITA-IVA.md) | **Perché è il primo passo e non l'ultimo.** Costa meno dei tre lavori non incassati e alza il listino del 30% a costo zero per il cliente |
-| [`00A-PRIORITA-ZERO.md`](00A-PRIORITA-ZERO.md) | **I tre lavori consegnati e non incassati:** come si chiudono, e come mensili invece che come progetti. Vale +1.350–1.800 €/mese |
+| [`00A-PRIORITA-ZERO.md`](00A-PRIORITA-ZERO.md) | **Le tre una tantum:** fatturarle vale 4.000–9.000 € di cassa subito. E perché 2.000 €/mese con le una tantum sono 12–16 vendite l'anno contro 3 |
 | [`00C-ARCHIVIO-E-CASI-STUDIO.md`](00C-ARCHIVIO-E-CASI-STUDIO.md) | **8 anni di lavori → 5 casi studio in 3 ore**, e le 40 persone che ti conoscono e non ti comprano niente |
 | [`00-DIAGNOSI-E-VINCOLI.md`](00-DIAGNOSI-E-VINCOLI.md) | Il quadro reale, il collo di bottiglia vero, il ruolo del closer, il 20/80 dei 90 giorni |
 | [`01-MAPPA-ENTRATE.md`](01-MAPPA-ENTRATE.md) | Upsell, ticket medio, i tre retainer, asset che risparmiano ore |
@@ -32,6 +32,12 @@ I primi tre file sono le prossime tre settimane. Il resto è il piano.
 | [`07-QUESTIONARIO.md`](07-QUESTIONARIO.md) | Cosa è calibrato e cosa resta aperto |
 
 ---
+
+## Il numero che decide tutto
+
+**5 contatti commerciali a settimana.** Sotto questa soglia il piano non succede,
+qualunque altra cosa tu faccia. 40–60 contatti in 90 giorni → 10–15 conversazioni
+serie → **2–4 clienti nuovi** → obiettivo raggiunto.
 
 ## Le tre cose da fare questa settimana
 
@@ -53,8 +59,9 @@ Tutte e tre costano zero e si fanno prima che la partita IVA sia aperta.
 | | Oggi | 30 giorni | 90 giorni | 12 mesi |
 |---|---|---|---|---|
 | Partita IVA | no | **sì** | sì | sì |
-| Ricorrente/mese | 350 € | 1.200 – 1.800 € | **2.500 – 3.000 €** | 4.000 – 5.000 € |
-| Clienti a retainer | 0 – 1 | 3 – 5 | 6 – 7 | 8 – 10 |
-| Ticket medio | 350 € | 500 € | 550 € | 650 € |
+| Ricorrente/mese | ~550 € | 1.000 – 1.200 € | **1.800 – 2.300 €** | 3.500 – 4.500 € |
+| Clienti a retainer | 2 | 3 – 4 | **4 – 5** | 7 – 9 |
+| Contatti commerciali | ~0 | **20** | **50 – 60** | 200+ |
+| Ticket medio | 275 € | 450 € | 550 € | 650 € |
 | Euro incassati ÷ euro consegnati | ~20% | **100%** | 100% | 100% |
 | Casi studio | 0 | **5** | 8 | 12 |

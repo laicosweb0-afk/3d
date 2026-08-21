@@ -1,33 +1,45 @@
 # FASE 6 — Piano di implementazione
 
-**Ricalibrato sui dati reali.** Punto di partenza: ~450 €/mese di fatturato,
-350 €/mese di ricorrente, 2 clienti paganti, 3 lavori finiti e non incassati,
-**nessuna partita IVA**, 8 anni di archivio non confezionato.
-Obiettivo dichiarato: **2.000 €/mese entro l'inverno** — cioè ~24.000 €/anno, non
-100k. Tutti i numeri qui sotto puntano lì.
+**Ricalibrato sui dati reali.** Punto di partenza: **~550 €/mese di ricorrente da
+2 clienti**, tre lavori finiti e non fatturati (**una tantum**, non convertibili in
+mensili), **nessuna partita IVA**, 8 anni di archivio non confezionato.
+Obiettivo: **2.000 €/mese entro l'inverno** — ~24.000 €/anno, non 100k.
+
+**Il gap è di ~1.400 €/mese e si copre solo con clienti nuovi.** Il lavoro dei
+prossimi 90 giorni è quindi uno solo, e va detto chiaro: **trovare 2–3 clienti a
+retainer.** Tutto il resto serve a quello.
 
 ---
 
 ## La matematica dell'obiettivo
 
-Per stare a 2.000 €/mese ti servono, in alternativa:
+Oggi: **~550 €/mese** ricorrente. Obiettivo: **2.000 €/mese**. Gap: **~1.450 €**.
 
-| Ticket medio | Clienti a retainer necessari |
+| Ticket medio | Clienti nuovi necessari |
 |---|---|
-| 350 €/mese (il tuo di oggi) | **6** |
-| 500 €/mese | **4** |
-| 600 €/mese | **3 – 4** |
-| 800 €/mese | **2 – 3** |
+| 400 €/mese | **4** |
+| 500 €/mese | **3** |
+| **650 €/mese** | **2 – 3** |
+| 900 €/mese | **2** |
 
-Acquisire un cliente da 600 € costa **esattamente lo stesso lavoro** di acquisirne
-uno da 350 €: stessa chiamata, stesso preventivo, stessa trattativa. Ecco perché la
-leva più veloce verso i 2.000 non è "più clienti" ma **ticket più alto su meno
-clienti**. Con 4 clienti a 600 € sei a 2.400 e hai metà del carico di gestione di
-sei clienti a 350.
+Acquisire un cliente da 650 € costa **esattamente lo stesso lavoro** di acquisirne
+uno da 400: stessa chiamata, stesso preventivo, stessa trattativa. Con la partita
+IVA aperta il 650 è alla portata senza che il cliente spenda un euro in più
+(`00B` §3). Ecco perché il prezzo e l'apertura vengono prima dell'acquisizione: **la
+stessa fatica commerciale rende il 60% in più.**
 
-**Target da tenere: 4–5 clienti a 500–650 €/mese.** Ne hai 2 a 175 e 3 in chiusura.
+**Il numero da tenere in testa: due o tre clienti nuovi.** Non venti, non dieci.
+Due o tre, in tre mesi. E il conto di quanto lavoro ci vuole:
 
----
+| | |
+|---|---|
+| Contatti in 90 giorni | **40 – 60** (5 a settimana) |
+| Conversazioni serie | 10 – 15 |
+| Clienti chiusi | **2 – 4** |
+
+Da dove escono i 40–60 contatti, in ordine di velocità: **l'archivio degli 8 anni**
+(`00C` §4 — è la fonte più veloce che hai e costa zero), **8 partner
+complementari**, **outbound con demo personalizzata** su un settore per volta.
 
 ## 30 GIORNI (entro fine settembre) — Aprire e incassare
 
@@ -68,46 +80,51 @@ quelli che hai già, e a chiudere la falla che quest'anno ti è costata tre lavo
 | Metrica | Oggi | Target |
 |---|---|---|
 | Partita IVA | no | **sì** |
-| Ricorrente/mese | 350 € | **1.200 – 1.800 €** |
-| Clienti paganti **con fattura** | 0 | **3 – 5** |
+| **Cassa incassata dalle una tantum** | 0 € | **4.000 – 9.000 €** |
+| Ricorrente/mese | ~550 € | **1.000 – 1.200 €** |
 | Lavori finiti e non fatturati | 3 | **0** |
-| Euro incassati ÷ euro di lavoro consegnato | ~20% | **100%** |
+| Euro incassati ÷ euro consegnati | ~20% | **100%** |
 | Casi studio pronti | 0 | **5** |
+| **Contatti commerciali fatti** | ~0 | **20** |
+| Conversazioni serie aperte | 0 | **4 – 6** |
 | Contenuti pubblicati | 0 | 12 |
-| Chiamate di riattivazione | 0 | **10** |
 
-La riga **euro incassati ÷ euro consegnati** è la metrica più importante del mese.
-Se resta sotto il 100%, nessun'altra cosa in questo documento funziona.
+Due righe contano più delle altre. **La cassa incassata** — perché è quella che
+finanzia l'apertura, ed è già tua, ferma nei lavori non fatturati. E **i contatti
+commerciali**: è l'unico numero che, a novembre, deciderà se sei a 2.000 €/mese o
+ancora a 600.
 
 ## 90 GIORNI (entro fine novembre) — Superare l'obiettivo prima dell'inverno
 
-### Mese 2 (ottobre)
-- Retainer: da 4–5 a **5–6**, tutti sopra i 450 €/mese
-- **Primo cliente nuovo** (non pendente): dalla riattivazione o dai partner
-- Outbound: 10 aziende a settimana **di un solo settore** (parti dalle ceramiche —
-  hai già Rama come referenza e la scena 3D la riusi)
+### Mese 2 (ottobre) — Il canale
+- **20 contatti**: archivio (`00C` §4), partner, ex clienti. Cinque a settimana
+- **Primo cliente nuovo a retainer.** È l'obiettivo del mese, l'unico che conta
+- Proposta mensile ad Aurea (650 € per le due attività) e al cliente Bufala (450 €)
 - Asset: prime 3 scene 3D di libreria (4 h/settimana, blocco fisso e intoccabile)
 - Social: 3 contenuti/settimana a regime + il primo invito alla demo gratuita
 - Partner: da 4 a 8 attivi
 
-### Mese 3 (novembre)
-- Retainer: **6–7**, ticket medio a 500 €
-- Secondo settore in outbound, riusando la libreria
-- Libreria scene completa + 3 casi studio scritti (Rama, Bufala, Mondial)
+### Mese 3 (novembre) — Il secondo e il terzo
+- **20 contatti**, secondo settore in outbound riusando la libreria
+- **Secondo e terzo cliente nuovo a retainer**
+- 3 casi studio nuovi dai lavori dell'autunno
 - Prima proposta di serata formativa a CNA o Confartigianato per gennaio-febbraio
-- Nessun lavoro iniziato senza acconto: **verifica che sia stato vero per 90 giorni**
+- Verifica che per 90 giorni sia stato vero: nessun lavoro iniziato senza acconto
 
 ### KPI a 90 giorni
 
 | Metrica | Oggi | Target |
 |---|---|---|
-| **Ricorrente/mese** | 350 € | **2.500 – 3.000 €** |
-| Clienti a retainer | 0 – 1 | **6 – 7** |
-| Ticket medio | 350 € | **500 €** |
-| Conversazioni nuove/mese | ~0 | **8** |
+| **Ricorrente/mese** | ~550 € | **1.800 – 2.300 €** |
+| Una tantum (media mensile) | irregolare | 300 – 600 € |
+| **Totale/mese** | ~600 € | **2.100 – 2.900 €** |
+| Clienti a retainer | 2 | **4 – 5** |
+| Ticket medio | 275 € | **550 €** |
+| Contatti commerciali fatti | ~0 | **50 – 60** |
+| Conversazioni nuove/mese | ~0 | **8 – 10** |
 | Tasso di chiusura del closer | ? | **misurato** |
 | Partner attivi | 0 | **8** |
-| Casi studio pubblicati | 0 | **3** |
+| Casi studio | 0 | **8** |
 | Giorni fra consegna e incasso | ? | **< 30** |
 
 **A questi numeri l'obiettivo dell'inverno è superato con un mese di anticipo**, e
@@ -121,11 +138,11 @@ arriva sperando di chiudere a dicembre, non chiude.
 
 | Metrica | Oggi | 12 mesi |
 |---|---|---|
-| Ricorrente/mese | 350 € | **4.000 – 5.000 €** |
-| Fatturato annuo | ~5.500 € | **48 – 60.000 €** |
-| Quota ricorrente | ~75% | **80%** |
-| Clienti a retainer | 0 – 1 | **8 – 10** |
-| Ticket medio | 350 € | **550 – 650 €** |
+| Ricorrente/mese | ~550 € | **3.500 – 4.500 €** |
+| Fatturato annuo | ~5.500 € | **45 – 55.000 €** |
+| Quota ricorrente | ~50% | **80%** |
+| Clienti a retainer | 2 | **7 – 9** |
+| Ticket medio | 275 € | **550 – 650 €** |
 | Conversazioni nuove/mese | ~0 | **12 – 15** |
 | Clienti nuovi dai social | 0 | **4 – 8 nell'anno** |
 | Ore su clienti non paganti | molte | **zero** |
@@ -199,7 +216,9 @@ lavoro, C se ti piace costruire cose.
 
 1. **Ricorrente firmato** (€/mese) — l'unico che dice se stai crescendo davvero
 2. **Incassato questa settimana** — fatturato e soldi sono due cose diverse
-3. **Conversazioni commerciali nuove** — anticipa il fatturato di 30–60 giorni
+3. **Contatti fatti e conversazioni nuove** — anticipa il fatturato di 30–60 giorni.
+   **È il tuo numero numero uno**: sotto 5 contatti a settimana, il piano non
+   succede, qualunque altra cosa tu faccia
 4. **Preventivi mandati** — se è zero in una settimana piena, sai già com'è dicembre
 5. **Ore spese su clienti che non hanno pagato l'acconto** — deve essere **zero**
 
