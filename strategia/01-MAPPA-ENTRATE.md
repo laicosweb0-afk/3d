@@ -125,38 +125,40 @@ un mese e mezzo di capacità produttiva regalata.
 
 `[prezzi calibrati sul mercato PMI romagnolo — dettaglio in 04-PREZZI.md]`
 
-**PRESIDIO — 450 €/mese** (12 mesi, disdetta 60 gg)
-4 contenuti/mese (2 statici + 2 reel), pubblicazione, 1 call mensile.
+**BASE — 450 €/mese** (12 mesi, disdetta 60 gg)
+4 contenuti/mese, 1 con 3D o AI, call trimestrale.
 Tue ore: 4–5 h/mese → **~95 €/h**.
-Serve a: entrare in casa del cliente. È il gradino basso, non il prodotto.
+Serve a: entrare in casa del cliente. È il gradino, non il prodotto.
 
-**MOTORE — 950 €/mese** (12 mesi)
-8 contenuti/mese di cui almeno 2 con 3D o AI, gestione pubblicazione, report
-trimestrale, 1 mini-produzione al mese (render o video 20 s).
+**MOTORE — 650 €/mese** (12 mesi) — **questo è il prodotto**
+6 contenuti/mese di cui 2 con 3D o AI, piano editoriale e pubblicazione, call
+mensile, consegna in 5 giorni.
+Tue ore: 6–7 h/mese → **~100 €/h**.
+Serve a: essere dove sta la maggioranza dei clienti. È il pacchetto su cui si
+costruisce l'obiettivo dei 2.000 €.
+
+**REGIA — 950 €/mese** (12 mesi)
+8 contenuti/mese, manutenzione sito inclusa, report mensile, priorità 48 h,
+una produzione più grande a trimestre.
 Tue ore: 9–11 h/mese → **~95 €/h**.
-Serve a: essere il prodotto principale. Qui deve stare la maggioranza dei clienti.
+Serve a: i 2–3 clienti più strutturati. Sopra i 950 € si va solo con chi ha un
+budget di comunicazione già stanziato (fiere, export, ufficio marketing): ci arrivi
+al mese 8–12, con i casi studio in mano.
 
-**REGIA — 1.900 €/mese** (12 mesi)
-Tutto il precedente + manutenzione sito + 1 produzione grande a trimestre (lancio
-prodotto, video fiera) + priorità di consegna 48h.
-Tue ore: 16–20 h/mese → **~105 €/h**.
-Serve a: i 2–3 clienti grandi. Da solo puoi reggerne al massimo 3.
+**Matematica della capacità (tu in produzione, con il closer che vende):**
 
-**Matematica della capacità (persona sola, ~1.150 h fatturabili/anno):**
+| Mix | Clienti | Ore tue/mese | Ricorrente/mese | Ricorrente/anno |
+|---|---|---|---|---|
+| 2 Base + 2 Motore | 4 | ~23 h | **2.200 €** | 26.400 € |
+| 2 Base + 4 Motore + 1 Regia | 7 | ~44 h | **4.450 €** | 53.400 € |
+| 2 Base + 5 Motore + 2 Regia | 9 | ~62 h | **6.050 €** | 72.600 € |
 
-| Mix | Retainer | Ore/anno assorbite | Ricavo ricorrente |
-|---|---|---|---|
-| 3 × Presidio + 6 × Motore + 2 × Regia | 11 clienti | ~1.030 h | **~119.400 €** |
-| 2 × Presidio + 5 × Motore + 2 × Regia | 9 clienti | ~870 h | **~103.200 €** |
-| 2 × Presidio + 4 × Motore + 1 × Regia | 7 clienti | ~610 h | **~68.400 €** |
+La prima riga è il tuo obiettivo dell'inverno: **quattro clienti**, 23 ore al mese
+di produzione, 2.200 € ricorrenti. Non è una montagna: è un mese di lavoro fatto
+nell'ordine giusto.
 
-La riga in mezzo è già oltre 100 k€ e lascia **280 ore l'anno** per progetti spot e
-per costruire asset. Non ti servono trenta clienti: te ne servono **nove buoni**.
-Questo è il numero più importante del documento.
-
-E qui torna il §0.2: se sei in forfettario, **la riga giusta è la terza**, non la
-prima. Nove clienti e 68 k€ con 540 ore libere batte undici clienti e 119 k€ che ti
-sbattono fuori dal regime con zero tempo per costruire il salto.
+La seconda riga è il mese 12. La terza è il muro oltre il quale servono persone in
+produzione.
 
 ### Lo script della conversione
 
@@ -182,8 +184,8 @@ Risposta: *"Nemmeno il commercialista serve tutti i mesi. Serve che ci sia."*
 ## 2.4 Asset che lavorano quando tu non lavori
 
 Questa è la sezione che decide se fra tre anni hai un'agenzia o un lavoro autonomo
-molto stressante. Con "resto solo" attivo, gli asset sono **l'unico sostituto della
-delega**. Ogni ora messa qui va tolta dalla produzione, non aggiunta alla giornata.
+molto stressante. Finché in produzione ci sei solo tu, gli asset sono **l'unico
+sostituto della delega**. Ogni ora messa qui va tolta dalla produzione, non aggiunta alla giornata.
 
 **Budget ore consigliato: 4 ore a settimana, intoccabili, stessa fascia oraria.**
 Non "quando ho tempo": quando hai tempo non ce l'hai mai.
@@ -203,7 +205,7 @@ il documento, e costa 0 €.
 I prompt che funzionano, salvati per settore e per formato, con l'esempio dell'output.
 Oggi probabilmente li riscrivi ogni volta. Effetto: −30/40% sul tempo di produzione
 video AI, e — decisivo — è la prima cosa che rende delegabile il lavoro il giorno in
-cui togli il vincolo "resto solo".
+cui aggiungi qualcuno in produzione.
 
 **3. Template di sito riutilizzabile** — 2 mesi, 30 ore
 Due o tre strutture (vetrina PMI, catalogo prodotto, landing evento/fiera) già
@@ -226,7 +228,7 @@ preventivi l'anno, **50 ore**.
 **Totale ore risparmiate a regime dai punti 1, 3 e 5: ~410 l'anno.** A 90 €/h di
 ricavo target, sono **36.000 € di capacità produttiva liberata**, ottenuti con circa
 110 ore di costruzione e zero euro. Questo, e non l'acquisizione, è il modo in cui
-una persona sola arriva a 100 k€.
+una persona sola passa da 2.000 a 5.000 € al mese senza aggiungere ore.
 
 ### Prodotti digitali veri (6+ mesi, solo dopo i punti sopra)
 

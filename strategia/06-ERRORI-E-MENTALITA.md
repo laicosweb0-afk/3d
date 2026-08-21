@@ -4,7 +4,13 @@
 
 Per ognuno: **come si riconosce prima che sia tardi**, e **come si esce**.
 
----
+> **Quali ti riguardano adesso.** Con 5.500 € di fatturato e due clienti paganti,
+> tre di questi errori sono già in corso: il **n. 6 (incassi lenti)** nella sua
+> forma più grave — lavoro consegnato e mai fatturato — il **n. 1 (dipendenza)**,
+> perché due clienti su due sono il 100% del tuo fatturato, e il **n. 5 (contenuti
+> senza sbocco)**, che oggi è a zero. Gli altri sette sono la lista delle cose che
+> ti aspettano fra sei e ventiquattro mesi: leggili una volta ora, e rileggili al
+> trimestre.
 
 ### 1. Dipendenza da un cliente solo
 
@@ -12,22 +18,21 @@ Per ognuno: **come si riconosce prima che sia tardi**, e **come si esce**.
 pericolo; a 50% non hai un'agenzia, hai un datore di lavoro che può licenziarti
 senza preavviso, senza TFR e senza disoccupazione.
 
-**Come si riconosce prima:** un foglio con il fatturato per cliente, aggiornato ogni
-trimestre. Cinque minuti. Quasi nessuno lo fa, ed è il motivo per cui la scoperta
-arriva sempre insieme alla telefonata.
+**Dove sei tu:** hai due clienti che pagano, quindi ciascuno vale circa il **50%**.
+Formalmente sei nella zona rossa. Sostanzialmente non è un allarme, è la conseguenza
+di essere all'inizio: si esce **crescendo il denominatore**, che è esattamente il
+piano dei 90 giorni. Con 6 clienti nessuno supera il 25% da solo.
 
-**Come si esce:** mai tagliando il cliente grosso — è un suicidio con motivazioni
-nobili. Si esce **crescendo il denominatore**: obiettivo esplicito di portare la sua
-quota sotto il 25% entro 12 mesi facendo crescere gli altri. Nel frattempo: metti da
-parte 3 mesi di costi fissi, non fare investimenti che dipendono da quel flusso, e
-non accettare mai da lui condizioni che non accetteresti da un cliente al 10%
-(pagamenti lunghi, revisioni infinite, urgenze del venerdì sera). Il momento in cui
-inizi a farlo è il momento in cui la dipendenza è già diventata pericolosa.
+**Il vero rischio nel tuo caso non è la concentrazione, è la fragilità:** se Bazar
+Marrakech o Rama smettono a ottobre, perdi metà del fatturato in un giorno e non hai
+riserva. Fino a quando non sei a 5–6 clienti, tratta quei due come critici: consegna
+puntuale, presenza, e una conversazione ogni mese anche quando non serve.
 
-**Segnale che è già tardi:** ti accorgi di controllare l'umore di una persona sola
-prima di prendere qualsiasi decisione sull'azienda.
-
----
+**Come si esce, in generale:** mai tagliando il cliente grosso — è un suicidio con
+motivazioni nobili. Si cresce intorno. E non accettare mai dal cliente grosso
+condizioni che non accetteresti da uno al 10% (pagamenti lunghi, revisioni infinite,
+urgenze del venerdì sera): il momento in cui inizi a farlo è il momento in cui la
+dipendenza è già diventata pericolosa.
 
 ### 2. Prezzi bassi per abitudine
 
@@ -123,9 +128,10 @@ dalla scadenza — non è aggressività, è amministrazione. E la regola di sopr
 **il lavoro non parte finché l'acconto non è sul conto.** Non "ha firmato": ha
 pagato.
 
-**Perché uccide:** un'agenzia redditizia può fallire per cassa. Fatturare 100 k€ e
-incassare a 90 giorni significa avere costantemente 25 k€ fuori, che è più di quanto
-puoi permetterti da solo. In Romagna il 60/90 giorni è un'abitudine di filiera, non
+**Perché uccide:** è già successo. Quest'anno hai consegnato tre lavori e ne hai
+incassati zero — vedi `00A-PRIORITA-ZERO.md`. Un'attività può avere clienti
+soddisfatti, lavoro buono e fatturato a 5.500 € per l'unica ragione che consegna
+prima di incassare. In Romagna il 60/90 giorni è un'abitudine di filiera, non
 una legge: si rompe scrivendola in preventivo prima che la proponga il cliente.
 
 ---
@@ -230,7 +236,7 @@ Tre regole di gestione del rischio, in ordine:
 
 ### Il rapporto col tempo
 
-**Il tempo è l'unico input non rinnovabile.** Con "resto solo" attivo, ogni decisione
+**Il tempo è l'unico input non rinnovabile.** Finché produci tu, ogni decisione
 si valuta con la stessa domanda: *questa cosa mi restituisce ore o me ne toglie
 per sempre?*
 
@@ -247,8 +253,8 @@ compone nel tempo.
 
 Hai scelto di restare solo. È una scelta legittima, e per un anno è probabilmente
 quella giusta. Ma va gestita con consapevolezza, perché ha una data di scadenza
-implicita: **il tetto è 110–130 k€**, e quando lo tocchi non esiste sforzo aggiuntivo
-che lo sposti.
+implicita: **il tetto di una persona sola in produzione è intorno ai 5.000 €/mese**,
+e quando lo tocchi non esiste sforzo aggiuntivo che lo sposti.
 
 Prepara la delega **prima** di volerla, così quando serve costa poche settimane e non
 sei mesi:

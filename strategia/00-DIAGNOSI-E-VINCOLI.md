@@ -1,230 +1,182 @@
 # Strategia agenzia 3D & contenuti AI — Lugo / Romagna
 
-**Documento vivo.** Versione 1, redatta con i dati disponibili al 21/08/2026.
-Le parti marcate `[DA CALIBRARE]` cambiano appena fornisci i numeri del questionario.
+**Versione 2** — ricalibrata sui dati reali del 21/08/2026.
+La v1 era costruita su un'ipotesi di fatturato dieci volte più alta di quella vera.
+I prezzi e le fasi restano, gli obiettivi e le priorità cambiano.
 
 ---
 
-## Come leggere questo documento
+## Il quadro reale
 
-| File | Contenuto |
+| Metrica | Valore |
 |---|---|
-| `00-DIAGNOSI-E-VINCOLI.md` | Le due cose che devi decidere prima di tutto + Fase 1 (diagnosi) |
-| `01-MAPPA-ENTRATE.md` | Fase 2 — dove sono i soldi, ordinati per facilità |
-| `02-SOCIAL-MOTORE.md` | Fase 3 — social come sistema di acquisizione, non vetrina |
-| `03-ACQUISIZIONE.md` | Fase 4 — 10 canali clienti + 10 modi di monetizzare l'AI |
-| `04-PREZZI.md` | Fase 5 — listino, retainer, costi strumenti |
-| `05-PIANO.md` | Fase 6 — 30 giorni / 90 giorni / 1 anno / 3 anni |
-| `06-ERRORI-E-MENTALITA.md` | Fase 7 — cosa ti affossa e come si decide |
-| `07-QUESTIONARIO.md` | I dati che mancano, in forma compilabile |
+| Fatturato ultimi 12 mesi | **~5.500 €** (400–500 €/mese) |
+| Ricorrente sicuro | **~350 €/mese** (Bazar Marrakech + Rama Ceramiche) |
+| Clienti che pagano | **2** |
+| Clienti con lavoro fatto e non incassato | **3** (Woman/Aurea, Bufala, Mondial Service) |
+| Ticket medio | 300 – 500 €/mese |
+| Team | tu + 1 closer + 1 amministrativo (lento, poco operativo) |
+| Costo strumenti | basso (Higgsfield, Claude) |
+| Origine clienti | conoscenza diretta e passaparola — **canale fermo** |
+| Obiettivo | **2.000 €/mese entro l'inverno** |
+
+**L'obiettivo è giusto.** Non è modesto e non è irrealistico: è la tappa corretta
+per chi parte da 400 €/mese. Chi da 400 punta a 8.000 non ci arriva e smette; chi
+punta a 2.000 ci arriva e poi punta a 4.000. E soprattutto: **2.000 €/mese è
+raggiungibile con i clienti che hai già in mano**, senza un piano di acquisizione da
+zero. Il conto è in `00A-PRIORITA-ZERO.md` — leggilo prima di tutto il resto.
 
 ---
 
-# PARTE 0 — Le due cose da risolvere prima del piano
+## 1. Il collo di bottiglia vero
 
-## 0.1 La contraddizione nelle tue risposte
+Ci sono quattro colli di bottiglia possibili — lead, chiusura, delivery, prezzo — e
+si risolvono in ordine. Nel tuo caso l'ordine è chiaro, ed è diverso da quello che
+ti aspetti.
 
-Hai scelto:
+**Il tuo collo di bottiglia n. 1 è la sequenza di vendita, non i lead.**
 
-| Domanda | Risposta |
-|---|---|
-| Priorità | **Più fatturato assoluto** |
-| Team | **Resto solo** |
-| Volto nei contenuti | **Sì, volto e voce** |
-| Budget 90 giorni | **0 – 500 €** |
+Produci benissimo (tre lavori finiti, uno è questo repository), ma produci **prima**
+di aver venduto. Il risultato è che la delivery è al 100% e l'incasso al 20%. Non è
+un problema di quanti clienti conosci: è che i clienti che hai attraversano tutto il
+processo produttivo senza mai passare dalla cassa.
 
-Le prime due non stanno insieme, e non è una questione di impegno. È aritmetica.
+**Il collo di bottiglia n. 2 è il volume di conversazioni commerciali.** Hai detto
+che sul fronte acquisizione *"siamo molto fermi"*. Con un closer in squadra questo è
+il problema più assurdo che potresti avere: hai chi chiude e non hai chi far
+chiudere. Ma è il n. 2, non il n. 1 — riempire di lead un imbuto che perde soldi in
+fondo peggiora le cose.
 
-Da solo, il tuo fatturato è vincolato da questa identità:
+**Non è un problema di prezzo, e non ancora.** 300–500 €/mese è basso, ma alzarlo
+adesso su una base di due clienti sposta 200 €. Alzarlo su una base di sei clienti
+sposta 1.200 €. Il prezzo si sistema al punto 3, non al punto 1 — è l'unica cosa
+che ho invertito rispetto alla v1, e l'ho invertita perché il tuo problema non è
+essere sottopagato: è **non essere pagato affatto**.
 
-```
-Fatturato = ore fatturabili × ricavo medio per ora fatturabile
-```
+**La delivery non è un problema oggi. Lo diventerà a gennaio**, quando avrai 6–7
+clienti a retainer e le stesse ore. Ci arriviamo nel piano.
 
-Le ore fatturabili di una persona sola che fa anche vendita, preventivi, gestione
-clienti, amministrazione e contenuti non sono 40 a settimana. Sono, realisticamente:
+### Le tue ore
 
-- 45–50 h/settimana di lavoro totale
-- di cui **25–28 h fatturabili** (il resto è vendita, revisioni non pagate, call, admin)
-- × **44 settimane** reali (ferie, festivi, agosto in Romagna, malattia, buchi)
-- = **1.100 – 1.230 ore fatturabili l'anno**. Il tetto ottimistico è 1.300.
+Mi hai detto: *"mi sveglio, mi metto a lavorare, stacco la sera. Tante volte lavoro
+tantissimo per niente."*
 
-Quindi:
+Questa frase contiene la diagnosi. Non lavori poco — lavori **tanto e non
+misurato**, e la parte non misurata finisce quasi tutta in produzione per clienti
+che non hanno pagato. Il problema non è la quantità di ore, è la loro destinazione.
 
-| Fatturato obiettivo | Ricavo per ora fatturabile necessario |
-|---|---|
-| 60.000 € | 52 €/h |
-| 85.000 € | 74 €/h |
-| 100.000 € | 87 €/h |
-| 130.000 € | 113 €/h |
-| 180.000 € | 156 €/h — **non raggiungibile da solo con lavoro su commessa** |
+Il correttivo non è "organizzati meglio", che non significa niente. È una regola
+sola, verificabile ogni sera:
 
-Il ricavo per ora effettivo di un freelance 3D/video che serve PMI in Romagna,
-misurato sul serio (fatturato ÷ ore realmente spese, revisioni incluse), sta quasi
-sempre fra **30 e 45 €/h**. Non perché il listino sia basso, ma perché le ore
-invisibili — i tre giri di revisione, le call di allineamento, il preventivo
-rifatto, l'attesa dei materiali del cliente — non vengono conteggiate.
+> **Nessuna ora di produzione per un cliente che non ha firmato e versato l'acconto.**
 
-**Conseguenza operativa:** con "resto solo" attivo, l'unica leva che produce
-*fatturato assoluto* è quella che hai scartato come priorità, cioè il **ricavo per
-ora**. Non sono due strategie alternative: nel tuo caso sono la stessa strategia.
-Alzare il ricavo per ora è il *meccanismo*, il fatturato assoluto è il *risultato*.
+Applicata da gennaio, questa regola da sola avrebbe cambiato l'anno.
 
-Il piano che segue è quindi costruito così: **volume come obiettivo, margine per ora
-come motore.** Se in futuro togli il vincolo "resto solo", il tetto si sposta e
-riscriviamo la Fase 6.
+E una seconda, per la settimana:
 
-**Tetto fisico da solo, con questo modello: 110 – 130 k€ lordi.** Oltre, servono
-o collaboratori o ricavi che non consumano ore (prodotti digitali, licensing,
-formazione replicabile). Entrambe le vie sono in `01-MAPPA-ENTRATE.md`.
+> **Due ore fisse, in calendario, di sola attività commerciale. Anche — soprattutto —
+> nelle settimane piene di lavoro.**
+
+Ti servono per una ragione aritmetica: sei mesi fa hai fatto il lavoro che oggi non
+incassi *invece* di venderne uno nuovo. Le ore di produzione non vendute sono l'unica
+cosa davvero irrecuperabile.
 
 ---
 
-## 0.2 Il problema fiscale che può rendere l'obiettivo sbagliato
+## 2. Correzione: non sei solo
 
-`[DA CALIBRARE — dipende dal tuo regime, domanda 10 del questionario]`
+Nel questionario iniziale hai risposto **"resto solo"**. Poi hai detto che c'è un
+ragazzo che ti chiude i clienti e uno che fa l'amministrazione. Sono due cose molto
+diverse, e la seconda apre possibilità che la prima chiudeva.
 
-**Se sei in regime forfettario**, l'obiettivo "più fatturato assoluto" può farti
-guadagnare *meno*. Va verificato col tuo commercialista prima di costruire qualsiasi
-piano, perché cambia la meta, non il percorso.
+**Il closer è il tuo asset più importante e lo stai usando al 10%.**
 
-Meccanica: il forfettario ha una soglia di **85.000 € di ricavi incassati**.
-Superata quella, dall'anno successivo si passa al regime ordinario; sopra
-**100.000 €** l'uscita è immediata nello stesso anno, con IVA dovuta dall'operazione
-che sfonda la soglia.
+Se hai qualcuno che sa chiudere, il tuo lavoro cambia natura: non devi imparare a
+vendere, devi **mettergli davanti persone da chiudere**. È una divisione dei ruoli
+molto più efficiente di quella che avevo ipotizzato nella v1:
 
-Ordine di grandezza del confronto (numeri indicativi, coefficiente di redditività
-78%, gestione separata INPS ~26%, aliquote IRPEF 23/35/43 — **fai verificare tutto
-al commercialista, il coefficiente dipende dal tuo codice ATECO**):
-
-| Scenario | Ricavi | Costi reali | Netto stimato in tasca |
-|---|---|---|---|
-| Forfettario, vicino alla soglia | 85.000 € | ~12.000 € (non deducibili) | **~48–50.000 €** |
-| Ordinario, obiettivo "100k" | 100.000 € | ~20.000 € | **~40–43.000 €** |
-| Ordinario, che ripaga il salto | 140.000 € | ~30.000 € | **~55–58.000 €** |
-
-Leggi la riga di mezzo: **fatturare 100.000 € in ordinario può lasciarti in tasca
-meno di 85.000 € in forfettario.** Fra 85 k e ~130 k c'è una "terra di nessuno":
-più lavoro, più rischio, più adempimenti, meno netto.
-
-**Regola decisionale, se sei in forfettario:**
-
-1. **Sotto 85 k** → l'obiettivo non è il fatturato, è il **netto per ora**. Punta a
-   80–85 k con meno ore possibili, e usa il tempo liberato per costruire gli asset
-   che ti permetteranno il salto (Fase 2).
-2. **Vuoi superare 85 k** → allora l'obiettivo non è 100 k, è **140 k**, e a quel
-   punto il vincolo "resto solo" cade per necessità. Non esiste una versione sensata
-   del salto che non preveda capacità produttiva aggiuntiva.
-3. **Non stare in mezzo.** È la zona che fa lavorare il doppio per guadagnare uguale.
-
-Se invece sei già in **SRL o ordinario**, questo paragrafo non ti riguarda: l'obiettivo
-100 k con 40% ricorrente è coerente e il piano fila diritto.
-
-**Azione, questa settimana:** una call di 30 minuti col commercialista con una domanda
-sola — *"Con il mio ATECO e i miei costi, a che soglia di fatturato il salto fuori dal
-forfettario mi conviene?"*. Quel numero diventa il tuo target reale a 12 mesi. Costo:
-zero o quasi. È la singola informazione con il rapporto valore/costo più alto di tutto
-il piano.
-
----
-
-# FASE 1 — DIAGNOSI
-
-Senza i tuoi numeri non posso dirti *qual è* il collo di bottiglia. Posso però darti
-lo strumento per identificarlo in un pomeriggio, e la mia ipotesi più probabile.
-
-## 1.1 Il test dei quattro colli di bottiglia
-
-Ce ne sono solo quattro: **lead, chiusura, delivery, prezzo.** Se ne hai più di uno
-in rosso, si risolve *sempre* nell'ordine prezzo → delivery → chiusura → lead, mai
-il contrario. Chi ha un problema di prezzo e va a cercare più lead peggiora la
-situazione: aumenta il volume di lavoro sottopagato.
-
-| Sintomo osservabile | Collo di bottiglia | Riconoscimento numerico |
+| Chi | Cosa fa | Metrica su cui risponde |
 |---|---|---|
-| Ho tempo libero e non so a chi scrivere | **LEAD** | < 4 conversazioni commerciali nuove al mese |
-| Faccio preventivi che non tornano indietro | **CHIUSURA** | tasso di chiusura < 25% sui preventivi inviati |
-| Sono pieno, consegno in ritardo, non vendo più | **DELIVERY** | > 70% delle tue ore in produzione |
-| Sono pieno, consegno bene, ma non resta niente | **PREZZO** | ricavo/ora effettivo < 50 € |
+| **Tu** | Contenuti, demo gratuite, relazioni, produzione | **conversazioni generate al mese** |
+| **Il closer** | Chiamate, trattativa, preventivi, firma | **tasso di chiusura** |
+| **L'amministrativo** | *(vedi sotto)* | **giorni fra lavoro finito e incasso** |
 
-**Come misurare il ricavo/ora effettivo (30 minuti, oggi):** prendi gli ultimi 5
-lavori chiusi e incassati. Per ognuno scrivi: importo fatturato, e **ore vere**
-spese — briefing, produzione, revisioni, call, email, correzioni, attesa materiali,
-ricerca di un asset, tutto. Dividi. Il numero che esce, non quello del listino, è la
-tua vera tariffa.
+Il ragazzo amministrativo "lento e che non conta quasi niente": non è un problema di
+persona, è un problema di mansione non definita. Guarda cosa ti manca davvero — hai
+tre lavori finiti e non fatturati. **Quello è esattamente il buco che un
+amministrativo dovrebbe tappare.** Dagli un compito solo, misurabile, ripetibile:
 
-Quasi tutti scoprono che il lavoro che credevano più redditizio è il secondo o il
-terzo, e che c'è un lavoro in perdita che continuano a vendere perché "è facile".
+> *Ogni preventivo esce entro 24 ore dalla chiamata. Ogni fattura parte il giorno
+> della consegna. Ogni scaduto viene sollecitato a 7 e a 15 giorni.*
 
-## 1.2 La mia ipotesi, dato quello che so
+Una mansione, tre scadenze, un numero da guardare. Se in un mese non la esegue, non
+è la persona giusta e lo saprai con certezza invece che con la sensazione.
 
-Chi è solo, non ha budget da investire, e chiede *più fatturato*, quasi mai ha un
-problema di lead — se avesse un problema di lead avrebbe tempo vuoto, e chi ha
-tempo vuoto non chiede "come cresco", chiede "come trovo clienti".
+### Le tre domande a cui devi rispondere sul team
 
-**Ipotesi: sei fra PREZZO e DELIVERY.** Cioè: hai abbastanza lavoro, il lavoro ti
-mangia le ore, il ricavo per ora è basso, e non ti resta tempo per vendere. È lo
-stato in cui una micro-agenzia può restare cinque anni senza crescere di un euro,
-perché ogni euro in più di fatturato richiede un'ora in più che non hai.
+Sono importanti perché con 5.500 € di fatturato annuo, **tre persone non sono un
+team: sono o dei soci che scommettono, o un costo che non puoi permetterti.**
 
-Se questa ipotesi è giusta, la sequenza corretta è **non cercare nuovi clienti nei
-primi 60 giorni.** Prima si alza il prezzo e si comprime la delivery, poi si riempie
-la capacità liberata. Al contrario si moltiplica il problema.
+1. **Come è pagato il closer?** Fisso, provvigione, o niente? Se è a provvigione, il
+   modello regge e va spinto. Se è a fisso, dimmi quanto: cambia tutti i conti.
+2. **Come è pagato l'amministrativo?** Stessa domanda.
+3. **Dei 2.000 €/mese che vuoi fare, quanto deve restare a te?** Perché 2.000 lordi
+   divisi in tre non sono un obiettivo, sono un hobby costoso. Se il closer prende
+   il 20% e l'amministrativo un fisso, l'obiettivo vero è più alto di 2.000.
 
-`[DA CALIBRARE — la domanda 5 del questionario (spaccatura delle tue ore) e la
-domanda 8 (ore per tipologia di lavoro) confermano o smontano questa ipotesi.]`
+---
 
-## 1.3 Le tre concentrazioni da misurare subito
+## 3. Il 20/80 dei prossimi 90 giorni
 
-**Concentrazione clienti.** Se i primi 3 clienti fanno più del 50% del fatturato,
-non hai un'agenzia: hai tre datori di lavoro che possono licenziarti senza preavviso
-e senza TFR. Soglia di allarme: **nessun cliente sopra il 25%**. Se ci sei sopra,
-non è un'emergenza da risolvere tagliando il cliente — è un vincolo che determina
-quanto puoi rischiare altrove (vedi `06-ERRORI-E-MENTALITA.md`).
+Cinque azioni. In quest'ordine, non in un altro.
 
-**Concentrazione servizi.** Se un solo tipo di lavoro fa la maggioranza del
-fatturato, sei esposto a un cambio di moda o di tecnologia. Nel 3D/AI questo rischio
-è alto: gli strumenti cambiano ogni sei mesi.
+**1. Chiudi i tre lavori pendenti, come retainer e non come progetti.**
+`00A-PRIORITA-ZERO.md`. Vale **+1.350–1.800 €/mese** e non richiede un cliente
+nuovo. È il 70% del tuo obiettivo dell'inverno, in tre conversazioni. Costo: zero.
 
-**Concentrazione canali.** Se i clienti arrivano tutti da passaparola, hai un canale
-che funziona ma che **non puoi accelerare a comando**. Il passaparola è un ottimo
-canale e un pessimo piano di crescita: non lo apri quando ti serve. È esattamente
-il motivo per cui la Fase 3 (social) e la Fase 4 (outbound) esistono.
+**2. Metti in vigore la sequenza corretta.**
+Preventivo → acconto incassato → lavoro → saldo → consegna dei file. Tre righe in un
+modello di preventivo che scrivi una volta sola. Costo: zero, mezza giornata.
+Senza questo, tutto il resto si ripete uguale fra sei mesi.
 
-## 1.4 Il 20% che fa l'80% nei prossimi 90 giorni
+**3. Porta il ticket da 350 a 500–600 €/mese, sui nuovi.**
+Non sui due che hai — quelli si adeguano al rinnovo. Sui tre che stai chiudendo e su
+quelli che verranno. Fai il conto di cosa cambia: sei clienti a 350 sono 2.100 €;
+sei clienti a 600 sono 3.600 €. **Stesso numero di clienti, stesso lavoro di
+vendita, 1.500 € di differenza al mese.** Il listino è in `04-PREZZI.md`.
 
-Cinque azioni. Non sei, non dieci. Se ne fai cinque le finisci; se ne fai dieci non
-ne finisci nessuna, e sei da solo.
+**4. Riempi l'agenda del closer.**
+Obiettivo minimo: **8 conversazioni commerciali nuove al mese**. Da dove escono, in
+ordine di velocità: riattivazione di chi ti conosce già (§4.1), 8 partner
+complementari (tipografie, fotografi, web agency, commercialisti), outbound con
+demo personalizzata su un settore per volta. Costo: zero, ~5 ore a settimana.
 
-**1. Misura il ricavo/ora effettivo sugli ultimi 5 lavori, e smetti di vendere quello
-sotto soglia.** Costo: 0 €, mezza giornata. Effetto: in genere si scopre un servizio
-che vale 20–25 €/h e che occupava il 30% del tempo. Eliminarlo (o triplicarne il
-prezzo) libera 300+ ore l'anno senza perdere quasi niente di margine.
+**5. Accendi i social adesso, proprio perché ci mettono sei mesi.**
+Tre contenuti a settimana, tutti ricavati dal lavoro che fai comunque. Hai detto sì
+al volto e alla voce: nel mercato di Lugo è il vantaggio più grande che hai, e nessun
+concorrente locale lo usa. `02-SOCIAL-MOTORE.md`. Costo: 1 h 30 a settimana.
 
-**2. Alza il listino del 25–35% sui nuovi preventivi, da subito.** Costo: 0 €.
-Rischio: perdi qualche preventivo. Aritmetica: se oggi chiudi 10 preventivi su 30 a
-2.000 €, fai 20.000 €. Se alzi a 2.700 € e la chiusura scende da 10 a 8, fai
-21.600 € — con **due progetti in meno da consegnare**, cioè settimane di capacità
-libera. Il prezzo è l'unica leva che agisce su fatturato e ore *nella stessa
-direzione*. Dettagli e listino completo in `04-PREZZI.md`.
+**Cosa NON fare nei prossimi 90 giorni:** non fare outbound a freddo prima di aver
+chiuso i tre pendenti; non comprare strumenti; non andare a una fiera con uno stand;
+non rifare il tuo sito; non aggiungere persone.
 
-**3. Converti 3 clienti attivi da spot a retainer.** Costo: 0 €, tre conversazioni.
-È l'azione a più alto ritorno del trimestre: elimina il costo di vendita ricorrente
-(vendere due volte allo stesso cliente costa quanto vendere a uno nuovo), rende
-prevedibile la cassa, e alza il valore del cliente nel tempo. Script e struttura dei
-pacchetti in `01-MAPPA-ENTRATE.md` §2.3.
+---
 
-**4. Cambia i termini di pagamento sui nuovi contratti: 50% all'accettazione, 50%
-alla consegna, retainer anticipati.** Costo: 0 €. In Romagna il 60/90 giorni è
-un'abitudine, non una legge, e la si rompe solo scrivendola in preventivo *prima*
-che il cliente la proponga. Fatturato incassato in ritardo è fatturato che non hai.
+## 4. Due cose che vanno verificate subito
 
-**5. Sistematizza la produzione dei contenuti a partire dal lavoro cliente.** Costo:
-0 €. Ogni progetto che consegni produce già il materiale: il prima, il dopo, il
-processo. Non è "fare contenuti in più", è **non buttare quello che produci
-comunque**. Regola operativa: nessun progetto viene consegnato senza aver salvato
-3 asset riutilizzabili come contenuto. Dettaglio in `02-SOCIAL-MOTORE.md`.
+**Partita IVA e regime fiscale.** Non me l'hai detto. A 5.500 €/anno è un dettaglio;
+a 24.000 €/anno non lo è più. Se sei in **forfettario con aliquota startup al 5%**,
+a 24.000 € di ricavi ti resta in tasca intorno ai **19–20.000 €** — ed è la
+condizione migliore possibile, da sfruttare per anni. Se non hai partita IVA e stai
+incassando in altro modo, va sistemato **prima** di andare a 2.000 €/mese, non dopo.
+Trenta minuti col commercialista.
 
-**Cosa NON fare nei primi 90 giorni:** non aprire un secondo profilo social da zero,
-non comprare strumenti nuovi, non andare a una fiera con uno stand, non assumere,
-non rifare il tuo sito. Sono tutte cose sensate al posto sbagliato nella sequenza.
+La soglia degli 85.000 € di cui parlava la v1 di questo documento è un problema che
+incontrerai fra tre o quattro anni. **Ignorala per ora**: era la risposta giusta a
+una domanda che non è la tua.
+
+**Cosa ricevono davvero Bazar Marrakech e Rama Ceramiche per i loro 350 €/mese.**
+Se stanno ricevendo più di quanto pagano — cosa frequente quando un rapporto nasce
+per conoscenza — quei due clienti ti stanno costando ore che servono altrove.
+Verificalo e, se serve, riallinea al rinnovo. Sono anche i due su cui puoi provare
+per primo il listino nuovo, perché il rapporto regge una conversazione franca.

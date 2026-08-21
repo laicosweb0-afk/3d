@@ -187,8 +187,8 @@ l'associazione (§4.1 n.7) → chi era in sala ti chiama per una mezza giornata 
 azienda a 600–1.200 € → l'associazione ti chiede un corso strutturato a 1.500–3.000 €
 a edizione, che replichi 3–4 volte l'anno con **lo stesso materiale**.
 La formazione ha una qualità che nessun altro servizio ha: **il materiale si prepara
-una volta e si vende molte**. Con "resto solo" attivo, è una delle pochissime cose
-che rompono il legame ore→euro. E il ritorno indiretto — autorevolezza, contatti,
+una volta e si vende molte**. Finché in produzione ci sei solo tu, è una delle
+pochissime cose che rompono il legame ore→euro. E il ritorno indiretto — autorevolezza, contatti,
 lavori di produzione da chi era in aula — vale più della parcella.
 
 **Localizzazione cataloghi (n. 6).** Sottovalutata e perfetta per la Romagna: le PMI

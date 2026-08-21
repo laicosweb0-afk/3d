@@ -1,5 +1,14 @@
 # FASE 5 — Prezzi e margini
 
+> **Nota di calibrazione (v2).** Il tuo ticket attuale è 300–500 €/mese e il tuo
+> fatturato è ~5.500 €/anno. I prezzi dei lavori una tantum qui sotto sono il
+> listino verso cui crescere nei prossimi 12 mesi, non quello da applicare domani a
+> un cliente che oggi ti paga 175 € al mese. **La sezione che ti riguarda adesso è
+> quella dei retainer (§5.1 in fondo): è lì che si gioca l'obiettivo dei 2.000 €.**
+> Il listino spot serve per due cose immediate: dire al cliente quanto vale il
+> lavoro che gli hai già fatto (`00A-PRIORITA-ZERO.md`), e non svendere il prossimo
+> progetto grosso che ti capita.
+
 I prezzi qui sotto sono tarati sul mercato **PMI romagnola**, non su Milano e non
 sugli Stati Uniti. Il riferimento è quello che una ceramica di Faenza, un mobilificio
 di Forlì o un'azienda alimentare di Cesena spendono realmente oggi con agenzie e
@@ -7,8 +16,7 @@ freelance locali.
 
 Il criterio che li governa: **ogni voce deve stare sopra i 90 €/ora di ricavo
 effettivo** — cioè fatturato ÷ ore vere, revisioni incluse. Sotto quella soglia,
-alla fine dell'anno non ci arrivi a 100 k€ da solo (vedi `00-DIAGNOSI-E-VINCOLI.md`
-§0.1).
+non passi mai da 2.000 a 5.000 € al mese senza aggiungere ore che non hai.
 
 ---
 
@@ -77,24 +85,49 @@ costruire.
 
 ### Retainer
 
-Dettaglio in `01-MAPPA-ENTRATE.md` §2.3.
+**È la sezione che conta per te adesso.** Dettaglio in `01-MAPPA-ENTRATE.md` §2.3.
 
-| | PRESIDIO | MOTORE | REGIA |
+| | BASE | **MOTORE** | REGIA |
 |---|---|---|---|
-| Prezzo/mese | 450 € | 950 € | 1.900 € |
-| Contenuti/mese | 4 | 8 | 8 + produzione trimestrale |
-| Include 3D/AI | no | sì (2/mese) | sì |
+| Prezzo/mese | 450 € | **650 €** | 950 € |
+| Contenuti/mese | 4 | **6** | 8 |
+| di cui con 3D o AI | 1 | **2** | 3 |
+| Pubblicazione e piano editoriale | no | **sì** | sì |
 | Sito | no | no | manutenzione inclusa |
-| Priorità | standard | 5 gg | 48 h |
-| Tue ore/mese | 4 – 5 | 9 – 11 | 16 – 20 |
-| **€/h** | **~95** | **~95** | **~105** |
+| Call | trimestrale | **mensile** | mensile + report |
+| Priorità di consegna | standard | **5 gg** | 48 h |
+| Tue ore/mese | 4 – 5 | **6 – 7** | 9 – 11 |
+| **€/h** | ~95 | **~100** | ~95 |
 
-Condizioni da tenere ferme: **durata 12 mesi, disdetta con 60 giorni di preavviso,
-pagamento anticipato entro il 5 del mese.** Il retainer trimestrale non funziona:
-tre mesi non bastano perché il cliente veda risultati, e ti obbliga a rivendere
-quattro volte l'anno — cioè a perdere il vantaggio principale del retainer.
+**Il MOTORE a 650 € è il prodotto.** Base e Regia esistono per farlo scegliere:
+la Base è volutamente scarna, la Regia serve ai due o tre clienti più strutturati.
+Se la maggioranza dei tuoi clienti finisce sulla Base, il problema è come la
+presenti, non il prezzo.
 
----
+**Il conto che rende evidente perché 650 e non 350:**
+
+| | 6 clienti a 350 € | 4 clienti a 650 € |
+|---|---|---|
+| Ricavo mensile | 2.100 € | **2.600 €** |
+| Clienti da trovare | 6 | **4** |
+| Clienti da gestire ogni mese | 6 | **4** |
+| Contenuti da produrre | ~30 | **24** |
+| Tue ore/mese | ~28 | **26** |
+
+Meno clienti, meno lavoro, meno gestione, **500 € in più al mese.** Trovare un
+cliente da 650 € costa esattamente la stessa fatica di trovarne uno da 350 €.
+
+**Sopra i 950 €/mese** si sale solo con clienti che hanno un budget di comunicazione
+già stanziato — chi espone in fiera, chi fa export, chi ha un ufficio marketing.
+Esistono anche in Romagna, ma non sono i primi che chiudi: ci arrivi con i casi
+studio, al mese 8–12.
+
+**Condizioni da tenere ferme:**
+- **Durata 12 mesi**, disdetta con 60 giorni di preavviso. Il trimestrale non
+  funziona: tre mesi non bastano perché il cliente veda risultati, e ti obbliga a
+  rivendere quattro volte l'anno.
+- **Pagamento anticipato entro il 5 del mese.** Non a fine mese, non a 30 giorni.
+- **Primo mese pagato alla firma**, insieme all'eventuale saldo del lavoro pregresso.
 
 ## 5.2 Come si struttura un preventivo
 
@@ -167,7 +200,7 @@ perché il valore per lui non è cambiato.
 **Il paradosso da tenere a mente:** più diventi veloce, più devi essere fermo sul
 prezzo. L'efficienza guadagnata con gli strumenti deve finire nel tuo margine e nella
 tua capacità produttiva, non nello sconto. È esattamente il meccanismo che ti porta a
-100 k€ da solo. Se la regali, resti a 45 k€ lavorando il doppio.
+5.000 € al mese senza persone in più. Se la regali, resti a 2.000 lavorando il doppio.
 
 ---
 
@@ -196,7 +229,7 @@ preventivo scivola in modalità "vediamo cosa possiamo togliere".
 | | |
 |---|---|
 | Costo strumenti | 300 €/mese = **3.600 €/anno** |
-| Fatturato ipotesi | 80.000 € |
+| Fatturato di riferimento (obiettivo 12 mesi) | 50.000 € |
 | Incidenza | **4,5%** |
 
 Per assorbirlo completamente ti basta **alzare il listino del 5%**. Un sito da

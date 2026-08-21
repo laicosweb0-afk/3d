@@ -99,7 +99,8 @@ criterio per smentirmi.
   gente che non comprerà mai. Costo reale: quasi zero, ti costa solo un po' di
   engagement rate, che non è una metrica che ti paga.
 - Se un domani vuoi che l'agenzia esista senza di te, avrai fatto il contrario. Vero,
-  ma tu hai scelto "resto solo": stai ottimizzando per te, non per un'entità.
+  ma in produzione oggi ci sei solo tu: stai ottimizzando per te, non per un'entità.
+  Fra tre anni sarà una domanda vera; oggi no.
 
 ### Il caso per **aprire un profilo agenzia separato**
 
