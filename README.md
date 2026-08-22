@@ -12,6 +12,7 @@ Un unico piano sequenza: il visitatore assiste alla trasformazione di uno spazio
 | [DIRECTION_V3.md](./DIRECTION_V3.md) | Riallineamento identità: impresa edile premium, tema = trasformazione |
 | [DIRECTION_V4.md](./DIRECTION_V4.md) | Il reale come protagonista: le finestre di realtà nel viaggio |
 | [TECH_ARCHITECTURE.md](./TECH_ARCHITECTURE.md) | Architettura tecnica e milestone |
+| [CARTONE-MEDIAPRO.md](./CARTONE-MEDIAPRO.md) | Il corto promozionale MediaPro: direzione, scaletta, rendering |
 
 ## Stato
 
@@ -29,7 +30,14 @@ npm run dev        # sviluppo
 npm run build      # build di produzione
 npm start          # serve la build
 node tools/verify.mjs   # scroll-through Playwright con screenshot (richiede build avviata; SHOTDIR=<dir>)
+
+node tools/cartone-render.mjs            # il corto MediaPro in mp4/webm (richiede `npm run build`)
+node tools/cartone-render.mjs --provini  # nove fotogrammi, uno per battuta
 ```
+
+Le pagine: `/` Mondial Service · `/bufala` Quelli della bufala · `/mediapro`
+il sito dello studio · `/cartone` il corto promozionale (spazio = pausa,
+frecce = un fotogramma).
 
 ## Architettura in una riga
 

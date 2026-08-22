@@ -1,0 +1,181 @@
+/* ============================================================
+   Il cartone MediaPro — la cornice attorno al video.
+   Nero, un fotogramma 9:16, e i comandi solo in anteprima.
+   Tutto è dentro .ct per non toccare le altre pagine.
+   ============================================================ */
+
+.ct {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #000;
+  color: #fff;
+  font-family: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Il fotogramma. Le misure dei testi sono in unità di *contenitore*, non di
+   viewport: così l'anteprima in una finestra qualunque e il rendering a
+   1080×1920 producono esattamente la stessa composizione. */
+.ct-quadro {
+  position: relative;
+  container-type: inline-size;
+  width: min(100vw, calc(100vh * 9 / 16));
+  height: min(100vh, calc(100vw * 16 / 9));
+  overflow: hidden;
+  background: #060606;
+}
+
+.ct-quadro canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Il velo scuro sotto ai testi: senza, una riga bianca finisce sopra una
+   luce accesa e diventa illeggibile proprio nel fotogramma migliore. */
+.ct-scrim {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 46%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0));
+  pointer-events: none;
+}
+
+.ct-testi {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ct-blocco {
+  position: absolute;
+  left: 7.5%;
+  right: 7.5%;
+  bottom: var(--sicurezza);
+  will-change: opacity, transform;
+}
+
+.ct-occhiello {
+  display: flex;
+  align-items: center;
+  gap: 2.4cqw;
+  margin: 0 0 3.4cqw;
+  font-size: 2.45cqw;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #d6b37a;
+}
+
+.ct-occhiello::before {
+  content: '';
+  width: 7cqw;
+  height: 1px;
+  background: #d6b37a;
+  opacity: 0.7;
+}
+
+.ct-riga {
+  margin: 0;
+  font-size: 8.4cqw;
+  font-weight: 300;
+  line-height: 1.02;
+  letter-spacing: -0.032em;
+  text-wrap: balance;
+}
+
+/* La firma occupa tutto il fotogramma e sta al centro: è l'unico momento in
+   cui il testo è il soggetto e non il commento. */
+.ct-firma {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* In basso, non al centro: sopra c'è la mascotte, e un marchio che le
+     finisce addosso è l'unico modo per rovinare il fotogramma che la gente
+     poi si ricorda. */
+  justify-content: flex-end;
+  gap: 2.6cqw;
+  padding-bottom: 24%;
+}
+
+.ct-blocco--centro {
+  position: static;
+  text-align: center;
+}
+
+.ct-marchio {
+  margin: 0;
+  font-size: 12cqw;
+  font-weight: 300;
+  letter-spacing: -0.038em;
+  line-height: 1;
+}
+
+.ct-claim {
+  margin: 0;
+  font-size: 2.9cqw;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #b5b5b5;
+}
+
+.ct-recapito {
+  margin: 0;
+  font-size: 3.7cqw;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: #d6b37a;
+}
+
+/* ---------- comandi di anteprima (non finiscono nel file consegnato) ---------- */
+
+.ct-comandi {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(16, 16, 16, 0.82);
+  backdrop-filter: blur(8px);
+  font-size: 13px;
+}
+
+.ct-comandi button {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: #d6b37a;
+  color: #090909;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.ct-comandi input[type='range'] {
+  width: min(46vw, 420px);
+  accent-color: #d6b37a;
+}
+
+.ct-tempo {
+  font-variant-numeric: tabular-nums;
+  color: #b5b5b5;
+  min-width: 92px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Il corto è un video: metterlo in pausa d'ufficio sarebbe togliere il
+     contenuto. Si toglie solo l'unica animazione decorativa della pagina. */
+  .ct-comandi {
+    backdrop-filter: none;
+  }
+}
