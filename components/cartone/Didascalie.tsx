@@ -24,6 +24,7 @@ const SICUREZZA = '19%';
 
 export function Didascalie() {
   const strato = useRef<HTMLDivElement>(null);
+  const lampo = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let vivo = true;
@@ -34,6 +35,17 @@ export function Didascalie() {
     const disegna = () => {
       if (!vivo) return;
       const t = orologio.t;
+
+      // Il lampo dello scatto. Sta qui e non nella scena perché un flash è
+      // *l'immagine* che si sbianca, non un faretto acceso più forte:
+      // spingendolo sulle luci tridimensionali il fotogramma andava in
+      // sovraesposizione piatta e si perdeva il prodotto.
+      if (lampo.current) {
+        const l =
+          Math.exp(-Math.pow((t - 17.9) / 0.055, 2)) +
+          0.6 * Math.exp(-Math.pow((t - 18.35) / 0.055, 2));
+        lampo.current.style.opacity = String(Math.min(0.46, l * 0.46));
+      }
       for (const b of blocchi) {
         const da = Number(b.dataset.da);
         const a = Number(b.dataset.a);
@@ -57,6 +69,7 @@ export function Didascalie() {
 
   return (
     <div className="ct-testi" ref={strato} style={{ ['--sicurezza' as string]: SICUREZZA }}>
+      <div className="ct-lampo" ref={lampo} aria-hidden />
       {BATTUTE.filter((b) => b.testo || b.etichetta).map((b) => (
         <div className="ct-blocco" key={b.id} data-da={b.da + 0.2} data-a={b.a - 0.15}>
           {b.etichetta && <p className="ct-occhiello">{b.etichetta}</p>}

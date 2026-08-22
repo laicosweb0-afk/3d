@@ -73,13 +73,13 @@ export function Prodotto() {
     if (filo.current) filo.current.opacity = Math.min(1, firmato * 0.95 + colpo * 0.7) * (1 - ritira);
     if (anello.current) anello.current.emissiveIntensity = (0.15 + firmato * 0.85 + colpo * 1.8) * (1 - ritira);
     if (sigillo.current) {
-      sigillo.current.scale.setScalar(0.001 + firmato * 1);
+      sigillo.current.scale.setScalar(0.001 + firmato * (1 - ritira));
       sigillo.current.rotation.z = (1 - firmato) * -0.9;
     }
 
     if (piedistallo.current) {
       const m = piedistallo.current.material as THREE.MeshStandardMaterial;
-      m.emissiveIntensity = 0.02 + passaggio(t, 16.2, 17.4) * 0.16;
+      m.emissiveIntensity = (0.02 + passaggio(t, 16.2, 17.4) * 0.16) * (1 - ritira);
     }
   });
 

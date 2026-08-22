@@ -82,17 +82,17 @@ function Atmosfera() {
     const acceso = passaggio(t, 6.4, 9.0);
     // E si spengono sul congedo: alla firma resta acceso solo l'occhio.
     const spento = passaggio(t, 26.9, 28.4);
-    if (chiave.current) chiave.current.intensity = (0.4 + acceso * 1.5) * (1 - spento * 0.93);
-    if (ambiente.current) ambiente.current.intensity = 0.1 * (1 - spento * 0.92);
+    if (chiave.current) chiave.current.intensity = (0.4 + acceso * 1.5) * (1 - spento);
+    if (ambiente.current) ambiente.current.intensity = 0.1 * (1 - spento);
     // Anche i riflessi vanno spenti, non solo le lampade: il cielo
     // procedurale continua a illuminare il metallo anche a buio fatto, e
     // sulla firma la scatola resterebbe visibile sotto al marchio.
-    scena.environmentIntensity = 1 - spento * 0.94;
-    if (riempimento.current) riempimento.current.intensity = 0.4 * (1 - spento * 0.95);
-    if (controluce.current) controluce.current.intensity = 9 * (1 - spento * 0.95);
+    scena.environmentIntensity = 1 - spento;
+    if (riempimento.current) riempimento.current.intensity = 0.4 * (1 - spento);
+    if (controluce.current) controluce.current.intensity = 9 * (1 - spento);
     if (taglio.current)
       taglio.current.intensity =
-        (1.4 + passaggio(t, 8.4, 10.4) * 6 + passaggio(t, 12.8, 14.0) * 7) * (1 - spento * 0.9);
+        (1.4 + passaggio(t, 8.4, 10.4) * 6 + passaggio(t, 12.8, 14.0) * 7) * (1 - spento);
   });
 
   return (

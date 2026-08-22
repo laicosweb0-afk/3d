@@ -27,13 +27,17 @@ const CORPO = 1.15;
 
 /** Le pose nel tempo: [x, y, z]. Fuori campo fino alla caduta. */
 const POSIZIONE = [
-  { t: 0, v: [0.35, 11, 1.0] },
-  { t: 6.0, v: [0.35, 11, 1.0] },
-  { t: 7.05, v: [0.35, 2.92, 1.0], ease: caduta },
-  { t: 7.45, v: [0.35, 3.5, 1.0], ease: posa },
-  { t: 7.75, v: [0.35, 2.92, 1.0], ease: caduta },
-  { t: 8.0, v: [0.35, 3.14, 1.0], ease: posa },
-  { t: 8.25, v: [0.35, 2.96, 1.0] },
+  // Parte da poco sopra il bordo, non da undici unità di altezza: con
+  // l'accelerazione di gravità quasi tutto lo spostamento avviene alla fine,
+  // e da lassù il cubo restava fuori campo fino all'ultimo decimo di secondo
+  // — una comparsa, non una caduta.
+  { t: 0, v: [0.35, 6.4, 1.0] },
+  { t: 6.05, v: [0.35, 6.4, 1.0] },
+  { t: 6.95, v: [0.35, 2.92, 1.0], ease: caduta },
+  { t: 7.35, v: [0.35, 3.62, 1.0], ease: posa },
+  { t: 7.65, v: [0.35, 2.92, 1.0], ease: caduta },
+  { t: 7.9, v: [0.35, 3.16, 1.0], ease: posa },
+  { t: 8.12, v: [0.35, 2.94, 1.0] },
   { t: 9.5, v: [-0.2, 2.86, 1.25] },
   { t: 12.5, v: [0.55, 2.8, 1.1] },
   { t: 16.0, v: [-0.5, 2.74, 1.5] },
@@ -46,8 +50,8 @@ const POSIZIONE = [
 
 /** Rotazione del corpo: quanto Pro si gira verso il prodotto o verso di noi. */
 const SGUARDO = [
-  { t: 6.0, v: [0.9, -1.5] },
-  { t: 8.3, v: [0.02, -0.5] },
+  { t: 6.05, v: [0.9, -1.5] },
+  { t: 8.2, v: [0.02, -0.5] },
   { t: 9.5, v: [0.06, -0.62] },
   { t: 16.0, v: [0.04, -0.5] },
   { t: 20.0, v: [0.02, -0.34] },
@@ -72,24 +76,24 @@ export function Pro() {
     const [x, y, z] = percorso(t, POSIZIONE);
     // Il galleggio parte solo dopo l'atterraggio, altrimenti la caduta
     // ondeggia e perde peso.
-    const posato = passaggio(t, 8.2, 8.8);
+    const posato = passaggio(t, 8.1, 8.7);
     const galleggio = Math.sin(t * 1.45) * 0.07 * posato;
     gruppo.current.position.set(x, y + galleggio, z);
 
     const [rx, ry] = percorso(t, SGUARDO);
     // Durante la caduta il cubo ruota: è ciò che la fa leggere come un
     // arrivo e non come una comparsa.
-    const giro = (1 - passaggio(t, 6.0, 8.6)) * 2.6;
+    const giro = (1 - passaggio(t, 6.05, 8.4)) * 2.6;
     corpo.current.rotation.set(rx + giro * 0.35, ry + giro, giro * 0.18);
     // L'impatto schiaccia il cubo per due decimi di secondo. Senza questo
     // l'atterraggio non si sente.
-    const urto = Math.max(0, rimbalzo(tratto(t, 7.05, 7.6))) * 0.14;
+    const urto = Math.max(0, rimbalzo(tratto(t, 6.95, 7.5))) * 0.16;
     corpo.current.scale.set(1 + urto * 0.6, 1 - urto, 1 + urto * 0.6);
 
     // — L'occhio —
     // Apertura: chiuso fino all'atterraggio, poi si spalanca. I due battiti
     // di palpebra sono l'unica cosa che lo rende vivo.
-    const apre = passaggio(t, 8.35, 9.1);
+    const apre = passaggio(t, 8.2, 8.95);
     const battito =
       1 -
       0.92 * Math.exp(-Math.pow((t - 13.4) / 0.09, 2)) -
@@ -105,7 +109,7 @@ export function Pro() {
     // Il lampo dello scatto, a metà della battuta dei contenuti.
     const lampo = Math.exp(-Math.pow((t - 17.9) / 0.07, 2)) + 0.7 * Math.exp(-Math.pow((t - 18.35) / 0.07, 2));
     if (bagliore.current) {
-      bagliore.current.scale.setScalar(0.2 + lampo * 2.4);
+      bagliore.current.scale.setScalar(0.2 + lampo * 0.75);
       (bagliore.current.material as THREE.MeshBasicMaterial).opacity = 0.2 * iride + lampo * 0.9;
     }
 
@@ -121,7 +125,7 @@ export function Pro() {
     // Stanno larghe quando indica, si stringono quando presenta.
     const largo = lerp(0.74, 0.9, passaggio(t, 12.6, 13.4) * (1 - passaggio(t, 15.4, 16.2)));
     const alza = passaggio(t, 12.8, 13.6) * (1 - passaggio(t, 15.6, 16.4));
-    const vive = passaggio(t, 8.6, 9.2) * (1 - passaggio(t, 28.4, 29.2));
+    const vive = passaggio(t, 8.5, 9.1) * (1 - passaggio(t, 28.4, 29.2));
     if (manoA.current && manoB.current) {
       const oscilla = Math.sin(t * 1.9) * 0.05;
       manoA.current.position.set(-largo, -0.16 + alza * 0.5 + oscilla, 0.28);

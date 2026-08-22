@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { orologio, passaggio, presenza } from '@/lib/cartone/tempo';
+import { orologio, presenza } from '@/lib/cartone/tempo';
 
 /**
  * Le luci: due pannelli che si accendono ai lati e il lampo dello scatto.
@@ -38,9 +38,9 @@ export function Studio() {
       (destra.current.material as THREE.MeshBasicMaterial).opacity = b * (0.7 + scatto * 0.3);
       destra.current.visible = b > 0.01;
     }
-    if (luceA.current) luceA.current.intensity = a * 60 + scatto * 90;
-    if (luceB.current) luceB.current.intensity = b * 26 + scatto * 40;
-    if (lampo.current) lampo.current.intensity = scatto * 260 + passaggio(t, 26.9, 28.6) * 0;
+    if (luceA.current) luceA.current.intensity = a * 60 + scatto * 35;
+    if (luceB.current) luceB.current.intensity = b * 26 + scatto * 16;
+    if (lampo.current) lampo.current.intensity = scatto * 90;
   });
 
   return (

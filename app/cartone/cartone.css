@@ -49,6 +49,15 @@
   pointer-events: none;
 }
 
+/* Il lampo: copre tutto il fotogramma per due fotogrammi in croce. */
+.ct-lampo {
+  position: absolute;
+  inset: 0;
+  background: #fffaf0;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .ct-blocco {
   position: absolute;
   left: 7.5%;
