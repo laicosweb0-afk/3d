@@ -1,0 +1,353 @@
+<title>Il coniglio e il ritorno</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Lato:wght@300;400;700;900&display=swap">
+<style>
+:root{
+  --crema:#faf2ed; --pannello:#fffaf7; --crema-2:#f3e8e0;
+  --inchiostro:#171111; --inchiostro-2:#5b4f49; --inchiostro-3:#8b7d74;
+  --rosa:#d81b72; --rosa-tenue:#fae2ef; --rosa-filo:rgba(216,27,114,.28);
+  --oro:#a8842f; --oro-filo:rgba(168,132,47,.45); --verde:#00705e;
+  --filo:rgba(23,17,17,.16); --filo-2:rgba(23,17,17,.08);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --crema:#100c0c; --pannello:#1b1414; --crema-2:#241b1b;
+  --inchiostro:#f7ede6; --inchiostro-2:#c0b1a7; --inchiostro-3:#8f8178;
+  --rosa:#ff6fa8; --rosa-tenue:#3a1626; --rosa-filo:rgba(255,111,168,.32);
+  --oro:#e0b45c; --oro-filo:rgba(224,180,92,.42); --verde:#4ec8ae;
+  --filo:rgba(247,237,230,.20); --filo-2:rgba(247,237,230,.10);
+}}
+:root[data-theme="dark"]{
+  --crema:#100c0c; --pannello:#1b1414; --crema-2:#241b1b;
+  --inchiostro:#f7ede6; --inchiostro-2:#c0b1a7; --inchiostro-3:#8f8178;
+  --rosa:#ff6fa8; --rosa-tenue:#3a1626; --rosa-filo:rgba(255,111,168,.32);
+  --oro:#e0b45c; --oro-filo:rgba(224,180,92,.42); --verde:#4ec8ae;
+  --filo:rgba(247,237,230,.20); --filo-2:rgba(247,237,230,.10);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--crema);color:var(--inchiostro);
+  font-family:'Lato',-apple-system,Segoe UI,Arial,sans-serif;font-weight:300;font-size:16.5px;line-height:1.64;}
+.wrap{max-width:1020px;margin:0 auto;padding:44px 22px 80px;}
+.wrap > *{min-width:0;}
+.kicker{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--rosa);font-weight:700;}
+h1{font-family:'Playfair Display',Georgia,serif;font-weight:400;font-size:clamp(32px,5.8vw,50px);line-height:1.02;
+  letter-spacing:-.018em;margin:14px 0 12px;text-wrap:balance;}
+h1 em{font-style:italic;color:var(--rosa);}
+.stand{font-size:clamp(15px,2.1vw,18.5px);color:var(--inchiostro-2);max-width:62ch;margin:0;}
+.top{border-bottom:1px solid var(--filo);padding-bottom:26px;}
+h2{font-family:'Playfair Display',Georgia,serif;font-weight:400;font-size:clamp(24px,3.6vw,33px);
+  letter-spacing:-.014em;margin:0 0 8px;line-height:1.1;text-wrap:balance;}
+h3{font-size:17.5px;font-weight:700;margin:28px 0 6px;}
+section{margin-top:60px;}
+.lab{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--rosa);font-weight:700;margin-bottom:10px;}
+p{margin:0 0 13px;max-width:70ch;color:var(--inchiostro-2);}
+p b{color:var(--inchiostro);font-weight:700;}
+.big{font-family:'Playfair Display',Georgia,serif;font-size:clamp(20px,2.9vw,25px);line-height:1.32;
+  color:var(--inchiostro);border-left:3px solid var(--rosa);padding:6px 0 6px 22px;margin:24px 0;max-width:52ch;}
+
+table{width:100%;border-collapse:collapse;margin:18px 0 6px;font-size:15.5px;display:block;overflow-x:auto;}
+th{text-align:left;font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--inchiostro-3);font-weight:700;
+  border-bottom:1px solid var(--filo);padding:0 16px 7px 0;vertical-align:bottom;white-space:nowrap;}
+td{padding:12px 16px 12px 0;border-bottom:1px solid var(--filo-2);vertical-align:top;color:var(--inchiostro-2);}
+td b{color:var(--inchiostro);font-weight:700;}
+td.k{color:var(--inchiostro);font-weight:700;}
+.si{color:var(--verde);font-weight:700;} .no{color:var(--rosa);font-weight:700;}
+
+.paletta{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:12px;margin:20px 0 6px;}
+.col{border:1px solid var(--filo-2);background:var(--pannello);}
+.col .cam{height:64px;}
+.col .nm{padding:9px 11px 3px;font-size:14.5px;font-weight:700;color:var(--inchiostro);}
+.col .hx{padding:0 11px 10px;font-size:12.5px;color:var(--inchiostro-3);font-variant-numeric:tabular-nums;}
+.col .us{padding:0 11px 11px;font-size:12.5px;color:var(--inchiostro-2);}
+
+.regole{margin:20px 0 6px;}
+.reg{display:grid;grid-template-columns:34px 1fr;gap:16px;padding:16px 0;border-top:1px solid var(--filo-2);}
+.reg:last-child{border-bottom:1px solid var(--filo-2);}
+.reg .n{font-family:'Playfair Display',Georgia,serif;font-size:19px;color:var(--rosa);line-height:1.2;}
+.reg b{display:block;font-size:17.5px;color:var(--inchiostro);font-weight:700;margin-bottom:3px;}
+.reg span{font-size:15.5px;color:var(--inchiostro-2);}
+
+.nota{background:var(--crema-2);border:1px solid var(--filo-2);border-left:3px solid var(--c,var(--rosa));
+  padding:15px 19px;margin:22px 0;}
+.nota.oro{--c:var(--oro);} .nota.verde{--c:var(--verde);}
+.nota .t{font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--inchiostro-3);font-weight:700;margin-bottom:6px;}
+.nota p{margin-bottom:8px;font-size:15.5px;} .nota p:last-child{margin-bottom:0;}
+
+.mossa{border:1px solid var(--filo-2);border-top:3px solid var(--c,var(--rosa));background:var(--pannello);
+  padding:20px 22px;margin:16px 0;}
+.mossa.oro{--c:var(--oro);} .mossa.verde{--c:var(--verde);}
+.mossa .et{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--c,var(--rosa));font-weight:700;}
+.mossa h3{font-family:'Playfair Display',Georgia,serif;font-weight:400;font-size:24px;margin:7px 0 10px;}
+.mossa .prova{margin-top:12px;padding-top:12px;border-top:1px solid var(--filo-2);font-size:14.5px;color:var(--inchiostro-3);}
+.mossa .prova b{color:var(--inchiostro-2);}
+
+.fonti{margin-top:20px;font-size:14px;color:var(--inchiostro-3);}
+.fonti a{color:var(--inchiostro-2);}
+.foot{margin-top:62px;padding-top:16px;border-top:1px solid var(--filo);font-size:11px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--inchiostro-3);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="kicker">Woman Srl · direzione visiva e ritorno</div>
+    <h1>Il coniglio <em>e il ritorno</em></h1>
+    <p class="stand">Due cose in un documento: come deve guardarsi tutto quello che facciamo, e come si
+    fa tornare sul sito una persona che ha comprato una volta sola. La seconda parte viene dal mercato
+    americano, dove il pacco è considerato un mezzo pubblicitario e non un imballo.</p>
+  </div>
+
+  <section>
+    <div class="lab">Parte prima · direzione visiva</div>
+    <h2>Il coniglio è una punteggiatura, non la storia</h2>
+    <p>Questa è la regola che tiene in piedi tutto il resto, e va detta prima delle altre perché
+    è quella che si viola più facilmente.</p>
+
+    <div class="big">Woman vende Chanel, Dior, Tom Ford, YSL. Il mondo visivo deve poter stare
+    <em>accanto</em> a quei marchi sullo stesso scaffale. Alice raccontata troppo diventa una favola
+    per bambini — e una favola per bambini accanto a un Tom Ford svaluta il Tom Ford.</p>
+
+    <p>Il coniglio funziona per la stessa ragione per cui funziona un profumo: <b>si sente, non si
+    grida.</b> Due orecchie che spuntano da dietro un cartoncino sono eleganti. Un coniglio disegnato
+    in mezzo alla pagina con l'orologio in mano è un cartone animato.</p>
+
+    <h3>La regola pratica</h3>
+    <p><b>Un pezzo, un'apparizione.</b> Sulla pagina del regalo il coniglio si vede due volte in tutto:
+    le orecchie nella hero, e la corsa sulla schermata finale. Mai contemporaneamente, mai una terza volta.</p>
+  </section>
+
+  <section>
+    <div class="lab">Il sistema</div>
+    <h2>Cinque elementi che ricorrono, e nient'altro</h2>
+    <p>Un'identità non è un'immagine: è un piccolo insieme di cose che tornano sempre uguali.
+    Questi cinque bastano, e si riconoscono anche a un centimetro di distanza.</p>
+
+    <table>
+      <thead><tr><th>Elemento</th><th>Che cosa dice</th><th>Dove va</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Il quadrante romano</td><td>il tempo che scorre, la scadenza, «sono in ritardo»</td><td>sempre in filigrana, sotto tutto, mai in primo piano</td></tr>
+        <tr><td class="k">La cornice dorata</td><td>l'oggetto prezioso, il sigillo, la custodia</td><td>attorno alla fiala, attorno a un premio, mai attorno al testo</td></tr>
+        <tr><td class="k">La fiala</td><td>la prova prima dell'acquisto — il vostro brevetto vero</td><td>ogni volta che si parla di provare</td></tr>
+        <tr><td class="k">Le orecchie</td><td>la curiosità, l'invito a seguire</td><td>solo che spuntano da dietro qualcosa, mai intere</td></tr>
+        <tr><td class="k">Il rombo d'oro</td><td>il respiro, la separazione</td><td>fra il marchio e il contenuto</td></tr>
+      </tbody>
+    </table>
+
+    <div class="nota oro">
+      <div class="t">Perché le orecchie non si mostrano mai intere</div>
+      <p>Un coniglio intero è un personaggio: chiede una storia, un nome, un carattere. <b>Due orecchie
+      che spuntano sono un indizio</b> — e un indizio fa girare la testa senza chiedere niente in cambio.
+      È la stessa differenza che c'è fra una pubblicità e un profumo lasciato in aria.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="lab">Colore</div>
+    <h2>Sei valori, e la disciplina di non aggiungerne</h2>
+    <div class="paletta">
+      <div class="col"><div class="cam" style="background:#faf2ed"></div><div class="nm">Carta</div><div class="hx">#FAF2ED</div><div class="us">il fondo di tutto</div></div>
+      <div class="col"><div class="cam" style="background:#171111"></div><div class="nm">Inchiostro</div><div class="hx">#171111</div><div class="us">testo, e il fondo scuro</div></div>
+      <div class="col"><div class="cam" style="background:#d81b72"></div><div class="nm">Magenta</div><div class="hx">#D81B72</div><div class="us">una sola cosa per schermata</div></div>
+      <div class="col"><div class="cam" style="background:#a8842f"></div><div class="nm">Oro</div><div class="hx">#A8842F</div><div class="us">cornici, filetti, valore</div></div>
+      <div class="col"><div class="cam" style="background:#d2607f"></div><div class="nm">Rosa carne</div><div class="hx">#D2607F</div><div class="us">solo l'interno delle orecchie</div></div>
+      <div class="col"><div class="cam" style="background:#f3e8e0"></div><div class="nm">Sabbia</div><div class="hx">#F3E8E0</div><div class="us">riquadri, secondi piani</div></div>
+    </div>
+
+    <p style="margin-top:18px"><b>Il magenta è potente e va razionato.</b> Se colora il titolo, il
+    pulsante e il riquadro insieme, non evidenzia più niente — diventa il colore del fondo. La regola:
+    <b>una sola cosa magenta per schermata</b>, e di solito è l'azione.</p>
+
+    <p><b>Il nero non è un tema scuro: è il secondo vestito.</b> Il vostro cartoncino ha già una faccia
+    nera. Quindi il nero non è l'inverso della carta — è l'altra metà del marchio, e va usato dove serve
+    solennità: la copertina, il regalo, la sera.</p>
+  </section>
+
+  <section>
+    <div class="lab">Carattere</div>
+    <h2>Due voci, mai una terza</h2>
+    <table>
+      <thead><tr><th>Voce</th><th>Che cosa dice</th><th>Regole</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Serif ad alto contrasto<br><span style="font-family:'Playfair Display',serif;font-size:20px;color:var(--inchiostro)">Il Sigillo Olfattivo</span></td>
+          <td>i titoli, i nomi, le cose che si ricordano</td>
+          <td>mai in grassetto, mai tutto maiuscolo sotto i 20px. Il corsivo è per <em>una</em> parola, non per una frase.</td></tr>
+        <tr><td class="k">Sans umanista<br><span style="font-size:16px;color:var(--inchiostro)">Tre campi, due consensi</span></td>
+          <td>tutto il resto: istruzioni, moduli, etichette</td>
+          <td>leggero per il testo, nero pieno solo per il marchio. Le etichette maiuscole vogliono sempre spaziatura.</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:16px">Sulla pagina sono <b>Playfair Display</b> e <b>Lato</b>: due caratteri
+    gratuiti che stanno molto vicini a quelli del vostro cartoncino. Se la tipografia ha i file
+    originali, si sostituiscono e non cambia nient'altro.</p>
+  </section>
+
+  <section>
+    <div class="lab">Movimento</div>
+    <h2>Il movimento è una ricompensa, mai una decorazione</h2>
+    <p>Questa è la parte che quasi tutti sbagliano, e il modo di sbagliarla è sempre lo stesso:
+    far muovere le cose per farle sembrare vive. <b>Il movimento non deve intrattenere: deve dire
+    che qualcosa è successo.</b></p>
+
+    <div class="regole">
+      <div class="reg"><div class="n">1</div><div><b>Una cosa sola si muove per schermata</b>
+        <span>Se si muovono due cose, l'occhio non sa dove andare e le guarda tutte e due male.</span></div></div>
+      <div class="reg"><div class="n">2</div><div><b>Il movimento sta lontano dall'azione</b>
+        <span>Per questo il coniglio corre <b>sulla schermata finale</b> e non sulla hero: sulla hero
+        ruberebbe attenzione al pulsante, alla fine invece è il premio per averlo premuto.</span></div></div>
+      <div class="reg"><div class="n">3</div><div><b>Sotto il secondo, sempre</b>
+        <span>L'ingresso del cartoncino dura settecentocinquanta millesimi. Il fremito delle orecchie
+        trecento. Oltre il secondo si smette di essere eleganti e si comincia ad aspettare.</span></div></div>
+      <div class="reg"><div class="n">4</div><div><b>Mai in circolo</b>
+        <span>Niente che si ripeta all'infinito. Una cosa che si muove per sempre diventa, dopo dieci
+        secondi, una cosa che dà fastidio.</span></div></div>
+      <div class="reg"><div class="n">5</div><div><b>Chi ha le animazioni ridotte vede tutto fermo</b>
+        <span>Non una versione peggiore: la stessa pagina, immobile. È già così.</span></div></div>
+    </div>
+
+    <div class="nota verde">
+      <div class="t">La fuga, spiegata</div>
+      <p>Il coniglio attraversa in due secondi e due decimi, lascia una traccia tratteggiata e sparisce.
+      Poi — e solo poi — compare il testo. <b>La corsa non è un effetto: è la frase «ci vediamo nel
+      prossimo pacco» detta senza parole</b>, e chiude la storia cominciata sul cartoncino con
+      «hai seguito il coniglio».</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="lab">Fotografia</div>
+    <h2>Che cosa fotografare, e come</h2>
+    <table>
+      <thead><tr><th></th><th>Sì</th><th>No</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Soggetto</td><td>l'oggetto e il gesto: la fiala fra le dita, il cartoncino appena estratto, la scatola aperta</td><td>il flacone isolato su fondo bianco — ce l'hanno identico tutti i rivenditori d'Italia</td></tr>
+        <tr><td class="k">Luce</td><td>una sola sorgente, morbida, di lato. Ombre lunghe e pulite</td><td>luce piatta frontale, o due flash che annullano il volume</td></tr>
+        <tr><td class="k">Fondo</td><td>carta color crema, marmo chiaro, legno scuro</td><td>fondi colorati, glitter, petali sparsi</td></tr>
+        <tr><td class="k">Mani</td><td>sì, sempre che si può: una mano dà la scala e la temperatura</td><td>mani con manicure vistosa che ruba la scena</td></tr>
+        <tr><td class="k">Il negozio</td><td>fotografatelo. <b>È la vostra prova di esistere</b>, ed è quello che i concorrenti online non hanno</td><td>rendering, foto d'archivio, interni presi da internet</td></tr>
+      </tbody>
+    </table>
+    <div class="nota">
+      <div class="t">La foto che oggi manca e vale più di tutte</div>
+      <p><b>Il cartoncino con la fiala, in mano, sopra la scatola appena aperta.</b> È l'immagine esatta
+      del momento in cui la persona decide se inquadrare o no. Serve sulla pagina, nelle mail, sui social
+      e nella lettera alle aziende. Si scatta in dieci minuti col telefono, vicino a una finestra.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="lab">Parte seconda · il ritorno</div>
+    <h2>La cosa rivoluzionaria che avete già</h2>
+    <p>Cerchiamo una strategia americana. Te la dico senza giri: <b>la mossa rivoluzionaria non è una
+    tattica, è una posizione</b> — e voi ce l'avete già senza saperlo.</p>
+
+    <div class="big">Ogni mese entrate fisicamente in centinaia di case di persone che hanno appena
+    speso dei soldi con voi. Nessuna pubblicità al mondo compra quel momento. <em>E la spedizione
+    l'avete già pagata.</em></div>
+
+    <p>Nel mercato americano questa è una disciplina con un nome — si tratta il pacco come un mezzo,
+    non come un imballo. In Italia lo fa quasi nessuno, e chi lo fa ci mette un santino con lo sconto.
+    Le quattro mosse qui sotto vengono tutte da lì, e sono in ordine di quanto rendono <b>per voi</b>,
+    non in generale.</p>
+
+    <div class="mossa">
+      <div class="et">Mossa 1 · la più forte, e nessuno in Italia la fa</div>
+      <h3>Il cartoncino che si regala</h3>
+      <p>Nel pacco non va <b>un</b> cartoncino: ne vanno <b>due</b>. Uno è suo. L'altro porta scritto
+      <b>«questo non è tuo»</b> — è da dare a qualcuno.</p>
+      <p>Chi lo riceve ha tre fiale in omaggio al primo ordine. E chi lo ha regalato riceve le sue tre
+      quando l'amica le usa. <b>Vince chi dà e vince chi riceve</b>, che è la struttura che negli Stati
+      Uniti ha costruito interi marchi: Glossier lo fa con «dai 10, ricevi 10», Rothy's con venti,
+      e tutti confermano la stessa cosa — <b>la versione a due facce batte sempre quella a una faccia sola.</b></p>
+      <p>La differenza vostra è che loro lo fanno con un link. <b>Voi potete farlo con un oggetto</b> —
+      e un cartoncino con una fiala dentro, dato a mano da un'amica, non ha niente a che vedere con un
+      link inoltrato su WhatsApp.</p>
+      <div class="prova"><b>Costa:</b> un cartoncino e tre fiale in più per ordine. <b>Misura:</b> un codice diverso sul secondo cartoncino — e da lì sapete esattamente quante persone nuove arrivano dai vostri clienti.</div>
+    </div>
+
+    <div class="mossa oro">
+      <div class="et">Mossa 2 · l'insight che vale più della tattica</div>
+      <h3>Il cimitero dei profumi</h3>
+      <p>Chi vende abbonamenti di profumo negli Stati Uniti ha capito una cosa che vale anche per voi:
+      la gente non ha paura di spendere, <b>ha paura di sbagliare</b>. Un flacone da centoventi euro che
+      non piace più dopo tre giorni finisce in fondo a un cassetto, e quel cassetto — lo chiamano
+      «il cimitero dei profumi» — è la vera ragione per cui una persona rimanda l'acquisto.</p>
+      <p><b>Il vostro Sigillo Olfattivo risolve esattamente quella paura.</b> E oggi lo state raccontando
+      come una regola di reso — cioè come burocrazia. È il contrario: è la promessa più forte che avete.</p>
+      <p>La stessa fonte dice un'altra cosa utile: nel profumo la fedeltà non è riacquisto, <b>è
+      evoluzione del gusto</b>. Non si ricompra la stessa cosa come il caffè: si cambia. Quindi il modo
+      di far tornare qualcuno non è ricordargli il flacone che ha preso — <b>è portarlo un passo più in là.</b></p>
+      <div class="prova"><b>Che cosa cambia in pratica:</b> il Sigillo va messo in prima pagina sul sito, non nelle condizioni di reso. E la mail dei giorni dopo racconta la famiglia accanto a quelle scelte, non la stessa.</div>
+    </div>
+
+    <div class="mossa verde">
+      <div class="et">Mossa 3 · la più facile da cominciare</div>
+      <h3>I punti si spendono in fiale, non in sconti</h3>
+      <p>Il programma di fedeltà più copiato al mondo — quello di Sephora — ha una regola che quasi
+      tutti gli imitatori sbagliano: <b>i punti non si trasformano in sconto. Si trasformano in
+      campioni</b>, e in cose che coi soldi non si comprano.</p>
+      <p>Funziona perché lo sconto svaluta il prodotto, mentre il campione <b>aumenta il desiderio</b>
+      e costa una frazione. Tre livelli, punti che non scadono, e a ogni livello un accesso: la serata
+      in negozio, la consulenza, il pezzo prima degli altri.</p>
+      <p>Per voi la versione minima esiste già: <b>le fiale sono la moneta</b>, e ce le avete in casa.</p>
+      <div class="prova"><b>Non subito:</b> si costruisce dopo il pilota, quando il foglio dei numeri dice quanto vale un cliente. Prima sarebbe una struttura senza dati sotto.</div>
+    </div>
+
+    <div class="mossa">
+      <div class="et">Mossa 4 · l'errore da non copiare</div>
+      <h3>Perché l'abbonamento non fa per voi (ancora)</h3>
+      <p>La cosa più americana di tutte è l'abbonamento: una fiala al mese a diciassette dollari.
+      È una macchina bellissima e <b>non è la vostra</b>, per due motivi concreti.</p>
+      <p>Primo: vive di logistica e di magazzino, e chi la fa ha centinaia di marchi a catalogo.
+      Secondo — e conta di più — <b>vi metterebbe in concorrenza col vostro stesso negozio.</b> La cosa
+      che vi distingue è che esistete in un posto, con delle persone dentro. Un abbonamento la cancella.</p>
+      <p>La versione sensata, se un giorno la vorrete, è l'opposto: <b>non una fiala al mese per posta,
+      ma un appuntamento all'anno in negozio.</b> Quella nessun sito può copiarla.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="lab">L'ordine</div>
+    <h2>Che cosa prima, e che cosa dopo</h2>
+    <table>
+      <thead><tr><th>Quando</th><th>Che cosa</th><th>Perché adesso</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Subito</td><td>la pagina <code>/regalo</code> e i 500 cartoncini di prova</td><td>senza il numero della pagina tutto il resto è opinione</td></tr>
+        <tr><td class="k">Subito</td><td>la foto del cartoncino in mano sopra la scatola</td><td>dieci minuti, e serve dappertutto</td></tr>
+        <tr><td class="k">Subito</td><td>il Sigillo spostato in prima pagina sul sito</td><td>è già scritto, è solo nel posto sbagliato</td></tr>
+        <tr><td class="k">Dopo tre settimane</td><td>si legge il foglio dei numeri e si stampano i 4.500</td><td>della versione che ha vinto</td></tr>
+        <tr><td class="k">Secondo giro</td><td><b>il secondo cartoncino, quello da regalare</b></td><td>si aggiunge alla stampa grande: costa un foglio in più</td></tr>
+        <tr><td class="k">Quando c'è il numero</td><td>i livelli e i punti in fiale</td><td>serve sapere quanto vale un cliente, prima</td></tr>
+        <tr><td class="k">Forse mai</td><td>l'abbonamento</td><td>vi metterebbe contro il vostro negozio</td></tr>
+      </tbody>
+    </table>
+
+    <div class="nota">
+      <div class="t">I soliti tre limiti, che restano veri</div>
+      <p><b>Amazon.</b> Il secondo cartoncino «da regalare» è più delicato del primo, perché somiglia
+      di più a un invito a comprare fuori. Va nella stessa domanda scritta a Seller Support, insieme all'altro.</p>
+      <p><b>I consensi.</b> Chi riceve il cartoncino regalato non ha mai comprato da voi: la spunta
+      delle comunicazioni deve partire vuota, sempre.</p>
+      <p><b>I numeri di questo documento.</b> Le cifre dei referral americani sono pubblicate da chi
+      vende gli strumenti. Servono a dire che la meccanica esiste e che marchi seri la usano —
+      <b>non a promettere un risultato.</b></p>
+    </div>
+  </section>
+
+  <section>
+    <div class="lab">Fonti</div>
+    <h2>Da dove viene la parte seconda</h2>
+    <p class="fonti">
+      Referral a due facce — <a href="https://www.rivo.io/blog/glossier-referral-program-complete-breakdown">Glossier, analisi del programma</a>,
+      <a href="https://www.extole.com/blog/ecommerce-referral-program-examples/">Extole</a>,
+      <a href="https://growsurf.com/blog/referral-program-examples/">GrowSurf</a>.<br>
+      Il cimitero dei profumi e l'evoluzione del gusto — <a href="https://recurly.com/resources/case-study/scentbird/">Scentbird, caso di studio</a>,
+      <a href="https://bfuturist.com/industry-insights/perfume-subscription-business-model/">B Futurist</a>.<br>
+      Punti spesi in campioni e livelli — <a href="https://www.annexcloud.com/blog/sephora-loyalty-program-beauty-insider/">Sephora Beauty Insider</a>,
+      <a href="https://smile.io/learn/loyalty-programs-for-beauty-and-cosmetics-brands">Smile.io</a>.
+    </p>
+  </section>
+
+  <div class="foot">
+    <span>Woman Srl · Via San Martino 1, Sant'Agata sul Santerno (RA)</span>
+    <span>Il coniglio si sente, non si grida</span>
+  </div>
+</div>

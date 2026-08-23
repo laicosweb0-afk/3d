@@ -59,12 +59,17 @@ body{margin:0;background:var(--crema);color:var(--inchiostro);
 .scena .c-tit-i{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:20px;fill:#d81b72;}
 .scena .c-lotto{font-family:'Lato',sans-serif;font-size:6.4px;letter-spacing:.24em;fill:#8b7d74;}
 .scena .carta{transform:translateY(-18px) rotate(-3deg);animation:posa .75s cubic-bezier(.2,.7,.3,1) both;}
-.scena .orecchie-scena{animation:spunta .8s cubic-bezier(.2,.8,.3,1) .18s both;transform-origin:225px 172px;}
+.scena .orecchie-scena{animation:spunta 1.5s cubic-bezier(.2,.8,.3,1) .18s both;transform-origin:225px 172px;}
 .scena .quadrante{animation:appare 1s ease .3s both;}
 @keyframes posa{from{opacity:0;transform:translateY(-2px) rotate(-3deg) scale(.985);}
                 to{opacity:1;transform:translateY(-18px) rotate(-3deg) scale(1);}}
-@keyframes spunta{from{opacity:0;transform:translateY(22px) scaleY(.9);}
-                  to{opacity:1;transform:translateY(0) scaleY(1);}}
+@keyframes spunta{
+  0%{opacity:0;transform:translateY(22px) scaleY(.9);}
+  46%{opacity:1;transform:translateY(0) scaleY(1);}
+  62%{transform:translateY(0) rotate(3.4deg);}
+  76%{transform:translateY(0) rotate(-2.6deg);}
+  88%{transform:translateY(0) rotate(1.2deg);}
+  100%{opacity:1;transform:translateY(0) rotate(0deg);}}
 @keyframes appare{from{opacity:0;} to{opacity:.20;}}
 .occhiello{font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--rosa);font-weight:700;}
 h1{font-family:'Playfair Display',Georgia,serif;font-weight:400;font-size:clamp(31px,8.6vw,40px);
@@ -147,6 +152,45 @@ input[type=email]:focus-visible{outline:3px solid var(--oro);outline-offset:2px;
   font-style:italic;margin-bottom:12px;}
 .prova b{color:var(--inchiostro-2);font-weight:700;}
 .prova a{color:var(--inchiostro-2);}
+
+
+/* ── la fuga del coniglio ── */
+.corsa{position:relative;height:96px;margin:6px 0 2px;overflow:hidden;}
+.pista{position:absolute;left:0;right:0;bottom:26px;height:1px;width:100%;}
+.pista line{stroke:var(--oro);stroke-width:1.4;stroke-dasharray:3 9;stroke-linecap:round;
+  stroke-dashoffset:420;animation:traccia 2.05s linear .12s forwards;}
+.saltatore{position:absolute;bottom:8px;left:0;width:74px;animation:attraversa 2.2s cubic-bezier(.32,0,.62,1) both;}
+.balzo{animation:balzo 2.2s cubic-bezier(.36,0,.62,1) both;}
+.saltatore svg{display:block;width:100%;height:auto;fill:var(--rosa);}
+.saltatore .occhio{fill:var(--pannello);}
+@keyframes attraversa{from{transform:translateX(-90px);} to{transform:translateX(calc(100vw + 90px));}}
+@keyframes balzo{
+  0%{transform:translateY(0) rotate(-4deg);}
+  14%{transform:translateY(-30px) rotate(-11deg);}
+  28%{transform:translateY(0) rotate(2deg);}
+  42%{transform:translateY(-34px) rotate(-11deg);}
+  56%{transform:translateY(0) rotate(2deg);}
+  70%{transform:translateY(-30px) rotate(-11deg);}
+  84%{transform:translateY(0) rotate(2deg);}
+  100%{transform:translateY(-22px) rotate(-9deg);}
+}
+@keyframes traccia{to{stroke-dashoffset:0;}}
+.scia{font-size:13px;color:var(--inchiostro-3);text-align:right;margin:-6px 0 20px;
+  animation:svela .7s ease 1.5s both;}
+@keyframes svela{from{opacity:0;} to{opacity:1;}}
+.grazie .bollo{animation:svela .6s ease 1.9s both;}
+.grazie .occhiello,.grazie h1,.grazie .sommario{animation:svela .6s ease 2.05s both;}
+.grazie .scelte{animation:svela .6s ease 2.2s both;}
+.grazie .poi,.grazie .uscita{animation:svela .6s ease 2.35s both;}
+
+@media (prefers-reduced-motion: reduce){
+  .scena .carta,.scena .orecchie-scena,.scena .quadrante,
+  .saltatore,.balzo,.pista line,.scia,.grazie .bollo,.grazie .occhiello,.grazie h1,
+  .grazie .sommario,.grazie .scelte,.grazie .poi,.grazie .uscita{animation:none !important;}
+  .saltatore{display:none;}
+  .pista line{stroke-dashoffset:0;}
+  .scena .quadrante{opacity:.20;}
+}
 
 /* grazie */
 .grazie[hidden]{display:none;}
@@ -338,6 +382,23 @@ input[type=email]:focus-visible{outline:3px solid var(--oro);outline-offset:2px;
 
   <!-- ═══ schermata 2 — il grazie ═══ -->
   <div class="grazie" id="grazie" hidden>
+    <div class="corsa" aria-hidden="true">
+      <svg class="pista" viewBox="0 0 420 2" preserveAspectRatio="none"><line x1="0" y1="1" x2="420" y2="1"/></svg>
+      <div class="saltatore"><div class="balzo">
+        <svg viewBox="0 0 92 84">
+          <circle cx="13" cy="55" r="7.5"/>
+          <ellipse cx="26" cy="64" rx="14" ry="8.5"/>
+          <ellipse cx="39" cy="50" rx="24" ry="19"/>
+          <ellipse cx="57" cy="63" rx="7.5" ry="11" transform="rotate(-16 57 63)"/>
+          <ellipse cx="65" cy="35" rx="14.5" ry="13"/>
+          <ellipse cx="78" cy="40" rx="6.5" ry="5.5"/>
+          <path d="M59 26 C54 16 52 6 55 2 C58 -1 62 3 63 11 C64 17 63 22 62 26 Z"/>
+          <path d="M69 26 C69 15 71 5 75 2 C79 0 81 5 79 13 C77 19 74 23 72 27 Z"/>
+          <circle class="occhio" cx="71" cy="33" r="1.9"/>
+        </svg>
+      </div></div>
+    </div>
+    <p class="scia">…e via, verso il prossimo pacco.</p>
     <div class="bollo">
       <svg viewBox="0 0 24 24" fill="none" stroke="var(--oro)" stroke-width="1.6" aria-hidden="true">
         <path d="M4 12.5 L9.5 18 L20 6.5" stroke-linecap="round" stroke-linejoin="round"/>
