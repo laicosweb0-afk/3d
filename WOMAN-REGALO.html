@@ -48,11 +48,24 @@ body{margin:0;background:var(--crema);color:var(--inchiostro);
 .marchio .anno{font-size:9.5px;letter-spacing:.28em;color:var(--inchiostro-3);margin-top:5px;}
 
 /* apertura */
-.apertura{position:relative;padding:34px 0 6px;text-align:center;}
-.orologio{position:absolute;left:50%;top:-14px;transform:translateX(-50%);width:340px;height:340px;
-  opacity:.11;pointer-events:none;z-index:0;}
-.orecchie{position:relative;z-index:1;width:104px;height:auto;margin:0 auto 16px;display:block;}
-.apertura > *:not(.orologio){position:relative;z-index:1;}
+.apertura{padding:22px 0 6px;text-align:center;}
+.scena{display:block;width:100%;max-width:330px;height:auto;margin:0 auto 6px;color:var(--rosa);}
+.scena .quadrante{opacity:.20;}
+.scena .numeri{font-family:'Playfair Display',Georgia,serif;font-size:12px;fill:currentColor;}
+.scena .c-logo{font-family:'Lato',sans-serif;font-weight:900;font-size:19px;letter-spacing:.2em;fill:#171111;}
+.scena .c-sub{font-family:'Playfair Display',Georgia,serif;font-size:11px;letter-spacing:.05em;fill:#d81b72;}
+.scena .c-anno{font-family:'Lato',sans-serif;font-size:6.6px;letter-spacing:.3em;fill:#8b7d74;}
+.scena .c-tit{font-family:'Playfair Display',Georgia,serif;font-size:19px;letter-spacing:.03em;fill:#171111;}
+.scena .c-tit-i{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:20px;fill:#d81b72;}
+.scena .c-lotto{font-family:'Lato',sans-serif;font-size:6.4px;letter-spacing:.24em;fill:#8b7d74;}
+.scena .carta{transform:translateY(-18px) rotate(-3deg);animation:posa .75s cubic-bezier(.2,.7,.3,1) both;}
+.scena .orecchie-scena{animation:spunta .8s cubic-bezier(.2,.8,.3,1) .18s both;transform-origin:225px 172px;}
+.scena .quadrante{animation:appare 1s ease .3s both;}
+@keyframes posa{from{opacity:0;transform:translateY(-2px) rotate(-3deg) scale(.985);}
+                to{opacity:1;transform:translateY(-18px) rotate(-3deg) scale(1);}}
+@keyframes spunta{from{opacity:0;transform:translateY(22px) scaleY(.9);}
+                  to{opacity:1;transform:translateY(0) scaleY(1);}}
+@keyframes appare{from{opacity:0;} to{opacity:.20;}}
 .occhiello{font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--rosa);font-weight:700;}
 h1{font-family:'Playfair Display',Georgia,serif;font-weight:400;font-size:clamp(31px,8.6vw,40px);
   line-height:1.1;letter-spacing:-.01em;margin:12px 0 0;text-wrap:balance;}
@@ -168,25 +181,99 @@ input[type=email]:focus-visible{outline:3px solid var(--oro);outline-offset:2px;
   <div id="attiva">
 
     <div class="apertura">
-      <svg class="orologio" viewBox="0 0 200 200" aria-hidden="true">
-        <circle cx="100" cy="100" r="94" fill="none" stroke="var(--rosa)" stroke-width="0.8"/>
-        <circle cx="100" cy="100" r="84" fill="none" stroke="var(--rosa)" stroke-width="0.4"/>
-        <g fill="var(--rosa)" font-family="Playfair Display, serif" font-size="11" text-anchor="middle">
-          <text x="100" y="20">XII</text><text x="142" y="31">I</text><text x="173" y="62">II</text>
-          <text x="184" y="104">III</text><text x="173" y="146">IV</text><text x="142" y="177">V</text>
-          <text x="100" y="190">VI</text><text x="58" y="177">VII</text><text x="27" y="146">VIII</text>
-          <text x="16" y="104">IX</text><text x="27" y="62">X</text><text x="58" y="31">XI</text>
-        </g>
-      </svg>
+      <svg class="scena" viewBox="0 0 440 374" role="img" aria-label="Il cartoncino Woman con la fiala del Sigillo Olfattivo incastonata nella cornice dorata, le orecchie del coniglio che spuntano da dietro e il quadrante romano in filigrana.">
+        <defs>
+          <linearGradient id="vetro" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#c9b9ad"/><stop offset="26%" stop-color="#f4ece5"/>
+            <stop offset="55%" stop-color="#d9cabd"/><stop offset="100%" stop-color="#b8a596"/>
+          </linearGradient>
+          <linearGradient id="essenza" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#a9761f"/><stop offset="34%" stop-color="#e0ae57"/>
+            <stop offset="100%" stop-color="#9a6a19"/>
+          </linearGradient>
+          <linearGradient id="tappo" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#6b5a34"/><stop offset="38%" stop-color="#c9a94f"/>
+            <stop offset="100%" stop-color="#7a6636"/>
+          </linearGradient>
+          <filter id="ombra-lieve" x="-40%" y="-30%" width="180%" height="170%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+            <feOffset dy="5" result="o"/>
+            <feComponentTransfer in="o"><feFuncA type="linear" slope="0.28"/></feComponentTransfer>
+            <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="ombra" x="-30%" y="-30%" width="160%" height="180%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+            <feOffset dy="10" result="o"/>
+            <feComponentTransfer in="o"><feFuncA type="linear" slope="0.34"/></feComponentTransfer>
+            <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
 
-      <svg class="orecchie" viewBox="0 0 120 96" aria-hidden="true">
-        <g fill="var(--orecchio)" stroke="var(--filo)" stroke-width="1">
-          <path d="M38 94 C22 74 14 44 22 20 C26 8 38 4 45 14 C54 27 55 62 52 94 Z"/>
-          <path d="M82 94 C98 74 106 44 98 20 C94 8 82 4 75 14 C66 27 65 62 68 94 Z"/>
+        <!-- quadrante in filigrana -->
+        <g class="quadrante" transform="translate(220,140)">
+          <circle r="100" fill="none" stroke="currentColor" stroke-width="1"/>
+          <circle r="88" fill="none" stroke="currentColor" stroke-width="0.5"/>
+          <g class="numeri" text-anchor="middle">
+            <text x="0" y="-74">XII</text><text x="44" y="-61">I</text><text x="77" y="-30">II</text>
+            <text x="88" y="6">III</text><text x="77" y="42">IV</text><text x="44" y="73">V</text>
+            <text x="0" y="86">VI</text><text x="-44" y="73">VII</text><text x="-77" y="42">VIII</text>
+            <text x="-88" y="6">IX</text><text x="-77" y="-30">X</text><text x="-44" y="-61">XI</text>
+          </g>
         </g>
-        <g fill="var(--orecchio-int)">
-          <path d="M40 88 C29 70 25 45 30 27 C33 18 40 16 43 24 C48 36 47 62 45 88 Z"/>
-          <path d="M80 88 C91 70 95 45 90 27 C87 18 80 16 77 24 C72 36 73 62 75 88 Z"/>
+
+        <!-- orecchie, dietro al cartoncino -->
+        <g class="orecchie-scena" filter="url(#ombra-lieve)">
+          <g fill="#ffffff" stroke="rgba(23,17,17,.24)" stroke-width="1.2">
+            <path d="M198 172 C182 142 176 96 186 66 C191 51 205 49 211 63 C221 88 218 138 214 172 Z"/>
+            <path d="M252 172 C268 142 274 96 264 66 C259 51 245 49 239 63 C229 88 232 138 236 172 Z"/>
+          </g>
+          <g fill="#d2607f">
+            <path d="M201 166 C189 140 185 100 192 76 C196 65 205 64 208 74 C214 92 211 136 208 166 Z"/>
+            <path d="M249 166 C261 140 265 100 258 76 C254 65 245 64 242 74 C236 92 239 136 242 166 Z"/>
+          </g>
+        </g>
+
+        <!-- il cartoncino -->
+        <g class="carta" filter="url(#ombra)">
+          <rect x="44" y="150" width="352" height="200" fill="#fbf3ee"/>
+          <rect x="44" y="150" width="13" height="200" fill="#d81b72"/>
+          <rect x="383" y="150" width="13" height="200" fill="#d81b72"/>
+          <rect x="44.5" y="150.5" width="351" height="199" fill="none" stroke="rgba(23,17,17,.16)"/>
+
+          <!-- marchio -->
+          <text class="c-logo" x="220" y="184" text-anchor="middle">WO<tspan fill="#d81b72">•</tspan>MAN</text>
+          <text class="c-sub"  x="220" y="198" text-anchor="middle">Parfume Store</text>
+          <text class="c-anno" x="220" y="210" text-anchor="middle">SINCE 1989</text>
+          <g stroke="#a8842f" stroke-width="0.8">
+            <line x1="168" y1="220" x2="205" y2="220"/><line x1="235" y1="220" x2="272" y2="220"/>
+          </g>
+          <rect x="216" y="216" width="8" height="8" fill="#a8842f" transform="rotate(45 220 220)"/>
+
+          <!-- blocco di sinistra -->
+          <text class="c-tit" x="74" y="252">IL SIGILLO</text>
+          <text class="c-tit-i" x="74" y="274">Olfattivo</text>
+          <g stroke="#a8842f" stroke-width="0.8"><line x1="74" y1="284" x2="140" y2="284"/></g>
+          <g fill="rgba(23,17,17,.30)">
+            <rect x="74" y="296" width="118" height="3.4" rx="1.7"/>
+            <rect x="74" y="306" width="132" height="3.4" rx="1.7"/>
+            <rect x="74" y="316" width="96"  height="3.4" rx="1.7"/>
+          </g>
+
+          <!-- cornice con la fiala -->
+          <g>
+            <rect x="248" y="236" width="118" height="94" fill="none" stroke="#a8842f" stroke-width="1.6"/>
+            <rect x="253" y="241" width="108" height="84" fill="none" stroke="#a8842f" stroke-width="0.6"/>
+            <circle cx="248" cy="283" r="6" fill="#fbf3ee" stroke="rgba(23,17,17,.18)" stroke-width="0.8"/>
+            <circle cx="366" cy="283" r="6" fill="#fbf3ee" stroke="rgba(23,17,17,.18)" stroke-width="0.8"/>
+            <!-- fiala -->
+            <g class="fiala">
+              <rect x="299" y="253" width="17" height="8" rx="1.5" fill="url(#tappo)"/>
+              <path d="M300 261 h15 v46 a7.5 7.5 0 0 1 -15 0 Z" fill="url(#vetro)"/>
+              <path d="M301.5 285 h12 v22 a6 6 0 0 1 -12 0 Z" fill="url(#essenza)"/>
+              <rect x="303" y="264" width="2.4" height="40" rx="1.2" fill="rgba(255,255,255,.6)"/>
+            </g>
+            <text class="c-lotto" x="307" y="322" text-anchor="middle">LOTTO</text>
+          </g>
         </g>
       </svg>
 
