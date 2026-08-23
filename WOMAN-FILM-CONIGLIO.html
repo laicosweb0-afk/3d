@@ -1,0 +1,211 @@
+<title>Il film del coniglio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Lato:wght@300;400;700;900&display=swap">
+<style>
+:root{
+  --crema:#faf2ed; --pannello:#fffaf7; --crema-2:#f3e8e0; --pece:#1a1512;
+  --inchiostro:#171111; --inchiostro-2:#5b4f49; --inchiostro-3:#8b7d74;
+  --rosa:#d81b72; --oro:#a8842f; --verde:#00705e;
+  --filo:rgba(23,17,17,.16); --filo-2:rgba(23,17,17,.08);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --crema:#100c0c; --pannello:#1b1414; --crema-2:#241b1b; --pece:#080606;
+  --inchiostro:#f7ede6; --inchiostro-2:#c0b1a7; --inchiostro-3:#8f8178;
+  --rosa:#ff6fa8; --oro:#e0b45c; --verde:#4ec8ae;
+  --filo:rgba(247,237,230,.20); --filo-2:rgba(247,237,230,.10);
+}}
+:root[data-theme="dark"]{
+  --crema:#100c0c; --pannello:#1b1414; --crema-2:#241b1b; --pece:#080606;
+  --inchiostro:#f7ede6; --inchiostro-2:#c0b1a7; --inchiostro-3:#8f8178;
+  --rosa:#ff6fa8; --oro:#e0b45c; --verde:#4ec8ae;
+  --filo:rgba(247,237,230,.20); --filo-2:rgba(247,237,230,.10);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--crema);color:var(--inchiostro);
+  font-family:'Lato',-apple-system,Segoe UI,Arial,sans-serif;font-weight:300;font-size:16.5px;line-height:1.64;}
+.wrap{max-width:1000px;margin:0 auto;padding:44px 22px 80px;}
+.wrap > *{min-width:0;}
+.kicker{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--rosa);font-weight:700;}
+h1{font-family:'Playfair Display',Georgia,serif;font-weight:400;font-size:clamp(32px,5.8vw,50px);line-height:1.02;
+  letter-spacing:-.018em;margin:14px 0 12px;text-wrap:balance;}
+h1 em{font-style:italic;color:var(--rosa);}
+.stand{font-size:clamp(15px,2.1vw,18.5px);color:var(--inchiostro-2);max-width:62ch;margin:0;}
+.top{border-bottom:1px solid var(--filo);padding-bottom:26px;}
+h2{font-family:'Playfair Display',Georgia,serif;font-weight:400;font-size:clamp(24px,3.6vw,33px);
+  letter-spacing:-.014em;margin:0 0 8px;line-height:1.1;text-wrap:balance;}
+section{margin-top:58px;}
+.lab{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--rosa);font-weight:700;margin-bottom:10px;}
+p{margin:0 0 13px;max-width:70ch;color:var(--inchiostro-2);}
+p b{color:var(--inchiostro);font-weight:700;}
+.big{font-family:'Playfair Display',Georgia,serif;font-size:clamp(19px,2.8vw,24px);line-height:1.33;
+  color:var(--inchiostro);border-left:3px solid var(--rosa);padding:6px 0 6px 22px;margin:24px 0;max-width:52ch;}
+table{width:100%;border-collapse:collapse;margin:18px 0 6px;font-size:15.5px;display:block;overflow-x:auto;}
+th{text-align:left;font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--inchiostro-3);font-weight:700;
+  border-bottom:1px solid var(--filo);padding:0 16px 7px 0;vertical-align:bottom;white-space:nowrap;}
+td{padding:11px 16px 11px 0;border-bottom:1px solid var(--filo-2);vertical-align:top;color:var(--inchiostro-2);}
+td b{color:var(--inchiostro);font-weight:700;}
+td.k{color:var(--inchiostro);font-weight:700;}
+td.n{font-variant-numeric:tabular-nums;white-space:nowrap;}
+.si{color:var(--verde);font-weight:700;} .no{color:var(--rosa);font-weight:700;}
+.piano{border:1px solid var(--filo-2);border-left:3px solid var(--oro);background:var(--pannello);
+  padding:20px 22px;margin:16px 0;}
+.piano .et{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--oro);font-weight:700;}
+.piano h3{font-family:'Playfair Display',Georgia,serif;font-weight:400;font-size:23px;margin:7px 0 4px;}
+.piano .durata{font-size:13px;color:var(--inchiostro-3);margin-bottom:12px;}
+.piano p{font-size:15.5px;}
+.prompt{margin-top:14px;background:var(--pece);color:#e8ddd2;padding:15px 17px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:13px;line-height:1.62;white-space:pre-wrap;word-break:break-word;overflow-x:auto;border-radius:2px;}
+.prompt .et{font-family:'Lato',sans-serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:#a8998a;display:block;margin-bottom:8px;font-weight:700;}
+.nota{background:var(--crema-2);border:1px solid var(--filo-2);border-left:3px solid var(--c,var(--rosa));
+  padding:15px 19px;margin:22px 0;}
+.nota.oro{--c:var(--oro);} .nota.verde{--c:var(--verde);}
+.nota .t{font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--inchiostro-3);font-weight:700;margin-bottom:6px;}
+.nota p{margin-bottom:8px;font-size:15.5px;} .nota p:last-child{margin-bottom:0;}
+ul.ck{list-style:none;padding:0;margin:18px 0 6px;}
+ul.ck li{display:grid;grid-template-columns:15px 1fr;gap:14px;padding:11px 0;border-top:1px solid var(--filo-2);
+  font-size:15.5px;color:var(--inchiostro-2);}
+ul.ck li:last-child{border-bottom:1px solid var(--filo-2);}
+ul.ck .b{width:11px;height:11px;border:1.5px solid var(--rosa);margin-top:6px;}
+ul.ck b{color:var(--inchiostro);font-weight:700;}
+.foot{margin-top:60px;padding-top:16px;border-top:1px solid var(--filo);font-size:11px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--inchiostro-3);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="kicker">Woman Srl · il film del coniglio</div>
+    <h1>Quattro inquadrature, <em>nessuna parola</em></h1>
+    <p class="stand">Il film che racconta tutto il meccanismo senza dire niente: il coniglio mette
+    il cartoncino nella scatola, la scatola arriva, la scatola si apre. Con i prompt pronti, i prezzi
+    veri misurati oggi e la regola per tenere il personaggio sempre uguale.</p>
+  </div>
+
+  <section>
+    <div class="lab">Dove siamo</div>
+    <h2>La prova da sei crediti</h2>
+    <p>Il credito disponibile era <b>8,93</b>. Un pezzo vero non ci entrava, quindi ho fatto quello che
+    facciamo con tutto il resto: <b>ho comprato un'informazione al prezzo più basso possibile.</b>
+    Quattro secondi, 480p, muto, verticale — sei crediti, ne restano <b>2,93</b>.</p>
+    <p><b>Quella clip non è pubblicabile e non deve esserlo.</b> Serve a rispondere a tre domande:
+    il coniglio resta sé stesso? Il movimento è credibile o è plastica? La scena buia con l'oro funziona?
+    Se le risposte sono sì, sappiamo esattamente che cosa vale la pena comprare.</p>
+    <div class="nota">
+      <div class="t">Una cosa che non ho potuto fare</div>
+      <p>La rete di questo ambiente blocca il download dei file video, quindi <b>la clip non l'ho vista.</b>
+      Il giudizio su com'è venuta tocca a te — e le tre domande qui sopra sono le uniche che contano.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="lab">I prezzi</div>
+    <h2>Quanto costa davvero, misurato oggi</h2>
+    <p>Non sono stime: sono i costi che il servizio ha restituito per ogni configurazione, verticale 9:16.</p>
+    <table>
+      <thead><tr><th>Configurazione</th><th>Crediti</th><th>A cosa serve</th></tr></thead>
+      <tbody>
+        <tr><td class="k">4 s · 480p · muto · veloce</td><td class="n"><b>6</b></td><td>la prova. Solo per capire se l'idea sta in piedi</td></tr>
+        <tr><td class="k">4 s · 720p · muto · veloce</td><td class="n">14</td><td>una bozza guardabile, ancora non da pubblicare</td></tr>
+        <tr><td class="k">5 s · 720p · con audio</td><td class="n">32,5</td><td>il minimo per una storia su Instagram</td></tr>
+        <tr><td class="k">5 s · 1080p · muto · qualità</td><td class="n"><b>45</b></td><td><span class="si">la scelta giusta.</span> Vedi la nota qui sotto</td></tr>
+        <tr><td class="k">8 s · 1080p · con audio · qualità</td><td class="n">72</td><td>un pezzo unico lungo, con l'audio generato</td></tr>
+      </tbody>
+    </table>
+
+    <div class="nota verde">
+      <div class="t">Il consiglio che fa risparmiare di più</div>
+      <p><b>Generare muto e mettere la musica dopo, in montaggio.</b> L'audio generato costa parecchio
+      ed è quasi sempre la parte peggiore del risultato. Una traccia scelta a mano — un pianoforte, un
+      orologio che ticchetta, un fruscio — costa zero e vale il doppio.</p>
+      <p>Il film intero a <b>tre inquadrature da cinque secondi, 1080p, mute: 135 crediti.</b>
+      È il numero da tenere a mente.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="lab">Il film</div>
+    <h2>Quattro inquadrature, in ordine</h2>
+    <p>Sono scritte per essere generate <b>una per volta</b> e montate dopo. I prompt sono in inglese
+    perché i modelli rispondono molto meglio: si copiano e si incollano così come sono.</p>
+
+    <div class="piano">
+      <div class="et">Inquadratura 1 · l'attesa</div>
+      <h3>Il coniglio guarda l'ora</h3>
+      <div class="durata">5 secondi · verticale · il gancio, i primi tre secondi del reel</div>
+      <p>Buio. Una sola luce calda da sinistra. Il coniglio in gilet apre l'orologio, lo guarda,
+      lo chiude di scatto e alza gli occhi in camera. <b>Non sorride: è in ritardo.</b></p>
+      <div class="prompt"><span class="et">Prompt</span>Cinematic vertical shot, dark luxury perfumery at night. A white rabbit in a black velvet waistcoat with magenta piping opens a gold pocket watch, checks the time, snaps it shut and looks straight into the lens. Single warm key light from the left, deep black background, gold rim light on the fur, shallow depth of field, floating dust motes, slow subtle push in, 35mm anamorphic, elegant and restrained, no text, no captions.</div>
+    </div>
+
+    <div class="piano">
+      <div class="et">Inquadratura 2 · il gesto</div>
+      <h3>Il cartoncino nella scatola</h3>
+      <div class="durata">5 secondi · verticale · il cuore del film</div>
+      <p>Le zampe posano il cartoncino color crema, con la fiala agganciata, dentro una scatola da
+      spedizione aperta. <b>Poi la chiude.</b> È tutto il meccanismo, in un gesto.</p>
+      <div class="prompt"><span class="et">Prompt</span>Cinematic vertical close-up, dark moody set. The white rabbit's paws place a cream-coloured card with a small glass vial of amber perfume into an open cardboard shipping box, then fold the flaps closed. Warm key light from the left, deep shadows, shallow depth of field, gold glint on the vial, slow camera move, 35mm anamorphic, tactile and premium, no text, no captions.</div>
+    </div>
+
+    <div class="piano">
+      <div class="et">Inquadratura 3 · la fuga</div>
+      <h3>E scappa via</h3>
+      <div class="durata">4 secondi · verticale · il momento che si ricorda</div>
+      <p>Il coniglio si volta e sparisce fuori campo in una sfocatura. Resta la scatola chiusa,
+      ferma, e la polvere che si muove nella luce. <b>Lo stesso gesto della pagina web:</b> lo vedi
+      andare via, non arrivare.</p>
+      <div class="prompt"><span class="et">Prompt</span>Cinematic vertical shot, dark room. The white rabbit in the black waistcoat turns and bolts out of frame to the right in a motion blur, leaving a closed cardboard box alone on a dark marble surface under a single warm light. The camera holds still. Dust motes drift through the light beam, deep black background, shallow depth of field, 35mm anamorphic, quiet and elegant, no text, no captions.</div>
+    </div>
+
+    <div class="piano">
+      <div class="et">Inquadratura 4 · l'arrivo</div>
+      <h3>Le mani che aprono</h3>
+      <div class="durata">5 secondi · verticale · la chiusura, e il ponte col reale</div>
+      <p>Mani di donna aprono la stessa scatola, alla luce di una finestra. Sopra a tutto,
+      il cartoncino con la fiala. <b>Qui il film smette di essere una favola e diventa il vostro pacco.</b></p>
+      <div class="prompt"><span class="et">Prompt</span>Cinematic vertical shot, soft natural window light in a warm home interior. A woman's hands open a cardboard shipping box and lift out a cream-coloured card with a small glass vial of amber perfume attached. Realistic skin and fabric, shallow depth of field, warm daylight, calm and premium, slow gentle camera move, 35mm look, no text, no captions.</div>
+    </div>
+
+    <div class="nota oro">
+      <div class="t">Se il budget basta per una sola</div>
+      <p>Fate <b>la numero 2</b>, il cartoncino nella scatola. È l'unica che racconta il meccanismo,
+      funziona anche da sola in un post, e non ha bisogno delle altre per stare in piedi.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="lab">Il personaggio</div>
+    <h2>Come tenerlo sempre uguale</h2>
+    <p>Il rischio numero uno di questa strada è che il coniglio cambi faccia a ogni clip. Si evita così:</p>
+    <ul class="ck">
+      <li><span class="b"></span><span><b>Sempre la stessa immagine di riferimento.</b> Quella su fondo verde è già caricata sul servizio: va passata come riferimento a ogni generazione, senza eccezioni.</span></li>
+      <li><span class="b"></span><span><b>Sempre le stesse cinque parole nel prompt:</b> <i>white rabbit, black velvet waistcoat, magenta piping, gold pocket watch</i>. Non vanno mai riscritte diversamente, nemmeno per fare prima.</span></li>
+      <li><span class="b"></span><span><b>Mai due personaggi in campo.</b> Nell'ultima inquadratura ci sono le mani, non il coniglio: se ci fossero tutti e due, il modello ne sbaglierebbe uno.</span></li>
+      <li><span class="b"></span><span><b>Sempre la stessa luce:</b> una sorgente calda da sinistra, fondo nero. È la firma visiva, e per giunta è quella che nasconde meglio i difetti del generato.</span></li>
+      <li><span class="b"></span><span><b>Mai far parlare il coniglio.</b> Le bocche animate sono il punto dove tutto crolla, e il muto è anche più elegante.</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="lab">L'uso</div>
+    <h2>Dove va — e dove non va</h2>
+    <table>
+      <thead><tr><th>Dove</th><th></th><th>Perché</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Instagram e TikTok</td><td><span class="si">sì</span></td><td>è il posto giusto. È anche l'unica cosa che può accendere un profilo fermo da cinquanta follower, e vale la pena provarla in organico prima di pagare</td></tr>
+        <tr><td class="k">Nella mail di conferma</td><td><span class="si">sì</span></td><td>come immagine animata breve, non come video da avviare. Fa aprire la seconda mail</td></tr>
+        <tr><td class="k">Per spiegare il progetto a Mondo</td><td><span class="si">sì</span></td><td>quindici secondi spiegano il meccanismo meglio di tre riunioni</td></tr>
+        <tr><td class="k">Nella hero della pagina regalo</td><td><span class="no">no</span></td><td>un video sopra il pulsante ruba l'azione e pesa sul telefono. La hero resta com'è: il coniglio disegnato che attraversa una volta</td></tr>
+        <tr><td class="k">Come copertina del sito</td><td><span class="no">no</span></td><td>stesso motivo di sempre: la vetrina del negozio resta la vetrina del negozio</td></tr>
+      </tbody>
+    </table>
+
+    <div class="big">Il film non serve a far comprare. Serve a far <em>ricordare</em> — e a dare al
+    cartoncino nella scatola un significato che, da solo, non avrebbe.</div>
+  </section>
+
+  <div class="foot">
+    <span>Woman Srl · Via San Martino 1, Sant'Agata sul Santerno (RA)</span>
+    <span>Generare muto · la musica si mette dopo</span>
+  </div>
+</div>
