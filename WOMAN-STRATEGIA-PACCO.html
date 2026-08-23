@@ -1,0 +1,387 @@
+<title>Dal pacco allo scontrino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Hanken+Grotesk:wght@300;400;500;600&display=swap">
+<style>
+:root{
+  --paper:#faf7f2; --panel:#fffdfa; --wash:#f3ece3;
+  --ink:#1c1815; --ink-2:#57504a; --ink-3:#857c72;
+  --rule:rgba(28,24,21,.20); --hair:rgba(28,24,21,.10);
+  --granata:#b4184f; --ottone:#8a5e06; --verde:#00705e;
+  --chip:#f6dfe6;
+  --shadow:0 1px 2px rgba(28,24,21,.05), 0 14px 40px rgba(28,24,21,.09);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#14110e; --panel:#1d1915; --wash:#241d17;
+  --ink:#f3ece2; --ink-2:#b8aea2; --ink-3:#8d8478;
+  --rule:rgba(243,236,226,.22); --hair:rgba(243,236,226,.11);
+  --granata:#f4799f; --ottone:#e6ac45; --verde:#4ec8ae;
+  --chip:#3a2029;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 44px rgba(0,0,0,.5);
+}}
+:root[data-theme="dark"]{
+  --paper:#14110e; --panel:#1d1915; --wash:#241d17;
+  --ink:#f3ece2; --ink-2:#b8aea2; --ink-3:#8d8478;
+  --rule:rgba(243,236,226,.22); --hair:rgba(243,236,226,.11);
+  --granata:#f4799f; --ottone:#e6ac45; --verde:#4ec8ae;
+  --chip:#3a2029;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 44px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:'Hanken Grotesk',-apple-system,Segoe UI,Arial,sans-serif;font-weight:300;font-size:16.5px;line-height:1.63;}
+.wrap{max-width:1040px;margin:0 auto;padding:44px 22px 80px;}
+.wrap > *{min-width:0;}
+.kicker{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--granata);font-weight:500;}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:clamp(31px,5.6vw,48px);line-height:1.02;
+  letter-spacing:-.02em;margin:12px 0 12px;text-wrap:balance;}
+h1 em{font-style:italic;color:var(--granata);}
+.stand{font-size:clamp(15px,2.1vw,18.5px);color:var(--ink-2);max-width:64ch;margin:0;}
+.top{border-bottom:1px solid var(--rule);padding-bottom:26px;}
+h2{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:clamp(24px,3.6vw,32px);
+  letter-spacing:-.016em;margin:0 0 8px;line-height:1.1;text-wrap:balance;}
+h3{font-size:17px;font-weight:600;margin:26px 0 6px;}
+section{margin-top:58px;}
+.lab{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--granata);font-weight:500;margin-bottom:10px;}
+p{margin:0 0 13px;max-width:70ch;color:var(--ink-2);}
+p b{color:var(--ink);font-weight:500;}
+.big{font-family:'Fraunces',Georgia,serif;font-size:clamp(19px,2.7vw,23px);line-height:1.34;color:var(--ink);
+  border-left:3px solid var(--granata);padding:4px 0 4px 20px;margin:22px 0;max-width:54ch;}
+
+table{width:100%;border-collapse:collapse;margin:18px 0 6px;font-size:15.5px;display:block;overflow-x:auto;}
+th{text-align:left;font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3);font-weight:500;
+  border-bottom:1px solid var(--rule);padding:0 16px 7px 0;vertical-align:bottom;white-space:nowrap;}
+td{padding:12px 16px 12px 0;border-bottom:1px solid var(--hair);vertical-align:top;color:var(--ink-2);}
+td b{color:var(--ink);font-weight:500;}
+td.k{color:var(--ink);font-weight:500;}
+.si{color:var(--verde);font-weight:500;} .no{color:var(--granata);font-weight:500;} .fo{color:var(--ottone);font-weight:500;}
+
+.passi{counter-reset:p;margin:22px 0 6px;}
+.passo{display:grid;grid-template-columns:30px 1fr;gap:18px;padding:15px 0;border-top:1px solid var(--hair);}
+.passo:last-child{border-bottom:1px solid var(--hair);}
+.passo .n{font-family:'Fraunces',Georgia,serif;font-size:19px;color:var(--granata);line-height:1.25;}
+.passo b{display:block;font-size:17px;color:var(--ink);font-weight:500;margin-bottom:2px;}
+.passo span{font-size:15.5px;color:var(--ink-2);}
+.passo .mis{display:inline-block;margin-top:6px;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);border-top:1px solid var(--hair);padding-top:6px;}
+
+.nota{background:var(--wash);border:1px solid var(--hair);border-left:3px solid var(--c,var(--granata));
+  padding:15px 19px;margin:20px 0;}
+.nota.oro{--c:var(--ottone);} .nota.verde{--c:var(--verde);}
+.nota .t{font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--ink-3);font-weight:500;margin-bottom:6px;}
+.nota p{margin-bottom:8px;font-size:15.5px;} .nota p:last-child{margin-bottom:0;}
+
+.leve{display:grid;gap:0;margin:20px 0 6px;}
+.leva{border-top:1px solid var(--hair);padding:17px 0;}
+.leva:last-child{border-bottom:1px solid var(--hair);}
+.leva .h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:5px;}
+.leva .h .i{font-family:'Fraunces',Georgia,serif;font-size:15px;color:var(--ottone);}
+.leva .h b{font-size:17.5px;font-weight:500;}
+.leva p{margin:0;font-size:15.5px;}
+
+.mail{display:grid;grid-template-columns:88px 1fr;gap:18px;padding:15px 0;border-top:1px solid var(--hair);}
+.mail:last-child{border-bottom:1px solid var(--hair);}
+.mail .q{font-family:'Fraunces',Georgia,serif;font-size:15.5px;color:var(--granata);}
+.mail b{display:block;color:var(--ink);font-weight:500;font-size:16.5px;margin-bottom:2px;}
+.mail span{font-size:15px;color:var(--ink-2);}
+
+ul.ck{list-style:none;padding:0;margin:18px 0 6px;}
+ul.ck li{display:grid;grid-template-columns:15px 1fr;gap:14px;padding:12px 0;border-top:1px solid var(--hair);
+  font-size:15.5px;color:var(--ink-2);}
+ul.ck li:last-child{border-bottom:1px solid var(--hair);}
+ul.ck .b{width:11px;height:11px;border:1.5px solid var(--granata);margin-top:6px;}
+ul.ck b{color:var(--ink);font-weight:500;}
+
+.fonti{margin-top:20px;font-size:14px;color:var(--ink-3);}
+.fonti a{color:var(--ink-2);}
+.foot{margin-top:60px;padding-top:16px;border-top:1px solid var(--rule);font-size:11px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-3);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="kicker">Woman Srl · strategia della finestra «pacco»</div>
+    <h1>Dal pacco <em>allo scontrino</em></h1>
+    <p class="stand">Che cosa succede fra il momento in cui apre la scatola e il momento in cui compra
+    di nuovo — e quali leve, una per una, spostano quel percorso. Con quello che dice la ricerca,
+    e quanto ci si può fidare.</p>
+  </div>
+
+  <section>
+    <div class="lab">Il percorso</div>
+    <h2>Sei passaggi, sei numeri</h2>
+    <p>Non è un imbuto nuovo: è il nostro, con il pacco al posto della convenzione. Ogni passaggio
+    ha una leva che lo governa e un numero che lo misura.</p>
+
+    <div class="passi">
+      <div class="passo"><div class="n">1</div><div><b>Apre la scatola e vede il cartoncino</b>
+        <span>La fiala è attaccata al cartoncino: si deve prendere in mano. Il cartoncino deve stare
+        sopra al prodotto, non sotto.</span>
+        <span class="mis">Leva: la posizione nella scatola · Numero: nessuno, è un presupposto</span></div></div>
+      <div class="passo"><div class="n">2</div><div><b>Gira il cartoncino</b>
+        <span>Oggi non succede: la faccia con la fiala non dice da nessuna parte che dietro c'è altro.
+        Una riga risolve.</span>
+        <span class="mis">Leva: la riga «gira» sul fronte · Numero: indiretto, si vede nelle scansioni</span></div></div>
+      <div class="passo"><div class="n">3</div><div><b>Inquadra il QR</b>
+        <span>Servono tre righe sotto il codice: cosa fare, l'indirizzo scritto, la data di scadenza.</span>
+        <span class="mis">Leva: la promessa concreta · <b>Numero: le visite alla pagina /regalo</b></span></div></div>
+      <div class="passo"><div class="n">4</div><div><b>Sceglie le tre famiglie</b>
+        <span>Il micro-impegno: sceglie prima che le si chieda qualcosa. Chi ha scelto completa molto
+        più spesso di chi trova il modulo appena arriva.</span>
+        <span class="mis">Leva: la scelta prima della richiesta · <b>Numero: quanti toccano almeno una famiglia</b></span></div></div>
+      <div class="passo"><div class="n">5</div><div><b>Lascia la mail</b>
+        <span>Un campo solo, due consensi separati, e il valore già mostrato sopra.</span>
+        <span class="mis">Leva: il credito visibile prima del modulo · <b>Numero: i moduli completati</b></span></div></div>
+      <div class="passo"><div class="n">6</div><div><b>Torna a comprare sul sito</b>
+        <span>Le fiale arrivano <em>con il prossimo ordine</em>. Il regalo è già suo, ma il ritiro
+        richiede un gesto che non ha ancora fatto.</span>
+        <span class="mis">Leva: il credito e il ciclo aperto · <b>Numero: gli ordini con Sigillo attivo</b></span></div></div>
+    </div>
+
+    <div class="nota">
+      <div class="t">Il passaggio che oggi vale zero</div>
+      <p>Il numero 3 non è mai stato misurato, perché il QR punta alla home. <b>Non è che il dato sia
+      difficile da estrarre: il dato non esiste.</b> Tutto il resto di questo documento presuppone che
+      quella pagina esista.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="lab">La ricerca</div>
+    <h2>Che cosa ho trovato — e quanto ci si può fidare</h2>
+    <p>Ho cercato benchmark, casi e meccaniche. La distinzione che conta non è fra numeri belli
+    e numeri brutti: è fra <b>numeri pubblicati da chi vende lo strumento misurato</b> e
+    <b>meccaniche che marchi seri usano davvero</b>. Le seconde valgono molto di più.</p>
+
+    <table>
+      <thead><tr><th>Quello che si trova</th><th>Da dove viene</th><th>Quanto vale</th></tr></thead>
+      <tbody>
+        <tr><td class="k">«Tasso medio di scansione dei QR intorno al 14%»</td>
+          <td>blog di generatori di QR code</td>
+          <td><span class="no">Poco.</span> Lo pubblica chi vende il generatore. Media su settori lontanissimi dal nostro. <b>Non va promesso a nessuno.</b></td></tr>
+        <tr><td class="k">«Dopo la scansione converte fra il 5% e il 40%»</td>
+          <td>stessi blog</td>
+          <td><span class="no">Poco.</span> Una forbice da 5 a 40 non è una previsione, è un modo di non dire niente.</td></tr>
+        <tr><td class="k">«I quiz alzano lo scontrino del 20% nel beauty»</td>
+          <td>fornitori di quiz per e-commerce</td>
+          <td><span class="fo">Metà.</span> Ma con un dettaglio che gioca <b>contro</b> di noi, e va detto: gli stessi dati indicano l'effetto <b>più piatto proprio nel profumo</b> che nella cosmetica.</td></tr>
+        <tr><td class="k">«Meglio mostrare il risultato e <em>poi</em> chiedere la mail»</td>
+          <td>stessi fornitori, ma è una regola di struttura</td>
+          <td><span class="si">Molto.</span> Non è una percentuale da credere: è una sequenza da copiare, e costa zero provarla.</td></tr>
+        <tr><td class="k">Il modello del <b>credito</b> sui campioni</td>
+          <td>marchi veri: Henry Rose, Noteworthy, Kilian</td>
+          <td><span class="si">Moltissimo.</span> Non è uno studio: è quello che fanno. Vedi sotto.</td></tr>
+        <tr><td class="k">La struttura della pagina del grazie</td>
+          <td>letteratura di ottimizzazione, convergente</td>
+          <td><span class="si">Alta.</span> Conferma, chiarisci, continua — con <b>una</b> sola azione.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="nota oro">
+      <div class="t">La regola che teniamo da tutto il progetto</div>
+      <p>Non promettiamo una percentuale: <b>promettiamo una misura.</b> Le cifre qui sopra servono a
+      scegliere una direzione, non a fare una previsione. Il numero vero lo danno i primi 500 cartoncini.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="lab">La leva più forte</div>
+    <h2>Il credito, non lo sconto</h2>
+    <p>È la cosa più utile che ho trovato, ed è già in uso da marchi seri di profumeria.
+    Il meccanismo è sempre lo stesso: <b>il set di campioni non è una spesa, è un anticipo.</b>
+    Quando poi compri il formato intero, il prezzo dei campioni te lo scalano.</p>
+
+    <table>
+      <thead><tr><th>Marchio</th><th>Come lo fa</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Henry Rose</td><td>set da cinque campioni; chi compra riceve <b>20 $ di credito</b> sul primo acquisto da 120 $</td></tr>
+        <tr><td class="k">Noteworthy</td><td>quattro campioni a scelta per 25 $; <b>i 25 $ diventano credito</b> su qualunque formato intero</td></tr>
+        <tr><td class="k">Kilian</td><td>discovery set a 30 $, <b>riscattabili sul prossimo flacone</b> usando la stessa mail</td></tr>
+      </tbody>
+    </table>
+
+    <p>La ragione per cui funziona è psicologica, e la dice bene chi la usa: <b>fa sembrare i campioni
+    gratis a posteriori</b> — non stai pagando delle provette, stai versando una caparra su una decisione
+    che non hai ancora preso.</p>
+
+    <div class="big">Per Woman è ancora più forte, perché le fiale sono <em>già</em> gratis:
+    il credito non riduce il prezzo di niente. Diventa denaro che la persona ha già in mano
+    e che può solo perdere.</div>
+
+    <p>Ed è la differenza fra due frasi che sembrano uguali:</p>
+    <table>
+      <thead><tr><th></th><th>Come viene letta</th></tr></thead>
+      <tbody>
+        <tr><td class="k">«Hai il 15% di sconto»</td><td>Un favore che ricevo. <b>Svaluta il prodotto</b>, e mi ricorda che il prezzo pieno era gonfiato.</td></tr>
+        <tr><td class="k">«Hai 15 € già tuoi»</td><td>Una cosa mia che rischio di perdere. <span class="si">Non svaluta niente</span>, e la scadenza diventa una perdita, non una pressione.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="lab">La pagina</div>
+    <h2>Prima il risultato, poi la richiesta</h2>
+    <p>La modifica che ho fatto alla pagina viene da qui. La sequenza vecchia era: scegli → dammi la mail.
+    La nuova è: <b>scegli → ecco chi sei → ecco quanto vale → dove te lo mando?</b></p>
+
+    <div class="leve">
+      <div class="leva"><div class="h"><span class="i">01</span><b>Il profilo olfattivo</b></div>
+        <p>Appena scelte le tre famiglie compare una scheda: «Ti stanno bene le cose luminose, vive e morbide»,
+        con le tre etichette. <b>È un risultato, non un ringraziamento</b> — e arriva prima che le si chieda qualcosa.</p></div>
+      <div class="leva"><div class="h"><span class="i">02</span><b>Il credito, sopra al modulo</b></div>
+        <p>Il valore delle fiale si vede <b>prima</b> del campo mail, non dopo il pulsante. La richiesta
+        arriva quando il piatto della bilancia è già pieno.</p></div>
+      <div class="leva"><div class="h"><span class="i">03</span><b>Un campo solo</b></div>
+        <p>Solo la mail. Niente nome, niente cognome, niente telefono. Il nome ce l'avete già
+        dall'ordine Amazon: chiederlo di nuovo è attrito gratuito.</p></div>
+      <div class="leva"><div class="h"><span class="i">04</span><b>Un passo, non otto</b></div>
+        <p>La ricerca sui quiz consiglia cinque-otto domande — <b>e noi ne facciamo una.</b> Perché quel
+        consiglio vale per l'estraneo che arriva da un annuncio: qui la persona ha già comprato,
+        ha il pacco aperto sul tavolo, ed è in piedi. Ogni domanda in più qui è una perdita secca.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="lab">La domanda vera</div>
+    <h2>Come entra nel negozio senza accorgersene</h2>
+    <p>Questo è il punto che chiedevi, ed è quello dove si vince o si perde tutto. Quattro leve,
+    in ordine di forza.</p>
+
+    <div class="leve">
+      <div class="leva"><div class="h"><span class="i">01</span><b>Non la home. La sua selezione.</b></div>
+        <p>Il pulsante della pagina del grazie <b>non deve portare alla home</b>: deve portare ai profumi
+        delle tre famiglie che ha appena scelto. Anche solo una pagina di categoria filtrata va bene.
+        Entra in un negozio che sembra già ordinato per lei — <b>e questo è tutto il «senza accorgersene»:
+        non le hai venduto niente, le hai solo mostrato meno cose.</b></p></div>
+      <div class="leva"><div class="h"><span class="i">02</span><b>Il ciclo resta aperto</b></div>
+        <p>Le fiale arrivano <em>col prossimo ordine</em>. È scritto dalla prima riga, in chiaro:
+        il regalo è già suo, ma per ritirarlo serve un gesto che non ha ancora fatto. <b>Non è un trucco,
+        è la meccanica</b> — e funziona solo se è dichiarata, mai se è nascosta.</p></div>
+      <div class="leva"><div class="h"><span class="i">03</span><b>Il credito ha una data</b></div>
+        <p>Sessanta giorni. Non «affrettati»: una data. La scadenza trasforma un vantaggio astratto
+        in una cosa che si può perdere, ed è l'unica leva di urgenza onesta che esiste.</p></div>
+      <div class="leva"><div class="h"><span class="i">04</span><b>Il seguito arriva per mail, non sulla pagina</b></div>
+        <p>Sulla pagina del grazie una sola azione. Tutto il resto — il racconto, il promemoria,
+        la seconda occasione — sta nelle mail dei giorni dopo. <b>Affollare il grazie è il modo più
+        veloce per non farle fare niente.</b></p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="lab">Il seguito</div>
+    <h2>Quattro mail, quattro mestieri</h2>
+    <p>Una sola mail di conferma spreca l'unica cosa che avete guadagnato: il permesso di scrivere.
+    Quattro bastano, e ognuna fa una cosa sola.</p>
+
+    <div class="mail"><div class="q">Subito</div><div><b>La conferma</b>
+      <span>Le tre famiglie scelte, il credito con la sua data, e <b>un solo link</b>: la sua selezione.
+      Deve arrivare entro pochi minuti, o la persona pensa che non abbia funzionato.</span></div></div>
+    <div class="mail"><div class="q">48 ore</div><div><b>Il racconto</b>
+      <span>Una delle tre famiglie, raccontata bene: cosa ci sta dentro, a chi sta bene, come si porta.
+      <b>Nessuna vendita.</b> Serve a farsi leggere la terza.</span></div></div>
+    <div class="mail"><div class="q">7 giorni</div><div><b>Il promemoria del credito</b>
+      <span>Con la data. Breve. È la mail che porta gli ordini.</span></div></div>
+    <div class="mail"><div class="q">Dopo l'ordine</div><div><b>«Com'è andata con le tre?»</b>
+      <span>Chiude il cerchio: chiede l'impressione, ricorda il credito sul flacone intero,
+      e — solo qui, solo a chi si è trovato bene — chiede la recensione.</span></div></div>
+
+    <div class="nota verde">
+      <div class="t">Perché la seconda mail non vende</div>
+      <p>Una lista che riceve solo offerte smette di aprire in poche settimane. La mail che racconta
+      è quella che tiene viva la terza — <b>e la terza è quella che incassa.</b></p>
+    </div>
+  </section>
+
+  <section>
+    <div class="lab">Il confine</div>
+    <h2>Quello che non facciamo, e perché conviene</h2>
+    <p>«Senza accorgersene» vuol dire togliere attrito, non nascondere le cose. La differenza non è
+    solo etica: <b>sono clienti Amazon, e le recensioni le scrivono loro.</b> In un negozio locale con
+    4,7 di media, un trucco che funziona una volta costa più di quanto rende.</p>
+
+    <table>
+      <thead><tr><th>Mai</th><th>Perché</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Timer finti che si azzerano</td><td>Chi se ne accorge non torna, e lo scrive. Se la scadenza è vera, è più forte comunque.</td></tr>
+        <tr><td class="k">«Ne restano solo 3»</td><td>Solo se è vero e verificabile. Altrimenti è la cosa che fa perdere la fiducia più in fretta di tutte.</td></tr>
+        <tr><td class="k">Consensi già spuntati</td><td>Non è consenso valido, e si vede. La spunta facoltativa deve partire vuota.</td></tr>
+        <tr><td class="k">Popup di uscita aggressivi</td><td>Sulla pagina del regalo c'è già un'offerta: una seconda finestra la annulla e basta.</td></tr>
+        <tr><td class="k">Mescolare col coupon di benvenuto</td><td>Due offerte diverse nello stesso momento fanno scegliere <b>zero</b>. Su <code>/regalo</code> il popup va spento.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="lab">La prova</div>
+    <h2>500 cartoncini, due versioni, tre settimane</h2>
+    <p>Tutto quello che c'è scritto sopra è una direzione, non una certezza. Il modo di trasformarla
+    in un numero costa uguale a stamparne 500 uguali.</p>
+
+    <table>
+      <thead><tr><th></th><th>Versione A</th><th>Versione B</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Quante</td><td>250</td><td>250</td></tr>
+        <tr><td class="k">La promessa sul fronte</td><td><b>«Le prossime tre le scegli tu»</b></td><td>Il testo di oggi, «Sblocca il tuo Regalo»</td></tr>
+        <tr><td class="k">L'indirizzo</td><td><code>/regalo</code></td><td><code>/scopri</code></td></tr>
+        <tr><td class="k">Che cosa decide</td><td colspan="2">Quale delle due porta più persone sulla pagina, e quale porta più moduli completati. I 4.500 si stampano di quella.</td></tr>
+      </tbody>
+    </table>
+
+    <p>I quattro numeri da leggere dopo tre settimane, in quest'ordine — <b>ognuno toglie un sospetto
+    a quello prima</b>:</p>
+    <table>
+      <thead><tr><th>Numero</th><th>Se è basso, il problema è</th></tr></thead>
+      <tbody>
+        <tr><td class="k">1 · Visite alla pagina</td><td>il cartoncino: posizione nella scatola, la riga «gira», il QR</td></tr>
+        <tr><td class="k">2 · Chi tocca almeno una famiglia</td><td>quello che c'è scritto in alto: la promessa non regge i primi tre secondi</td></tr>
+        <tr><td class="k">3 · Moduli completati</td><td>il modulo o il valore offerto — non la pagina</td></tr>
+        <tr><td class="k">4 · Ordini con Sigillo</td><td>il credito, la scadenza, o la selezione dove atterrano</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="lab">Adesso</div>
+    <h2>Le cinque decisioni che servono da Woman</h2>
+    <p>Sulla pagina sono segnate in rosa: sono i punti che aspettano un numero vostro.</p>
+    <ul class="ck">
+      <li><span class="b"></span><span><b>Quanto valgono le tre fiale</b> — la cifra del credito. Deve essere vera: è il prezzo che avrebbero in negozio.</span></li>
+      <li><span class="b"></span><span><b>Entro quando si attiva</b> — la data sul cartoncino, che resta fissa perché è stampata.</span></li>
+      <li><span class="b"></span><span><b>Quanti giorni dura il credito</b> dalla consegna. Sessanta è una proposta.</span></li>
+      <li><span class="b"></span><span><b>Il tetto delle attivazioni</b> — «le prime 500» o nessun tetto. Va deciso prima, e scritto sulla pagina.</span></li>
+      <li><span class="b"></span><span><b>Chi costruisce la selezione</b> per famiglia sul sito. Bastano otto pagine di categoria, una per famiglia.</span></li>
+    </ul>
+
+    <div class="nota">
+      <div class="t">E prima di tutto il resto</div>
+      <p>La domanda scritta ad <b>Amazon Seller Support</b> sul cartoncino, con il testo allegato,
+      e la risposta salvata. Cinquemila pezzi stampati è il momento sbagliato per scoprirlo.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="lab">Fonti</div>
+    <h2>Da dove viene quello che c'è scritto</h2>
+    <p class="fonti">
+      Modello del credito sui campioni — <a href="https://www.glossy.co/beauty/dtc-brands-are-using-sampling-to-unlock-online-fragrance-sales/">Glossy</a>,
+      <a href="https://www.packamor.com/blogs/knowledge-hub/perfume-discovery-set-guide">Packamor</a>,
+      <a href="https://www.noteworthyscents.com/collections/build-your-own-discovery-kit">Noteworthy</a>,
+      <a href="https://www.bykilian.com/discovery-set">Kilian</a>.<br>
+      Struttura della pagina del grazie — <a href="https://unbounce.com/conversion-rate-optimization/thank-you-pages/">Unbounce</a>,
+      <a href="https://thegood.com/insights/thank-you-page/">The Good</a>,
+      <a href="https://www.drip.com/blog/thank-you-page">Drip</a>.<br>
+      Sequenza dei quiz e cattura del contatto — <a href="https://revenuehunt.com/state-of-product-recommendation-quizzes/">RevenueHunt</a>,
+      <a href="https://www.digioh.com/blog/ecommerce-quiz-examples">Digioh</a>.<br>
+      Benchmark QR — <a href="https://bitly.com/blog/qr-code-statistics/">Bitly</a>,
+      <a href="https://www.uniqode.com/blog/qr-code-marketing-tips/qr-code-campaigns-high-conversion">Uniqode</a>
+      <em>(pubblicati da chi vende generatori di QR: usati solo come direzione)</em>.<br>
+      Flussi di posta — <a href="https://www.bloomreach.com/en/blog/email-flows-for-ecommerce">Bloomreach</a>,
+      <a href="https://www.chasedimond.com/ecommerce-email-flows">Chase Dimond</a>.
+    </p>
+  </section>
+
+  <div class="foot">
+    <span>Woman Srl · Via San Martino 1, Sant'Agata sul Santerno (RA)</span>
+    <span>Non promettiamo una percentuale: promettiamo una misura</span>
+  </div>
+</div>

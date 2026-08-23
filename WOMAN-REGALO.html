@@ -86,6 +86,22 @@ h2{font-family:'Playfair Display',Georgia,serif;font-weight:400;font-size:25px;l
 .fam small{display:block;font-size:12px;color:var(--inchiostro-3);font-weight:300;margin-top:1px;}
 .fam .testo{min-width:0;}
 
+
+/* profilo — il risultato mostrato prima della richiesta */
+.profilo{margin-top:22px;border:1px solid var(--oro-filo);background:var(--pannello);padding:18px 18px 16px;}
+.profilo[hidden]{display:none;}
+.profilo .et{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--oro);font-weight:700;}
+.profilo .frase{font-family:'Playfair Display',Georgia,serif;font-size:20px;line-height:1.3;margin:8px 0 12px;}
+.profilo .tre{display:flex;flex-wrap:wrap;gap:7px;}
+.profilo .tag{font-size:13px;border:1px solid var(--rosa-filo);background:var(--rosa-tenue);
+  color:var(--inchiostro);padding:5px 11px;border-radius:99px;}
+.credito[hidden]{display:none;}
+.credito{margin-top:12px;border:1px solid var(--oro-filo);background:var(--crema-2);padding:14px 16px;}
+.credito .cifra{font-family:'Playfair Display',Georgia,serif;font-size:26px;color:var(--oro);line-height:1;}
+.credito p{margin:7px 0 0;font-size:14px;color:var(--inchiostro-2);}
+.credito b{color:var(--inchiostro);font-weight:700;}
+.slot{background:var(--rosa-tenue);border-bottom:1.5px solid var(--rosa);padding:0 4px;white-space:nowrap;}
+
 /* modulo */
 .modulo{margin-top:24px;border-top:1px solid var(--filo-2);padding-top:22px;}
 .modulo[hidden]{display:none;}
@@ -188,8 +204,22 @@ input[type=email]:focus-visible{outline:3px solid var(--oro);outline-offset:2px;
 
     <div class="famiglie" id="famiglie" role="group" aria-label="Famiglie olfattive, scegline tre"></div>
 
+
+    <div class="profilo" id="profilo" hidden>
+      <div class="et">Il tuo profilo olfattivo</div>
+      <div class="frase" id="frase-profilo"></div>
+      <div class="tre" id="tag-profilo"></div>
+    </div>
+
+    <div class="credito" id="credito" hidden>
+        <div class="cifra"><span class="slot">15&nbsp;€</span></div>
+        <p>È quanto valgono le tre fiale. <b>Se entro sessanta giorni prendi uno dei tre in formato
+        intero, te li scaliamo dal flacone.</b> Non è uno sconto: è un anticipo che hai già in mano.</p>
+      </div>
+
     <form class="modulo" id="modulo" hidden novalidate>
-      <label class="campo" for="mail">La mail dove mandiamo la conferma</label>
+      <p class="aiuto" style="margin-bottom:14px">Dove te lo mandiamo?</p>
+      <label class="campo" for="mail">La tua mail</label>
       <input type="email" id="mail" name="mail" autocomplete="email" inputmode="email"
              placeholder="nome@esempio.it" required>
 
@@ -205,10 +235,10 @@ input[type=email]:focus-visible{outline:3px solid var(--oro);outline-offset:2px;
       </div>
 
       <button class="invia" type="submit" id="invia">Attiva il mio Sigillo</button>
-      <p class="sotto-tasto">Nessun costo, nessun acquisto obbligatorio.</p>
+      <p class="sotto-tasto">Nessun costo. Le fiale arrivano con il prossimo ordine.</p>
       <p class="errore" id="errore" hidden></p>
 
-      <div class="scadenza">Attivabile <b>entro il 31 dicembre</b>. Dopo, le fiale tornano nel cilindro.</div>
+      <div class="scadenza">Attivabile <b>entro il <span class="slot">31 dicembre</span></b>. Dopo, le fiale tornano nel cilindro.</div>
     </form>
 
     <div class="prova">
@@ -239,10 +269,13 @@ input[type=email]:focus-visible{outline:3px solid var(--oro);outline-offset:2px;
     <ul class="poi">
       <li>Ti arriva una mail di conferma: se non la vedi, guarda nello spam.</li>
       <li>Le fiale entrano nel pacco del <b>prossimo ordine</b>, in omaggio.</li>
-      <li>Il Sigillo resta valido <b>fino al 31 dicembre</b>.</li>
+      <li>Il Sigillo resta valido <b>fino al <span class="slot">31 dicembre</span></b>.</li>
+      <li>I <b><span class="slot">15 €</span> delle fiale</b> si scalano dal flacone intero, entro sessanta giorni dalla consegna.</li>
     </ul>
 
-    <a class="uscita" href="https://womanparfume.com/" rel="noopener">Intanto guarda le novità →</a>
+    <p class="sommario" style="margin-top:24px">Intanto, questi sono i profumi che rientrano nelle
+    tre famiglie che hai scelto.</p>
+    <a class="uscita" href="https://womanparfume.com/" rel="noopener">Vedi la tua selezione →</a>
 
     <div class="prova">
       <b>Woman Parfume Store</b> — Via San Martino 1, Sant'Agata sul Santerno (RA)<br>
@@ -254,15 +287,17 @@ input[type=email]:focus-visible{outline:3px solid var(--oro);outline-offset:2px;
 <script>
 (function(){
   var FAMIGLIE = [
-    ["Floreale","rosa, gelsomino, peonia"],
-    ["Legnosa","cedro, sandalo, vetiver"],
-    ["Ambrata","vaniglia, incenso, resine"],
-    ["Agrumata","bergamotto, cedro, mandarino"],
-    ["Fresca","note marine, verde, pulito"],
-    ["Speziata","pepe, cannella, zenzero"],
-    ["Cipriata","iris, mandorla, borotalco"],
-    ["Gourmand","caramello, cacao, fava tonka"]
+    ["Floreale","rosa, gelsomino, peonia","luminose"],
+    ["Legnosa","cedro, sandalo, vetiver","avvolgenti"],
+    ["Ambrata","vaniglia, incenso, resine","calde"],
+    ["Agrumata","bergamotto, cedro, mandarino","vive"],
+    ["Fresca","note marine, verde, pulito","pulite"],
+    ["Speziata","pepe, cannella, zenzero","decise"],
+    ["Cipriata","iris, mandorla, borotalco","morbide"],
+    ["Gourmand","caramello, cacao, fava tonka","dolci"]
   ];
+  var CARATTERE = {};
+  FAMIGLIE.forEach(function(f){ CARATTERE[f[0]] = f[2]; });
   var MAX = 3;
   var scelte = [];
   var box = document.getElementById('famiglie');
@@ -277,6 +312,7 @@ input[type=email]:focus-visible{outline:3px solid var(--oro);outline-offset:2px;
     b.setAttribute('aria-pressed','false');
     b.innerHTML = '<span class="segno" aria-hidden="true"></span>' +
                   '<span class="testo">' + f[0] + '<small>' + f[1] + '</small></span>';
+    b.dataset.nome = f[0];
     b.addEventListener('click', function(){ commuta(b, f[0]); });
     box.appendChild(b);
   });
@@ -295,10 +331,31 @@ input[type=email]:focus-visible{outline:3px solid var(--oro);outline-offset:2px;
       var attivo = b.getAttribute('aria-pressed') === 'true';
       b.disabled = pieno && !attivo;
     });
-    if (pieno && modulo.hidden) {
-      modulo.hidden = false;
-      modulo.scrollIntoView({behavior:'smooth', block:'nearest'});
+    var profilo = document.getElementById('profilo');
+    if (pieno) {
+      disegnaProfilo();
+      profilo.hidden = false;
+      document.getElementById('credito').hidden = false;
+      if (modulo.hidden) {
+        modulo.hidden = false;
+        profilo.scrollIntoView({behavior:'smooth', block:'nearest'});
+      }
+    } else {
+      profilo.hidden = true;
+      document.getElementById('credito').hidden = true;
+      modulo.hidden = true;
     }
+  }
+
+  function disegnaProfilo(){
+    var c = scelte.map(function(s){ return CARATTERE[s]; });
+    document.getElementById('frase-profilo').textContent =
+      'Ti stanno bene le cose ' + c[0] + ', ' + c[1] + ' e ' + c[2] + '.';
+    var box = document.getElementById('tag-profilo');
+    box.innerHTML = '';
+    scelte.forEach(function(s){
+      var t = document.createElement('span'); t.className = 'tag'; t.textContent = s; box.appendChild(t);
+    });
   }
 
   modulo.addEventListener('submit', function(e){
