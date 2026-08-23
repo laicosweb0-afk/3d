@@ -1,0 +1,268 @@
+<title>La busta e la squadra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Lato:wght@300;400;700;900&display=swap">
+<style>
+:root{
+  --crema:#faf2ed; --pannello:#fffaf7; --crema-2:#f3e8e0;
+  --inchiostro:#171111; --inchiostro-2:#5b4f49; --inchiostro-3:#8b7d74;
+  --rosa:#d81b72; --rosa-tenue:#fae2ef; --rosa-filo:rgba(216,27,114,.28);
+  --oro:#a8842f; --oro-filo:rgba(168,132,47,.45); --verde:#00705e;
+  --filo:rgba(23,17,17,.16); --filo-2:rgba(23,17,17,.08);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --crema:#100c0c; --pannello:#1b1414; --crema-2:#241b1b;
+  --inchiostro:#f7ede6; --inchiostro-2:#c0b1a7; --inchiostro-3:#8f8178;
+  --rosa:#ff6fa8; --rosa-tenue:#3a1626; --rosa-filo:rgba(255,111,168,.32);
+  --oro:#e0b45c; --oro-filo:rgba(224,180,92,.42); --verde:#4ec8ae;
+  --filo:rgba(247,237,230,.20); --filo-2:rgba(247,237,230,.10);
+}}
+:root[data-theme="dark"]{
+  --crema:#100c0c; --pannello:#1b1414; --crema-2:#241b1b;
+  --inchiostro:#f7ede6; --inchiostro-2:#c0b1a7; --inchiostro-3:#8f8178;
+  --rosa:#ff6fa8; --rosa-tenue:#3a1626; --rosa-filo:rgba(255,111,168,.32);
+  --oro:#e0b45c; --oro-filo:rgba(224,180,92,.42); --verde:#4ec8ae;
+  --filo:rgba(247,237,230,.20); --filo-2:rgba(247,237,230,.10);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--crema);color:var(--inchiostro);
+  font-family:'Lato',-apple-system,Segoe UI,Arial,sans-serif;font-weight:300;font-size:16.5px;line-height:1.64;}
+.wrap{max-width:1020px;margin:0 auto;padding:44px 22px 80px;}
+.wrap > *{min-width:0;}
+.kicker{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--rosa);font-weight:700;}
+h1{font-family:'Playfair Display',Georgia,serif;font-weight:400;font-size:clamp(32px,5.8vw,50px);line-height:1.02;
+  letter-spacing:-.018em;margin:14px 0 12px;text-wrap:balance;}
+h1 em{font-style:italic;color:var(--rosa);}
+.stand{font-size:clamp(15px,2.1vw,18.5px);color:var(--inchiostro-2);max-width:62ch;margin:0;}
+.top{border-bottom:1px solid var(--filo);padding-bottom:26px;}
+h2{font-family:'Playfair Display',Georgia,serif;font-weight:400;font-size:clamp(24px,3.6vw,33px);
+  letter-spacing:-.014em;margin:0 0 8px;line-height:1.1;text-wrap:balance;}
+h3{font-size:17.5px;font-weight:700;margin:28px 0 6px;}
+section{margin-top:60px;}
+.lab{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--rosa);font-weight:700;margin-bottom:10px;}
+p{margin:0 0 13px;max-width:70ch;color:var(--inchiostro-2);}
+p b{color:var(--inchiostro);font-weight:700;}
+.big{font-family:'Playfair Display',Georgia,serif;font-size:clamp(20px,2.9vw,25px);line-height:1.32;
+  color:var(--inchiostro);border-left:3px solid var(--rosa);padding:6px 0 6px 22px;margin:24px 0;max-width:52ch;}
+
+table{width:100%;border-collapse:collapse;margin:18px 0 6px;font-size:15.5px;display:block;overflow-x:auto;}
+th{text-align:left;font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--inchiostro-3);font-weight:700;
+  border-bottom:1px solid var(--filo);padding:0 16px 7px 0;vertical-align:bottom;white-space:nowrap;}
+td{padding:12px 16px 12px 0;border-bottom:1px solid var(--filo-2);vertical-align:top;color:var(--inchiostro-2);}
+td b{color:var(--inchiostro);font-weight:700;}
+td.k{color:var(--inchiostro);font-weight:700;}
+.si{color:var(--verde);font-weight:700;} .no{color:var(--rosa);font-weight:700;}
+
+.paletta{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:12px;margin:20px 0 6px;}
+.col{border:1px solid var(--filo-2);background:var(--pannello);}
+.col .cam{height:64px;}
+.col .nm{padding:9px 11px 3px;font-size:14.5px;font-weight:700;color:var(--inchiostro);}
+.col .hx{padding:0 11px 10px;font-size:12.5px;color:var(--inchiostro-3);font-variant-numeric:tabular-nums;}
+.col .us{padding:0 11px 11px;font-size:12.5px;color:var(--inchiostro-2);}
+
+.regole{margin:20px 0 6px;}
+.reg{display:grid;grid-template-columns:34px 1fr;gap:16px;padding:16px 0;border-top:1px solid var(--filo-2);}
+.reg:last-child{border-bottom:1px solid var(--filo-2);}
+.reg .n{font-family:'Playfair Display',Georgia,serif;font-size:19px;color:var(--rosa);line-height:1.2;}
+.reg b{display:block;font-size:17.5px;color:var(--inchiostro);font-weight:700;margin-bottom:3px;}
+.reg span{font-size:15.5px;color:var(--inchiostro-2);}
+
+.nota{background:var(--crema-2);border:1px solid var(--filo-2);border-left:3px solid var(--c,var(--rosa));
+  padding:15px 19px;margin:22px 0;}
+.nota.oro{--c:var(--oro);} .nota.verde{--c:var(--verde);}
+.nota .t{font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--inchiostro-3);font-weight:700;margin-bottom:6px;}
+.nota p{margin-bottom:8px;font-size:15.5px;} .nota p:last-child{margin-bottom:0;}
+
+.mossa{border:1px solid var(--filo-2);border-top:3px solid var(--c,var(--rosa));background:var(--pannello);
+  padding:20px 22px;margin:16px 0;}
+.mossa.oro{--c:var(--oro);} .mossa.verde{--c:var(--verde);}
+.mossa .et{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--c,var(--rosa));font-weight:700;}
+.mossa h3{font-family:'Playfair Display',Georgia,serif;font-weight:400;font-size:24px;margin:7px 0 10px;}
+.mossa .prova{margin-top:12px;padding-top:12px;border-top:1px solid var(--filo-2);font-size:14.5px;color:var(--inchiostro-3);}
+.mossa .prova b{color:var(--inchiostro-2);}
+
+.fonti{margin-top:20px;font-size:14px;color:var(--inchiostro-3);}
+.fonti a{color:var(--inchiostro-2);}
+.foot{margin-top:62px;padding-top:16px;border-top:1px solid var(--filo);font-size:11px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--inchiostro-3);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="kicker">Woman Srl · i due cartoncini · scuola americana + scuola cinese</div>
+    <h1>La busta <em>e la squadra</em></h1>
+    <p class="stand">Il pacco contiene due cartoncini: uno è suo, l'altro è un regalo da regalare.
+    L'America ci ha dato la meccanica del dare-e-ricevere. La Cina ci dà le tre cose che mancavano:
+    la busta che trasforma un buono in un dono, la ricompensa che cresce quando si è in due,
+    e la sorpresa fatta con eleganza. Più una lista, altrettanto importante, di cose cinesi da non copiare.</p>
+  </div>
+
+  <section>
+    <div class="lab">Il quadro</div>
+    <h2>I due cartoncini, e i due mestieri</h2>
+    <table>
+      <thead><tr><th></th><th>Cartoncino 1 · «il tuo»</th><th>Cartoncino 2 · «da regalare»</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Che cos'è</td><td>il Sigillo Olfattivo con la fiala, come oggi</td><td><b>una piccola busta sigillata</b>, dentro un secondo cartoncino con QR proprio</td></tr>
+        <tr><td class="k">A chi parla</td><td>a chi ha comprato</td><td>a una persona che <b>Woman non conosce ancora</b></td></tr>
+        <tr><td class="k">Il mestiere</td><td>trasformare un cliente Amazon in un cliente Woman</td><td>far entrare una persona nuova <b>presentata da qualcuno di cui si fida</b></td></tr>
+        <tr><td class="k">Dove atterra</td><td><code>/regalo</code> · fonte <b>pacco</b></td><td><code>/regalo/amica</code> · fonte <b>pacco-regalo</b></td></tr>
+      </tbody>
+    </table>
+    <p>Due indirizzi diversi, due fonti diverse: <b>è l'unico modo per sapere quanti clienti nuovi
+    arrivano dai clienti vecchi</b> — il numero che nessuna pubblicità può comprare.</p>
+  </section>
+
+  <section>
+    <div class="lab">Cina · lezione 1</div>
+    <h2>La busta conta più di quello che c'è dentro</h2>
+    <p>In Cina il regalo di denaro esiste da secoli, ma funziona per un motivo preciso: <b>la busta
+    rossa</b>. Non si regala denaro — si regala <em>una busta</em>. Il contenitore trasforma una
+    transazione in un gesto. Quando WeChat l'ha portata sul telefono, in un solo capodanno sono
+    passate <b>miliardi di buste</b>: non perché la gente amasse i buoni sconto, ma perché amava
+    <em>il gesto di darli</em>.</p>
+
+    <div class="big">Il secondo cartoncino non va messo nudo nel pacco. Va messo <em>dentro una
+    piccola busta chiusa</em> — magenta, col sigillo dorato — e una riga dove chi regala scrive
+    a mano il nome di chi riceve.</div>
+
+    <p>Tre conseguenze pratiche, tutte misurabili:</p>
+    <div class="regole">
+      <div class="reg"><div class="n">1</div><div><b>La busta chiusa non si butta</b>
+        <span>Un volantino si cestina, una busta sigillata si apre. E una busta col nome scritto sopra
+        non si può nemmeno più regalare a qualcun altro: è diventata personale.</span></div></div>
+      <div class="reg"><div class="n">2</div><div><b>Il regalo arriva dall'amica, non dal negozio</b>
+        <span>Chi apre la busta ha ricevuto un pensiero da una persona, non una pubblicità da un
+        marchio. È la forma di fiducia più alta che esiste — e il motivo per cui in Cina il traffico
+        dei social vale più della pubblicità comprata.</span></div></div>
+      <div class="reg"><div class="n">3</div><div><b>Chi regala si espone, quindi deve fare bella figura</b>
+        <span>La busta dev'essere così bella che regalarla faccia onore. È un vincolo di design,
+        non di marketing: se sembra un coupon, nessuno la darà mai a un'amica.</span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="lab">Cina · lezione 2</div>
+    <h2>In due vale di più</h2>
+    <p>Il colosso cinese del commercio sociale ha costruito tutto su una sola idea: <b>il prezzo
+    scende se compri insieme a qualcuno</b>. Inviti una persona, l'acquisto «di squadra» sblocca
+    la condizione migliore per tutti e due. Risultato: la maggior parte del traffico arriva
+    <b>dalle condivisioni fra persone</b>, non dalla pubblicità.</p>
+    <p>L'America ci aveva dato il «dai 10, ricevi 10» — simmetrico e statico. La versione cinese
+    aggiunge il pezzo che manca: <b>la ricompensa che migliora quando la squadra si completa</b>.</p>
+
+    <div class="nota verde">
+      <div class="t">Il Sigillo di coppia — la meccanica fusa</div>
+      <p><b>Lei attiva il suo Sigillo: tre fiale.</b> Nella pagina del grazie e nella mail c'è scritto:
+      «Nella scatola c'è una busta. Se chi la riceve attiva il suo Sigillo, <b>le vostre tre fiale
+      diventano quattro — per tutte e due</b>.»</p>
+      <p>Chi riceve la busta ha le sue tre fiale al primo ordine. Quando le attiva, <b>entrambe
+      salgono a quattro</b>. Nessuno perde niente, la squadra completa migliora il premio di tutti:
+      è il dare-e-ricevere americano con dentro il motore cinese.</p>
+    </div>
+
+    <p>Perché funziona meglio del semplice referral: il regalo del cartoncino 2 <b>non è più solo
+    generosità</b> («tieni, un buono») — diventa <b>un interesse comune</b> («attivalo, così vinciamo
+    tutte e due»). Chi regala ha un motivo per <em>ricordarlo</em> all'amica. È il promemoria che
+    nessuna mail può mandare.</p>
+  </section>
+
+  <section>
+    <div class="lab">Cina · lezione 3</div>
+    <h2>La sorpresa, fatta con i guanti</h2>
+    <p>Le app cinesi da esportazione usano ruote della fortuna, conti alla rovescia, premi casuali.
+    <b>Funzionano — e distruggerebbero Woman in una settimana.</b> Chi vende Chanel e Tom Ford non
+    può avere la ruota che gira. Ma il principio sotto — <b>l'attesa di una ricompensa incerta è più
+    forte della ricompensa stessa</b> — si può vestire di eleganza:</p>
+
+    <div class="regole">
+      <div class="reg"><div class="n">1</div><div><b>La quarta fiala è «la scelta della casa»</b>
+        <span>Delle quattro fiale del Sigillo di coppia, tre le sceglie lei — la quarta la sceglie
+        la profumiera, a sorpresa, in base al suo profilo. Non una ruota: <b>una sommelier che ti
+        porta «il bicchiere della casa»</b>. Stessa incertezza, tutt'altro vestito. E per Woman è
+        anche il modo di far annusare una famiglia che la cliente non avrebbe mai scelto da sola.</span></div></div>
+      <div class="reg"><div class="n">2</div><div><b>La busta non dice quanto contiene</b>
+        <span>Sul cartoncino regalato non c'è scritto il valore: c'è scritto «apri e scopri il tuo
+        profilo». La curiosità fa scannerizzare più di qualunque cifra — è il «lo scopri» scelto
+        in riunione, applicato dove rende di più.</span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="lab">Il confine</div>
+    <h2>Le cose cinesi da non copiare</h2>
+    <table>
+      <thead><tr><th>Mai</th><th>Perché</th></tr></thead>
+      <tbody>
+        <tr><td class="k">La ruota della fortuna</td><td>è il gesto più riconoscibile del discount. Accanto a Dior è un suicidio di posizionamento.</td></tr>
+        <tr><td class="k">Conti alla rovescia aggressivi e premi «quasi vinti»</td><td>meccaniche a pressione: convertono una volta e bruciano la fiducia. Le recensioni sono dei clienti, non vostre.</td></tr>
+        <tr><td class="k">La catena di inviti a premi crescenti</td><td>«invita 5 amiche e ricevi…» trasforma le clienti in venditrici porta a porta. Una squadra di due è un gesto; una piramide è una molestia.</td></tr>
+        <tr><td class="k">Il gioco quotidiano nell'app</td><td>richiede un'app e un team che non avete. La versione da profumeria è un'altra: vedi sotto, «più avanti».</td></tr>
+      </tbody>
+    </table>
+    <div class="nota oro">
+      <div class="t">La regola per distinguere</div>
+      <p>La domanda da farsi davanti a ogni meccanica: <b>«farebbe bella figura detta ad alta voce
+      in negozio?»</b> «La quarta fiala la sceglie la nostra profumiera per te» — sì. «Gira la ruota,
+      hai quasi vinto!» — no. Tutto quello che non passa questa prova resta fuori, per quanto converta.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="lab">Il sito</div>
+    <h2>La pagina dell'amica: /regalo/amica</h2>
+    <p>Chi apre la busta non deve atterrare sulla stessa pagina di chi ha comprato: <b>il suo primo
+    schermo è un regalo ricevuto, non un premio guadagnato</b>. Stessa veste, tre differenze:</p>
+    <div class="regole">
+      <div class="reg"><div class="n">1</div><div><b>L'apertura è «Qualcuno ha pensato a te»</b>
+        <span>Non «hai seguito il coniglio»: lei non ha comprato niente. Il titolo dice che
+        un'amica le ha regalato il suo profilo olfattivo e tre fiale. Il mittente è l'amica,
+        Woman è solo il postino.</span></div></div>
+      <div class="reg"><div class="n">2</div><div><b>Stessa scelta delle tre famiglie, stesso profilo</b>
+        <span>Il gioco delle tre famiglie funziona identico: è il pezzo che non cambia mai.
+        Cambia solo la cornice attorno.</span></div></div>
+      <div class="reg"><div class="n">3</div><div><b>Il richiamo alla squadra</b>
+        <span>«Quando attivi, anche chi ti ha regalato la busta riceve la sua quarta fiala.»
+        Una riga: ricorda che completare fa vincere entrambe — e dà una ragione in più per
+        non lasciare la busta nel cassetto.</span></div></div>
+    </div>
+    <p>E la fonte scritta sul contatto è <b>pacco-regalo</b>: al lunedì dei numeri saprete
+    esattamente quante persone nuove sono entrate così, e quanto costa ciascuna — cioè
+    <b>il prezzo di una busta e quattro fiale</b>.</p>
+  </section>
+
+  <section>
+    <div class="lab">L'ordine</div>
+    <h2>Cosa adesso, cosa dopo</h2>
+    <table>
+      <thead><tr><th>Quando</th><th>Che cosa</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Nei 500 di prova</td><td><b>solo il cartoncino 1.</b> Il test misura la meccanica base: non si sommano due esperimenti nello stesso lancio, o non si capisce più quale dei due ha funzionato</td></tr>
+        <tr><td class="k">Nella stampa dei 4.500</td><td>si aggiunge <b>la busta col cartoncino 2</b> e il Sigillo di coppia: la pagina <code>/regalo/amica</code> dev'essere già in piedi</td></tr>
+        <tr><td class="k">Con la busta</td><td>la <b>domanda ad Amazon Seller Support si aggiorna</b>: il secondo cartoncino è più delicato del primo, va dichiarato nello stesso quesito scritto</td></tr>
+        <tr><td class="k">Più avanti</td><td>l'<b>atlante delle famiglie</b>: otto famiglie olfattive, ogni acquisto ne «apre» una — la collezione da completare, versione profumeria del gioco quotidiano cinese. Si costruisce quando il foglio dei numeri dice che il ritorno c'è</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="lab">Fonti</div>
+    <h2>Da dove vengono le lezioni</h2>
+    <p class="fonti">
+      La busta rossa e il dono come gesto — <a href="https://en.wikipedia.org/wiki/WeChat_red_envelope">WeChat red envelope</a>,
+      <a href="https://wechatcourse.com/wechat-hongbao/">WeChat Hongbao</a>,
+      <a href="https://www.tandfonline.com/doi/full/10.1080/17530350.2025.2455464">studio sul denaro socializzato</a>.<br>
+      L'acquisto di squadra e il traffico dalle persone — <a href="https://econsultancy.com/pinduoduo-growth-story-china-ecommerce/">Pinduoduo, la crescita</a>,
+      <a href="https://www.uxmatters.com/mt/archives/2024/12/how-pinduoduos-group-buying-model-shapes-the-asian-ecommerce-experience-1.php">il modello del team-buy</a>.<br>
+      La sorpresa, e il confine fra meccaniche chiare e scure — <a href="https://yukaichou.com/gamification-analysis/the-spinning-wheel-a-comprehensive-guide-to-boosting-user-engagement/">analisi della ruota</a>,
+      <a href="https://claspo.io/blog/psychology-of-gamification-in-marketing/">psicologia della gamification, caso Temu</a>,
+      <a href="https://www.mobiloud.com/blog/shein-and-temu-mobile-apps">Shein e Temu</a>.<br>
+      <em>Le cifre citate da queste fonti indicano direzioni, non promesse: il numero vero lo daranno i vostri codici.</em>
+    </p>
+  </section>
+
+  <div class="foot">
+    <span>Woman Srl · Via San Martino 1, Sant'Agata sul Santerno (RA)</span>
+    <span>Se non si può dire ad alta voce in negozio, non si fa</span>
+  </div>
+</div>
