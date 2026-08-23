@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Il funnel — la parte operativa</title>
+<style>
+:root{
+  --paper:#ffffff; --ink:#1c1815; --ink-2:#544d45; --ink-3:#8b8278;
+  --rule:rgba(28,24,21,.18); --hair:rgba(28,24,21,.10);
+  --granata:#b4184f; --ottone:#a8730a; --verde:#008573;
+  --wash:#faf7f2; --wash2:#f5efe6;
+}
+@page { size: A4; margin: 16mm 15mm 14mm; }
+*{box-sizing:border-box;margin:0;}
+body{font-family:'Hanken Grotesk',Arial,sans-serif;font-weight:300;color:var(--ink);background:var(--paper);
+  font-size:11pt;line-height:1.62;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+b,strong{font-weight:500;color:var(--ink);}
+
+h1{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:30pt;line-height:1.03;letter-spacing:-.022em;margin-bottom:8pt;}
+h1 em{font-style:italic;color:var(--granata);}
+.eyebrow{font-size:8pt;letter-spacing:.26em;text-transform:uppercase;color:var(--granata);font-weight:500;margin-bottom:9pt;}
+.lede{font-size:12pt;color:var(--ink-2);max-width:52em;}
+.meta{margin-top:12pt;padding-top:8pt;border-top:1px solid var(--rule);font-size:8pt;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-3);display:flex;gap:18pt;flex-wrap:wrap;}
+.meta b{color:var(--ink-2);font-weight:500;}
+
+.lez{margin-top:20pt;}
+.lez-h{display:flex;align-items:baseline;gap:10pt;border-bottom:1.5px solid var(--ink);padding-bottom:6pt;margin-bottom:11pt;}
+.lez-h .n{font-family:'Fraunces',serif;font-size:9pt;letter-spacing:.2em;text-transform:uppercase;color:var(--granata);
+  font-weight:400;white-space:nowrap;}
+.lez-h h2{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:18pt;line-height:1.1;letter-spacing:-.015em;}
+h3{font-family:'Hanken Grotesk',Arial,sans-serif;font-size:11.5pt;font-weight:500;margin:11pt 0 4pt;}
+p{margin:0 0 8pt;max-width:60em;}
+.small{font-size:10pt;color:var(--ink-2);}
+
+.frase{border-left:3px solid var(--granata);background:var(--wash);padding:10pt 13pt;margin:10pt 0 12pt;break-inside:avoid;}
+.frase .k{font-size:8pt;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4pt;}
+.frase p{font-family:'Fraunces',Georgia,serif;font-size:12.5pt;line-height:1.42;margin:0;color:var(--ink);}
+
+.nota{background:var(--wash);border:1px solid var(--hair);padding:9pt 12pt;margin:9pt 0;break-inside:avoid;font-size:10pt;}
+.nota.gold{border-left:3px solid var(--ottone);}
+.nota.ok{border-left:3px solid var(--verde);}
+.nota .k{font-size:8pt;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4pt;}
+.nota p{margin-bottom:5pt;}.nota p:last-child{margin-bottom:0;}
+
+.due{display:grid;grid-template-columns:1fr 1fr;gap:12pt;margin:10pt 0 12pt;break-inside:avoid;}
+.col{border-top:2.5px solid var(--c);padding-top:8pt;}
+.col.a{--c:var(--verde);} .col.b{--c:var(--granata);}
+.col .t{font-size:8.5pt;letter-spacing:.16em;text-transform:uppercase;color:var(--c);font-weight:500;margin-bottom:5pt;}
+.col .big{font-family:'Fraunces',Georgia,serif;font-size:14pt;line-height:1.18;margin-bottom:6pt;}
+.col p{font-size:10pt;margin-bottom:5pt;}
+.col .dom{font-size:9.5pt;color:var(--ink-3);border-top:1px solid var(--hair);padding-top:5pt;margin-top:6pt;font-style:italic;}
+
+.scheda{border:1px solid var(--hair);border-left:3px solid var(--c);padding:11pt 13pt;margin:10pt 0;break-inside:avoid;}
+.scheda.a{--c:var(--granata);} .scheda.b{--c:var(--verde);} .scheda.c{--c:var(--ottone);}
+.scheda .num{font-family:'Fraunces',serif;font-size:8.5pt;letter-spacing:.2em;text-transform:uppercase;color:var(--c);margin-bottom:3pt;}
+.scheda .tit{font-family:'Fraunces',Georgia,serif;font-size:15pt;line-height:1.15;margin-bottom:7pt;}
+.riga{display:grid;grid-template-columns:118pt 1fr;gap:10pt;padding:5pt 0;border-top:1px solid var(--hair);font-size:10pt;}
+.riga .et{font-size:8.5pt;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);padding-top:2pt;}
+.riga .vl{color:var(--ink-2);}
+.riga .vl b{color:var(--ink);}
+
+.passi{counter-reset:p;margin:10pt 0 12pt;}
+.passo{display:grid;grid-template-columns:26pt 1fr;gap:10pt;padding:8pt 0;border-top:1px solid var(--hair);break-inside:avoid;}
+.passo:last-child{border-bottom:1px solid var(--hair);}
+.passo .c{font-family:'Fraunces',serif;font-size:17pt;color:var(--granata);line-height:1;padding-top:1pt;}
+.passo .txt b{display:block;font-size:11.5pt;margin-bottom:2pt;}
+.passo .txt span{font-size:10pt;color:var(--ink-2);}
+
+.regole{margin:10pt 0 12pt;break-inside:avoid;}
+.reg{display:grid;grid-template-columns:1fr;gap:2pt;padding:8pt 0;border-top:1px solid var(--hair);break-inside:avoid;}
+.reg:last-child{border-bottom:1px solid var(--hair);}
+.reg b{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:12.5pt;}
+.reg span{font-size:10pt;color:var(--ink-2);}
+
+.copione{background:var(--wash2);padding:12pt 14pt;margin:10pt 0;break-inside:auto;}
+.copione p{break-inside:avoid;}
+.copione .k{font-size:8pt;letter-spacing:.18em;text-transform:uppercase;color:var(--ottone);margin-bottom:6pt;font-weight:500;}
+.copione p{font-family:'Fraunces',Georgia,serif;font-size:11.5pt;line-height:1.5;margin-bottom:7pt;}
+.copione p:last-child{margin-bottom:0;}
+.copione .reg-i{font-family:'Hanken Grotesk',Arial,sans-serif;font-style:normal;font-size:8.5pt;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3);margin:9pt 0 3pt;}
+
+table{width:100%;border-collapse:collapse;margin:8pt 0 10pt;font-size:10pt;break-inside:auto;}
+tr{break-inside:avoid;}
+thead{break-after:avoid;}
+th{text-align:left;font-weight:500;font-size:8pt;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
+  border-bottom:1px solid var(--rule);padding:0 8pt 5pt 0;vertical-align:bottom;}
+td{padding:6pt 8pt 6pt 0;border-bottom:1px solid var(--hair);vertical-align:top;color:var(--ink-2);}
+td b{color:var(--ink);}
+td.term{color:var(--ink);font-weight:500;width:26%;}
+
+.fig{margin:12pt 0 6pt;break-inside:avoid;}
+.fig svg{width:100%;height:auto;display:block;}
+.cap{font-size:9pt;color:var(--ink-3);margin-top:6pt;}
+.pagebreak{break-before:page;}
+ul{margin:0 0 8pt;padding-left:14pt;}
+li{margin-bottom:4pt;color:var(--ink-2);}
+
+.check{margin:8pt 0 12pt;}
+.ck{display:grid;grid-template-columns:16pt 1fr;gap:9pt;padding:7pt 0;border-top:1px solid var(--hair);break-inside:avoid;}
+.ck:last-child{border-bottom:1px solid var(--hair);}
+.ck .q{width:11pt;height:11pt;border:1.4px solid var(--granata);margin-top:3pt;}
+.ck .t > b{display:block;font-size:11.5pt;margin-bottom:1pt;}
+.ck .t span b{display:inline;font-size:inherit;color:var(--ink);font-weight:500;}
+.ck .t span{font-size:10pt;color:var(--ink-2);}
+.week{width:100%;border-collapse:collapse;margin:8pt 0 10pt;font-size:10pt;}
+.week th{text-align:left;font-weight:500;font-size:8pt;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
+  border-bottom:1px solid var(--rule);padding:0 8pt 5pt 0;}
+.week td{padding:6pt 8pt 6pt 0;border-bottom:1px solid var(--hair);vertical-align:top;color:var(--ink-2);}
+.week td.s{color:var(--granata);font-family:'Fraunces',serif;font-size:11pt;width:9%;white-space:nowrap;}
+.week td.chi{width:16%;font-size:8.5pt;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);}
+.week td b{color:var(--ink);}
+.week tr{break-inside:avoid;}
+.mat{border-top:1px solid var(--hair);padding:8pt 0;break-inside:avoid;}
+.mat:last-child{border-bottom:1px solid var(--hair);}
+.mat .h{display:flex;align-items:baseline;gap:8pt;margin-bottom:3pt;}
+.mat .h .i{font-family:'Fraunces',serif;font-size:12pt;color:var(--granata);}
+.mat .h b{font-size:11.5pt;}
+.mat p{font-size:10pt;margin:0 0 3pt 0;color:var(--ink-2);}
+.mat .who{font-size:8.5pt;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);}
+.esiti{display:grid;grid-template-columns:1fr;gap:0;margin:8pt 0 12pt;}
+.es{border-left:3px solid var(--c);background:var(--wash);padding:9pt 12pt;margin-bottom:7pt;break-inside:avoid;}
+.es.a{--c:var(--granata);} .es.b{--c:var(--ottone);} .es.c{--c:var(--verde);}
+.es .q{font-family:'Fraunces',Georgia,serif;font-size:12pt;margin-bottom:4pt;}
+.es p{font-size:10pt;margin:0;}
+ul.ck{list-style:none;padding:0;margin:8pt 0 10pt;}
+ul.ck li{display:grid;grid-template-columns:14pt 1fr;gap:8pt;padding:6pt 0;border-top:1px solid var(--hair);break-inside:avoid;font-size:10pt;color:var(--ink-2);}
+ul.ck li:last-child{border-bottom:1px solid var(--hair);}
+ul.ck .b{width:9pt;height:9pt;border:1.4pt solid var(--granata);margin-top:2pt;}
+ul.ck b{color:var(--ink);font-weight:500;}
+footer{break-before:avoid;margin-top:12pt;padding-top:8pt;border-top:1px solid var(--rule);font-size:8pt;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);display:flex;justify-content:space-between;gap:10pt;}
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Woman · dossier di giornata</div>
+  <h1>La strategia <em>del pacco</em></h1>
+  <p class="lede">Tutto il lavoro di oggi in un documento: il coupon nel pacco, la pagina su cui atterra,
+  le tre fiale e il credito, la busta da regalare, il test dei 500 e le regole che tengono in piedi
+  tutto. Scritto per essere presentato: ogni sezione si può leggere ad alta voce.</p>
+  <div class="meta">
+    <span><b>Woman Srl</b> · Sant'Agata sul Santerno (RA)</span>
+    <span>Finestra <b>pacco</b> · womanparfume.com</span>
+    <span>Agosto <b>2026</b></span>
+  </div>
+</header>
+
+<div class="lez">
+  <div class="lez-h"><span class="n">1</span><h2>Il punto di partenza</h2></div>
+
+  <p>Woman spedisce molti ordini (Amazon e sito) e sta per stampare <b>5.000 coupon</b> da mettere nei
+  pacchi. Il coupon precedente non portava nessuno sul sito — e soprattutto <b>nessuno sapeva quanti
+  ci provassero</b>, perché il QR puntava alla home: quelle visite si mescolavano con tutte le altre.
+  Il dato non era difficile da estrarre. <b>Il dato non esisteva.</b></p>
+
+  <h3>Il cartoncino attuale: il Sigillo Olfattivo</h3>
+  <p>Una faccia porta la fiala: <b>è il profumo che il cliente ha ordinato</b>, agganciato fuori dal
+  flacone. Lo annusa <b>prima di aprire</b>: se non è quello che voleva, rende il prodotto intatto.
+  Non è un campione: è la prova d'acquisto olfattiva — e per Woman vuol dire anche <b>meno resi
+  rovinati</b>. Il campo LOTTO (scritto a mano) serve al reso: meglio un timbro numeratore, e se il
+  lotto è di partita si prestampa in tipografia. L'altra faccia, nera, dice «Sblocca il tuo Regalo»
+  con un QR.</p>
+
+  <div class="frase">
+    <div class="k">La promessa di marca che ne esce</div>
+    <p>«Da Woman non si compra mai alla cieca: ogni profumo si annusa prima di aprirlo.»</p>
+  </div>
+
+  <h3>Perché il coupon non funzionava — i quattro difetti</h3>
+  <table>
+    <tbody>
+      <tr><td class="term">I due regali si annullano</td><td>La fiala è già in mano; «Sblocca il tuo Regalo» sembra riferirsi a lei. La ricompensa è consegnata prima di chiedere l'azione.</td></tr>
+      <tr><td class="term">Nessuno gira il cartoncino</td><td>Il QR sta dietro; la faccia con la fiala non dice di girare. Serve una riga sul fronte: <b>«Gira: il prossimo profumo scoprilo prima →»</b></td></tr>
+      <tr><td class="term">«Regalo» non dice cosa</td><td>Nessuno spende quaranta secondi per una promessa vaga. Va scritta la cosa concreta: tre fiale, di profumi nuovi, gratis.</td></tr>
+      <tr><td class="term">Sotto il QR non c'è niente</td><td>Mancano le tre righe: istruzione («inquadra con la fotocamera»), indirizzo scritto, scadenza.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="lez">
+  <div class="lez-h"><span class="n">2</span><h2>La misura: prima di tutto il resto</h2></div>
+
+  <p>Il QR non punta più alla home ma a <b>una pagina che esiste solo per lui</b>:
+  <code>womanparfume.com/regalo</code>. Da quel momento <b>ogni visita a quella pagina è una
+  scansione</b> — il conteggio lo fa la statistica che il sito ha già.</p>
+
+  <div class="nota stop">
+    <div class="k">Le regole del QR, per sempre</div>
+    <p>Mai la home, mai un accorciatore esterno (se chiude, 5.000 cartoncini diventano carta morta).
+    Sempre un indirizzo del dominio: la pagina si può riscrivere anche dopo la stampa, il cartoncino no.
+    Su <code>/regalo</code> il <b>popup del coupon di benvenuto va spento</b>: due offerte insieme
+    fanno scegliere zero. E ogni contatto nasce con la <b>fonte</b> scritta: <code>pacco</code>.</p>
+  </div>
+</div>
+<div class="lez pagebreak">
+  <div class="lez-h"><span class="n">3</span><h2>La pagina /regalo — come è costruita e perché</h2></div>
+
+  <p>Pensata per il telefono, perché un QR si legge col telefono. Marchio Woman a tutti gli effetti:
+  logo WO•MAN, quadrante romano in filigrana, oro e magenta. <b>Nessun menu e nessuna uscita</b> fino
+  alla fine: un corridoio, non una piazza. In cima, il bianconiglio attraversa <b>una sola volta</b>
+  e sparisce — chi arriva lo vede scappare, come se l'avesse appena mancato.</p>
+
+  <div class="passi">
+    <div class="passo"><div class="c">1</div><div class="txt"><b>Sceglie tre famiglie olfattive</b><span>«Che aria ti piace addosso»: otto carte con tre parole ciascuna (floreale: rosa, gelsomino, peonia…). Non serve sapere niente di profumi, non si può sbagliare. Un passo solo, non un quiz.</span></div></div>
+    <div class="passo"><div class="c">2</div><div class="txt"><b>Riceve subito il risultato</b><span>«Ti stanno bene le cose luminose, vive e morbide» — il profilo olfattivo compare prima di qualunque richiesta. Prima il premio, poi la domanda.</span></div></div>
+    <div class="passo"><div class="c">3</div><div class="txt"><b>Vede il valore</b><span>Il riquadro del credito (sotto, §5) sta sopra il modulo, non dopo il pulsante.</span></div></div>
+    <div class="passo"><div class="c">4</div><div class="txt"><b>Lascia la mail</b><span>Un campo solo. Due consensi separati: uno per attivare (obbligatorio), uno per le comunicazioni (facoltativo, parte vuoto). Il nome ce l'avete già dall'ordine.</span></div></div>
+    <div class="passo"><div class="c">5</div><div class="txt"><b>Il grazie chiude il cerchio</b><span>Rilegge le sue tre scelte, dice cosa succede adesso, e apre l'unica uscita: non la home ma <b>la selezione dei profumi delle sue tre famiglie</b>. Entra in un negozio già ordinato per lei.</span></div></div>
+  </div>
+
+  <div class="nota ok">
+    <div class="k">Perché questa sequenza converte</div>
+    <p>Chi ha investito trenta secondi in una scelta sua completa il modulo molto più di chi se lo
+    trova in faccia. E il numero intermedio — quanti toccano le famiglie contro quanti mandano la
+    mail — distingue «la pagina non convince» da «il modulo è troppo lungo»: due problemi diversi,
+    due rimedi diversi.</p>
+  </div>
+</div>
+
+<div class="lez">
+  <div class="lez-h"><span class="n">4</span><h2>Le due fiale: una guarda indietro, tre guardano avanti</h2></div>
+
+  <div class="due">
+    <div class="col a">
+      <div class="t">La fiala sul cartoncino</div>
+      <div class="big">Un controllo</div>
+      <p>È il profumo <b>che ha già comprato</b>. Arriva <em>dopo</em> la scelta e serve a confermarla:
+      «è quello giusto?» Sì → apre. No → reso intatto.</p>
+    </div>
+    <div class="col b">
+      <div class="t">Le tre fiale che attiva</div>
+      <div class="big">Una scoperta</div>
+      <p>Profumi <b>che non ha mai provato</b>, nelle famiglie che ha scelto. Arrivano <em>prima</em>
+      della prossima scelta e servono a farla: «cosa prenderò dopo?»</p>
+    </div>
+  </div>
+
+  <p>Stesso gesto — annusare prima — esteso nel tempo. Lui sceglie sempre: ma oggi sceglie
+  <b>un prodotto</b> che conosce, con le famiglie sceglie <b>una direzione</b> («qualcosa di fresco
+  e legnoso») e la scoperta dentro quella direzione gliela porta Woman. Come dire allo chef
+  «portami qualcosa di piccante».</p>
+
+  <div class="frase">
+    <div class="k">Il punto operativo che regge tutto</div>
+    <p>Le tre fiale <b>non viaggiano mai da sole</b>: arrivano solo dentro il prossimo ordine.
+    Il ritiro del regalo È il secondo ordine — sul sito di Woman, non su Amazon.</p>
+  </div>
+</div>
+
+<div class="lez">
+  <div class="lez-h"><span class="n">5</span><h2>Il credito: 15 € che non sono uno sconto</h2></div>
+
+  <p>Le tre fiale sono gratis ma hanno un prezzo di listino — il segnaposto è <b>15 €</b>, la cifra
+  vera la fissa Woman e dev'essere quella reale, sennò non è credibile. La frase al cliente:</p>
+  <p class="script">«Queste tre fiale valgono 15 € e sono già tue. Se entro 60 giorni compri il
+  flacone intero di uno dei tre profumi che hai provato, te li scaliamo dal prezzo.»</p>
+
+  <table>
+    <thead><tr><th>«Hai 15 € di sconto»</th><th>«Hai 15 € già tuoi»</th></tr></thead>
+    <tbody>
+      <tr><td>un favore del negozio; se non lo uso, pazienza; mi dice che il prezzo era gonfiato</td>
+      <td>una cosa <b>mia</b> che posso <b>perdere</b>; non svaluta niente: è un anticipo con una scadenza</td></tr>
+    </tbody>
+  </table>
+
+  <p><b>Esempio:</b> flacone da 95 € → paga 80 €. Se non compra, nessun costo oltre i pochi euro di
+  fiale. Il credito esce <b>solo se entra una vendita</b> che lo assorbe — e sconta il profumo
+  <b>nuovo</b>, quello che senza fiala non avrebbe mai comprato: finanzia l'allargamento del gusto,
+  non il riacquisto che avrebbe fatto comunque. È il modello dei marchi di nicchia americani
+  (Henry Rose, Noteworthy, Kilian) — con la differenza che loro il set lo fanno pagare, Woman lo regala.</p>
+  <p>In pratica: credito agganciato alla mail, si applica da solo al checkout. Niente da digitare.</p>
+</div>
+<div class="lez pagebreak">
+  <div class="lez-h"><span class="n">6</span><h2>Il giro completo, da A a Z</h2></div>
+  <p>La frase da presentazione: <b>ogni pacco che esce contiene il motivo del pacco successivo.</b></p>
+
+  <table class="week">
+    <thead><tr><th></th><th>Tappa</th><th>Che cosa succede</th></tr></thead>
+    <tbody>
+      <tr><td class="s">1</td><td class="chi">Ordine</td><td>Compra un profumo (Amazon o sito). Nel pacco: cartoncino del Sigillo con <b>la fiala di quel profumo</b>.</td></tr>
+      <tr><td class="s">2</td><td class="chi">Sigillo</td><td>Annusa prima di stappare: conferma, o reso a flacone intatto.</td></tr>
+      <tr><td class="s">3</td><td class="chi">QR</td><td>Gira il cartoncino → inquadra → <code>/regalo</code>. Ogni visita = una scansione contata.</td></tr>
+      <tr><td class="s">4</td><td class="chi">Pagina</td><td>Tre famiglie → profilo olfattivo → credito visibile → mail con due consensi.</td></tr>
+      <tr><td class="s">5</td><td class="chi">Attivazione</td><td>Tre fiale di profumi mai provati, <b>gratis nel prossimo ordine</b> — mai spedite da sole.</td></tr>
+      <tr><td class="s">6</td><td class="chi">Credito</td><td>15 € scalati dal flacone di una delle tre famiglie, entro 60 giorni.</td></tr>
+      <tr><td class="s">7</td><td class="chi">Mail</td><td>Conferma subito · racconto a 48 h (senza vendere) · promemoria credito a 7 giorni · «com'è andata?» dopo l'ordine, con richiesta di recensione solo a chi è contento.</td></tr>
+      <tr><td class="s">8</td><td class="chi">2° ordine</td><td>Sul sito. Dentro: le sue tre fiale, un nuovo Sigillo sul profumo comprato, e <b>la busta</b>.</td></tr>
+      <tr><td class="s">9</td><td class="chi">La busta</td><td>L'amica la apre → <code>/regalo/amica</code> → stesso gioco → <b>Sigillo di coppia</b>: entrambe da tre a quattro fiale.</td></tr>
+      <tr><td class="s">10</td><td class="chi">Il giro</td><td>L'amica compra → si riparte dalla tappa 1. Il cliente Amazon è diventato cliente Woman e ha portato una persona nuova.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="lez">
+  <div class="lez-h"><span class="n">7</span><h2>La busta e la squadra — la scuola cinese sopra quella americana</h2></div>
+
+  <p>L'America ha dato il <b>dare-e-ricevere</b> (Glossier: «dai 10, ricevi 10» — la versione a due
+  facce batte sempre quella a una) e il <b>credito come caparra</b>. La Cina aggiunge tre pezzi:</p>
+
+  <table>
+    <tbody>
+      <tr><td class="term">La busta (dal hongbao)</td><td>Il secondo cartoncino non va nudo nel pacco: va <b>in una busta chiusa</b>, magenta col sigillo dorato, con la riga dove chi regala <b>scrive a mano il nome</b> dell'amica. Una busta sigillata si apre, un volantino si butta; col nome sopra è diventata personale. E il regalo arriva <b>dall'amica, non dal negozio</b>: la fiducia più alta che esiste.</td></tr>
+      <tr><td class="term">La squadra (dal team-buy)</td><td><b>Il Sigillo di coppia:</b> quando l'amica attiva la sua busta, <b>tutte e due passano da tre a quattro fiale</b>. Il regalo smette di essere generosità e diventa interesse comune: chi regala ha un motivo per ricordarlo. È il promemoria che nessuna mail può mandare.</td></tr>
+      <tr><td class="term">La sorpresa (coi guanti)</td><td>La quarta fiala è <b>«la scelta della casa»</b>: la sceglie la profumiera in base al profilo. Come il sommelier che porta il bicchiere della casa — stessa attesa della ruota della fortuna, tutt'altro vestito. E fa annusare famiglie che la cliente non avrebbe mai scelto.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="nota stop">
+    <div class="k">Le cose cinesi da non copiare</div>
+    <p>Ruote della fortuna, conti alla rovescia aggressivi, catene di inviti a premi crescenti, giochi
+    quotidiani in app. La regola per decidere ogni caso: <b>«si può dire ad alta voce in negozio?»</b>
+    «La quarta fiala la sceglie la nostra profumiera per te» — sì. «Gira la ruota, hai quasi vinto!» — no.</p>
+  </div>
+
+  <p>La pagina dell'amica è separata: <code>/regalo/amica</code>, si apre con <b>«Qualcuno ha pensato
+  a te»</b> (lei non ha comprato niente: ha ricevuto un pensiero), stesso gioco delle famiglie, e la
+  riga sulla squadra. Fonte: <code>pacco-regalo</code> — così al lunedì si sa <b>quanti clienti nuovi
+  portano i vecchi</b> e quanto costa ciascuno: il prezzo di una busta e quattro fiale.</p>
+</div>
+<div class="lez">
+  <div class="lez-h"><span class="n">8</span><h2>Il test dei 500 — prima di stampare i 5.000</h2></div>
+
+  <p>Cinquemila cartoncini stampati adesso sono cinquemila copie di una cosa che non sappiamo se
+  funziona. Se ne stampano <b>500</b>, in due versioni con due indirizzi, e fra tre settimane si
+  stampano i 4.500 della versione che ha vinto.</p>
+
+  <table>
+    <thead><tr><th></th><th>Versione A (250)</th><th>Versione B (250)</th></tr></thead>
+    <tbody>
+      <tr><td class="term">Promessa sul fronte</td><td><b>«Il prossimo profumo scoprilo prima»</b> — le tre fiale</td><td>il testo di oggi, «Sblocca il tuo Regalo»</td></tr>
+      <tr><td class="term">Indirizzo</td><td><code>/regalo</code></td><td><code>/scopri</code></td></tr>
+    </tbody>
+  </table>
+
+  <p>I quattro numeri da leggere, in ordine — ognuno toglie un sospetto a quello prima:</p>
+  <table>
+    <tbody>
+      <tr><td class="term">1 · Visite alla pagina</td><td>se è basso: il cartoncino — posizione nella scatola, la riga «gira», il QR</td></tr>
+      <tr><td class="term">2 · Chi tocca le famiglie</td><td>se è basso: la promessa in alto non regge i primi tre secondi</td></tr>
+      <tr><td class="term">3 · Moduli completati</td><td>se è basso: il modulo o il valore offerto — non la pagina</td></tr>
+      <tr><td class="term">4 · Ordini con Sigillo</td><td>se è basso: il credito, la scadenza, o la selezione dove atterrano</td></tr>
+    </tbody>
+  </table>
+
+  <div class="nota">
+    <div class="k">Un esperimento per volta</div>
+    <p>Nei 500 di prova va <b>solo il cartoncino 1</b>. La busta entra con la stampa grande, quando la
+    pagina <code>/regalo/amica</code> è in piedi: due esperimenti nello stesso lancio non si leggono più.</p>
+  </div>
+</div>
+
+<div class="lez">
+  <div class="lez-h"><span class="n">9</span><h2>Il mondo visivo e il video</h2></div>
+
+  <p><b>La direzione:</b> il coniglio è una punteggiatura, non la storia. Woman vende Chanel, Dior,
+  Tom Ford: il mondo visivo deve poter stare accanto a quei marchi. Cinque elementi ricorrenti
+  (quadrante romano in filigrana · cornice dorata · fiala · orecchie che spuntano — mai il coniglio
+  intero, un indizio non un personaggio · rombo d'oro), sei colori, il magenta razionato a
+  <b>una sola cosa per schermata</b>. Il movimento è una ricompensa, mai una decorazione: una cosa
+  sola si muove, sotto il secondo, mai in circolo, lontano dal pulsante.</p>
+
+  <p><b>La hero della pagina:</b> non il volantino riprodotto ma la sua atmosfera — la fiala grande
+  illuminata dentro il quadrante, angoli d'oro, il bianconiglio che attraversa <b>una volta sola</b>
+  all'arrivo e lascia la traccia tratteggiata. In tema scuro diventa la faccia nera del cartoncino.</p>
+
+  <p><b>Il reel montato</b> (10,7 s, verticale, muto — la musica si sceglie in pubblicazione):
+  il galoppo al rallentatore → stacco sul palco vuoto → la corsa in piedi con l'orologio in zampa →
+  palco vuoto → il marchio che emerge nella luce. Dove va: social e storie, mail, riunione con Mondo.
+  Dove non va: sopra il pulsante della pagina, come copertina del sito. Il personaggio resta coerente
+  con quattro parole fisse nei prompt: <i>white rabbit · black velvet waistcoat · magenta piping ·
+  gold pocket watch</i>.</p>
+</div>
+
+<div class="lez">
+  <div class="lez-h"><span class="n">10</span><h2>Le reti di sicurezza</h2></div>
+  <table>
+    <tbody>
+      <tr><td class="term">Amazon</td><td><b>Domanda scritta a Seller Support prima della tipografia</b>, col testo dei cartoncini allegato (la busta da regalare è più delicata del primo, va dichiarata nello stesso quesito) e risposta salvata. Da Amazon non arriva nessun contatto: il cartoncino è l'unico ponte — e il codice vale <b>solo sul vostro sito</b>.</td></tr>
+      <tr><td class="term">Consensi</td><td>Due caselle separate, la facoltativa parte vuota. Chi riceve la busta non ha mai comprato da Woman.</td></tr>
+      <tr><td class="term">Domini</td><td>Il vivo è <b>womanparfume.com</b> (sul cartoncino, tel +39 351 539 0974). Le schede pubbliche riportano ancora womanparfumestore.com e tre telefoni: da bonificare, è quello che esce su Google.</td></tr>
+      <tr><td class="term">Promesse</td><td>Mai percentuali: <b>«non promettiamo una conversione, promettiamo una misura»</b>. I benchmark di settore vengono quasi sempre da chi vende lo strumento misurato.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="lez pagebreak">
+  <div class="lez-h"><span class="n">11</span><h2>Le decisioni che aspettano Woman</h2></div>
+  <ul class="ck">
+    <li><span class="b"></span><span><b>La cifra vera del credito</b> — 15 € è un segnaposto: dev'essere il prezzo reale delle tre fiale.</span></li>
+    <li><span class="b"></span><span><b>I giorni del credito</b> — 60 è una proposta.</span></li>
+    <li><span class="b"></span><span><b>La scadenza stampata sul cartoncino</b> («attivabile entro il…») — resta fissa perché è stampata.</span></li>
+    <li><span class="b"></span><span><b>Il tetto delle attivazioni</b> — «le prime 500» o nessun tetto: va scritto sulla pagina.</span></li>
+    <li><span class="b"></span><span><b>Chi mette le mani nel sito</b> — Woman, un'agenzia, nessuno: è la risposta che decide i tempi di tutto.</span></li>
+    <li><span class="b"></span><span><b>Le otto selezioni per famiglia</b> sul sito — dove atterra chi ha finito.</span></li>
+  </ul>
+
+  <div class="frase">
+    <div class="k">La chiusura, se la presenti</div>
+    <p>«Non stiamo comprando clienti. Stiamo mettendo dentro ogni scatola il seme della scatola
+    successiva — e un contatore per sapere se germoglia.»</p>
+  </div>
+</div>
+
+<footer>
+  <span>Woman Srl · Via San Martino 1, Sant'Agata sul Santerno (RA)</span>
+  <span>Dossier · la strategia del pacco</span>
+</footer>
+</body>
+</html>
