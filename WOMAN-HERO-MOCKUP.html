@@ -1,0 +1,262 @@
+<title>La schermata del coupon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Hanken+Grotesk:wght@300;400;500;600&display=swap">
+<style>
+:root{
+  --paper:#faf7f2; --panel:#fffdfa; --sunk:#f2ece3;
+  --ink:#1c1815; --ink-2:#57504a; --ink-3:#857c72;
+  --rule:rgba(28,24,21,.20); --hair:rgba(28,24,21,.11);
+  --granata:#b4184f; --ottone:#8a5e06; --verde:#00705e;
+  --chip:#f6dfe6;
+  --shadow:0 1px 2px rgba(28,24,21,.05), 0 14px 40px rgba(28,24,21,.10);
+  --screen:#ffffff; --screen-ink:#1c1815;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#14110e; --panel:#1d1915; --sunk:#100e0b;
+  --ink:#f3ece2; --ink-2:#b8aea2; --ink-3:#8d8478;
+  --rule:rgba(243,236,226,.22); --hair:rgba(243,236,226,.12);
+  --granata:#f4799f; --ottone:#e6ac45; --verde:#4ec8ae;
+  --chip:#3a2029;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 44px rgba(0,0,0,.5);
+  --screen:#fffdfa; --screen-ink:#1c1815;
+}}
+:root[data-theme="dark"]{
+  --paper:#14110e; --panel:#1d1915; --sunk:#100e0b;
+  --ink:#f3ece2; --ink-2:#b8aea2; --ink-3:#8d8478;
+  --rule:rgba(243,236,226,.22); --hair:rgba(243,236,226,.12);
+  --granata:#f4799f; --ottone:#e6ac45; --verde:#4ec8ae;
+  --chip:#3a2029;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 44px rgba(0,0,0,.5);
+  --screen:#fffdfa; --screen-ink:#1c1815;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:'Hanken Grotesk',-apple-system,Segoe UI,Arial,sans-serif;font-weight:300;font-size:16px;line-height:1.62;}
+.wrap{max-width:1080px;margin:0 auto;padding:44px 22px 80px;}
+.wrap > *{min-width:0;}
+.kicker{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--granata);font-weight:500;}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:clamp(30px,5.4vw,46px);line-height:1.03;
+  letter-spacing:-.02em;margin:12px 0 10px;text-wrap:balance;}
+h1 em{font-style:italic;color:var(--granata);}
+.stand{font-size:clamp(15px,2.1vw,18px);color:var(--ink-2);max-width:62ch;margin:0;}
+.top{border-bottom:1px solid var(--rule);padding-bottom:24px;margin-bottom:8px;}
+.warn{margin-top:20px;display:inline-flex;gap:10px;align-items:baseline;border:1px solid var(--hair);
+  background:var(--chip);padding:9px 14px;font-size:13px;color:var(--ink-2);}
+.warn b{color:var(--ink);font-weight:500;}
+
+h2{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:clamp(23px,3.4vw,30px);
+  letter-spacing:-.015em;margin:0 0 6px;line-height:1.12;}
+section{margin-top:56px;}
+.sec-lab{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--granata);font-weight:500;margin-bottom:10px;}
+p{margin:0 0 12px;max-width:66ch;color:var(--ink-2);}
+p b{color:var(--ink);font-weight:500;}
+
+/* ── telefono ── */
+.stage{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:38px;align-items:start;margin-top:26px;}
+@media (max-width:760px){ .stage{grid-template-columns:1fr;} }
+.phone{background:var(--ink);border-radius:34px;padding:11px;box-shadow:var(--shadow);}
+.phone .bar{display:flex;align-items:center;gap:8px;padding:7px 12px 9px;}
+.phone .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.28);}
+.phone .url{flex:1;background:rgba(255,255,255,.12);border-radius:20px;padding:4px 12px;
+  font-size:11px;color:#f0e7dc;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.screen{background:var(--screen);color:var(--screen-ink);border-radius:24px;overflow:hidden;}
+
+.hero{padding:26px 22px 24px;}
+.hero .logo{font-family:'Fraunces',Georgia,serif;font-size:19px;letter-spacing:.3em;text-transform:uppercase;
+  color:#1c1815;text-align:center;padding-bottom:16px;border-bottom:1px solid rgba(28,24,21,.12);}
+.hero .eyebrow{margin-top:20px;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#b4184f;font-weight:600;}
+.hero h3{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:27px;line-height:1.12;
+  letter-spacing:-.015em;margin:9px 0 12px;color:#1c1815;}
+.slot{background:#f6dfe6;padding:0 5px;border-bottom:1.5px solid #b4184f;white-space:nowrap;}
+.hero .sub{font-size:14.5px;line-height:1.5;color:#3f3a34;margin:0 0 20px;}
+.hero .sub b{font-weight:600;color:#1c1815;}
+.cta{display:block;width:100%;background:#b4184f;color:#fff;border:0;border-radius:2px;
+  padding:15px 16px;font-family:inherit;font-size:16px;font-weight:500;letter-spacing:.01em;cursor:pointer;}
+.cta:focus-visible{outline:3px solid #8a5e06;outline-offset:2px;}
+.under{margin-top:10px;font-size:12.5px;color:#6b625a;text-align:center;}
+.scad{margin-top:16px;padding:9px 12px;background:#faf7f2;border-left:2px solid #8a5e06;font-size:12.5px;color:#3f3a34;}
+.proof{margin-top:20px;padding-top:15px;border-top:1px solid rgba(28,24,21,.12);font-size:12px;color:#6b625a;line-height:1.55;}
+.proof b{color:#1c1815;font-weight:500;}
+.brands{margin-top:11px;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#8b8278;}
+
+/* ── annotazioni ── */
+.notes{display:grid;gap:0;}
+.note{display:grid;grid-template-columns:26px 1fr;gap:14px;padding:13px 0;border-bottom:1px solid var(--hair);align-items:start;}
+.note:first-child{border-top:1px solid var(--hair);}
+.note .n{font-family:'Fraunces',Georgia,serif;font-size:17px;color:var(--granata);line-height:1.3;}
+.note b{display:block;color:var(--ink);font-weight:500;font-size:15.5px;}
+.note span{font-size:14.5px;color:var(--ink-2);}
+
+/* ── browser ── */
+.browser{background:var(--ink);border-radius:12px;padding:9px;box-shadow:var(--shadow);margin-top:26px;}
+.browser .bar{display:flex;align-items:center;gap:8px;padding:3px 6px 9px;}
+.browser .url{flex:1;background:rgba(255,255,255,.12);border-radius:20px;padding:4px 12px;font-size:11px;color:#f0e7dc;}
+.site{background:var(--screen);color:var(--screen-ink);border-radius:6px;overflow:hidden;}
+.site .nav{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:15px 20px;border-bottom:1px solid rgba(28,24,21,.10);flex-wrap:wrap;}
+.site .nav .mark{font-family:'Fraunces',Georgia,serif;font-size:15px;letter-spacing:.28em;text-transform:uppercase;color:#1c1815;}
+.site .nav ul{display:flex;gap:16px;list-style:none;margin:0;padding:0;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#57504a;flex-wrap:wrap;}
+.strip{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;
+  background:#f6dfe6;padding:11px 18px;font-size:13.5px;color:#1c1815;border-bottom:1px solid rgba(180,24,79,.25);}
+.strip a{color:#b4184f;font-weight:600;text-decoration:none;border-bottom:1.5px solid currentColor;}
+.strip a:focus-visible{outline:3px solid #8a5e06;outline-offset:3px;}
+.fakehero{padding:34px 20px;background:#f2ece3;text-align:center;}
+.fakehero .t{font-family:'Fraunces',Georgia,serif;font-size:22px;color:#1c1815;}
+.fakehero .s{font-size:13px;color:#6b625a;margin-top:6px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 20px 22px;}
+.tile{background:#f2ece3;height:74px;border-radius:2px;}
+.callout{margin-top:14px;font-size:14px;color:var(--ink-2);}
+.callout b{color:var(--ink);font-weight:500;}
+
+/* ── confronto ── */
+table{width:100%;border-collapse:collapse;margin-top:20px;font-size:15px;display:block;overflow-x:auto;}
+th{text-align:left;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3);font-weight:500;
+  border-bottom:1px solid var(--rule);padding:0 14px 7px 0;vertical-align:bottom;}
+td{padding:11px 14px 11px 0;border-bottom:1px solid var(--hair);vertical-align:top;color:var(--ink-2);}
+td b{color:var(--ink);font-weight:500;}
+td.k{color:var(--ink);font-weight:500;width:26%;}
+.no{color:var(--granata);font-weight:500;}
+.yes{color:var(--verde);font-weight:500;}
+
+ul.plain{list-style:none;padding:0;margin:16px 0 0;}
+ul.plain li{display:grid;grid-template-columns:16px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid var(--hair);
+  font-size:15.5px;color:var(--ink-2);}
+ul.plain li:first-child{border-top:1px solid var(--hair);}
+ul.plain .box{width:11px;height:11px;border:1.5px solid var(--granata);margin-top:6px;}
+ul.plain b{color:var(--ink);font-weight:500;}
+.foot{margin-top:52px;padding-top:16px;border-top:1px solid var(--rule);font-size:11px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-3);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="kicker">Woman Srl · la pagina del coupon</div>
+    <h1>La schermata che vede <em>chi scannerizza</em></h1>
+    <p class="stand">Due modi di collegare la convenzione al sito del negozio. Uno funziona, l'altro
+    rompe il filtro numero uno — e la differenza si vede meglio guardandola che spiegandola.</p>
+    <div class="warn"><b>Bozza.</b> <span>Veste provvisoria: non ho ancora visto il sito di Woman. Struttura e testi sono quelli buoni, colori e caratteri si riallineano appena arrivano gli screenshot.</span></div>
+  </div>
+
+  <section>
+    <div class="sec-lab">Variante A — quella giusta</div>
+    <h2>Una stanza chiusa dentro il dominio del negozio</h2>
+    <p>La pagina vive all'indirizzo del negozio — quindi la fiducia è quella del negozio — ma non è
+    il negozio: <b>non ha menu, non ha carrello, non ha vie di fuga.</b> Una sola azione possibile.</p>
+
+    <div class="stage">
+      <div class="phone">
+        <div class="bar"><span class="dot"></span><span class="url">womanparfumestore.com/convenzioni/…</span></div>
+        <div class="screen">
+          <div class="hero">
+            <div class="logo">Woman</div>
+            <div class="eyebrow">Convenzione riservata</div>
+            <h3>Lavori in <span class="slot">[Nome azienda]</span>? Questo è il tuo vantaggio.</h3>
+            <p class="sub"><b>Sconto dedicato su profumeria e make-up</b>, tutto l'anno, nel negozio
+            di Sant'Agata sul Santerno. Si attiva in trenta secondi.</p>
+            <button class="cta" type="button">Attiva il mio codice</button>
+            <div class="under">Nessun costo, nessun obbligo. Il codice arriva subito.</div>
+            <div class="scad">Attivabile fino al <b>[data]</b>.</div>
+            <div class="proof"><b>Woman · profumeria e beauty center</b><br>
+            Via San Martino 1, Sant'Agata sul Santerno (RA) · 0545 45830<br>
+            Aperto dal 1989.</div>
+            <div class="brands">Chanel · Dior · YSL · Tom Ford · Shiseido</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="notes">
+        <div class="note"><div class="n">1</div><div><b>Progettata per il telefono, non per il computer</b><span>Un QR si legge col telefono, sempre. Quindi questa è la schermata vera, e il desktop è la versione secondaria — non il contrario.</span></div></div>
+        <div class="note"><div class="n">2</div><div><b>Il nome dell'azienda nel titolo</b><span>È il pezzo che fa dire «parla di me». Ed è anche il motivo per cui la pagina si duplica per ogni ente invece di essere una sola generica.</span></div></div>
+        <div class="note"><div class="n">3</div><div><b>Il logo non è cliccabile</b><span>Sembra un dettaglio da niente. È la differenza fra un corridoio e una piazza: appena il logo porta alla home, hai riaperto tutte le uscite.</span></div></div>
+        <div class="note"><div class="n">4</div><div><b>Un pulsante, largo quanto lo schermo</b><span>Sotto ci va la riga che toglie la paura — nessun costo, nessun obbligo — perché è lì che la persona esita.</span></div></div>
+        <div class="note"><div class="n">5</div><div><b>La scadenza, visibile subito</b><span>Una riga di testo. È la leva più forte che avete e non costa niente: un vantaggio buono per sempre non si usa mai.</span></div></div>
+        <div class="note"><div class="n">6</div><div><b>La prova che il negozio esiste</b><span>Indirizzo, telefono, l'anno, i marchi. Chi scannerizza da una bacheca non vi conosce: in due secondi deve capire che non è una pagina inventata.</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-lab">Variante B — quella che ti serve <em>in più</em>, non al posto</div>
+    <h2>Una striscia sul sito, non una copertina</h2>
+    <p>Sul sito del negozio la convenzione ci va — ma <b>come striscia sottile sopra il contenuto</b>,
+    non come prima schermata. Serve a chi è già sul sito e non sa che la convenzione esiste,
+    e non ruba la vetrina a chi è venuto a comprare.</p>
+
+    <div class="browser">
+      <div class="bar"><span class="dot"></span><span class="url">womanparfumestore.com</span></div>
+      <div class="site">
+        <div class="strip">
+          <span>Lavori in un'azienda convenzionata con Woman?</span>
+          <a href="#a" onclick="return false;">Attiva qui il tuo codice</a>
+        </div>
+        <div class="nav">
+          <span class="mark">Woman</span>
+          <ul><li>Profumi</li><li>Make-up</li><li>Beauty center</li><li>Marchi</li><li>Contatti</li><li>Carrello</li></ul>
+        </div>
+        <div class="fakehero">
+          <div class="t">La vetrina del negozio resta la vetrina del negozio</div>
+          <div class="s">novità, marchi, promozioni — quello che c'è già</div>
+        </div>
+        <div class="grid3"><div class="tile"></div><div class="tile"></div><div class="tile"></div></div>
+      </div>
+    </div>
+    <p class="callout"><b>Costo: mezz'ora di lavoro. Rischio: zero.</b> E porta il link a una pagina
+    indice <code>/convenzioni</code> dove la persona sceglie la sua azienda — così anche da qui
+    il contatto arriva con la fonte scritta sopra.</p>
+  </section>
+
+  <section>
+    <div class="sec-lab">La domanda vera</div>
+    <h2>Perché non mettere l'hero del funnel come copertina del sito</h2>
+    <p>L'intuizione dietro la proposta è giusta — <b>la coerenza serve davvero</b> — ma la mossa
+    costa più di quello che rende. Cinque motivi, in ordine di gravità.</p>
+
+    <table>
+      <thead><tr><th>Se la copertina diventa il funnel</th><th>Che cosa succede</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Torni ad avere dieci uscite</td><td>La home ha menu, carrello, marchi, contatti. <span class="no">Il filtro 1 crolla</span>: la pagina che deve avere una porta sola ne ha dodici.</td></tr>
+        <tr><td class="k">Perdi il codice per ente</td><td>Il codice è <b>WOMAN-NOMEAZIENDA</b>. Una copertina è una sola e generica: non può portare il codice di nessuno, e senza codice per ente <span class="no">non sai più da dove arrivano gli scontrini</span>.</td></tr>
+        <tr><td class="k">Perdi l'attribuzione</td><td>Non distingui più chi è arrivato dal QR da chi stava curiosando sul sito. <span class="no">Il pilota smette di misurare</span>, che è l'unica cosa per cui esiste.</td></tr>
+        <tr><td class="k">Danneggi il negozio</td><td>Chi arriva sull'e-commerce per comprare un profumo si trova davanti una proposta che non lo riguarda. Spendi la prima schermata del negozio per una frazione dei visitatori.</td></tr>
+        <tr><td class="k">Non è replicabile</td><td>Ogni convenzione ha bisogno della sua pagina. Non puoi rifare la copertina del sito ogni volta che firmi.</td></tr>
+      </tbody>
+    </table>
+
+    <p style="margin-top:22px"><b>La coerenza non si ottiene condividendo la homepage: si ottiene
+    condividendo il vestito.</b> Stesso logo, stessi caratteri, stessi colori, stesso piede con
+    indirizzo e telefono, e soprattutto <span class="yes">stesso dominio</span> — chi legge il QR
+    vede scritto <code>womanparfumestore.com</code> e capisce subito con chi ha a che fare.
+    Stessa pelle, stanze diverse.</p>
+  </section>
+
+  <section>
+    <div class="sec-lab">Operativo</div>
+    <h2>Il QR, fatto bene</h2>
+    <ul class="plain">
+      <li><span class="box"></span><span><b>Uno per ente, mai uno solo per tutti.</b> Punta all'indirizzo di quell'azienda, con la fonte già dentro il link. È lo stesso principio del codice.</span></li>
+      <li><span class="box"></span><span><b>L'indirizzo dev'essere leggibile a occhio.</b> La gente legge l'URL prima di scannerizzare: <code>womanparfumestore.com/convenzioni/nomeazienda</code> rassicura, un link accorciato no.</span></li>
+      <li><span class="box"></span><span><b>Stampato grande.</b> Regola pratica: il lato del QR almeno un decimo della distanza da cui lo si legge. Su una bacheca a un metro e mezzo, vuol dire un QR da quindici centimetri — non il francobollo in fondo al foglio.</span></li>
+      <li><span class="box"></span><span><b>Sotto il QR ci va scritto cosa succede.</b> «Inquadra e attiva il tuo codice Woman». Un QR muto non lo scannerizza nessuno.</span></li>
+      <li><span class="box"></span><span><b>Provato prima con due telefoni diversi</b>, uno vecchio, e con la luce della bacheca. Sembra pedante: è il motivo per cui certe campagne non partono mai.</span></li>
+      <li><span class="box"></span><span><b>Il QR non è una quarta sorgente.</b> È un ponte fra la carta e la pagina. La fonte resta quella del posto dove è appeso: convenzione se è in bacheca, evento se è sul banco della serata.</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="sec-lab">Per andare avanti</div>
+    <h2>Che cosa mi serve del sito</h2>
+    <p>Cinque cose, e da quel momento la pagina la costruisco davvero — con la veste giusta, non con questa.</p>
+    <ul class="plain">
+      <li><span class="box"></span><span><b>Quattro screenshot:</b> home da computer, home da telefono, una scheda prodotto, il piede della pagina.</span></li>
+      <li><span class="box"></span><span><b>Che piattaforma è</b> — Shopify, PrestaShop, WooCommerce, Wix o altro. Si legge dal piede del sito o dall'indirizzo del carrello. Decide se possiamo aggiungere pagine da soli o serve chi lo gestisce.</span></li>
+      <li><span class="box"></span><span><b>Il logo in file</b> — vettoriale se c'è, altrimenti un PNG grande e pulito.</span></li>
+      <li><span class="box"></span><span><b>Due o tre foto</b> del negozio e del beauty center. Servono nella pagina: sono la prova che il posto esiste.</span></li>
+      <li><span class="box"></span><span><b>Chi mette le mani nel sito oggi</b> — Woman, un'agenzia, o nessuno. È la risposta che decide i tempi.</span></li>
+    </ul>
+  </section>
+
+  <div class="foot">
+    <span>Woman Srl · Via San Martino 1, Sant'Agata sul Santerno (RA)</span>
+    <span>Bozza di struttura · non una pagina pubblicata</span>
+  </div>
+</div>
