@@ -29,19 +29,25 @@ invece di portare a una pagina rotta.
 
 ## I video
 
-| File | Cos'è |
-|---|---|
-| `hero.mp4` | coniglio 3D con l'orologio da taschino, fondo della testata |
-| `01.mp4` | Yacht Club Monte Carlo |
-| `02.mp4` | serie «Aurea» |
-| `03.mp4` | corto animato polpo/scontrini |
-| `04.mp4` | scroll del sito Mondial Service, ripreso dal sito vero |
-| `05.mp4` | scroll del sito Quelli della Bufala, ripreso dal sito vero |
+| File | Cos'è | Audio |
+|---|---|---|
+| `hero.mp4` | coniglio 3D con l'orologio da taschino, fondo della testata | no |
+| `01.mp4` | Yacht Club Monte Carlo | no |
+| `02.mp4` | serie «Aurea» | **sì** |
+| `03.mp4` | corto animato polpo/scontrini | **sì** |
+| `04.mp4` | scroll del sito Mondial Service, ripreso dal sito vero | no |
+| `05.mp4` | scroll del sito Quelli della Bufala, ripreso dal sito vero | no |
+
+Chi ha l'audio lo dichiara nel markup con `data-audio="1"`, e solo lì il tasto
+🔊 del visualizzatore si accende: rilevare da JavaScript se un file ha una
+traccia audio è un terno al lotto che cambia da browser a browser, dichiararlo
+no. La testata resta senza audio di proposito — è un fondo decorativo, non ha
+comandi per accenderlo, ed è l'unico video che si scarica sempre.
 
 `04` e `05` non sono montati a mano: si rigenerano dal sito pubblicato con lo
-script `tools/capture-scroll.mjs` (vedi `DEPLOY.md`). Da 01 a 03 sono i file
-del titolare, esportati senza traccia audio per peso: per rimetterla, basta
-sostituire il file mantenendo il nome.
+script `tools/capture-scroll.mjs` (vedi `DEPLOY.md`). Gli altri sono i file del
+titolare: per sostituirne uno basta mantenere il nome — e, se il nuovo file ha
+l'audio, aggiungere `data-audio="1"` al suo `<video>`.
 
 Regole da non violare quando si sostituisce un video: **H.264 `yuv420p` con
 `faststart`, mai HEVC** (i `.mov` dell'iPhone vanno transcodificati, altrimenti

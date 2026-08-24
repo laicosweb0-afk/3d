@@ -149,7 +149,8 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:2px solid 
 .viewer-close:hover{border-color:var(--bronze);color:var(--bronze)}
 .viewer-nav{position:absolute;bottom:22px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
 .viewer-nav button,.viewer-nav a{background:none;border:1px solid var(--edge);color:var(--muted);font-family:var(--mono);font-size:11px;letter-spacing:.16em;padding:10px 16px;cursor:pointer;text-decoration:none}
-.viewer-nav button:hover,.viewer-nav a:hover{border-color:var(--bronze);color:var(--bronze)}
+.viewer-nav button:hover:not(:disabled),.viewer-nav a:hover{border-color:var(--bronze);color:var(--bronze)}
+.viewer-nav button:disabled{opacity:.35;cursor:default}
 .viewer-nav a{color:var(--bronze);border-color:rgba(176,138,80,.4)}
 .viewer-nav a[hidden]{display:none}
 body.locked{overflow:hidden}
@@ -230,7 +231,7 @@ body.locked{overflow:hidden}
       <article class="card play up">
         <div class="thumb">
           <span class="num">02</span>
-          <video data-src="assets/02.mp4" poster="assets/02.jpg" muted loop playsinline preload="none"></video>
+          <video data-src="assets/02.mp4" poster="assets/02.jpg" data-audio="1" muted loop playsinline preload="none"></video>
         </div>
         <div class="info">
           <h2>Aurea — un personaggio, non un logo</h2>
@@ -242,7 +243,7 @@ body.locked{overflow:hidden}
       <article class="card play up">
         <div class="thumb">
           <span class="num">03</span>
-          <video data-src="assets/03.mp4" poster="assets/03.jpg" muted loop playsinline preload="none"></video>
+          <video data-src="assets/03.mp4" poster="assets/03.jpg" data-audio="1" muted loop playsinline preload="none"></video>
         </div>
         <div class="info">
           <h2>Mondi costruiti su misura</h2>
@@ -395,6 +396,9 @@ body.locked{overflow:hidden}
     return {
       trigger: trigger,
       video: trigger.querySelector('video[data-src]'),
+      /* Dichiarato nel markup, non indovinato: rilevare una traccia audio da
+         JS è un terno al lotto che cambia da browser a browser. */
+      audio: trigger.querySelector('video[data-src]').dataset.audio === '1',
       title: card.querySelector('h2').textContent,
       text:  card.querySelector('.info p').textContent,
       site:  card.dataset.site || ''
@@ -407,7 +411,10 @@ body.locked{overflow:hidden}
     current = i;
     var it = items[i];
     vVideo.src = it.video.dataset.src;
-    vVideo.muted = !soundOn;          /* parte muto: è l'unico modo per partire da solo */
+    /* Parte muto: è l'unico modo per partire da solo. E resta muto se il file
+       non ha traccia audio — un video "non muto" senza suono si fa bloccare
+       l'autoplay per niente. */
+    vVideo.muted = !(soundOn && it.audio);
     vVideo.autoplay = true;
     vVideo.loop = true;
     vTitle.textContent = it.title;
@@ -415,13 +422,19 @@ body.locked{overflow:hidden}
     /* sulle due schede-sito il visualizzatore porta anche al sito vero */
     var url = it.site ? SITES[it.site] : '';
     if(isReal(url)){ vOpen.href = url; vOpen.hidden = false; } else { vOpen.hidden = true; }
+    paintSound();
     var p = vVideo.play();
     if(p) p.catch(function(){ vVideo.muted = true; soundOn = false; paintSound(); vVideo.play().catch(function(){}); });
   }
   function paintSound(){
-    var b = document.getElementById('viewer-sound');
-    b.textContent = soundOn ? '🔊 AUDIO' : '🔇 AUDIO';
-    b.style.color = soundOn ? 'var(--bronze)' : '';
+    var b = document.getElementById('viewer-sound'),
+        has = current >= 0 && items[current].audio,
+        on  = has && soundOn;
+    b.disabled = !has;
+    b.textContent = on ? '🔊 AUDIO' : '🔇 AUDIO';
+    b.style.color = on ? 'var(--bronze)' : '';
+    b.setAttribute('aria-label', has ? (on ? 'Disattiva audio' : 'Attiva audio')
+                                     : 'Questo lavoro non ha traccia audio');
   }
   function open(i){
     lastFocus = document.activeElement;
@@ -451,6 +464,7 @@ body.locked{overflow:hidden}
 
   document.getElementById('viewer-close').addEventListener('click', close);
   document.getElementById('viewer-sound').addEventListener('click', function(){
+    if(current < 0 || !items[current].audio) return;
     soundOn = !soundOn;
     vVideo.muted = !soundOn;
     if(soundOn){ var p = vVideo.play(); if(p) p.catch(function(){}); }
