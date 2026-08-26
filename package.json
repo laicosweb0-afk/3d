@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lugo:map": "node tools/lugo/fetch-osm.mjs && node tools/lugo/build-map.mjs",
+    "lugo:verify": "node tools/lugo/verify-lugo.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.0.0",
