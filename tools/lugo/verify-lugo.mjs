@@ -18,7 +18,7 @@ const ROOT = join(HERE, '..', '..');
 const SHOTS = join(HERE, 'shots');
 const PORT = 4517;
 const BASE = process.env.BASE ?? '';
-const URL = `http://localhost:${PORT}${BASE}/lugo/`;
+const URL = `http://localhost:${PORT}${BASE}/lugo/?qa=1`;
 
 mkdirSync(SHOTS, { recursive: true });
 

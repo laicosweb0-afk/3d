@@ -7,6 +7,7 @@ import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { CityMeshes } from './CityMeshes';
 import { Missioni } from './Missioni';
+import { Npcs } from './Npcs';
 import { Player } from './Player';
 import { useMondo } from '@/lib/lugo/loadMap';
 import { LUCE, PALETTE } from '@/lib/lugo/palette';
@@ -88,6 +89,7 @@ export function World() {
       <Cielo />
       <CityMeshes />
       <Player />
+      <Npcs />
       <Missioni />
       <HookVerifica />
     </>

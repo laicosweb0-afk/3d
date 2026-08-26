@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import { World } from './World';
 import { useLugo, DPR_PER_TIER, type QualitaTier } from '@/lib/lugo/store';
 import { LUCE } from '@/lib/lugo/palette';
+import { QA } from '@/lib/lugo/qa';
 
 function QualityManager() {
   const setDpr = useThree((s) => s.setDpr);
@@ -38,10 +39,10 @@ export function GameCanvas() {
   return (
     <Canvas
       className="lugo-canvas"
-      shadows
+      shadows={!QA}
       camera={{ position: [80, 120, 180], fov: 55, near: 0.5, far: 2000 }}
-      dpr={[1, 1.75]}
-      gl={{ antialias: true, powerPreference: 'high-performance' }}
+      dpr={QA ? 0.7 : [1, 1.75]}
+      gl={{ antialias: !QA, powerPreference: 'high-performance' }}
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.NeutralToneMapping;
         gl.toneMappingExposure = LUCE.toneMappingExposure;

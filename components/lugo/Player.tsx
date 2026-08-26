@@ -166,6 +166,28 @@ export function Player() {
       rt.urto = esito.urto;
       rt.faseRuote += (esito.v * dt) / RAGGIO_RUOTA;
 
+      // la gazzella è solida: cerchio contro cerchio, con perdita di velocità
+      const g = runtime.gazzella;
+      if (g) {
+        const dx = rt.auto.x - g.x;
+        const dz = rt.auto.z - g.z;
+        const d = Math.hypot(dx, dz);
+        const minD = 2.6;
+        if (d > 0.001 && d < minD) {
+          const nx = dx / d;
+          const nz = dz / d;
+          rt.auto.x += nx * (minD - d);
+          rt.auto.z += nz * (minD - d);
+          const vn = rt.auto.vx * nx + rt.auto.vz * nz;
+          if (vn < 0) {
+            rt.auto.vx -= nx * vn * 1.4;
+            rt.auto.vz -= nz * vn * 1.4;
+            rt.auto.vx *= 0.8;
+            rt.auto.vz *= 0.8;
+          }
+        }
+      }
+
       if (input.reset && !resetPrima.current) {
         const p = puntoStradaVicino(mondo, rt.auto.x, rt.auto.z);
         rt.auto.x = p.x;

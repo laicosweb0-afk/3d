@@ -19,7 +19,11 @@ export interface RuntimeGioco {
   urto: number;
 }
 
-export const runtime: { rt: RuntimeGioco | null } = { rt: null };
+export const runtime: {
+  rt: RuntimeGioco | null;
+  /** Posizione della gazzella di pattuglia (per la collisione col giocatore). */
+  gazzella: { x: number; z: number; yaw: number } | null;
+} = { rt: null, gazzella: null };
 
 /** Posizione del giocatore attivo (auto o persona) secondo la modalità. */
 export function posGiocatore(mode: 'auto' | 'piedi'): { x: number; z: number; yaw: number } {
