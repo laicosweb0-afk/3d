@@ -154,6 +154,29 @@ try {
     else ko('NPC presenti', 'npcCount=0');
   }
 
+  // ── fase 6: cartoline dai landmark ───────────────────────────────────
+  const poiMap = await lugo('L.poi');
+  if (poiMap && (await lugo('typeof L.teleport')) === 'function') {
+    const inquadrature = {
+      pavaglione: [90, 70, 70],
+      rocca: [60, 45, 55],
+      stazione: [45, 30, 40],
+      baracca: [16, 9, 14],
+    };
+    for (const [id, [ox, oy, oz]] of Object.entries(inquadrature)) {
+      const p = poiMap[id];
+      if (!p) continue;
+      // vista aerea in tre quarti puntata sul monumento
+      await page.evaluate(
+        ([x, z, dx, dy, dz]) => window.__LUGO__.fotocamera(x + dx, dy, z + dz, x, 4, z, 4000),
+        [p.x, p.z, ox, oy, oz],
+      );
+      await page.waitForTimeout(900);
+      await page.screenshot({ path: join(SHOTS, `06-${id}.png`) });
+    }
+    ok('cartoline dai landmark');
+  }
+
   // ── errori di pagina ──────────────────────────────────────────────────
   const gravi = errori.filter((e) => !e.includes('favicon'));
   if (gravi.length) ko('zero errori console', gravi.slice(0, 5).join(' | '));

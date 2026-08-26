@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import { PALETTE } from './palette';
 import type { MondoLugo } from './loadMap';
 
-class Accumulo {
+export class Accumulo {
   pos: number[] = [];
   nor: number[] = [];
   col: number[] = [];
@@ -193,10 +193,10 @@ export interface CittaGeometrie {
 }
 
 /**
- * Genera le geometrie della città. `senzaLandmark` esclude i footprint dei
- * landmark (che hanno modelli bespoke in components/lugo/Landmarks.tsx).
+ * Genera le geometrie della città. `senzaLandmark` elenca gli id landmark i
+ * cui footprint NON vanno estrusi (hanno modelli bespoke in Landmarks.tsx).
  */
-export function generaCitta(mondo: MondoLugo, senzaLandmark = false): CittaGeometrie {
+export function generaCitta(mondo: MondoLugo, senzaLandmark: string[] = []): CittaGeometrie {
   const edifici = new Accumulo();
   const suolo = new Accumulo();
 
@@ -204,8 +204,9 @@ export function generaCitta(mondo: MondoLugo, senzaLandmark = false): CittaGeome
   const tinte = PALETTE.intonaci.map((c) => new THREE.Color(c));
   const tettoTinte = tinte.map((t) => tetto.clone().lerp(t, 0.25));
 
+  const esclusi = new Set(senzaLandmark);
   for (const b of mondo.buildings) {
-    if (senzaLandmark && b.landmark) continue;
+    if (b.landmark && esclusi.has(b.landmark)) continue;
     estrudiEdificio(edifici, b.fp, b.fori, b.h, tinte[b.tinta % tinte.length], tettoTinte[b.tinta % tinte.length]);
   }
 

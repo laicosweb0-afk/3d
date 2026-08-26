@@ -9,7 +9,7 @@ import { useMondo } from '@/lib/lugo/loadMap';
 import { generaCitta } from '@/lib/lugo/citygen';
 import { PALETTE } from '@/lib/lugo/palette';
 
-export function CityMeshes({ senzaLandmark = false }: { senzaLandmark?: boolean }) {
+export function CityMeshes({ senzaLandmark = [] }: { senzaLandmark?: string[] }) {
   const mondo = useMondo();
 
   const { edifici, suolo } = useMemo(() => generaCitta(mondo, senzaLandmark), [mondo, senzaLandmark]);

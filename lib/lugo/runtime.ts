@@ -23,7 +23,9 @@ export const runtime: {
   rt: RuntimeGioco | null;
   /** Posizione della gazzella di pattuglia (per la collisione col giocatore). */
   gazzella: { x: number; z: number; yaw: number } | null;
-} = { rt: null, gazzella: null };
+  /** Camera pilotata dalla verifica (cartoline): attiva finché `fino` non scade. */
+  cameraOverride: { x: number; y: number; z: number; tx: number; ty: number; tz: number; fino: number } | null;
+} = { rt: null, gazzella: null, cameraOverride: null };
 
 /** Posizione del giocatore attivo (auto o persona) secondo la modalità. */
 export function posGiocatore(mode: 'auto' | 'piedi'): { x: number; z: number; yaw: number } {

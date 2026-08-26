@@ -96,7 +96,6 @@ export function Npcs() {
   const gazzella = useMemo(() => creaGazzella(mondo), [mondo]);
   const parti = useRef<Partial<Parti>>({});
   const gruppoGazzella = useRef<THREE.Group>(null);
-  const lampeggianti = useRef<THREE.MeshLambertMaterial>(null);
   const ultimaFrase = useRef(0);
 
   useEffect(() => {
@@ -191,10 +190,6 @@ export function Npcs() {
       gruppoGazzella.current.position.set(gazzella.x, 0, gazzella.z);
       gruppoGazzella.current.rotation.y = -gazzella.yaw;
       runtime.gazzella = { x: gazzella.x, z: gazzella.z, yaw: gazzella.yaw };
-      if (lampeggianti.current) {
-        const blink = Math.sin(frame.clock.elapsedTime * 6) > 0;
-        lampeggianti.current.emissiveIntensity = blink ? 2.2 : 0.4;
-      }
     }
   });
 
@@ -252,48 +247,62 @@ export function Npcs() {
 
       {gazzella && (
         <group ref={gruppoGazzella}>
-          {/* la gazzella: blu scurissimo, banda bianco-rossa, barra lampeggianti */}
-          <mesh position={[0, 0.55, 0]} castShadow>
-            <boxGeometry args={[4.2, 0.55, 1.7]} />
-            <meshLambertMaterial color="#101A36" />
-          </mesh>
-          <mesh position={[-0.2, 1.15, 0]} castShadow>
-            <boxGeometry args={[2.3, 0.6, 1.6]} />
-            <meshLambertMaterial color="#101A36" />
-          </mesh>
-          <mesh position={[0, 0.62, 0]}>
-            <boxGeometry args={[4.24, 0.13, 1.72]} />
-            <meshLambertMaterial color="#E8E8EC" />
-          </mesh>
-          <mesh position={[0, 0.75, 0]}>
-            <boxGeometry args={[4.22, 0.06, 1.71]} />
-            <meshLambertMaterial color={ROSSO_BANDA} />
-          </mesh>
-          <mesh position={[-0.2, 1.5, 0]}>
-            <boxGeometry args={[0.5, 0.12, 1.2]} />
-            <meshLambertMaterial
-              ref={lampeggianti}
-              color="#2244AA"
-              emissive="#3366FF"
-              emissiveIntensity={1}
-            />
-          </mesh>
-          <mesh position={[2.12, 0.6, 0.5]}>
-            <boxGeometry args={[0.06, 0.14, 0.26]} />
-            <meshLambertMaterial color="#FFF3C8" emissive="#FFE9A8" emissiveIntensity={1.4} />
-          </mesh>
-          <mesh position={[2.12, 0.6, -0.5]}>
-            <boxGeometry args={[0.06, 0.14, 0.26]} />
-            <meshLambertMaterial color="#FFF3C8" emissive="#FFE9A8" emissiveIntensity={1.4} />
-          </mesh>
-          {[[1.35, 0.85], [1.35, -0.85], [-1.35, 0.85], [-1.35, -0.85]].map(([x, z]) => (
-            <mesh key={x + ':' + z} position={[x, 0.32, z]} rotation={[Math.PI / 2, 0, 0]}>
-              <cylinderGeometry args={[0.32, 0.32, 0.24, 10]} />
-              <meshLambertMaterial color="#1E1C22" />
-            </mesh>
-          ))}
+          <GazzellaMesh lampeggia />
         </group>
       )}
+    </group>
+  );
+}
+
+/** La gazzella dei Carabinieri: blu scurissimo, banda bianco-rossa, barra lampeggianti. */
+export function GazzellaMesh({ lampeggia = false }: { lampeggia?: boolean }) {
+  const materialeLampeggianti = useRef<THREE.MeshLambertMaterial>(null);
+  useFrame((frame) => {
+    if (!lampeggia || !materialeLampeggianti.current) return;
+    const blink = Math.sin(frame.clock.elapsedTime * 6) > 0;
+    materialeLampeggianti.current.emissiveIntensity = blink ? 2.2 : 0.4;
+  });
+  return (
+    <group>
+      <mesh position={[0, 0.55, 0]} castShadow>
+        <boxGeometry args={[4.2, 0.55, 1.7]} />
+        <meshLambertMaterial color="#101A36" />
+      </mesh>
+      <mesh position={[-0.2, 1.15, 0]} castShadow>
+        <boxGeometry args={[2.3, 0.6, 1.6]} />
+        <meshLambertMaterial color="#101A36" />
+      </mesh>
+      <mesh position={[0, 0.62, 0]}>
+        <boxGeometry args={[4.24, 0.13, 1.72]} />
+        <meshLambertMaterial color="#E8E8EC" />
+      </mesh>
+      <mesh position={[0, 0.75, 0]}>
+        <boxGeometry args={[4.22, 0.06, 1.71]} />
+        <meshLambertMaterial color={ROSSO_BANDA} />
+      </mesh>
+      <mesh position={[-0.2, 1.5, 0]}>
+        <boxGeometry args={[0.5, 0.12, 1.2]} />
+        <meshLambertMaterial
+          ref={materialeLampeggianti}
+          color="#2244AA"
+          emissive="#3366FF"
+          emissiveIntensity={lampeggia ? 1 : 0.15}
+        />
+      </mesh>
+      <mesh position={[2.12, 0.6, 0.5]}>
+        <boxGeometry args={[0.06, 0.14, 0.26]} />
+        <meshLambertMaterial color="#FFF3C8" emissive="#FFE9A8" emissiveIntensity={1.4} />
+      </mesh>
+      <mesh position={[2.12, 0.6, -0.5]}>
+        <boxGeometry args={[0.06, 0.14, 0.26]} />
+        <meshLambertMaterial color="#FFF3C8" emissive="#FFE9A8" emissiveIntensity={1.4} />
+      </mesh>
+      {[[1.35, 0.85], [1.35, -0.85], [-1.35, 0.85], [-1.35, -0.85]].map(([x, z]) => (
+        <mesh key={x + ':' + z} position={[x, 0.32, z]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.32, 0.32, 0.24, 10]} />
+          <meshLambertMaterial color="#1E1C22" />
+        </mesh>
+      ))}
     </group>
   );
 }

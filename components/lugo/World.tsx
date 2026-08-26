@@ -6,6 +6,7 @@
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { CityMeshes } from './CityMeshes';
+import { Landmarks } from './Landmarks';
 import { Missioni } from './Missioni';
 import { Npcs } from './Npcs';
 import { Player } from './Player';
@@ -87,7 +88,8 @@ export function World() {
         shadow-camera-far={500}
       />
       <Cielo />
-      <CityMeshes />
+      <CityMeshes senzaLandmark={['pavaglione', 'rocca', 'stazione']} />
+      <Landmarks />
       <Player />
       <Npcs />
       <Missioni />

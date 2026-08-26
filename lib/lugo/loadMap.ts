@@ -7,6 +7,7 @@
 
 import { use } from 'react';
 import { asset } from '@/lib/asset';
+import { puntiVarco, vicinoAVarco } from './gates';
 import type { LugoMap, ClasseStrada, PoiMap } from './types';
 
 export interface StradaRT {
@@ -101,22 +102,24 @@ function colliderDa(
     };
   }
   // segmenti dal perimetro esterno E dai bordi dei cortili: dentro la corte
-  // si cammina, contro i muri (anche interni) si sbatte
+  // si cammina, contro i muri (anche interni) si sbatte. Il Pavaglione ha i
+  // varchi veri al centro dei lati: lì il muro si apre.
+  const varchi = b.landmark === 'pavaglione' ? puntiVarco(fp) : null;
   const anelli = [fp, ...fori];
-  let totale = 0;
-  for (const a of anelli) totale += a.length / 2;
-  const segs = new Float32Array(totale * 4);
-  let k = 0;
+  const segArr: number[] = [];
   for (const a of anelli) {
     const n = a.length / 2;
     for (let i = 0; i < n; i++) {
       const j = (i + 1) % n;
-      segs[k++] = a[i * 2];
-      segs[k++] = a[i * 2 + 1];
-      segs[k++] = a[j * 2];
-      segs[k++] = a[j * 2 + 1];
+      if (varchi) {
+        const mx = (a[i * 2] + a[j * 2]) / 2;
+        const mz = (a[i * 2 + 1] + a[j * 2 + 1]) / 2;
+        if (vicinoAVarco(mx, mz, varchi)) continue;
+      }
+      segArr.push(a[i * 2], a[i * 2 + 1], a[j * 2], a[j * 2 + 1]);
     }
   }
+  const segs = new Float32Array(segArr);
   return { tipo: 'edges', cx: 0, cz: 0, hw: 0, hd: 0, cos: 1, sin: 0, segs, minX, minZ, maxX, maxZ };
 }
 

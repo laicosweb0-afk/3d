@@ -30,6 +30,16 @@ function ChaseCamera({ rt }: { rt: RuntimeGioco }) {
 
   useFrame(({ camera }, dtRaw) => {
     const dt = Math.min(dtRaw, 0.05);
+    const override = runtime.cameraOverride;
+    if (override) {
+      if (performance.now() < override.fino) {
+        camera.position.set(override.x, override.y, override.z);
+        mira.set(override.tx, override.ty, override.tz);
+        camera.lookAt(mira);
+        return;
+      }
+      runtime.cameraOverride = null;
+    }
     const mode = useLugo.getState().mode;
     const t = mode === 'auto' ? rt.auto : rt.persona;
 
@@ -108,10 +118,11 @@ export function Player() {
       ...(w.__LUGO__ ?? {}),
       pos: () => [attivo().x, attivo().z],
       mode: () => useLugo.getState().mode,
-      teleport: (x: number, z: number) => {
+      teleport: (x: number, z: number, yaw?: number) => {
         const a = attivo();
         a.x = x;
         a.z = z;
+        if (typeof yaw === 'number') a.yaw = yaw;
         if ('vx' in a) {
           a.vx = 0;
           a.vz = 0;
@@ -120,6 +131,9 @@ export function Player() {
         const altro = useLugo.getState().mode === 'auto' ? rt.persona : rt.auto;
         altro.x = x + 3;
         altro.z = z + 3;
+      },
+      fotocamera: (x: number, y: number, z: number, tx: number, ty: number, tz: number, durataMs = 3000) => {
+        runtime.cameraOverride = { x, y, z, tx, ty, tz, fino: performance.now() + durataMs };
       },
       muro: () => {
         const edificio = mondo.buildings.find(
