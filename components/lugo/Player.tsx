@@ -10,26 +10,15 @@ import { useKeyboardControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { useMondo } from '@/lib/lugo/loadMap';
 import { MondoFisico } from '@/lib/lugo/physics';
-import { stepAuto, puntoStradaVicino, AUTO, type StatoAuto } from '@/lib/lugo/car';
-import { stepPersona, PERSONA, type StatoPersona } from '@/lib/lugo/character';
+import { stepAuto, puntoStradaVicino } from '@/lib/lugo/car';
+import { stepPersona, PERSONA } from '@/lib/lugo/character';
 import type { StatoInput } from '@/lib/lugo/input';
+import { runtime, type RuntimeGioco } from '@/lib/lugo/runtime';
 import { useLugo } from '@/lib/lugo/store';
 import { Car } from './Car';
 import { Character } from './Character';
 
-export interface RuntimeGioco {
-  auto: StatoAuto;
-  persona: StatoPersona;
-  /** Velocità di marcia dell'auto con segno (m/s). */
-  vAuto: number;
-  vPersona: number;
-  /** Rotazione accumulata delle ruote (rad). */
-  faseRuote: number;
-  /** Direzione di vista della camera nel piano x-z (rad). */
-  cameraYaw: number;
-  /** Modulo dell'ultimo urto (m/s), per audio/feedback. */
-  urto: number;
-}
+export type { RuntimeGioco };
 
 const RAGGIO_RUOTA = 0.3;
 const DIST_SALITA = 2.6;
@@ -90,7 +79,7 @@ export function Player() {
   const rt = useMemo<RuntimeGioco>(() => {
     const rocca = mondo.poi.get('rocca');
     const spawn = puntoStradaVicino(mondo, rocca ? rocca.xm : 0, rocca ? rocca.zm : 0);
-    return {
+    const creato: RuntimeGioco = {
       auto: { x: spawn.x, z: spawn.z, yaw: spawn.yaw, vx: 0, vz: 0, sterzo: 0 },
       persona: { x: spawn.x + 2, z: spawn.z + 2, yaw: 0, vx: 0, vz: 0, fase: 0 },
       vAuto: 0,
@@ -99,6 +88,8 @@ export function Player() {
       cameraYaw: spawn.yaw,
       urto: 0,
     };
+    runtime.rt = creato;
+    return creato;
   }, [mondo]);
 
   const gruppoAuto = useRef<THREE.Group>(null);
@@ -107,6 +98,7 @@ export function Player() {
   const interagiscePrima = useRef(false);
   const resetPrima = useRef(false);
   const hudAcc = useRef(0);
+  const hintPrima = useRef<string | null>(null);
 
   // hook di verifica/debug
   useEffect(() => {
@@ -162,7 +154,11 @@ export function Player() {
   useFrame((_, dtRaw) => {
     const dt = Math.min(dtRaw, 0.05);
     const st = useLugo.getState();
-    const input = getInput() as unknown as StatoInput;
+    const fermo: StatoInput = {
+      avanti: false, indietro: false, sinistra: false, destra: false,
+      corri: false, freno: false, interagisci: false, reset: false,
+    };
+    const input = st.fase === 'gioco' ? (getInput() as unknown as StatoInput) : fermo;
 
     if (st.mode === 'auto') {
       const esito = stepAuto(rt.auto, input, dt, fisica, mondo.bounds);
@@ -210,6 +206,20 @@ export function Player() {
     }
     interagiscePrima.current = input.interagisci;
     resetPrima.current = input.reset;
+
+    // suggerimento contestuale sul tasto E
+    let hint: string | null = null;
+    if (st.fase === 'gioco') {
+      if (st.mode === 'auto' && Math.abs(rt.vAuto) < 0.5) hint = 'Premi E per scendere';
+      else if (st.mode === 'piedi') {
+        const d = Math.hypot(rt.persona.x - rt.auto.x, rt.persona.z - rt.auto.z);
+        if (d < DIST_SALITA) hint = 'Premi E per salire in auto';
+      }
+    }
+    if (hint !== hintPrima.current) {
+      hintPrima.current = hint;
+      st.setHint(hint);
+    }
 
     // modelli
     if (gruppoAuto.current) {

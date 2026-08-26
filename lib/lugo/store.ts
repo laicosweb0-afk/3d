@@ -32,8 +32,10 @@ interface LugoState {
   tappa: number;
   /** Secondi rimasti (se la missione ha un limite). */
   tempoResiduo: number | null;
-  /** Messaggio transitorio a centro schermo (hint/esito). */
+  /** Messaggio transitorio a centro schermo (esiti, tappe). */
   avviso: string | null;
+  /** Suggerimento contestuale persistente ("Premi E…"). */
+  hint: string | null;
 
   avvia: () => void;
   setMode: (m: Modalita) => void;
@@ -45,6 +47,7 @@ interface LugoState {
   setMissione: (id: string | null, stato: StatoMissione, tappa?: number) => void;
   setTempoResiduo: (s: number | null) => void;
   setAvviso: (msg: string | null) => void;
+  setHint: (msg: string | null) => void;
 }
 
 export const useLugo = create<LugoState>((set) => ({
@@ -60,6 +63,7 @@ export const useLugo = create<LugoState>((set) => ({
   tappa: 0,
   tempoResiduo: null,
   avviso: null,
+  hint: null,
 
   avvia: () => set({ fase: 'gioco' }),
   setMode: (mode) => set({ mode }),
@@ -71,6 +75,7 @@ export const useLugo = create<LugoState>((set) => ({
   setMissione: (missioneId, statoMissione, tappa = 0) => set({ missioneId, statoMissione, tappa }),
   setTempoResiduo: (tempoResiduo) => set({ tempoResiduo }),
   setAvviso: (avviso) => set({ avviso }),
+  setHint: (hint) => set({ hint }),
 }));
 
 export const DPR_PER_TIER: Record<QualitaTier, number> = {
