@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import { useMondo } from '@/lib/lugo/loadMap';
 import { missioneById, posTappa, prossimaMissione, MISSIONI } from '@/lib/lugo/missions';
 import { runtime, posGiocatore } from '@/lib/lugo/runtime';
+import { suonaEvento } from '@/lib/lugo/audio';
 import { useLugo } from '@/lib/lugo/store';
 
 const RAGGIO_AUTO = 4;
@@ -80,11 +81,13 @@ export function Missioni() {
         if (s.tappa + 1 < m.tappe.length) {
           s.setMissione(m.id, 'attiva', s.tappa + 1);
           s.setAvviso(m.tappe[s.tappa + 1].titolo);
+          suonaEvento('tappa');
         } else {
           s.setMissione(m.id, 'completata', s.tappa);
           s.addPunti(m.ricompensa);
           s.setAvviso(`Missione completata · +${m.ricompensa} punti`);
           s.setTempoResiduo(null);
+          suonaEvento('successo');
           attesa.current = PAUSA_CATENA;
         }
       }
@@ -98,6 +101,7 @@ export function Missioni() {
           s.setMissione(m.id, 'fallita', s.tappa);
           s.setAvviso('Tempo scaduto — si riprova tra poco');
           s.setTempoResiduo(null);
+          suonaEvento('fallita');
           attesa.current = PAUSA_CATENA;
         }
       }

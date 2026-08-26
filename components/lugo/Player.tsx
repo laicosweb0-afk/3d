@@ -14,6 +14,7 @@ import { stepAuto, puntoStradaVicino } from '@/lib/lugo/car';
 import { stepPersona, PERSONA } from '@/lib/lugo/character';
 import type { StatoInput } from '@/lib/lugo/input';
 import { runtime, type RuntimeGioco } from '@/lib/lugo/runtime';
+import { updateAudio, suonaEvento } from '@/lib/lugo/audio';
 import { useLugo } from '@/lib/lugo/store';
 import { Car } from './Car';
 import { Character } from './Character';
@@ -227,6 +228,7 @@ export function Player() {
             rt.auto.vx = 0;
             rt.auto.vz = 0;
             st.setMode('piedi');
+            suonaEvento('salita');
             break;
           }
         }
@@ -237,7 +239,10 @@ export function Player() {
       // salita: vicino all'auto
       if (input.interagisci && !interagiscePrima.current) {
         const d = Math.hypot(rt.persona.x - rt.auto.x, rt.persona.z - rt.auto.z);
-        if (d < DIST_SALITA) st.setMode('auto');
+        if (d < DIST_SALITA) {
+          st.setMode('auto');
+          suonaEvento('salita');
+        }
       }
     }
     interagiscePrima.current = input.interagisci;
@@ -267,6 +272,8 @@ export function Player() {
       gruppoPersona.current.position.set(rt.persona.x, 0, rt.persona.z);
       gruppoPersona.current.rotation.y = -rt.persona.yaw;
     }
+
+    updateAudio(rt, st.mode, dt);
 
     // HUD a bassa frequenza
     hudAcc.current += dt;

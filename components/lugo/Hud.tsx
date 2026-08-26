@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import { useLugo } from '@/lib/lugo/store';
 import { missioneById } from '@/lib/lugo/missions';
+import { setAudioAttivo } from '@/lib/lugo/audio';
 import { Minimap } from './Minimap';
 
 function tempoMMSS(s: number): string {
@@ -25,6 +26,8 @@ export function Hud() {
   const avviso = useLugo((s) => s.avviso);
   const hint = useLugo((s) => s.hint);
   const mode = useLugo((s) => s.mode);
+  const audioOn = useLugo((s) => s.audioOn);
+  const toggleAudio = useLugo((s) => s.toggleAudio);
 
   const [avvisoMostrato, setAvvisoMostrato] = useState<string | null>(null);
   useEffect(() => {
@@ -65,6 +68,19 @@ export function Hud() {
         {punteggio}
         <span className="lugo-punteggio-label"> punti</span>
       </div>
+
+      <button
+        type="button"
+        className="lugo-audio"
+        data-hud="audio"
+        title={audioOn ? 'Silenzia' : 'Riattiva audio'}
+        onClick={() => {
+          setAudioAttivo(!audioOn);
+          toggleAudio();
+        }}
+      >
+        {audioOn ? '♪' : '∅'}
+      </button>
 
       <div className="lugo-tachimetro" data-hud="tachimetro">
         <span className="lugo-kmh">{kmh}</span>

@@ -223,6 +223,25 @@
   color: rgba(245, 233, 214, 0.6);
 }
 
+.lugo-audio {
+  position: absolute;
+  top: 4.6rem;
+  right: 1.2rem;
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 217, 160, 0.3);
+  background: rgba(24, 20, 52, 0.72);
+  color: #ffd9a0;
+  font-size: 1rem;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.lugo-audio:hover {
+  background: rgba(40, 34, 80, 0.85);
+}
+
 .lugo-tachimetro {
   position: absolute;
   bottom: 1.4rem;

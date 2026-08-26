@@ -3,14 +3,18 @@
 // Il mondo di gioco: luce da tramonto romagnolo, cupola del cielo a
 // gradiente, nebbia in tinta, e la città generata dai dati OSM.
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { CityMeshes } from './CityMeshes';
 import { Landmarks } from './Landmarks';
 import { Missioni } from './Missioni';
 import { Npcs } from './Npcs';
 import { Player } from './Player';
+import { Props } from './Props';
 import { useMondo } from '@/lib/lugo/loadMap';
+import { runtime } from '@/lib/lugo/runtime';
+import { useLugo } from '@/lib/lugo/store';
 import { LUCE, PALETTE } from '@/lib/lugo/palette';
 
 function Cielo() {
@@ -46,6 +50,39 @@ function Cielo() {
   return <mesh geometry={geometria} material={materiale} frustumCulled={false} />;
 }
 
+/** Il sole basso da ovest insegue il giocatore: le ombre valgono ovunque. */
+function SoleCheSegue() {
+  const luce = useRef<THREE.DirectionalLight>(null);
+  useFrame(() => {
+    const rt = runtime.rt;
+    const l = luce.current;
+    if (!rt || !l) return;
+    const t = useLugo.getState().mode === 'auto' ? rt.auto : rt.persona;
+    l.position.set(t.x + LUCE.sole.position[0], LUCE.sole.position[1], t.z + LUCE.sole.position[2]);
+    if (!l.target.parent && l.parent) l.parent.add(l.target);
+    l.target.position.set(t.x, 0, t.z);
+    l.target.updateMatrixWorld();
+  });
+  return (
+    <directionalLight
+      ref={luce}
+      position={[...LUCE.sole.position]}
+      color={LUCE.sole.color}
+      intensity={LUCE.sole.intensity}
+      castShadow
+      shadow-mapSize={[2048, 2048]}
+      shadow-bias={-0.0004}
+      shadow-normalBias={0.05}
+      shadow-camera-left={-110}
+      shadow-camera-right={110}
+      shadow-camera-top={110}
+      shadow-camera-bottom={-110}
+      shadow-camera-near={1}
+      shadow-camera-far={500}
+    />
+  );
+}
+
 /** Espone lo stato ispezionabile per la verifica Playwright. */
 function HookVerifica() {
   const mondo = useMondo();
@@ -72,24 +109,11 @@ export function World() {
         groundColor={LUCE.hemi.terra}
         intensity={LUCE.hemi.intensity}
       />
-      <directionalLight
-        position={[...LUCE.sole.position]}
-        color={LUCE.sole.color}
-        intensity={LUCE.sole.intensity}
-        castShadow
-        shadow-mapSize={[2048, 2048]}
-        shadow-bias={-0.0004}
-        shadow-normalBias={0.05}
-        shadow-camera-left={-120}
-        shadow-camera-right={120}
-        shadow-camera-top={120}
-        shadow-camera-bottom={-120}
-        shadow-camera-near={1}
-        shadow-camera-far={500}
-      />
+      <SoleCheSegue />
       <Cielo />
       <CityMeshes senzaLandmark={['pavaglione', 'rocca', 'stazione']} />
       <Landmarks />
+      <Props />
       <Player />
       <Npcs />
       <Missioni />

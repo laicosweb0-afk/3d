@@ -8,7 +8,7 @@
 //   BASE=/3d node tools/lugo/verify-lugo.mjs   (verifica sotto basePath)
 
 import { spawn } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, rmSync, symlinkSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
@@ -22,8 +22,17 @@ const URL = `http://localhost:${PORT}${BASE}/lugo/?qa=1`;
 
 mkdirSync(SHOTS, { recursive: true });
 
-// server statico (riusa il tool del repo); con BASE serviamo out/ sotto il prefisso
-const server = spawn('node', [join(ROOT, 'tools', 'static-server.mjs'), join(ROOT, 'out'), String(PORT)], {
+// server statico (riusa il tool del repo); con BASE (es. /3d, come su GitHub
+// Pages) si serve una cartella che contiene out/ sotto quel prefisso
+let radice = join(ROOT, 'out');
+if (BASE) {
+  const dir = join(HERE, 'cache', 'serve-base');
+  rmSync(dir, { recursive: true, force: true });
+  mkdirSync(dir, { recursive: true });
+  symlinkSync(join(ROOT, 'out'), join(dir, BASE.replace(/^\//, '')));
+  radice = dir;
+}
+const server = spawn('node', [join(ROOT, 'tools', 'static-server.mjs'), radice, String(PORT)], {
   stdio: 'ignore',
 });
 await new Promise((r) => setTimeout(r, 700));

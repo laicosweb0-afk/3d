@@ -5,6 +5,7 @@
 
 import { useLugo } from '@/lib/lugo/store';
 import { TINTE_AUTO } from '@/lib/lugo/palette';
+import { setAudioAttivo } from '@/lib/lugo/audio';
 
 const COMANDI: [string, string][] = [
   ['W A S D / Frecce', 'guida e cammina'],
@@ -18,6 +19,13 @@ export function StartScreen() {
   const avvia = useLugo((s) => s.avvia);
   const tintaAuto = useLugo((s) => s.tintaAuto);
   const setTintaAuto = useLugo((s) => s.setTintaAuto);
+  const audioOn = useLugo((s) => s.audioOn);
+
+  const gioca = () => {
+    // il click è il gesto utente che sblocca l'AudioContext
+    if (audioOn) setAudioAttivo(true);
+    avvia();
+  };
 
   return (
     <div className="lugo-start" data-hud="start">
@@ -51,7 +59,7 @@ export function StartScreen() {
           ))}
         </div>
 
-        <button type="button" className="lugo-gioca" data-hud="gioca" onClick={avvia}>
+        <button type="button" className="lugo-gioca" data-hud="gioca" onClick={gioca}>
           GIOCA
         </button>
         <p className="lugo-start-nota">Per ora si gioca con la tastiera: da computer, non da telefono.</p>

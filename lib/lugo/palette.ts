@@ -17,11 +17,11 @@ export const PALETTE = {
   /** I tetti scuriscono l'intonaco verso il coppo. */
   tetto: '#9E5B3C',
   strade: {
-    primaria: '#6B6472',
-    secondaria: '#736D78',
-    residenziale: '#7B757F',
-    servizio: '#837D85',
-    pedonale: '#A79B8B',
+    primaria: '#767183',
+    secondaria: '#7E7989',
+    residenziale: '#868290',
+    servizio: '#8E8A96',
+    pedonale: '#B2A695',
   },
   segnaletica: '#D8D2C4',
   terreno: '#A3B07A',
