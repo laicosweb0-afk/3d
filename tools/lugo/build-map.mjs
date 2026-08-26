@@ -583,12 +583,20 @@ for (const b of relBuildings) {
 }
 for (const p of relPoi) candidatePoi('caserma', p.nome, p.ring, p.tags);
 
-// POI da nodi: stazione, monumenti, bar/caffè
+// POI da nodi: stazione, monumenti, bar/caffè, e le botteghe vere del centro
 const barNodes = [];
+const negozi = [];
 for (const n of nodes.values()) {
   const tags = n.tags || {};
   if (!Object.keys(tags).length) continue;
   const [x, z] = proj(n.lat, n.lon);
+  // insegne: negozi e locali con un nome, nel raggio del centro
+  const nomeNegozio = tags.name;
+  if (nomeNegozio && (tags.shop || /^(cafe|bar|restaurant|pharmacy)$/.test(tags.amenity || ''))) {
+    if (Math.hypot(x, z) < 450 && nomeNegozio.length <= 26) {
+      negozi.push({ n: nomeNegozio, x: q(x), z: q(z) });
+    }
+  }
   if (tags.railway === 'station') {
     const prev = poiCand.get('stazione');
     poiCand.set('stazione', { id: 'stazione', nome: tags.name || 'Stazione', x, z, rot: prev ? prev.rot : 0, area: Infinity });
@@ -619,6 +627,9 @@ for (const c of poiCand.values()) {
 }
 
 // ── output ──────────────────────────────────────────────────────────────────
+// al massimo 90 insegne, le più vicine al Pavaglione hanno la precedenza
+negozi.sort((a, b) => Math.hypot(a.x, a.z - 810) - Math.hypot(b.x, b.z - 810));
+
 const map = {
   version: 1,
   origin: { lat: LAT0, lon: LON0 },
@@ -628,6 +639,7 @@ const map = {
   aree,
   rail,
   poi,
+  negozi: negozi.slice(0, 90),
 };
 
 const json = JSON.stringify(map);
