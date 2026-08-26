@@ -9,7 +9,7 @@ import { useFrame } from '@react-three/fiber';
 import { useKeyboardControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { useMondo } from '@/lib/lugo/loadMap';
-import { MondoFisico } from '@/lib/lugo/physics';
+import { infraGioco } from '@/lib/lugo/veicoli';
 import { stepAuto, puntoStradaVicino } from '@/lib/lugo/car';
 import { stepPersona, PERSONA } from '@/lib/lugo/character';
 import type { StatoInput } from '@/lib/lugo/input';
@@ -85,7 +85,8 @@ function ChaseCamera({ rt }: { rt: RuntimeGioco }) {
 
 export function Player() {
   const mondo = useMondo();
-  const fisica = useMemo(() => new MondoFisico(mondo), [mondo]);
+  const infra = useMemo(() => infraGioco(mondo), [mondo]);
+  const fisica = infra.fisica;
 
   const rt = useMemo<RuntimeGioco>(() => {
     const rocca = mondo.poi.get('rocca');
@@ -181,9 +182,10 @@ export function Player() {
       rt.urto = esito.urto;
       rt.faseRuote += (esito.v * dt) / RAGGIO_RUOTA;
 
-      // la gazzella è solida: cerchio contro cerchio, con perdita di velocità
-      const g = runtime.gazzella;
-      if (g) {
+      // i veicoli in movimento sono solidi: gazzella e traffico civile
+      const mobili: { x: number; z: number }[] = [...infra.traffico];
+      if (runtime.gazzella) mobili.push(runtime.gazzella);
+      for (const g of mobili) {
         const dx = rt.auto.x - g.x;
         const dz = rt.auto.z - g.z;
         const d = Math.hypot(dx, dz);
@@ -199,6 +201,7 @@ export function Player() {
             rt.auto.vz -= nz * vn * 1.4;
             rt.auto.vx *= 0.8;
             rt.auto.vz *= 0.8;
+            rt.urto = Math.max(rt.urto, -vn);
           }
         }
       }

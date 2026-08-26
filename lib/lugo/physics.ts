@@ -19,6 +19,25 @@ export class MondoFisico {
     for (const b of mondo.buildings) this.inserisci(b.collider);
   }
 
+  /** Ostacolo OBB aggiuntivo (auto parcheggiate, arredi). */
+  aggiungiObb(cx: number, cz: number, hw: number, hd: number, angle: number): void {
+    const r = Math.hypot(hw, hd);
+    this.inserisci({
+      tipo: 'obb',
+      cx,
+      cz,
+      hw,
+      hd,
+      cos: Math.cos(angle),
+      sin: Math.sin(angle),
+      segs: null,
+      minX: cx - r,
+      minZ: cz - r,
+      maxX: cx + r,
+      maxZ: cz + r,
+    });
+  }
+
   private chiave(cx: number, cz: number): number {
     return cz * this.cols + cx;
   }

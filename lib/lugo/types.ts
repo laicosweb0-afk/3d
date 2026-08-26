@@ -67,6 +67,13 @@ export interface PoiMap {
   rot?: number;
 }
 
+export interface NegozioMap {
+  /** Insegna (nome vero da OSM). */
+  n: string;
+  x: number;
+  z: number;
+}
+
 export interface LugoMap {
   version: 1;
   origin: { lat: number; lon: number };
@@ -78,4 +85,6 @@ export interface LugoMap {
   /** Polilinee ferroviarie, ciascuna [x0,z0,…] in dm. */
   rail: number[][];
   poi: PoiMap[];
+  /** Botteghe del centro con nome vero (assente nelle mappe vecchie). */
+  negozi?: NegozioMap[];
 }

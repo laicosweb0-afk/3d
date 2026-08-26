@@ -9,7 +9,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useMondo } from '@/lib/lugo/loadMap';
-import { MondoFisico } from '@/lib/lugo/physics';
+import { infraGioco } from '@/lib/lugo/veicoli';
 import {
   creaNpcs,
   stepNpcs,
@@ -21,7 +21,7 @@ import { runtime } from '@/lib/lugo/runtime';
 import { useLugo } from '@/lib/lugo/store';
 import { QA } from '@/lib/lugo/qa';
 
-const N_NPC = QA ? 30 : 100;
+const N_NPC = QA ? 30 : 130;
 
 // palette per tipo e variante
 const PELLI = ['#D9A67C', '#C08A5E', '#E8C09A', '#8A5A3C'];
@@ -91,7 +91,7 @@ function coloreCopricapo(n: Npc): string {
 
 export function Npcs() {
   const mondo = useMondo();
-  const fisica = useMemo(() => new MondoFisico(mondo), [mondo]);
+  const fisica = useMemo(() => infraGioco(mondo).fisica, [mondo]);
   const npcs = useMemo(() => creaNpcs(mondo, N_NPC), [mondo]);
   const gazzella = useMemo(() => creaGazzella(mondo), [mondo]);
   const parti = useRef<Partial<Parti>>({});

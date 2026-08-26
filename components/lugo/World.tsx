@@ -12,6 +12,8 @@ import { Missioni } from './Missioni';
 import { Npcs } from './Npcs';
 import { Player } from './Player';
 import { Props } from './Props';
+import { Veicoli } from './Veicoli';
+import { Insegne } from './Insegne';
 import { useMondo } from '@/lib/lugo/loadMap';
 import { runtime } from '@/lib/lugo/runtime';
 import { useLugo } from '@/lib/lugo/store';
@@ -47,7 +49,20 @@ function Cielo() {
     });
     return { geometria, materiale };
   }, []);
-  return <mesh geometry={geometria} material={materiale} frustumCulled={false} />;
+  return (
+    <group>
+      <mesh geometry={geometria} material={materiale} frustumCulled={false} />
+      {/* il sole basso a ovest, con l'alone */}
+      <mesh position={[-1030, 300, 256]} ref={(m) => m?.lookAt(0, 120, 0)}>
+        <circleGeometry args={[52, 24]} />
+        <meshBasicMaterial color="#FFE9B8" fog={false} />
+      </mesh>
+      <mesh position={[-1026, 299, 255]} ref={(m) => m?.lookAt(0, 120, 0)}>
+        <circleGeometry args={[130, 24]} />
+        <meshBasicMaterial color="#FF9E5E" transparent opacity={0.28} fog={false} depthWrite={false} />
+      </mesh>
+    </group>
+  );
 }
 
 /** Il sole basso da ovest insegue il giocatore: le ombre valgono ovunque. */
@@ -114,6 +129,8 @@ export function World() {
       <CityMeshes senzaLandmark={['pavaglione', 'rocca', 'stazione']} />
       <Landmarks />
       <Props />
+      <Veicoli />
+      <Insegne />
       <Player />
       <Npcs />
       <Missioni />

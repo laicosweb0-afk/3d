@@ -176,6 +176,7 @@ function lucePseudo(x: number, y: number, z: number): number {
 
 const cFinSpenta = new THREE.Color(PALETTE.finestraSpenta);
 const cFinAccesa = new THREE.Color(PALETTE.finestraAccesa);
+const cCornice = new THREE.Color('#EDE5D2');
 
 /** Griglia di finestre su una parete; qualcuna è accesa nel tramonto. */
 function finestre(
@@ -200,6 +201,13 @@ function finestre(
       const t = (w + 1) / (nFin + 1);
       const wx = x1 + (x2 - x1) * t + nx * 0.06;
       const wz = z1 + (z2 - z1) * t + nz * 0.06;
+      // cornice chiara dietro, vetro davanti
+      const fx = ex * 1.28;
+      const fz = ez * 1.28;
+      const gx = wx - nx * 0.018;
+      const gz = wz - nz * 0.018;
+      acc.tri(gx - fx, y0 - 0.09, gz - fz, gx + fx, y0 - 0.09, gz + fz, gx + fx, y0 + 1.44, gz + fz, nx, 0, nz, cCornice.r, cCornice.g, cCornice.b);
+      acc.tri(gx - fx, y0 - 0.09, gz - fz, gx + fx, y0 + 1.44, gz + fz, gx - fx, y0 + 1.44, gz - fz, nx, 0, nz, cCornice.r, cCornice.g, cCornice.b);
       const c = lucePseudo(wx, y0, wz) < 0.3 ? cFinAccesa : cFinSpenta;
       acc.tri(wx - ex, y0, wz - ez, wx + ex, y0, wz + ez, wx + ex, y0 + 1.35, wz + ez, nx, 0, nz, c.r, c.g, c.b);
       acc.tri(wx - ex, y0, wz - ez, wx + ex, y0 + 1.35, wz + ez, wx - ex, y0 + 1.35, wz - ez, nx, 0, nz, c.r, c.g, c.b);
@@ -207,13 +215,14 @@ function finestre(
   }
 }
 
-/** Pareti + finestre di un anello (le finestre solo sul perimetro esterno). */
+/** Pareti + finestre + zoccolo e cornicione di un anello (solo perimetro esterno). */
 function paretiConFinestre(
   acc: Accumulo,
   anello: Float32Array,
   h: number,
   tinta: THREE.Color,
   budget: { n: number } | null,
+  zoccolo: THREE.Color | null = null,
 ) {
   const n = anello.length / 2;
   if (n < 3) return;
@@ -241,6 +250,15 @@ function paretiConFinestre(
     }
     acc.tri(x1, 0, z1, x2, 0, z2, x2, h, z2, nx, 0, nz, tinta.r, tinta.g, tinta.b);
     acc.tri(x1, 0, z1, x2, h, z2, x1, h, z1, nx, 0, nz, tinta.r, tinta.g, tinta.b);
+    if (zoccolo && h > 3) {
+      // zoccolo scuro alla base, cornicione chiaro sotto la gronda
+      const ox = nx * 0.03;
+      const oz = nz * 0.03;
+      acc.tri(x1 + ox, 0, z1 + oz, x2 + ox, 0, z2 + oz, x2 + ox, 0.75, z2 + oz, nx, 0, nz, zoccolo.r, zoccolo.g, zoccolo.b);
+      acc.tri(x1 + ox, 0, z1 + oz, x2 + ox, 0.75, z2 + oz, x1 + ox, 0.75, z1 + oz, nx, 0, nz, zoccolo.r, zoccolo.g, zoccolo.b);
+      acc.tri(x1 + ox, h - 0.42, z1 + oz, x2 + ox, h - 0.42, z2 + oz, x2 + ox, h, z2 + oz, nx, 0, nz, cCornice.r, cCornice.g, cCornice.b);
+      acc.tri(x1 + ox, h - 0.42, z1 + oz, x2 + ox, h, z2 + oz, x1 + ox, h, z1 + oz, nx, 0, nz, cCornice.r, cCornice.g, cCornice.b);
+    }
     if (budget) finestre(acc, x1, z1, x2, z2, nx, nz, h, budget);
   }
 }
@@ -256,7 +274,8 @@ function estrudiEdificio(acc: Accumulo, b: EdificioRT, tintaBase: THREE.Color, t
   const tinta = b.colore ? new THREE.Color(b.colore).lerp(tintaBase, 0.3) : tintaBase;
 
   const budget = { n: 16 };
-  paretiConFinestre(acc, fp, h, tinta, budget);
+  const zoccolo = tinta.clone().multiplyScalar(0.55);
+  paretiConFinestre(acc, fp, h, tinta, budget, zoccolo);
   for (const foro of fori) pareti(acc, foro, h, tinta, true);
 
   // tetto piano triangolato (coi buchi dei cortili)
@@ -354,6 +373,7 @@ export function generaCitta(mondo: MondoLugo, senzaLandmark: string[] = []): Cit
     if (b.landmark && esclusi.has(b.landmark)) continue;
     estrudiEdificio(edifici, b, tinte[b.tinta % tinte.length], tettoTinte[b.tinta % tinte.length]);
   }
+  porticiPiazza(edifici, mondo, esclusi);
 
   // superfici piatte, dal basso verso l'alto
   const cVerde = new THREE.Color(PALETTE.verde);
@@ -386,6 +406,85 @@ export function generaCitta(mondo: MondoLugo, senzaLandmark: string[] = []): Cit
   }
 
   return { edifici: edifici.build(), suolo: suolo.build() };
+}
+
+/**
+ * I portici di Piazza Baracca: le fonti la descrivono circondata da
+ * "eleganti palazzi porticati". Sugli edifici che guardano il monumento:
+ * piano terra in ombra, solaio a sbalzo e pilastri bianchi ritmati.
+ */
+function porticiPiazza(acc: Accumulo, mondo: MondoLugo, esclusi: Set<string>) {
+  const p = mondo.poi.get('baracca');
+  if (!p) return;
+  const cPil = new THREE.Color('#EFE8D8');
+  const cOmbra = new THREE.Color('#403830');
+  const cSoffitto = new THREE.Color('#E6DCC6');
+  const H_PORT = 3.6;
+  const SPORTO = 2.3;
+  let pilastri = 0;
+
+  for (const b of mondo.buildings) {
+    if (b.landmark && esclusi.has(b.landmark)) continue;
+    const fp = b.fp;
+    const n = fp.length / 2;
+    let cx = 0, cz = 0;
+    for (let i = 0; i < n; i++) {
+      cx += fp[i * 2];
+      cz += fp[i * 2 + 1];
+    }
+    cx /= n;
+    cz /= n;
+    if (Math.hypot(cx - p.xm, cz - p.zm) > 78) continue;
+
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+      const x1 = fp[i * 2], z1 = fp[i * 2 + 1];
+      const x2 = fp[j * 2], z2 = fp[j * 2 + 1];
+      const L = Math.hypot(x2 - x1, z2 - z1);
+      if (L < 6) continue;
+      const mx = (x1 + x2) / 2;
+      const mz = (z1 + z2) / 2;
+      if (Math.hypot(mx - p.xm, mz - p.zm) > 58) continue;
+      let nx = z2 - z1;
+      let nz = -(x2 - x1);
+      const l = Math.hypot(nx, nz) || 1;
+      nx /= l;
+      nz /= l;
+      if (nx * (mx - cx) + nz * (mz - cz) < 0) {
+        nx = -nx;
+        nz = -nz;
+      }
+      const vx = p.xm - mx;
+      const vz = p.zm - mz;
+      const vl = Math.hypot(vx, vz) || 1;
+      if (nx * (vx / vl) + nz * (vz / vl) < 0.55) continue;
+
+      // piano terra in ombra (la profondità del portico è suggerita)
+      const ox = nx * 0.02, oz = nz * 0.02;
+      acc.tri(x1 + ox, 0, z1 + oz, x2 + ox, 0, z2 + oz, x2 + ox, H_PORT, z2 + oz, nx, 0, nz, cOmbra.r, cOmbra.g, cOmbra.b);
+      acc.tri(x1 + ox, 0, z1 + oz, x2 + ox, H_PORT, z2 + oz, x1 + ox, H_PORT, z1 + oz, nx, 0, nz, cOmbra.r, cOmbra.g, cOmbra.b);
+      // solaio a sbalzo: intradosso chiaro e bordo
+      const s1x = x1 + nx * SPORTO, s1z = z1 + nz * SPORTO;
+      const s2x = x2 + nx * SPORTO, s2z = z2 + nz * SPORTO;
+      acc.tri(x1, H_PORT, z1, x2, H_PORT, z2, s2x, H_PORT, s2z, 0, -1, 0, cSoffitto.r, cSoffitto.g, cSoffitto.b);
+      acc.tri(x1, H_PORT, z1, s2x, H_PORT, s2z, s1x, H_PORT, s1z, 0, -1, 0, cSoffitto.r, cSoffitto.g, cSoffitto.b);
+      acc.tri(s1x, H_PORT, s1z, s2x, H_PORT, s2z, s2x, H_PORT + 0.35, s2z, nx, 0, nz, cPil.r, cPil.g, cPil.b);
+      acc.tri(s1x, H_PORT, s1z, s2x, H_PORT + 0.35, s2z, s1x, H_PORT + 0.35, s1z, nx, 0, nz, cPil.r, cPil.g, cPil.b);
+      // pilastri ritmati sul filo esterno
+      const nPil = Math.max(2, Math.round(L / 3.4));
+      for (let k = 0; k <= nPil && pilastri < 90; k++) {
+        const t = k / nPil;
+        const px = x1 + (x2 - x1) * t + nx * (SPORTO - 0.25);
+        const pz = z1 + (z2 - z1) * t + nz * (SPORTO - 0.25);
+        const lato = 0.22;
+        const anello = new Float32Array([
+          px - lato, pz - lato, px + lato, pz - lato, px + lato, pz + lato, px - lato, pz + lato,
+        ]);
+        pareti(acc, anello, H_PORT, cPil, false);
+        pilastri++;
+      }
+    }
+  }
 }
 
 /** Mezzeria tratteggiata: trattini di 3 m ogni 9, larghi 16 cm. */

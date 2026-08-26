@@ -57,6 +57,12 @@ export interface AreaRT {
   poly: Float32Array;
 }
 
+export interface NegozioRT {
+  nome: string;
+  x: number;
+  z: number;
+}
+
 export interface MondoLugo {
   bounds: { minX: number; minZ: number; maxX: number; maxZ: number };
   roads: StradaRT[];
@@ -64,6 +70,7 @@ export interface MondoLugo {
   aree: AreaRT[];
   rail: Float32Array[];
   poi: Map<string, PoiMap & { xm: number; zm: number }>;
+  negozi: NegozioRT[];
 }
 
 const M = 0.1; // dm → m
@@ -182,6 +189,7 @@ async function carica(): Promise<MondoLugo> {
     aree: raw.aree.map((a) => ({ kind: a.kind, poly: toMeters(a.poly) })),
     rail: raw.rail.map(toMeters),
     poi,
+    negozi: (raw.negozi ?? []).map((s) => ({ nome: s.n, x: s.x * M, z: s.z * M })),
   };
 }
 
