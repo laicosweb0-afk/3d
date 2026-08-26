@@ -16,7 +16,7 @@ import { puntiVarco, vicinoAVarco, rettangoloMinimo } from '@/lib/lugo/gates';
 import { puntoStradaVicino } from '@/lib/lugo/car';
 import { GazzellaMesh } from './Npcs';
 
-const INTONACO = new THREE.Color('#E8D5A6');
+const INTONACO = new THREE.Color('#E4CE8F'); // il "giallino" di Lugo
 const BIANCO = new THREE.Color('#F4EFE3');
 const COPPI = new THREE.Color('#A05A38');
 const SOFFITTO = new THREE.Color('#EFE6D2');
@@ -55,6 +55,24 @@ function box(
   faccia(4, 0, 3, 7, -1, 0, 0);
   faccia(3, 2, 6, 7, 0, 1, 0);
   faccia(4, 5, 1, 0, 0, -1, 0);
+}
+
+/** Quadrilatero verticale a doppia faccia con quote diverse ai due estremi (pennacchi degli archi). */
+function quadVerticale(
+  acc: Accumulo,
+  xa: number, za: number, ya0: number, ya1: number,
+  xb: number, zb: number, yb0: number, yb1: number,
+  c: THREE.Color,
+) {
+  let nx = zb - za;
+  let nz = -(xb - xa);
+  const l = Math.hypot(nx, nz) || 1;
+  nx /= l;
+  nz /= l;
+  for (const [sx, sz] of [[nx, nz], [-nx, -nz]]) {
+    acc.tri(xa, ya0, za, xb, yb0, zb, xb, yb1, zb, sx, 0, sz, c.r, c.g, c.b);
+    acc.tri(xa, ya0, za, xb, yb1, zb, xa, ya1, za, sx, 0, sz, c.r, c.g, c.b);
+  }
 }
 
 /** Parete verticale a doppia faccia lungo un segmento. */
@@ -173,14 +191,42 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
     const fl = Math.hypot(fx, fz) || 1;
     fx = -fx / fl;
     fz = -fz / fl;
+    // pilastri fino alla linea d'imposta, poi gli ARCHI: pennacchi curvi
+    // che salgono dal capitello alla fascia — è il ritmo vero del Pavaglione
+    const IMPOSTA = 4.15;
     const nPil = Math.max(1, Math.round(L / 4.3));
+    const posPil: (null | [number, number])[] = [];
     for (let k = 0; k <= nPil; k++) {
       const t = k / nPil;
       const px = x1 + (x2 - x1) * t;
       const pz = z1 + (z2 - z1) * t;
-      if (vicinoAVarco(px, pz, varchi, 4)) continue;
-      box(acc, px, H_ARCO / 2, pz, 0.55, H_ARCO, 0.55, BIANCO);
-      if (doppia) box(acc, px + fx * 3.1, H_ARCO / 2, pz + fz * 3.1, 0.5, H_ARCO, 0.5, BIANCO);
+      if (vicinoAVarco(px, pz, varchi, 4)) {
+        posPil.push(null);
+        continue;
+      }
+      posPil.push([px, pz]);
+      box(acc, px, IMPOSTA / 2, pz, 0.55, IMPOSTA, 0.55, BIANCO);
+      box(acc, px, IMPOSTA + 0.08, pz, 0.72, 0.16, 0.72, BIANCO); // capitello
+      if (doppia) box(acc, px + fx * 3.1, IMPOSTA / 2, pz + fz * 3.1, 0.5, IMPOSTA, 0.5, BIANCO);
+    }
+    for (let k = 0; k + 1 < posPil.length; k++) {
+      const pa = posPil[k];
+      const pb = posPil[k + 1];
+      if (!pa || !pb) continue;
+      const salita = H_ARCO - IMPOSTA;
+      const passi = 6;
+      for (let s2 = 0; s2 < passi; s2++) {
+        const tA = s2 / passi;
+        const tB = (s2 + 1) / passi;
+        const xa = pa[0] + (pb[0] - pa[0]) * tA;
+        const za = pa[1] + (pb[1] - pa[1]) * tA;
+        const xb = pa[0] + (pb[0] - pa[0]) * tB;
+        const zb = pa[1] + (pb[1] - pa[1]) * tB;
+        const ya = IMPOSTA + salita * Math.sin(Math.PI * tA);
+        const yb = IMPOSTA + salita * Math.sin(Math.PI * tB);
+        // il pennacchio riempie dall'arco fino alla fascia
+        quadVerticale(acc, xa, za, ya, H_ARCO, xb, zb, yb, H_ARCO, INTONACO);
+      }
     }
   }
 
@@ -327,6 +373,7 @@ export function Landmarks() {
       poiBaracca: mondo.poi.get('baracca') ?? null,
       poiCaserma: mondo.poi.get('caserma') ?? null,
       poiRocca: mondo.poi.get('rocca') ?? null,
+      poiTeatro: mondo.poi.get('teatro') ?? null,
     };
   }, [mondo]);
 
@@ -337,6 +384,10 @@ export function Landmarks() {
   );
   const targaStazione = useMemo(
     () => (typeof document !== 'undefined' ? usaTarga('LUGO', '#20406A') : null),
+    [],
+  );
+  const targaTeatro = useMemo(
+    () => (typeof document !== 'undefined' ? usaTarga('TEATRO ROSSINI', '#5A2430') : null),
     [],
   );
 
@@ -395,9 +446,14 @@ export function Landmarks() {
             <boxGeometry args={[1.6, 1.9, 1.6]} />
             <meshLambertMaterial color="#ABA08C" />
           </mesh>
-          <mesh position={[0, 5.1, -0.3]} rotation={[0.08, 0, 0]} castShadow>
-            <boxGeometry args={[0.35, 5.4, 2.3]} />
+          {/* l'Ala di Rambelli (1936): massiccia, rastremata verso l'alto */}
+          <mesh position={[0, 4.9, -0.3]} rotation={[0.08, 0, 0]} castShadow>
+            <boxGeometry args={[0.6, 5.2, 2.9]} />
             <meshLambertMaterial color="#54544A" />
+          </mesh>
+          <mesh position={[0, 7.6, -0.42]} rotation={[0.12, 0, 0]} castShadow>
+            <boxGeometry args={[0.42, 1.9, 2.2]} />
+            <meshLambertMaterial color="#4E4E46" />
           </mesh>
           <mesh position={[0, 3.3, 0.7]} castShadow>
             <boxGeometry args={[0.5, 1.5, 0.5]} />
@@ -408,6 +464,17 @@ export function Landmarks() {
             <meshLambertMaterial color="#54544A" />
           </mesh>
         </group>
+      )}
+
+      {/* Teatro Rossini (1761, Bibiena): la targa sul prototipo del teatro all'italiana */}
+      {dati.poiTeatro && targaTeatro && (
+        <mesh
+          position={[dati.poiTeatro.xm, 5.6, dati.poiTeatro.zm]}
+          rotation={[0, -(dati.poiTeatro.rot ?? 0), 0]}
+        >
+          <planeGeometry args={[6.5, 1.0]} />
+          <meshBasicMaterial map={targaTeatro} side={THREE.DoubleSide} />
+        </mesh>
       )}
 
       {/* Caserma: insegna, tricolore e gazzella parcheggiata davanti */}

@@ -43,6 +43,11 @@ export interface EdificioRT {
   fori: Float32Array[];
   h: number;
   tinta: number;
+  /** Tetto a falde (dal dato, o dall'euristica per le mappe vecchie). */
+  falde: boolean;
+  chiesa: boolean;
+  /** Colore di facciata dichiarato in OSM, se presente. */
+  colore?: string;
   landmark?: string;
   collider: ColliderRT;
 }
@@ -131,7 +136,28 @@ async function carica(): Promise<MondoLugo> {
   const buildings: EdificioRT[] = raw.buildings.map((b) => {
     const fp = toMeters(b.fp);
     const fori = (b.fori ?? []).map(toMeters);
-    const e: EdificioRT = { fp, fori, h: b.h, tinta: b.tinta, collider: colliderDa(b, fp, fori) };
+    // mappe vecchie senza il campo: euristica (case basse e non troppo grandi)
+    let falde: boolean;
+    if (b.falde !== undefined) falde = b.falde === 1;
+    else {
+      let area = 0;
+      const n = fp.length / 2;
+      for (let i = 0; i < n; i++) {
+        const j = (i + 1) % n;
+        area += fp[i * 2] * fp[j * 2 + 1] - fp[j * 2] * fp[i * 2 + 1];
+      }
+      falde = fori.length === 0 && b.h < 12 && Math.abs(area / 2) < 650;
+    }
+    const e: EdificioRT = {
+      fp,
+      fori,
+      h: b.h,
+      tinta: b.tinta,
+      falde,
+      chiesa: b.chiesa === 1,
+      collider: colliderDa(b, fp, fori),
+    };
+    if (b.col) e.colore = b.col;
     if (b.landmark) e.landmark = b.landmark;
     return e;
   });

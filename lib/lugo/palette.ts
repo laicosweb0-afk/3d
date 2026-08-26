@@ -2,17 +2,17 @@
 // Tutto ciò che è colore/atmosfera vive qui, così lo sguardo resta coerente.
 
 export const PALETTE = {
-  // otto intonaci romagnoli: crema, ocra, terracotta, rosa antico,
-  // giallo Ravenna, sabbia, mattone chiaro, grigio caldo
+  // otto intonaci romagnoli sul "giallino" tipico di Lugo (fonti locali),
+  // con un paio di terracotta e rosa antico a rompere il ritmo
   intonaci: [
-    '#E8D9B8',
-    '#D9A662',
-    '#C97B4A',
-    '#D89C8A',
-    '#E3B95F',
+    '#EDDFB2',
+    '#E3C878',
+    '#E8D5A6',
     '#DCC9A2',
+    '#E4CE8F',
+    '#D9A662',
     '#C98E6B',
-    '#BFB3A0',
+    '#D8A794',
   ],
   /** I tetti scuriscono l'intonaco verso il coppo. */
   tetto: '#9E5B3C',
@@ -24,6 +24,9 @@ export const PALETTE = {
     pedonale: '#B2A695',
   },
   segnaletica: '#D8D2C4',
+  marciapiede: '#ABA5AE',
+  finestraSpenta: '#39434F',
+  finestraAccesa: '#FFDFA0',
   terreno: '#A3B07A',
   verde: '#7DA25E',
   acqua: '#5A7D8C',

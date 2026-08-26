@@ -48,6 +48,7 @@ const QUERY = `[out:json][timeout:90];
   way["railway"="rail"](${B});
   way["place"="square"](${B});
   nwr["historic"~"^(castle|memorial|monument)$"](${B});
+  nwr["amenity"="theatre"](${B});
   node["railway"="station"](${B});
   node["amenity"~"^(cafe|bar)$"](${B});
   nwr["amenity"="police"](${B});

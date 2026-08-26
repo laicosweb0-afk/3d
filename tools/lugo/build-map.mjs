@@ -259,9 +259,23 @@ function landmarkOf(tags) {
   if (tags.historic === 'castle' || name.includes('rocca estense')) return 'rocca';
   if (tags.building === 'train_station' || tags.railway === 'station') return 'stazione';
   if (tags.amenity === 'police') return 'caserma';
-  if (name.includes('rossini') && (tags.amenity === 'theatre' || tags.building)) return 'teatro';
+  if (tags.amenity === 'theatre' || (name.includes('rossini') && tags.building)) return 'teatro';
   if (name.includes('baracca') && (tags.historic === 'monument' || tags.historic === 'memorial')) return 'baracca';
   return null;
+}
+
+// colore dichiarato in OSM (building:colour): hex o nomi comuni
+const COLORI_NOMI = {
+  white: '#EFEAE0', yellow: '#E3C25F', cream: '#EDE0BC', beige: '#DCC9A2',
+  red: '#B0492F', orange: '#D98A4A', pink: '#DBA79A', brown: '#8A5A3C',
+  grey: '#B5AFA6', gray: '#B5AFA6', tan: '#D2B48C', ochre: '#D9A662',
+};
+function coloreEdificio(tags) {
+  const v = String(tags['building:colour'] || '').toLowerCase().trim();
+  if (!v) return null;
+  if (/^#[0-9a-f]{6}$/.test(v)) return v;
+  if (/^#[0-9a-f]{3}$/.test(v)) return '#' + [...v.slice(1)].map((c) => c + c).join('');
+  return COLORI_NOMI[v] || null;
 }
 
 // ── lettura e indici ────────────────────────────────────────────────────────
@@ -414,9 +428,10 @@ function addBuilding(ring, tags, id, fori = []) {
   // coi fori il collider è SEMPRE a segmenti: il cortile resta percorribile
   const concavo = foriSempl.length > 0 || (hullArea > 0 && areaNetta / hullArea < 0.75);
   stretch(r);
+  const hVal = Math.round(altezza(tags, id) * 10) / 10;
   const b = {
     fp: flatQ(r),
-    h: Math.round(altezza(tags, id) * 10) / 10,
+    h: hVal,
     tinta: Math.floor(rand01(id * 7 + 1) * 8),
     collider: concavo
       ? { edges: true }
@@ -425,6 +440,26 @@ function addBuilding(ring, tags, id, fori = []) {
   const foriQ = foriSempl.map((f) => flatQ(f)).filter((f) => f.length >= 6);
   if (foriQ.length) b.fori = foriQ;
   if (lm) b.landmark = lm;
+
+  // tetto a falde: dai tag quando ci sono, altrimenti euristica romagnola
+  const forma = String(tags['roof:shape'] || '').toLowerCase();
+  const tipo = String(tags.building || '');
+  let falde = false;
+  if (!foriQ.length) {
+    if (/gabled|hipped/.test(forma)) falde = true;
+    else if (forma === 'flat') falde = false;
+    else {
+      falde =
+        hVal < 12 &&
+        areaNetta < 650 &&
+        !/industrial|warehouse|retail|commercial|garage|garages|roof|shed|carport|apartments/.test(tipo);
+    }
+  }
+  b.falde = falde ? 1 : 0;
+  if (/^(church|cathedral|chapel)$/.test(tipo)) b.chiesa = 1;
+  const col = coloreEdificio(tags);
+  if (col) b.col = col;
+
   if (b.fp.length >= 6) buildings.push(b);
 }
 

@@ -40,6 +40,12 @@ export interface EdificioMap {
   h: number;
   /** Indice nella palette intonaci (lib/lugo/palette.ts). */
   tinta: number;
+  /** 1 = tetto a falde (dai tag OSM o dall'euristica); 0 = piatto. Assente nelle mappe vecchie. */
+  falde?: 0 | 1;
+  /** 1 = edificio di culto: riceve il campanile. */
+  chiesa?: 1;
+  /** Colore dichiarato in OSM (building:colour), hex normalizzato. */
+  col?: string;
   collider: ObbCollider | EdgeCollider;
   /** Id landmark (pavaglione, rocca, stazione, caserma, teatro…) se riconosciuto. */
   landmark?: string;
