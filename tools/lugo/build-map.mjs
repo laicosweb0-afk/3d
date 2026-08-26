@@ -596,9 +596,10 @@ for (const n of nodes.values()) {
   if (tags.amenity === 'police' && !poiCand.has('caserma')) {
     poiCand.set('caserma', { id: 'caserma', nome: tags.name || 'Caserma dei Carabinieri', x, z, rot: 0, area: 0 });
   }
+  // qualunque landmark mappato come nodo (monumenti, teatro…) diventa POI
   const lmNode = landmarkOf(tags);
-  if (lmNode === 'baracca' && !poiCand.has('baracca')) {
-    poiCand.set('baracca', { id: 'baracca', nome: tags.name || 'Monumento a Francesco Baracca', x, z, rot: 0, area: 0 });
+  if (lmNode && !poiCand.has(lmNode)) {
+    poiCand.set(lmNode, { id: lmNode, nome: tags.name || lmNode, x, z, rot: 0, area: 0 });
   }
   if (tags.amenity === 'cafe' || tags.amenity === 'bar') barNodes.push({ x, z, nome: tags.name || 'Bar' });
 }
