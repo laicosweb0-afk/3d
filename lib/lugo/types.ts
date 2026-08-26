@@ -32,8 +32,10 @@ export type ObbCollider = { obb: [number, number, number, number, number] };
 export type EdgeCollider = { edges: true };
 
 export interface EdificioMap {
-  /** Footprint [x0,z0,…] in dm, senso antiorario. */
+  /** Footprint [x0,z0,…] in dm, antiorario nel piano matematico x-z (nord = −Z). */
   fp: number[];
+  /** Cortili/buchi del footprint, ciascuno [x0,z0,…] in dm. Con fori il collider è sempre `edges`. */
+  fori?: number[][];
   /** Altezza in metri. */
   h: number;
   /** Indice nella palette intonaci (lib/lugo/palette.ts). */

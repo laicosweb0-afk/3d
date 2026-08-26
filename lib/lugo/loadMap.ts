@@ -38,6 +38,8 @@ export interface ColliderRT {
 export interface EdificioRT {
   /** Footprint [x0,z0,…] in metri. */
   fp: Float32Array;
+  /** Cortili del footprint (fori), in metri. */
+  fori: Float32Array[];
   h: number;
   tinta: number;
   landmark?: string;
@@ -66,7 +68,11 @@ function toMeters(flat: number[]): Float32Array {
   return out;
 }
 
-function colliderDa(b: LugoMap['buildings'][number], fp: Float32Array): ColliderRT {
+function colliderDa(
+  b: LugoMap['buildings'][number],
+  fp: Float32Array,
+  fori: Float32Array[],
+): ColliderRT {
   let minX = Infinity;
   let minZ = Infinity;
   let maxX = -Infinity;
@@ -94,14 +100,22 @@ function colliderDa(b: LugoMap['buildings'][number], fp: Float32Array): Collider
       maxZ,
     };
   }
-  const n = fp.length / 2;
-  const segs = new Float32Array(n * 4);
-  for (let i = 0; i < n; i++) {
-    const j = (i + 1) % n;
-    segs[i * 4] = fp[i * 2];
-    segs[i * 4 + 1] = fp[i * 2 + 1];
-    segs[i * 4 + 2] = fp[j * 2];
-    segs[i * 4 + 3] = fp[j * 2 + 1];
+  // segmenti dal perimetro esterno E dai bordi dei cortili: dentro la corte
+  // si cammina, contro i muri (anche interni) si sbatte
+  const anelli = [fp, ...fori];
+  let totale = 0;
+  for (const a of anelli) totale += a.length / 2;
+  const segs = new Float32Array(totale * 4);
+  let k = 0;
+  for (const a of anelli) {
+    const n = a.length / 2;
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+      segs[k++] = a[i * 2];
+      segs[k++] = a[i * 2 + 1];
+      segs[k++] = a[j * 2];
+      segs[k++] = a[j * 2 + 1];
+    }
   }
   return { tipo: 'edges', cx: 0, cz: 0, hw: 0, hd: 0, cos: 1, sin: 0, segs, minX, minZ, maxX, maxZ };
 }
@@ -113,7 +127,8 @@ async function carica(): Promise<MondoLugo> {
 
   const buildings: EdificioRT[] = raw.buildings.map((b) => {
     const fp = toMeters(b.fp);
-    const e: EdificioRT = { fp, h: b.h, tinta: b.tinta, collider: colliderDa(b, fp) };
+    const fori = (b.fori ?? []).map(toMeters);
+    const e: EdificioRT = { fp, fori, h: b.h, tinta: b.tinta, collider: colliderDa(b, fp, fori) };
     if (b.landmark) e.landmark = b.landmark;
     return e;
   });

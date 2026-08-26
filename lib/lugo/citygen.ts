@@ -112,23 +112,23 @@ function nastro(acc: Accumulo, pts: Float32Array, larghezza: number, y: number, 
   }
 }
 
-function estrudiEdificio(acc: Accumulo, fp: Float32Array, h: number, tinta: THREE.Color, tetto: THREE.Color) {
-  const n = fp.length / 2;
+/** Pareti verticali di un anello; con `interno` la normale guarda DENTRO l'anello (cortili). */
+function pareti(acc: Accumulo, anello: Float32Array, h: number, tinta: THREE.Color, interno: boolean) {
+  const n = anello.length / 2;
   if (n < 3) return;
   let cx = 0;
   let cz = 0;
   for (let i = 0; i < n; i++) {
-    cx += fp[i * 2];
-    cz += fp[i * 2 + 1];
+    cx += anello[i * 2];
+    cz += anello[i * 2 + 1];
   }
   cx /= n;
   cz /= n;
 
-  // pareti: normale sempre verso l'esterno (test rispetto al baricentro)
   for (let i = 0; i < n; i++) {
     const j = (i + 1) % n;
-    const x1 = fp[i * 2], z1 = fp[i * 2 + 1];
-    const x2 = fp[j * 2], z2 = fp[j * 2 + 1];
+    const x1 = anello[i * 2], z1 = anello[i * 2 + 1];
+    const x2 = anello[j * 2], z2 = anello[j * 2 + 1];
     let nx = z2 - z1;
     let nz = -(x2 - x1);
     const l = Math.hypot(nx, nz) || 1;
@@ -136,28 +136,51 @@ function estrudiEdificio(acc: Accumulo, fp: Float32Array, h: number, tinta: THRE
     nz /= l;
     const mx = (x1 + x2) / 2 - cx;
     const mz = (z1 + z2) / 2 - cz;
-    if (nx * mx + nz * mz < 0) {
+    const fuori = nx * mx + nz * mz >= 0;
+    if (fuori === interno) {
       nx = -nx;
       nz = -nz;
     }
     acc.tri(x1, 0, z1, x2, 0, z2, x2, h, z2, nx, 0, nz, tinta.r, tinta.g, tinta.b);
     acc.tri(x1, 0, z1, x2, h, z2, x1, h, z1, nx, 0, nz, tinta.r, tinta.g, tinta.b);
   }
+}
 
-  // tetto piano triangolato
+function estrudiEdificio(
+  acc: Accumulo,
+  fp: Float32Array,
+  fori: Float32Array[],
+  h: number,
+  tinta: THREE.Color,
+  tetto: THREE.Color,
+) {
+  const n = fp.length / 2;
+  if (n < 3) return;
+
+  pareti(acc, fp, h, tinta, false);
+  for (const foro of fori) pareti(acc, foro, h, tinta, true);
+
+  // tetto piano triangolato (coi buchi dei cortili)
   const contour: THREE.Vector2[] = [];
   for (let i = 0; i < n; i++) contour.push(new THREE.Vector2(fp[i * 2], fp[i * 2 + 1]));
+  const holes = fori.map((f) => {
+    const hpts: THREE.Vector2[] = [];
+    for (let i = 0; i < f.length; i += 2) hpts.push(new THREE.Vector2(f[i], f[i + 1]));
+    return hpts;
+  });
   let tris: number[][];
   try {
-    tris = THREE.ShapeUtils.triangulateShape(contour, []);
+    tris = THREE.ShapeUtils.triangulateShape(contour, holes);
   } catch {
     return;
   }
+  // gli indici restituiti puntano a contour ⧺ holes, in quest'ordine
+  const tutti = contour.concat(...holes);
   for (const [a, b, c] of tris) {
     acc.tri(
-      contour[a].x, h, contour[a].y,
-      contour[b].x, h, contour[b].y,
-      contour[c].x, h, contour[c].y,
+      tutti[a].x, h, tutti[a].y,
+      tutti[b].x, h, tutti[b].y,
+      tutti[c].x, h, tutti[c].y,
       0, 1, 0,
       tetto.r, tetto.g, tetto.b,
     );
@@ -183,7 +206,7 @@ export function generaCitta(mondo: MondoLugo, senzaLandmark = false): CittaGeome
 
   for (const b of mondo.buildings) {
     if (senzaLandmark && b.landmark) continue;
-    estrudiEdificio(edifici, b.fp, b.h, tinte[b.tinta % tinte.length], tettoTinte[b.tinta % tinte.length]);
+    estrudiEdificio(edifici, b.fp, b.fori, b.h, tinte[b.tinta % tinte.length], tettoTinte[b.tinta % tinte.length]);
   }
 
   // superfici piatte, dal basso verso l'alto

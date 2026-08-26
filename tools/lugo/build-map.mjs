@@ -163,15 +163,22 @@ function assembleRings(wayNodeLists) {
       const end = ring[ring.length - 1];
       let found = -1;
       let rev = false;
+      // tra i segmenti che si agganciano, meglio quello che CHIUDE l'anello:
+      // due anelli outer che condividono un nodo non vanno fusi in uno
       for (let i = 0; i < segs.length; i++) {
-        if (segs[i][0] === end) {
+        const s = segs[i];
+        const testa = s[0] === end;
+        const coda = s[s.length - 1] === end;
+        if (!testa && !coda) continue;
+        const estremo = testa ? s[s.length - 1] : s[0];
+        if (estremo === ring[0]) {
           found = i;
+          rev = coda;
           break;
         }
-        if (segs[i][segs[i].length - 1] === end) {
+        if (found === -1) {
           found = i;
-          rev = true;
-          break;
+          rev = coda;
         }
       }
       if (found === -1) break;
@@ -263,17 +270,30 @@ const nodes = new Map();
 const ways = new Map();
 const relations = [];
 for (const el of raw.elements) {
-  if (el.type === 'node') nodes.set(el.id, el);
-  else if (el.type === 'way') ways.set(el.id, el);
-  else if (el.type === 'relation') relations.push(el);
+  if (el.type === 'relation') {
+    relations.push(el);
+    continue;
+  }
+  // `out body; >; out skel qt;` ristampa gli elementi ricorsi SENZA tag:
+  // una copia "skeleton" non deve mai sovrascrivere quella taggata
+  const indice = el.type === 'node' ? nodes : ways;
+  const prev = indice.get(el.id);
+  if (!prev || (el.tags && !prev.tags)) indice.set(el.id, el);
 }
+
+// nodi referenziati ma assenti dalla risposta: se sono troppi la risposta
+// era monca e la mappa uscirebbe distorta in silenzio
+let refTotali = 0;
+let refMancanti = 0;
 
 const wayRing = (w) => {
   const ids = w.nodes[0] === w.nodes[w.nodes.length - 1] ? w.nodes.slice(0, -1) : w.nodes;
   const pts = [];
   for (const id of ids) {
     const n = nodes.get(id);
+    refTotali++;
     if (n) pts.push(proj(n.lat, n.lon));
+    else refMancanti++;
   }
   return pts;
 };
@@ -281,10 +301,23 @@ const wayLine = (w) => {
   const pts = [];
   for (const id of w.nodes) {
     const n = nodes.get(id);
+    refTotali++;
     if (n) pts.push(proj(n.lat, n.lon));
+    else refMancanti++;
   }
   return pts;
 };
+
+/** Ray casting: il punto (x,z) è dentro l'anello? */
+function puntoInPoligono(x, z, ring) {
+  let dentro = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, zi] = ring[i];
+    const [xj, zj] = ring[j];
+    if (zi > z !== zj > z && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) dentro = !dentro;
+  }
+  return dentro;
+}
 
 // ── costruzione ─────────────────────────────────────────────────────────────
 const roads = [];
@@ -316,32 +349,70 @@ const flatQ = (pts) => {
   return out;
 };
 
-// edifici che arrivano da relation: le way membre non vanno ricontate
+// edifici che arrivano da relation: le way membre non vanno ricontate.
+// Gli anelli "inner" sono i CORTILI: vanno tenuti come fori, altrimenti il
+// quadriportico diventa un blocco pieno col collider che sbarra la corte.
 const memberWays = new Set();
 const relBuildings = [];
+const relPoi = [];
 for (const rel of relations) {
   const tags = rel.tags || {};
-  if (!tags.building) continue;
-  const outers = (rel.members || []).filter((m) => m.type === 'way' && m.role !== 'inner');
-  for (const m of outers) memberWays.add(m.ref);
-  const lists = outers.map((m) => ways.get(m.ref)).filter(Boolean).map((w) => w.nodes);
-  for (const ringIds of assembleRings(lists)) {
-    const pts = ringIds.map((id) => nodes.get(id)).filter(Boolean).map((n) => proj(n.lat, n.lon));
-    if (pts.length >= 3) relBuildings.push({ ring: pts, tags, id: rel.id });
+  if (tags.building) {
+    const outerLists = [];
+    const innerLists = [];
+    for (const m of rel.members || []) {
+      if (m.type !== 'way') continue;
+      const w = ways.get(m.ref);
+      if (!w) continue;
+      memberWays.add(m.ref);
+      (m.role === 'inner' ? innerLists : outerLists).push(w.nodes);
+    }
+    const idsToPts = (ringIds) =>
+      ringIds.map((nid) => nodes.get(nid)).filter(Boolean).map((n) => proj(n.lat, n.lon));
+    const outers = assembleRings(outerLists).map(idsToPts).filter((r) => r.length >= 3);
+    const inners = assembleRings(innerLists).map(idsToPts).filter((r) => r.length >= 3);
+    for (const outer of outers) {
+      const fori = inners.filter((inner) => {
+        const [cx, cz] = centroid(inner);
+        return puntoInPoligono(cx, cz, outer);
+      });
+      relBuildings.push({ ring: outer, fori, tags, id: rel.id });
+    }
+    continue;
+  }
+  // caserma (o altro POI) mappato come relation senza tag building
+  if (tags.amenity === 'police') {
+    const pts = [];
+    for (const m of rel.members || []) {
+      if (m.type === 'way') {
+        const w = ways.get(m.ref);
+        if (w) pts.push(...wayRing(w));
+      } else if (m.type === 'node') {
+        const n = nodes.get(m.ref);
+        if (n) pts.push(proj(n.lat, n.lon));
+      }
+    }
+    if (pts.length >= 3) relPoi.push({ nome: tags.name || 'Caserma dei Carabinieri', ring: pts, tags });
   }
 }
 
-function addBuilding(ring, tags, id) {
+function addBuilding(ring, tags, id, fori = []) {
   let r = simplifyRing(ring, 0.3);
   if (r.length < 3) return;
-  const areaAbs = Math.abs(signedArea(r));
+  const foriSempl = fori
+    .map((f) => simplifyRing(f, 0.3))
+    .filter((f) => f.length >= 3);
+  const areaOuter = Math.abs(signedArea(r));
+  const areaFori = foriSempl.reduce((s, f) => s + Math.abs(signedArea(f)), 0);
+  const areaNetta = areaOuter - areaFori;
   const lm = landmarkOf(tags);
-  if (areaAbs < 20 && !lm) return;
+  if (areaNetta < 20 && !lm) return;
   if (signedArea(r) < 0) r = [...r].reverse(); // antiorario, sempre
   const rect = minAreaRect(r);
   if (!rect) return;
   const hullArea = Math.abs(signedArea(convexHull(r)));
-  const concavo = hullArea > 0 && areaAbs / hullArea < 0.75;
+  // coi fori il collider è SEMPRE a segmenti: il cortile resta percorribile
+  const concavo = foriSempl.length > 0 || (hullArea > 0 && areaNetta / hullArea < 0.75);
   stretch(r);
   const b = {
     fp: flatQ(r),
@@ -351,6 +422,8 @@ function addBuilding(ring, tags, id) {
       ? { edges: true }
       : { obb: [q(rect.cx), q(rect.cz), q(rect.hw), q(rect.hd), Math.round(rect.angle * 1000) / 1000] },
   };
+  const foriQ = foriSempl.map((f) => flatQ(f)).filter((f) => f.length >= 6);
+  if (foriQ.length) b.fori = foriQ;
   if (lm) b.landmark = lm;
   if (b.fp.length >= 6) buildings.push(b);
 }
@@ -453,6 +526,13 @@ for (const w of ways.values()) {
     continue;
   }
 
+  // caserma mappata come recinto (way con amenity=police, senza building)
+  if (tags.amenity === 'police') {
+    const r = wayRing(w);
+    if (r.length >= 3) candidatePoi('caserma', tags.name || 'Caserma dei Carabinieri', r, tags);
+    continue;
+  }
+
   // monumenti/memoriali mappati come way
   if (tags.historic) {
     const lm = landmarkOf(tags);
@@ -462,10 +542,11 @@ for (const w of ways.values()) {
 }
 
 for (const b of relBuildings) {
-  addBuilding(b.ring, b.tags, b.id);
+  addBuilding(b.ring, b.tags, b.id, b.fori);
   const lm = landmarkOf(b.tags);
   if (lm) candidatePoi(lm, b.tags.name || lm, b.ring, b.tags);
 }
+for (const p of relPoi) candidatePoi('caserma', p.nome, p.ring, p.tags);
 
 // POI da nodi: stazione, monumenti, bar/caffè
 const barNodes = [];
@@ -513,8 +594,24 @@ const map = {
   poi,
 };
 
-mkdirSync(dirname(OUT), { recursive: true });
 const json = JSON.stringify(map);
+const bytes = Buffer.byteLength(json);
+
+// guardie PRIMA di scrivere: mai lasciare su disco una mappa monca o obesa
+if (refMancanti > 0) {
+  const frazione = refMancanti / Math.max(1, refTotali);
+  console.warn(`⚠ nodi mancanti nella risposta: ${refMancanti}/${refTotali} riferimenti`);
+  if (frazione > 0.005) {
+    console.error('risposta Overpass incompleta: rifare il fetch (--force)');
+    process.exit(1);
+  }
+}
+if (bytes > MAX_BYTES) {
+  console.error(`mappa troppo pesante: ${(bytes / 1024).toFixed(0)} KB > ${(MAX_BYTES / 1024).toFixed(0)} KB`);
+  process.exit(1);
+}
+
+mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, json);
 
 // ── report ──────────────────────────────────────────────────────────────────
@@ -524,7 +621,7 @@ console.log(`strade:  ${roads.length}  (${roads.reduce((s, r) => s + r.pts.lengt
 console.log(`edifici: ${buildings.length}  (di cui landmark: ${buildings.filter((b) => b.landmark).length})`);
 console.log(`aree:    ${aree.length}  ·  ferrovia: ${rail.length} tratte`);
 console.log(`mondo:   ${((maxX - minX) / 1000).toFixed(2)} × ${((maxZ - minZ) / 1000).toFixed(2)} km`);
-console.log(`file:    ${kb(json.length)} → ${OUT}`);
+console.log(`file:    ${kb(bytes)} → ${OUT}`);
 console.log('── POI ────────────────────────────────────────');
 for (const p of poi) {
   console.log(`  ${p.id.padEnd(16)} "${p.nome}"  (${(p.x / 10).toFixed(0)} m, ${(p.z / 10).toFixed(0)} m)`);
@@ -534,9 +631,4 @@ for (const id of attesi) {
   if (!poi.find((p) => p.id === id)) warn.push(`POI atteso mancante: ${id}`);
 }
 for (const w of warn) console.warn('⚠ ' + w);
-
-if (json.length > MAX_BYTES) {
-  console.error(`mappa troppo pesante: ${kb(json.length)} > ${kb(MAX_BYTES)}`);
-  process.exit(1);
-}
 console.log(warn.length ? `completato con ${warn.length} avvisi` : 'completato senza avvisi');

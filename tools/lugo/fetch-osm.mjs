@@ -25,6 +25,10 @@ const MIRRORS = [
 const args = process.argv.slice(2);
 const force = args.includes('--force');
 const bboxArg = args.includes('--bbox') ? args[args.indexOf('--bbox') + 1] : DEFAULT_BBOX;
+if (!bboxArg) {
+  console.error('--bbox richiede un valore S,W,N,E');
+  process.exit(1);
+}
 const bbox = bboxArg.split(',').map(Number);
 if (bbox.length !== 4 || bbox.some(Number.isNaN)) {
   console.error('bbox non valida: attesa S,W,N,E — ricevuta: ' + bboxArg);
@@ -69,6 +73,9 @@ async function tryMirror(url, attempt) {
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
+    // Overpass può rispondere 200 con dati PARZIALI e un campo "remark"
+    // (timeout/memoria a metà output): mai accettarli, finirebbero in cache
+    if (json.remark) throw new Error('risposta parziale da Overpass: ' + json.remark);
     if (!Array.isArray(json.elements) || json.elements.length === 0) {
       throw new Error('risposta senza elementi');
     }
