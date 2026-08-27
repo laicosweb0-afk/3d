@@ -12,7 +12,6 @@ import { runtime } from '@/lib/lugo/runtime';
 import { useLugo } from '@/lib/lugo/store';
 
 const LATO = 180; // px CSS
-const FINESTRA = 300; // metri visibili
 const SCALA_OFF = 1.2; // px per metro del canvas fuori schermo
 
 function disegnaBase(mondo: MondoLugo): { off: HTMLCanvasElement; minX: number; minZ: number } {
@@ -72,12 +71,17 @@ export function Minimap() {
       canvas.height = LATO * dpr;
       const ctx = canvas.getContext('2d')!;
 
+      let finestraCorrente = 260;
       const disegna = () => {
         const rt = runtime.rt;
         if (!rt) return;
         const s = useLugo.getState();
         const t = s.mode === 'auto' ? rt.auto : rt.persona;
         const lato = LATO * dpr;
+        // zoom dinamico: a piedi si vede vicino, in velocità più lontano
+        const finestraTarget = s.mode === 'piedi' ? 190 : 260 + Math.min(140, Math.abs(rt.vAuto) * 6);
+        finestraCorrente += (finestraTarget - finestraCorrente) * 0.12;
+        const FINESTRA = finestraCorrente;
         const finestraPx = FINESTRA * SCALA_OFF;
 
         ctx.clearRect(0, 0, lato, lato);

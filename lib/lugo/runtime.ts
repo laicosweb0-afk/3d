@@ -25,7 +25,13 @@ export const runtime: {
   gazzella: { x: number; z: number; yaw: number } | null;
   /** Camera pilotata dalla verifica (cartoline): attiva finché `fino` non scade. */
   cameraOverride: { x: number; y: number; z: number; tx: number; ty: number; tz: number; fino: number } | null;
-} = { rt: null, gazzella: null, cameraOverride: null };
+  /** I pedoni vivi (scritti da Npcs, letti dal Player per i dialoghi). */
+  npcs: { tipo: string; x: number; z: number }[] | null;
+  /** true quando la gazzella sta inseguendo il giocatore (wanted > 0). */
+  caccia: boolean;
+  /** true mentre il giocatore frena (per gli stop dell'auto). */
+  frenata: boolean;
+} = { rt: null, gazzella: null, cameraOverride: null, npcs: null, caccia: false, frenata: false };
 
 /** Posizione del giocatore attivo (auto o persona) secondo la modalità. */
 export function posGiocatore(mode: 'auto' | 'piedi'): { x: number; z: number; yaw: number } {

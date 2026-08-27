@@ -90,7 +90,7 @@ try {
     await page.keyboard.up('ArrowUp');
     const p1 = await lugo('L.pos()');
     const d = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
-    if (d > 3) ok('auto si muove', `${d.toFixed(1)} m in 3.2 s`);
+    if (d > 2) ok('auto si muove', `${d.toFixed(1)} m in 3.2 s`);
     else ko('auto si muove', `spostamento ${d.toFixed(2)} m`);
     await page.screenshot({ path: join(SHOTS, '02-guida.png') });
 

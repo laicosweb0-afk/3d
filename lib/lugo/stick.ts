@@ -13,6 +13,8 @@ export const stick = {
   y: 0,
   /** pulsante FRENO tenuto premuto */
   freno: false,
+  /** pulsante CORRI tenuto premuto (a piedi) */
+  corriBtn: false,
   /** pulsante E tenuto premuto (il fronte lo gestisce già il Player) */
   interagisci: false,
 };
@@ -27,15 +29,15 @@ const ZONA_MORTA = 0.24;
 
 /** Fonde tastiera e joystick: basta uno dei due per muoversi. */
 export function conStick(t: StatoInput): StatoInput {
-  if (!stick.attivo && !stick.freno && !stick.interagisci) return t;
+  if (!stick.attivo && !stick.freno && !stick.corriBtn && !stick.interagisci) return t;
   const spinta = Math.hypot(stick.x, stick.y);
   return {
     avanti: t.avanti || stick.y < -ZONA_MORTA,
     indietro: t.indietro || stick.y > ZONA_MORTA,
     sinistra: t.sinistra || stick.x < -ZONA_MORTA,
     destra: t.destra || stick.x > ZONA_MORTA,
-    // spinta a fondo corsa = corsa a piedi
-    corri: t.corri || spinta > 0.9,
+    // spinta a fondo corsa = corsa a piedi (o il pulsante CORRI)
+    corri: t.corri || stick.corriBtn || spinta > 0.9,
     freno: t.freno || stick.freno,
     interagisci: t.interagisci || stick.interagisci,
     reset: t.reset,

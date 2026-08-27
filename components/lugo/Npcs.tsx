@@ -142,6 +142,8 @@ export function Npcs() {
         st.setAvviso(esito.frase);
       }
     }
+    // i pedoni vivi, a disposizione del Player per i dialoghi
+    runtime.npcs = npcs;
 
     const base = new THREE.Matrix4();
     const rot = new THREE.Matrix4();
@@ -184,9 +186,13 @@ export function Npcs() {
       mesh.instanceMatrix.needsUpdate = true;
     }
 
-    // gazzella di pattuglia
+    // gazzella di pattuglia (o d'inseguimento, se sei ricercato)
     if (gazzella && gruppoGazzella.current) {
-      if (st.fase === 'gioco') stepGazzella(gazzella, dt);
+      if (st.fase === 'gioco') {
+        const bersaglio =
+          runtime.caccia && st.mode === 'auto' ? { x: rt.auto.x, z: rt.auto.z } : undefined;
+        stepGazzella(gazzella, dt, bersaglio);
+      }
       gruppoGazzella.current.position.set(gazzella.x, 0, gazzella.z);
       gruppoGazzella.current.rotation.y = -gazzella.yaw;
       runtime.gazzella = { x: gazzella.x, z: gazzella.z, yaw: gazzella.yaw };
