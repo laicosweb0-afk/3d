@@ -145,6 +145,8 @@ export function Insegne() {
   }, [mondo]);
 
   const tende = useRef<THREE.InstancedMesh>(null);
+  const vetrine = useRef<THREE.InstancedMesh>(null);
+  const porte = useRef<THREE.InstancedMesh>(null);
 
   useLayoutEffect(() => {
     if (!dati || !tende.current) return;
@@ -152,18 +154,36 @@ export function Insegne() {
     const q = new THREE.Quaternion();
     const e = new THREE.Euler();
     const col = new THREE.Color();
+    const uno = new THREE.Vector3(1, 1, 1);
     dati.cartelli.forEach((c, i) => {
       const angolo = Math.atan2(c.ez, c.ex);
       e.set(-0.45, -angolo, 0, 'YXZ');
       q.setFromEuler(e);
-      m.compose(new THREE.Vector3(c.x + c.nx * 0.55, 2.5, c.z + c.nz * 0.55), q, new THREE.Vector3(1, 1, 1));
+      m.compose(new THREE.Vector3(c.x + c.nx * 0.55, 2.5, c.z + c.nz * 0.55), q, uno);
       tende.current!.setMatrixAt(i, m);
       tende.current!.setColorAt(i, col.set(TENDE[i % TENDE.length]));
+      // vetrina e porta del negozio, sotto l'insegna
+      e.set(0, -angolo, 0, 'YXZ');
+      q.setFromEuler(e);
+      m.compose(new THREE.Vector3(c.x + c.nx * 0.07 - c.ex * 0.5, 1.1, c.z + c.nz * 0.07 - c.ez * 0.5), q, uno);
+      vetrine.current?.setMatrixAt(i, m);
+      m.compose(new THREE.Vector3(c.x + c.nx * 0.07 + c.ex * 1.15, 1.1, c.z + c.nz * 0.07 + c.ez * 1.15), q, uno);
+      porte.current?.setMatrixAt(i, m);
     });
-    tende.current.count = dati.cartelli.length;
-    tende.current.instanceMatrix.needsUpdate = true;
-    if (tende.current.instanceColor) tende.current.instanceColor.needsUpdate = true;
+    for (const ref of [tende, vetrine, porte]) {
+      if (ref.current) {
+        ref.current.count = dati.cartelli.length;
+        ref.current.instanceMatrix.needsUpdate = true;
+        if (ref.current.instanceColor) ref.current.instanceColor.needsUpdate = true;
+      }
+    }
   }, [dati]);
+
+  // le insegne di categoria a bandiera: la T dei tabacchi, la croce verde
+  const targaT = useMemo(
+    () => (typeof document !== 'undefined' ? usaTargaT() : null),
+    [],
+  );
 
   if (!dati) return null;
 
@@ -176,6 +196,70 @@ export function Insegne() {
         <boxGeometry args={[3.0, 0.05, 1.0]} />
         <meshLambertMaterial />
       </instancedMesh>
+      <instancedMesh ref={vetrine} args={[undefined, undefined, Math.max(1, dati.cartelli.length)]} frustumCulled={false}>
+        <boxGeometry args={[1.9, 2.0, 0.06]} />
+        <meshLambertMaterial color="#27313E" emissive="#4E4230" emissiveIntensity={0.35} />
+      </instancedMesh>
+      <instancedMesh ref={porte} args={[undefined, undefined, Math.max(1, dati.cartelli.length)]} frustumCulled={false}>
+        <boxGeometry args={[0.95, 2.2, 0.06]} />
+        <meshLambertMaterial color="#2A1E14" />
+      </instancedMesh>
+
+      {dati.cartelli.map((c, i) => {
+        const cat = mondo.negozi[i]?.categoria;
+        if (cat === 'tabacchi' && targaT) {
+          return (
+            <mesh
+              key={'t' + i}
+              position={[c.x + c.nx * 0.55, 3.7, c.z + c.nz * 0.55]}
+              rotation={[0, Math.atan2(c.ex, c.ez), 0]}
+            >
+              <planeGeometry args={[0.6, 0.7]} />
+              <meshBasicMaterial map={targaT} side={THREE.DoubleSide} />
+            </mesh>
+          );
+        }
+        if (cat === 'farmacia') {
+          return (
+            <group
+              key={'f' + i}
+              position={[c.x + c.nx * 0.55, 3.7, c.z + c.nz * 0.55]}
+              rotation={[0, Math.atan2(c.ex, c.ez), 0]}
+            >
+              <mesh>
+                <boxGeometry args={[0.75, 0.24, 0.06]} />
+                <meshLambertMaterial color="#1E8A46" emissive="#2ECC6E" emissiveIntensity={1.4} />
+              </mesh>
+              <mesh>
+                <boxGeometry args={[0.24, 0.75, 0.06]} />
+                <meshLambertMaterial color="#1E8A46" emissive="#2ECC6E" emissiveIntensity={1.4} />
+              </mesh>
+            </group>
+          );
+        }
+        return null;
+      })}
     </group>
   );
+}
+
+/** La targa dei tabacchi: T bianca in campo nero, come dal vivo. */
+function usaTargaT(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 96;
+  canvas.height = 112;
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = '#14161C';
+  ctx.fillRect(0, 0, 96, 112);
+  ctx.strokeStyle = '#E8E2D2';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(5, 5, 86, 102);
+  ctx.fillStyle = '#F0EADA';
+  ctx.font = 'bold 72px Georgia, serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('T', 48, 58);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.anisotropy = 4;
+  return tex;
 }

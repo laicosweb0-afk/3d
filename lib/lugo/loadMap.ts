@@ -14,6 +14,8 @@ export interface StradaRT {
   classe: ClasseStrada;
   larghezza: number;
   nome?: string;
+  /** Anello di rotonda. */
+  rotonda: boolean;
   /** [x0,z0,x1,z1,…] in metri. */
   pts: Float32Array;
 }
@@ -59,6 +61,7 @@ export interface AreaRT {
 
 export interface NegozioRT {
   nome: string;
+  categoria: string;
   x: number;
   z: number;
 }
@@ -190,13 +193,14 @@ async function carica(): Promise<MondoLugo> {
       classe: r.classe,
       larghezza: r.larghezza,
       ...(r.nome ? { nome: r.nome } : {}),
+      rotonda: r.rotonda === 1,
       pts: toMeters(r.pts),
     })),
     buildings,
     aree: raw.aree.map((a) => ({ kind: a.kind, poly: toMeters(a.poly) })),
     rail: raw.rail.map(toMeters),
     poi,
-    negozi: (raw.negozi ?? []).map((s) => ({ nome: s.n, x: s.x * M, z: s.z * M })),
+    negozi: (raw.negozi ?? []).map((s) => ({ nome: s.n, categoria: s.c ?? 'negozio', x: s.x * M, z: s.z * M })),
     arredi: (raw.arredi ?? []).map((a) => ({ tipo: a.t, x: a.x * M, z: a.z * M })),
   };
 }

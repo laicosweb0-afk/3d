@@ -13,6 +13,34 @@ export class Accumulo {
   pos: number[] = [];
   nor: number[] = [];
   col: number[] = [];
+  uv: number[] = [];
+
+  /** Triangolo con UV esplicite (per le superfici con texture, es. intonaco). */
+  triUV(
+    ax: number, ay: number, az: number,
+    bx: number, by: number, bz: number,
+    cx: number, cy: number, cz: number,
+    nx: number, ny: number, nz: number,
+    r: number, g: number, b: number,
+    ua: number, va: number, ub: number, vb: number, uc: number, vc: number,
+  ) {
+    // il winding deve concordare con la normale dichiarata (materiali
+    // FrontSide): se il triangolo è avvolto al contrario, si scambiano B e C
+    const e1x = bx - ax, e1y = by - ay, e1z = bz - az;
+    const e2x = cx - ax, e2y = cy - ay, e2z = cz - az;
+    const gx = e1y * e2z - e1z * e2y;
+    const gy = e1z * e2x - e1x * e2z;
+    const gz = e1x * e2y - e1y * e2x;
+    if (gx * nx + gy * ny + gz * nz < 0) {
+      this.pos.push(ax, ay, az, cx, cy, cz, bx, by, bz);
+      this.uv.push(ua, va, uc, vc, ub, vb);
+    } else {
+      this.pos.push(ax, ay, az, bx, by, bz, cx, cy, cz);
+      this.uv.push(ua, va, ub, vb, uc, vc);
+    }
+    this.nor.push(nx, ny, nz, nx, ny, nz, nx, ny, nz);
+    this.col.push(r, g, b, r, g, b, r, g, b);
+  }
 
   tri(
     ax: number, ay: number, az: number,
@@ -21,20 +49,7 @@ export class Accumulo {
     nx: number, ny: number, nz: number,
     r: number, g: number, b: number,
   ) {
-    // il winding deve concordare con la normale dichiarata (materiali
-    // FrontSide): se il triangolo è avvolto al contrario, si scambiano B e C
-    const ux = bx - ax, uy = by - ay, uz = bz - az;
-    const vx = cx - ax, vy = cy - ay, vz = cz - az;
-    const gx = uy * vz - uz * vy;
-    const gy = uz * vx - ux * vz;
-    const gz = ux * vy - uy * vx;
-    if (gx * nx + gy * ny + gz * nz < 0) {
-      this.pos.push(ax, ay, az, cx, cy, cz, bx, by, bz);
-    } else {
-      this.pos.push(ax, ay, az, bx, by, bz, cx, cy, cz);
-    }
-    this.nor.push(nx, ny, nz, nx, ny, nz, nx, ny, nz);
-    this.col.push(r, g, b, r, g, b, r, g, b);
+    this.triUV(ax, ay, az, bx, by, bz, cx, cy, cz, nx, ny, nz, r, g, b, 0, 0, 0, 0, 0, 0);
   }
 
   build(): THREE.BufferGeometry {
@@ -42,6 +57,7 @@ export class Accumulo {
     g.setAttribute('position', new THREE.Float32BufferAttribute(this.pos, 3));
     g.setAttribute('normal', new THREE.Float32BufferAttribute(this.nor, 3));
     g.setAttribute('color', new THREE.Float32BufferAttribute(this.col, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(this.uv, 2));
     return g;
   }
 }
@@ -215,7 +231,7 @@ function finestre(
   }
 }
 
-/** Pareti + finestre + zoccolo e cornicione di un anello (solo perimetro esterno). */
+/** Pareti + finestre + zoccolo, cornicione e portone di un anello (solo perimetro esterno). */
 function paretiConFinestre(
   acc: Accumulo,
   anello: Float32Array,
@@ -227,9 +243,17 @@ function paretiConFinestre(
   const n = anello.length / 2;
   if (n < 3) return;
   let cx = 0, cz = 0;
+  let latoPortone = -1;
+  let latoMax = 0;
   for (let i = 0; i < n; i++) {
     cx += anello[i * 2];
     cz += anello[i * 2 + 1];
+    const j = (i + 1) % n;
+    const L = Math.hypot(anello[j * 2] - anello[i * 2], anello[j * 2 + 1] - anello[i * 2 + 1]);
+    if (L > latoMax) {
+      latoMax = L;
+      latoPortone = i;
+    }
   }
   cx /= n;
   cz /= n;
@@ -237,6 +261,7 @@ function paretiConFinestre(
     const j = (i + 1) % n;
     const x1 = anello[i * 2], z1 = anello[i * 2 + 1];
     const x2 = anello[j * 2], z2 = anello[j * 2 + 1];
+    const L = Math.hypot(x2 - x1, z2 - z1);
     let nx = z2 - z1;
     let nz = -(x2 - x1);
     const l = Math.hypot(nx, nz) || 1;
@@ -248,8 +273,48 @@ function paretiConFinestre(
       nx = -nx;
       nz = -nz;
     }
-    acc.tri(x1, 0, z1, x2, 0, z2, x2, h, z2, nx, 0, nz, tinta.r, tinta.g, tinta.b);
-    acc.tri(x1, 0, z1, x2, h, z2, x1, h, z1, nx, 0, nz, tinta.r, tinta.g, tinta.b);
+    // la grana dell'intonaco: UV in metri (la texture si ripete ogni ~3.2 m)
+    const uMax = L / 3.2;
+    const vMax = h / 3.2;
+    acc.triUV(x1, 0, z1, x2, 0, z2, x2, h, z2, nx, 0, nz, tinta.r, tinta.g, tinta.b, 0, 0, uMax, 0, uMax, vMax);
+    acc.triUV(x1, 0, z1, x2, h, z2, x1, h, z1, nx, 0, nz, tinta.r, tinta.g, tinta.b, 0, 0, uMax, vMax, 0, vMax);
+
+    // il portone sul lato più lungo, come dal vivo: anta scura e cornice
+    if (budget && i === latoPortone && L >= 3.5 && h >= 3.5) {
+      const t = 0.32;
+      const px = x1 + (x2 - x1) * t;
+      const pz = z1 + (z2 - z1) * t;
+      const ex = ((x2 - x1) / L);
+      const ez = ((z2 - z1) / L);
+      const cPorta = 0.62;
+      const cCorn = 0.78;
+      const ox = nx * 0.05, oz = nz * 0.05;
+      acc.tri(
+        px - ex * cCorn + ox, 0, pz - ez * cCorn + oz,
+        px + ex * cCorn + ox, 0, pz + ez * cCorn + oz,
+        px + ex * cCorn + ox, 2.65, pz + ez * cCorn + oz,
+        nx, 0, nz, cCornice.r, cCornice.g, cCornice.b,
+      );
+      acc.tri(
+        px - ex * cCorn + ox, 0, pz - ez * cCorn + oz,
+        px + ex * cCorn + ox, 2.65, pz + ez * cCorn + oz,
+        px - ex * cCorn + ox, 2.65, pz - ez * cCorn + oz,
+        nx, 0, nz, cCornice.r, cCornice.g, cCornice.b,
+      );
+      const ox2 = nx * 0.08, oz2 = nz * 0.08;
+      acc.tri(
+        px - ex * cPorta + ox2, 0, pz - ez * cPorta + oz2,
+        px + ex * cPorta + ox2, 0, pz + ez * cPorta + oz2,
+        px + ex * cPorta + ox2, 2.45, pz + ez * cPorta + oz2,
+        nx, 0, nz, 0.16, 0.11, 0.08,
+      );
+      acc.tri(
+        px - ex * cPorta + ox2, 0, pz - ez * cPorta + oz2,
+        px + ex * cPorta + ox2, 2.45, pz + ez * cPorta + oz2,
+        px - ex * cPorta + ox2, 2.45, pz - ez * cPorta + oz2,
+        nx, 0, nz, 0.16, 0.11, 0.08,
+      );
+    }
     if (zoccolo && h > 3) {
       // zoccolo scuro alla base, cornicione chiaro sotto la gronda
       const ox = nx * 0.03;
@@ -405,7 +470,93 @@ export function generaCitta(mondo: MondoLugo, senzaLandmark: string[] = []): Cit
     nastro(suolo, linea, 1.6, QUOTA.ferrovia, cFerro);
   }
 
+  isoleRotonde(suolo, mondo);
+
   return { edifici: edifici.build(), suolo: suolo.build() };
+}
+
+/**
+ * Le isole delle rotonde: cordolo bianco, verde al centro e un cespuglio.
+ * Gli anelli possono arrivare spezzati in più way: si raggruppano per
+ * vicinanza dei baricentri e si ricava centro e raggio interno.
+ */
+function isoleRotonde(acc: Accumulo, mondo: MondoLugo) {
+  const gruppi = new Map<string, { pts: [number, number][]; larghezza: number }>();
+  for (const r of mondo.roads) {
+    if (!r.rotonda) continue;
+    let cx = 0, cz = 0;
+    const n = r.pts.length / 2;
+    for (let i = 0; i < n; i++) {
+      cx += r.pts[i * 2];
+      cz += r.pts[i * 2 + 1];
+    }
+    cx /= n;
+    cz /= n;
+    const chiave = Math.round(cx / 30) + ':' + Math.round(cz / 30);
+    let g = gruppi.get(chiave);
+    if (!g) {
+      g = { pts: [], larghezza: r.larghezza };
+      gruppi.set(chiave, g);
+    }
+    for (let i = 0; i < n; i++) g.pts.push([r.pts[i * 2], r.pts[i * 2 + 1]]);
+  }
+
+  const cVerde = new THREE.Color(PALETTE.verde);
+  const cCordolo = new THREE.Color(PALETTE.segnaletica);
+  const cCespuglio = new THREE.Color('#46683A');
+  for (const g of gruppi.values()) {
+    if (g.pts.length < 6) continue;
+    let cx = 0, cz = 0;
+    for (const [x, z] of g.pts) {
+      cx += x;
+      cz += z;
+    }
+    cx /= g.pts.length;
+    cz /= g.pts.length;
+    let rMin = Infinity;
+    for (const [x, z] of g.pts) rMin = Math.min(rMin, Math.hypot(x - cx, z - cz));
+    const rIsola = rMin - g.larghezza / 2 - 0.4;
+    if (rIsola < 1.4 || rIsola > 30) continue;
+    const lati = 18;
+    const y = 0.28;
+    for (let i = 0; i < lati; i++) {
+      const a0 = (i / lati) * Math.PI * 2;
+      const a1 = ((i + 1) / lati) * Math.PI * 2;
+      // cordolo
+      acc.tri(
+        cx + Math.cos(a0) * rIsola, y, cz + Math.sin(a0) * rIsola,
+        cx + Math.cos(a1) * rIsola, y, cz + Math.sin(a1) * rIsola,
+        cx + Math.cos(a1) * (rIsola - 0.4), y, cz + Math.sin(a1) * (rIsola - 0.4),
+        0, 1, 0, cCordolo.r, cCordolo.g, cCordolo.b,
+      );
+      acc.tri(
+        cx + Math.cos(a0) * rIsola, y, cz + Math.sin(a0) * rIsola,
+        cx + Math.cos(a1) * (rIsola - 0.4), y, cz + Math.sin(a1) * (rIsola - 0.4),
+        cx + Math.cos(a0) * (rIsola - 0.4), y, cz + Math.sin(a0) * (rIsola - 0.4),
+        0, 1, 0, cCordolo.r, cCordolo.g, cCordolo.b,
+      );
+      // prato interno
+      acc.tri(
+        cx, y + 0.005, cz,
+        cx + Math.cos(a0) * (rIsola - 0.4), y + 0.005, cz + Math.sin(a0) * (rIsola - 0.4),
+        cx + Math.cos(a1) * (rIsola - 0.4), y + 0.005, cz + Math.sin(a1) * (rIsola - 0.4),
+        0, 1, 0, cVerde.r, cVerde.g, cVerde.b,
+      );
+    }
+    // cespuglio al centro (cono basso)
+    const rC = Math.min(2.2, rIsola * 0.45);
+    for (let i = 0; i < 8; i++) {
+      const a0 = (i / 8) * Math.PI * 2;
+      const a1 = ((i + 1) / 8) * Math.PI * 2;
+      acc.tri(
+        cx + Math.cos(a0) * rC, y, cz + Math.sin(a0) * rC,
+        cx + Math.cos(a1) * rC, y, cz + Math.sin(a1) * rC,
+        cx, y + rC * 0.9, cz,
+        Math.cos((a0 + a1) / 2), 0.6, Math.sin((a0 + a1) / 2),
+        cCespuglio.r, cCespuglio.g, cCespuglio.b,
+      );
+    }
+  }
 }
 
 /**

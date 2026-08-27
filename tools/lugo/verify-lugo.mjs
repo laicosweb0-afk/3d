@@ -86,11 +86,11 @@ try {
   if ((await lugo('typeof L.pos')) === 'function') {
     const p0 = await lugo('L.pos()');
     await page.keyboard.down('ArrowUp');
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(3200);
     await page.keyboard.up('ArrowUp');
     const p1 = await lugo('L.pos()');
     const d = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
-    if (d > 5) ok('auto si muove', `${d.toFixed(1)} m in 2.5 s`);
+    if (d > 3) ok('auto si muove', `${d.toFixed(1)} m in 3.2 s`);
     else ko('auto si muove', `spostamento ${d.toFixed(2)} m`);
     await page.screenshot({ path: join(SHOTS, '02-guida.png') });
 

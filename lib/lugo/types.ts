@@ -22,6 +22,8 @@ export interface StradaMap {
   /** Larghezza carreggiata in metri. */
   larghezza: number;
   nome?: string;
+  /** 1 = anello di rotonda (junction=roundabout). */
+  rotonda?: 1;
   /** Polilinea [x0,z0,x1,z1,…] in dm. */
   pts: number[];
 }
@@ -70,6 +72,8 @@ export interface PoiMap {
 export interface NegozioMap {
   /** Insegna (nome vero da OSM). */
   n: string;
+  /** Categoria: tabacchi | farmacia | bar | cibo | negozio. */
+  c?: string;
   x: number;
   z: number;
 }
