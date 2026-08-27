@@ -195,6 +195,15 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
         // lesena crema, dal suolo alla cornice
         box(acc, px + nx * 0.08, H / 2, pz + nz * 0.08, 0.52, H, 0.2, CREMA, Math.atan2(ez, ex));
       }
+      // l'arcata cieca della Loggia al piano terra, tra le lesene
+      if (k < nCampi) {
+        const ta = (k + 0.5) / nCampi;
+        const ax2 = x1 + (x2 - x1) * ta;
+        const az2 = z1 + (z2 - z1) * ta;
+        if (!vicinoAVarco(ax2, az2, varchi, 3.2)) {
+          box(acc, ax2 + nx * 0.05, 1.95, az2 + nz * 0.05, 2.3, 3.9, 0.04, new THREE.Color('#3A3028'), Math.atan2(ez, ex));
+        }
+      }
       // finestra del piano nobile al centro del campo, con le persiane
       if (k < nCampi) {
         const tw = (k + 0.5) / nCampi;
@@ -281,6 +290,29 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
   piano(acc, fp, [corte], H_ARCO, SOFFITTO, true);
   // lastrico della corte
   piano(acc, corte, [], 0.16, PIETRA);
+
+  // il camminamento rosato che circonda il quadriportico, come dall'alto
+  const ROSATO = new THREE.Color('#B08A80');
+  for (const [x1, z1, x2, z2] of anelloSegmenti(fp)) {
+    const L = Math.hypot(x2 - x1, z2 - z1);
+    if (L < 1) continue;
+    const ex = (x2 - x1) / L;
+    const ez = (z2 - z1) / L;
+    let nx = ez;
+    let nz = -ex;
+    const mx = (x1 + x2) / 2;
+    const mz = (z1 + z2) / 2;
+    if (nx * (mx - pcx) + nz * (mz - pcz) < 0) {
+      nx = -nx;
+      nz = -nz;
+    }
+    const ax = x1 - ex * 4;
+    const az = z1 - ez * 4;
+    const bx = x2 + ex * 4;
+    const bz = z2 + ez * 4;
+    acc.tri(ax, 0.165, az, bx, 0.165, bz, bx + nx * 8, 0.165, bz + nz * 8, 0, 1, 0, ROSATO.r, ROSATO.g, ROSATO.b);
+    acc.tri(ax, 0.165, az, bx + nx * 8, 0.165, bz + nz * 8, ax + nx * 8, 0.165, az + nz * 8, 0, 1, 0, ROSATO.r, ROSATO.g, ROSATO.b);
+  }
 
   return acc.build();
 }
@@ -443,6 +475,37 @@ export function Landmarks() {
     return { x: p.x, z: p.z, yaw: p.yaw };
   }, [dati.poiCaserma, mondo]);
 
+  // la giostrina nel parco della Rocca, come nella vista dall'alto
+  const giostra = useMemo(() => {
+    const rocca = mondo.poi.get('rocca');
+    if (!rocca) return null;
+    let best: [number, number] | null = null;
+    let bestArea = 0;
+    for (const a of mondo.aree) {
+      if (a.kind !== 'verde') continue;
+      const n = a.poly.length / 2;
+      let cx = 0, cz = 0;
+      for (let i = 0; i < n; i++) {
+        cx += a.poly[i * 2];
+        cz += a.poly[i * 2 + 1];
+      }
+      cx /= n;
+      cz /= n;
+      if (Math.hypot(cx - rocca.xm, cz - rocca.zm) > 130) continue;
+      let area = 0;
+      for (let i = 0; i < n; i++) {
+        const j = (i + 1) % n;
+        area += a.poly[i * 2] * a.poly[j * 2 + 1] - a.poly[j * 2] * a.poly[i * 2 + 1];
+      }
+      area = Math.abs(area / 2);
+      if (area > bestArea) {
+        bestArea = area;
+        best = [cx, cz];
+      }
+    }
+    return best ? { x: best[0] + 8, z: best[1] - 6 } : null;
+  }, [mondo]);
+
   return (
     <group>
       {dati.pavaglione && <mesh geometry={dati.pavaglione} material={materiale} castShadow receiveShadow />}
@@ -481,33 +544,35 @@ export function Landmarks() {
         </group>
       )}
 
-      {/* Monumento a Francesco Baracca: basamento e l'ala verticale */}
+      {/* Monumento a Baracca com'è nelle viste 3D: l'alta stele-ala BIANCA
+          di Rambelli sui gradini, con la statua scura dell'aviatore accanto */}
       {dati.poiBaracca && (
         <group position={[dati.poiBaracca.xm, 0, dati.poiBaracca.zm]} rotation={[0, -(dati.poiBaracca.rot ?? 0), 0]}>
-          <mesh position={[0, 0.35, 0]} castShadow>
-            <cylinderGeometry args={[2.2, 2.5, 0.7, 12]} />
-            <meshLambertMaterial color="#B9AF9E" />
+          <mesh position={[0, 0.14, 0]} receiveShadow>
+            <boxGeometry args={[9, 0.28, 7]} />
+            <meshLambertMaterial color="#C6C0B2" />
           </mesh>
-          <mesh position={[0, 1.6, 0]} castShadow>
-            <boxGeometry args={[1.6, 1.9, 1.6]} />
-            <meshLambertMaterial color="#ABA08C" />
+          <mesh position={[0, 0.4, 0]} receiveShadow>
+            <boxGeometry args={[7, 0.26, 5.4]} />
+            <meshLambertMaterial color="#CCC6B8" />
           </mesh>
-          {/* l'Ala di Rambelli (1936): massiccia, rastremata verso l'alto */}
-          <mesh position={[0, 4.9, -0.3]} rotation={[0.08, 0, 0]} castShadow>
-            <boxGeometry args={[0.6, 5.2, 2.9]} />
-            <meshLambertMaterial color="#54544A" />
+          <mesh position={[0, 0.66, 0]} receiveShadow>
+            <boxGeometry args={[5.2, 0.28, 4]} />
+            <meshLambertMaterial color="#D2CCBE" />
           </mesh>
-          <mesh position={[0, 7.6, -0.42]} rotation={[0.12, 0, 0]} castShadow>
-            <boxGeometry args={[0.42, 1.9, 2.2]} />
-            <meshLambertMaterial color="#4E4E46" />
+          {/* la stele: prisma rastremato, appiattito a lama */}
+          <mesh position={[-0.6, 7.4, 0]} rotation={[0, Math.PI / 4, 0]} scale={[1, 1, 0.42]} castShadow>
+            <cylinderGeometry args={[0.62, 1.5, 13.4, 4]} />
+            <meshLambertMaterial color="#DCD8CC" />
           </mesh>
-          <mesh position={[0, 3.3, 0.7]} castShadow>
-            <boxGeometry args={[0.5, 1.5, 0.5]} />
-            <meshLambertMaterial color="#5E5E54" />
+          {/* l'aviatore in bronzo, in piedi accanto alla lama */}
+          <mesh position={[1.7, 1.7, 0.2]} castShadow>
+            <boxGeometry args={[0.55, 1.9, 0.5]} />
+            <meshLambertMaterial color="#4A4A42" />
           </mesh>
-          <mesh position={[0, 4.25, 0.7]}>
-            <boxGeometry args={[0.32, 0.36, 0.32]} />
-            <meshLambertMaterial color="#54544A" />
+          <mesh position={[1.7, 2.85, 0.2]}>
+            <boxGeometry args={[0.3, 0.34, 0.3]} />
+            <meshLambertMaterial color="#44443C" />
           </mesh>
         </group>
       )}
@@ -556,6 +621,37 @@ export function Landmarks() {
           rotation={[0, -parcheggioGazzella.yaw, 0]}
         >
           <GazzellaMesh />
+        </group>
+      )}
+
+      {/* la giostrina della festa nel parco della Rocca */}
+      {giostra && (
+        <group position={[giostra.x, 0, giostra.z]}>
+          <mesh position={[0, 0.22, 0]} receiveShadow>
+            <cylinderGeometry args={[2.9, 3.1, 0.44, 12]} />
+            <meshLambertMaterial color="#C8B8A8" />
+          </mesh>
+          <mesh position={[0, 1.8, 0]}>
+            <cylinderGeometry args={[0.12, 0.12, 3, 6]} />
+            <meshLambertMaterial color="#8A8578" />
+          </mesh>
+          <mesh position={[0, 3.6, 0]} castShadow>
+            <coneGeometry args={[3.2, 1.7, 10]} />
+            <meshLambertMaterial color="#D87A90" />
+          </mesh>
+          <mesh position={[0, 2.85, 0]}>
+            <cylinderGeometry args={[3.15, 3.15, 0.18, 10]} />
+            <meshLambertMaterial color="#F2EDE2" />
+          </mesh>
+          {[0, 1, 2, 3].map((i) => {
+            const a = (i / 4) * Math.PI * 2;
+            return (
+              <mesh key={i} position={[Math.cos(a) * 1.9, 1.05, Math.sin(a) * 1.9]}>
+                <boxGeometry args={[0.7, 0.5, 0.3]} />
+                <meshLambertMaterial color={i % 2 ? '#E8E2D2' : '#C05A64'} />
+              </mesh>
+            );
+          })}
         </group>
       )}
     </group>
