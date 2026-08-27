@@ -21,7 +21,8 @@ function disegnaBase(mondo: MondoLugo): { off: HTMLCanvasElement; minX: number; 
   off.width = Math.ceil((maxX - minX) * SCALA_OFF);
   off.height = Math.ceil((maxZ - minZ) * SCALA_OFF);
   const ctx = off.getContext('2d')!;
-  ctx.fillStyle = '#2A2438';
+  // toni chiari da cartina di Maps, in tinta col gioco diurno
+  ctx.fillStyle = '#EDEAE2';
   ctx.fillRect(0, 0, off.width, off.height);
 
   const w2p = (x: number, z: number): [number, number] => [(x - minX) * SCALA_OFF, (z - minZ) * SCALA_OFF];
@@ -29,10 +30,10 @@ function disegnaBase(mondo: MondoLugo): { off: HTMLCanvasElement; minX: number; 
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   for (const a of mondo.aree) {
-    if (a.kind === 'acqua') ctx.fillStyle = '#3E5A68';
-    else if (a.kind === 'verde') ctx.fillStyle = '#3C5238';
-    else if (a.kind === 'parcheggio') ctx.fillStyle = '#55505C';
-    else ctx.fillStyle = '#4A4252';
+    if (a.kind === 'acqua') ctx.fillStyle = '#9DC6E8';
+    else if (a.kind === 'verde') ctx.fillStyle = '#B4D8A0';
+    else if (a.kind === 'parcheggio') ctx.fillStyle = '#DAD6CC';
+    else ctx.fillStyle = '#DFD9CC';
     ctx.beginPath();
     for (let i = 0; i < a.poly.length; i += 2) {
       const [px, pz] = w2p(a.poly[i], a.poly[i + 1]);
@@ -43,7 +44,7 @@ function disegnaBase(mondo: MondoLugo): { off: HTMLCanvasElement; minX: number; 
     ctx.fill();
   }
   for (const r of mondo.roads) {
-    ctx.strokeStyle = r.classe === 'pedonale' ? '#6A6072' : '#9A92A2';
+    ctx.strokeStyle = r.classe === 'pedonale' ? '#D9D1BE' : '#FFFFFF';
     ctx.lineWidth = Math.max(1.5, r.larghezza * SCALA_OFF * 0.9);
     ctx.beginPath();
     for (let i = 0; i < r.pts.length; i += 2) {
@@ -107,10 +108,13 @@ export function Minimap() {
               dx = (dx / dist) * rMax;
               dz = (dz / dist) * rMax;
             }
-            ctx.fillStyle = '#FFC24A';
+            ctx.fillStyle = '#E8710A';
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 1.5 * dpr;
             ctx.beginPath();
             ctx.arc(lato / 2 + dx, lato / 2 + dz, 4.5 * dpr, 0, Math.PI * 2);
             ctx.fill();
+            ctx.stroke();
           }
         }
 
@@ -119,18 +123,21 @@ export function Minimap() {
         ctx.save();
         ctx.translate(lato / 2, lato / 2);
         ctx.rotate(yaw + Math.PI / 2);
-        ctx.fillStyle = '#F5E9D6';
+        ctx.fillStyle = '#2A6FD6';
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 1.5 * dpr;
         ctx.beginPath();
         ctx.moveTo(0, -7 * dpr);
         ctx.lineTo(5 * dpr, 6 * dpr);
         ctx.lineTo(-5 * dpr, 6 * dpr);
         ctx.closePath();
         ctx.fill();
+        ctx.stroke();
         ctx.restore();
 
         ctx.restore();
         // bordo
-        ctx.strokeStyle = 'rgba(245,233,214,0.5)';
+        ctx.strokeStyle = 'rgba(70,74,84,0.45)';
         ctx.lineWidth = 2 * dpr;
         ctx.beginPath();
         ctx.arc(lato / 2, lato / 2, lato / 2 - dpr, 0, Math.PI * 2);

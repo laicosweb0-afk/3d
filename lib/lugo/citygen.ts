@@ -215,7 +215,7 @@ const cFinSpenta = new THREE.Color(PALETTE.finestraSpenta);
 const cFinAccesa = new THREE.Color(PALETTE.finestraAccesa);
 const cCornice = new THREE.Color('#EDE5D2');
 
-/** Griglia di finestre su una parete; qualcuna è accesa nel tramonto. */
+/** Griglia di finestre su una parete; in pieno giorno quasi tutte spente. */
 function finestre(
   acc: Accumulo,
   x1: number, z1: number, x2: number, z2: number,
@@ -245,7 +245,7 @@ function finestre(
       const gz = wz - nz * 0.018;
       acc.tri(gx - fx, y0 - 0.09, gz - fz, gx + fx, y0 - 0.09, gz + fz, gx + fx, y0 + 1.44, gz + fz, nx, 0, nz, cCornice.r, cCornice.g, cCornice.b);
       acc.tri(gx - fx, y0 - 0.09, gz - fz, gx + fx, y0 + 1.44, gz + fz, gx - fx, y0 + 1.44, gz - fz, nx, 0, nz, cCornice.r, cCornice.g, cCornice.b);
-      const c = lucePseudo(wx, y0, wz) < 0.3 ? cFinAccesa : cFinSpenta;
+      const c = lucePseudo(wx, y0, wz) < 0.05 ? cFinAccesa : cFinSpenta;
       acc.tri(wx - ex, y0, wz - ez, wx + ex, y0, wz + ez, wx + ex, y0 + 1.35, wz + ez, nx, 0, nz, c.r, c.g, c.b);
       acc.tri(wx - ex, y0, wz - ez, wx + ex, y0 + 1.35, wz + ez, wx - ex, y0 + 1.35, wz - ez, nx, 0, nz, c.r, c.g, c.b);
     }

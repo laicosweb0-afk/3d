@@ -76,7 +76,8 @@ export function Festa() {
   return (
     <instancedMesh ref={mesh} args={[undefined, undefined, Math.max(1, luci.length)]} frustumCulled={false}>
       <sphereGeometry args={[0.09, 6, 4]} />
-      <meshLambertMaterial color="#FFE9B0" emissive="#FFD98A" emissiveIntensity={2.2} />
+      {/* di giorno le lampadine della festa si vedono ma non abbagliano */}
+      <meshLambertMaterial color="#FFF2C8" emissive="#FFD98A" emissiveIntensity={0.55} />
     </instancedMesh>
   );
 }

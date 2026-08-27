@@ -2,7 +2,7 @@
 
 // Il canvas di gioco: tone mapping neutro come il resto del sito, qualità
 // adattiva misurata dal frame time (mai dallo user agent), niente
-// postprocessing — il tramonto lo fa la luce, non i filtri.
+// postprocessing — la luce del giorno la fa la scena, non i filtri.
 
 import { Suspense, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';

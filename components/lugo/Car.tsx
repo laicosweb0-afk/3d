@@ -1,8 +1,8 @@
 'use client';
 
 // L'utilitaria del giocatore: low-poly procedurale, proporzioni da city car
-// italiana (3.4 m, alta e squadrata), ruote che girano e sterzano, fanali
-// accesi nel tramonto. Il modello è costruito lungo +X (il muso guarda
+// italiana (3.4 m, alta e squadrata), ruote che girano e sterzano, luci
+// diurne accese. Il modello è costruito lungo +X (il muso guarda
 // avanti rispetto allo heading della fisica).
 
 import { forwardRef, useMemo, useRef } from 'react';
@@ -87,11 +87,11 @@ export const Car = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function Car({ 
       {/* fanali anteriori accesi e luci di coda */}
       <mesh position={[1.66, 0.62, 0.5]}>
         <boxGeometry args={[0.06, 0.16, 0.28]} />
-        <meshLambertMaterial color="#FFF3C8" emissive="#FFE9A8" emissiveIntensity={1.6} />
+        <meshLambertMaterial color="#FFF3C8" emissive="#FFE9A8" emissiveIntensity={0.7} />
       </mesh>
       <mesh position={[1.66, 0.62, -0.5]}>
         <boxGeometry args={[0.06, 0.16, 0.28]} />
-        <meshLambertMaterial color="#FFF3C8" emissive="#FFE9A8" emissiveIntensity={1.6} />
+        <meshLambertMaterial color="#FFF3C8" emissive="#FFE9A8" emissiveIntensity={0.7} />
       </mesh>
       <mesh position={[-1.66, 0.62, 0.5]}>
         <boxGeometry args={[0.05, 0.14, 0.24]} />

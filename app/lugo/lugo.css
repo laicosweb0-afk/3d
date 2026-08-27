@@ -4,7 +4,8 @@
   position: fixed;
   inset: 0;
   overflow: hidden;
-  background: #2e2a5e;
+  /* azzurro del cielo diurno: al caricamento non c'è stacco con la scena */
+  background: #3d7edb;
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   color: #f5e9d6;
 }

@@ -1,5 +1,6 @@
-// Palette e luce del gioco: tramonto romagnolo curato, low-poly.
-// Tutto ciò che è colore/atmosfera vive qui, così lo sguardo resta coerente.
+// Palette e luce del gioco: pieno giorno come nelle viste 3D di Maps,
+// low-poly. Tutto ciò che è colore/atmosfera vive qui, così lo sguardo
+// resta coerente.
 
 export const PALETTE = {
   // otto intonaci romagnoli sul "giallino" tipico di Lugo (fonti locali),
@@ -26,25 +27,25 @@ export const PALETTE = {
   },
   segnaletica: '#E8E2D6',
   marciapiede: '#C9C5CC',
-  finestraSpenta: '#39434F',
+  finestraSpenta: '#46525E',
   finestraAccesa: '#FFDFA0',
-  terreno: '#A3B07A',
-  verde: '#7DA25E',
-  acqua: '#5A7D8C',
+  terreno: '#A9B27B',
+  verde: '#6FA351',
+  acqua: '#5E8A9C',
   piazza: '#9C8D7C',
   ferrovia: '#3E3A42',
-  cielo: { alto: '#2E2A5E', basso: '#FF9E5E' },
-  nebbia: '#C77A62',
+  cielo: { alto: '#3D7EDB', basso: '#DCE9F2' },
+  nebbia: '#D6E2EC',
 } as const;
 
 export const LUCE = {
-  /** Sole basso da ovest, caldo. */
-  sole: { color: '#FFB36B', intensity: 2.1, position: [-120, 55, 30] as const },
-  /** Cielo/terra: riempimento violaceo da tramonto. */
-  hemi: { cielo: '#FFD9A0', terra: '#6A5A7A', intensity: 0.85 },
-  ambient: { color: '#8A7C9C', intensity: 0.5 },
-  nebbia: { colore: '#C77A62', vicino: 120, lontano: 420 },
-  toneMappingExposure: 1.18,
+  /** Sole alto da sud-ovest, luce quasi bianca di mezzogiorno. */
+  sole: { color: '#FFF2D8', intensity: 2.35, position: [-70, 150, 45] as const },
+  /** Cielo/terra: riempimento azzurro del cielo sereno. */
+  hemi: { cielo: '#BFD9F2', terra: '#9A9078', intensity: 0.7 },
+  ambient: { color: '#E8EEF4', intensity: 0.32 },
+  nebbia: { colore: '#D6E2EC', vicino: 220, lontano: 780 },
+  toneMappingExposure: 1.12,
 } as const;
 
 /** Colori auto selezionabili nello start screen. */

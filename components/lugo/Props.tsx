@@ -253,11 +253,11 @@ export function Props() {
       </instancedMesh>
       <instancedMesh ref={luci} args={[undefined, undefined, MAX_LAMPIONI]} frustumCulled={false}>
         <sphereGeometry args={[0.22, 8, 6]} />
-        <meshLambertMaterial color="#FFE9A8" emissive="#FFD98A" emissiveIntensity={1.8} />
+        <meshLambertMaterial color="#F2EFE2" emissive="#FFF0C8" emissiveIntensity={0.25} />
       </instancedMesh>
       <instancedMesh ref={globi} args={[undefined, undefined, MAX_LAMPIONI * 2]} frustumCulled={false}>
         <sphereGeometry args={[0.17, 8, 6]} />
-        <meshLambertMaterial color="#FFE9A8" emissive="#FFD98A" emissiveIntensity={1.6} />
+        <meshLambertMaterial color="#F2EFE2" emissive="#FFF0C8" emissiveIntensity={0.25} />
       </instancedMesh>
     </group>
   );

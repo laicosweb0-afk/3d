@@ -1,7 +1,8 @@
 'use client';
 
-// Il mondo di gioco: luce da tramonto romagnolo, cupola del cielo a
-// gradiente, nebbia in tinta, e la città generata dai dati OSM.
+// Il mondo di gioco: pieno giorno come nelle viste 3D di Maps — cupola
+// azzurra a gradiente, sole alto, nuvole bianche, foschia chiara — e la
+// città generata dai dati OSM.
 
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
@@ -54,7 +55,7 @@ function Cielo() {
   return (
     <group>
       <mesh geometry={geometria} material={materiale} frustumCulled={false} />
-      {/* le colline dell'Appennino a sud, come si vedono da Lugo */}
+      {/* le colline dell'Appennino a sud, azzurrine nella foschia diurna */}
       {[
         [45, 1650, 560, 140], [62, 1580, 440, 105], [78, 1720, 640, 160],
         [95, 1600, 480, 115], [110, 1780, 590, 135], [126, 1660, 430, 95],
@@ -64,21 +65,78 @@ function Cielo() {
         return (
           <mesh key={gradi} position={[Math.cos(a) * dist, altezza / 2 - 22, Math.sin(a) * dist]}>
             <coneGeometry args={[raggio, altezza, 7]} />
-            <meshBasicMaterial color="#8A7385" fog={false} />
+            <meshBasicMaterial color="#A9BACE" fog={false} />
           </mesh>
         );
       })}
 
-      {/* il sole basso a ovest, con l'alone */}
-      <mesh position={[-1030, 300, 256]} ref={(m) => m?.lookAt(0, 120, 0)}>
-        <circleGeometry args={[52, 24]} />
-        <meshBasicMaterial color="#FFE9B8" fog={false} />
+      {/* il sole alto a sud-ovest, con un velo d'alone */}
+      <mesh position={[-420, 900, 270]} ref={(m) => m?.lookAt(0, 120, 0)}>
+        <circleGeometry args={[46, 24]} />
+        <meshBasicMaterial color="#FFFCEE" fog={false} />
       </mesh>
-      <mesh position={[-1026, 299, 255]} ref={(m) => m?.lookAt(0, 120, 0)}>
-        <circleGeometry args={[130, 24]} />
-        <meshBasicMaterial color="#FF9E5E" transparent opacity={0.28} fog={false} depthWrite={false} />
+      <mesh position={[-416, 896, 268]} ref={(m) => m?.lookAt(0, 120, 0)}>
+        <circleGeometry args={[110, 24]} />
+        <meshBasicMaterial color="#FFF6D8" transparent opacity={0.2} fog={false} depthWrite={false} />
       </mesh>
+      <Nuvole />
     </group>
+  );
+}
+
+/** Nuvole bianche low-poly sparse, ferme nel cielo come nelle viste aeree. */
+function Nuvole() {
+  const mesh = useRef<THREE.InstancedMesh>(null);
+  const pose = useMemo(() => {
+    // LCG deterministico: stesso cielo a ogni avvio
+    let s = 20250827;
+    const rnd = () => {
+      s = (s * 1664525 + 1013904223) >>> 0;
+      return s / 4294967296;
+    };
+    const out: { x: number; y: number; z: number; sx: number; sy: number; sz: number; rot: number }[] = [];
+    for (let c = 0; c < 14; c++) {
+      const a = rnd() * Math.PI * 2;
+      const d = 350 + rnd() * 900;
+      const cx = Math.cos(a) * d;
+      const cz = Math.sin(a) * d;
+      const cy = 330 + rnd() * 130;
+      const puffi = 3 + Math.floor(rnd() * 3);
+      for (let k = 0; k < puffi; k++) {
+        out.push({
+          x: cx + (rnd() - 0.5) * 110,
+          y: cy + (rnd() - 0.5) * 16,
+          z: cz + (rnd() - 0.5) * 70,
+          sx: 34 + rnd() * 46,
+          sy: 10 + rnd() * 9,
+          sz: 22 + rnd() * 26,
+          rot: rnd() * Math.PI,
+        });
+      }
+    }
+    return out;
+  }, []);
+
+  useEffect(() => {
+    const im = mesh.current;
+    if (!im) return;
+    const m = new THREE.Matrix4();
+    const q = new THREE.Quaternion();
+    const su = new THREE.Vector3(0, 1, 0);
+    pose.forEach((p, i) => {
+      q.setFromAxisAngle(su, p.rot);
+      m.compose(new THREE.Vector3(p.x, p.y, p.z), q, new THREE.Vector3(p.sx, p.sy, p.sz));
+      im.setMatrixAt(i, m);
+    });
+    im.count = pose.length;
+    im.instanceMatrix.needsUpdate = true;
+  }, [pose]);
+
+  return (
+    <instancedMesh ref={mesh} args={[undefined, undefined, Math.max(1, pose.length)]} frustumCulled={false}>
+      <icosahedronGeometry args={[1, 1]} />
+      <meshBasicMaterial color="#F8FBFE" fog={false} />
+    </instancedMesh>
   );
 }
 
