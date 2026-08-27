@@ -17,7 +17,7 @@ import { puntoStradaVicino } from '@/lib/lugo/car';
 import { GazzellaMesh } from './Npcs';
 
 const INTONACO = new THREE.Color('#E4CE8F'); // il "giallino" di Lugo
-const TERRACOTTA = new THREE.Color('#BC6040'); // l'aranciato del Pavaglione visto da fuori
+const TERRACOTTA = new THREE.Color('#B06A55'); // il salmone spento del Pavaglione nelle foto
 const CREMA = new THREE.Color('#EBDCA8'); // le lesene
 const PERSIANA = new THREE.Color('#3E5A3C'); // le persiane verdi
 const VETRO_SCURO = new THREE.Color('#2A333E');
@@ -168,7 +168,8 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
     const mz = (z1 + z2) / 2;
     const alVarco = vicinoAVarco(mx, mz, varchi);
     if (alVarco) {
-      muro(acc, x1, z1, x2, z2, H_ARCO, H, TERRACOTTA);
+      // ai portali l'arco reale sale quasi al cornicione
+      muro(acc, x1, z1, x2, z2, 7.2, H, TERRACOTTA);
     } else {
       muro(acc, x1, z1, x2, z2, 0, H, TERRACOTTA);
     }
@@ -186,6 +187,10 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
       nx = -nx;
       nz = -nz;
     }
+    // il marcapiano crema continuo che chiude il registro rosso in basso
+    if (!alVarco) {
+      muro(acc, x1 + nx * 0.06, z1 + nz * 0.06, x2 + nx * 0.06, z2 + nz * 0.06, 5.32, 5.7, CREMA);
+    }
     const nCampi = Math.max(1, Math.round(L / 4.3));
     for (let k = 0; k <= nCampi; k++) {
       const t = k / nCampi;
@@ -195,13 +200,21 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
         // lesena crema, dal suolo alla cornice
         box(acc, px + nx * 0.08, H / 2, pz + nz * 0.08, 0.52, H, 0.2, CREMA, Math.atan2(ez, ex));
       }
-      // l'arcata cieca della Loggia al piano terra, tra le lesene
+      // l'arcata cieca della Loggia al piano terra, tra le lesene, con la
+      // sua cornice crema tutt'attorno come nelle foto da vicino
       if (k < nCampi) {
         const ta = (k + 0.5) / nCampi;
         const ax2 = x1 + (x2 - x1) * ta;
         const az2 = z1 + (z2 - z1) * ta;
         if (!vicinoAVarco(ax2, az2, varchi, 3.2)) {
-          box(acc, ax2 + nx * 0.05, 1.95, az2 + nz * 0.05, 2.3, 3.9, 0.04, new THREE.Color('#3A3028'), Math.atan2(ez, ex));
+          const giroY = Math.atan2(ez, ex);
+          // vetrina in bruno caldo sopra lo zoccolo, mai un buco nero
+          box(acc, ax2 + nx * 0.05, 1.95, az2 + nz * 0.05, 2.3, 3.1, 0.04, new THREE.Color('#4E413A'), giroY);
+          box(acc, ax2 + nx * 0.06 + ex * 1.32, 1.95, az2 + nz * 0.06 + ez * 1.32, 0.34, 3.5, 0.05, CREMA, giroY);
+          box(acc, ax2 + nx * 0.06 - ex * 1.32, 1.95, az2 + nz * 0.06 - ez * 1.32, 0.34, 3.5, 0.05, CREMA, giroY);
+          box(acc, ax2 + nx * 0.06, 3.72, az2 + nz * 0.06, 2.98, 0.35, 0.05, CREMA, giroY);
+          // il sopraluce rosso incassato tra architrave e marcapiano
+          box(acc, ax2 + nx * 0.05, 4.5, az2 + nz * 0.05, 2.3, 1.0, 0.04, new THREE.Color('#A9705E'), giroY);
         }
       }
       // finestra del piano nobile al centro del campo, con le persiane
@@ -213,16 +226,47 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
         const ox = nx * 0.07;
         const oz = nz * 0.07;
         const giroY = Math.atan2(ez, ex);
+        // cornice crema dietro, poi vetro e persiane bruno-grigie (le foto
+        // mostrano legno scuro, non il verde lughese generico)
+        const PERSIANA_PAV = new THREE.Color('#4A423A');
+        box(acc, wx + nx * 0.04, 6.55, wz + nz * 0.04, 1.9, 2.05, 0.03, CREMA, giroY);
         box(acc, wx + ox, 6.55, wz + oz, 1.0, 1.7, 0.05, VETRO_SCURO, giroY);
-        box(acc, wx + ox + ex * 0.72, 6.55, wz + oz + ez * 0.72, 0.38, 1.7, 0.04, PERSIANA, giroY);
-        box(acc, wx + ox - ex * 0.72, 6.55, wz + oz - ez * 0.72, 0.38, 1.7, 0.04, PERSIANA, giroY);
+        box(acc, wx + ox + ex * 0.72, 6.55, wz + oz + ez * 0.72, 0.38, 1.7, 0.04, PERSIANA_PAV, giroY);
+        box(acc, wx + ox - ex * 0.72, 6.55, wz + oz - ez * 0.72, 0.38, 1.7, 0.04, PERSIANA_PAV, giroY);
         box(acc, wx + ox, 5.55, wz + oz, 1.5, 0.14, 0.08, CREMA, giroY);
       }
     }
   }
-  // cornice chiara in sommità
+  // cornice chiara in sommità (bassa quanto basta a restare sotto la falda)
   for (const [x1, z1, x2, z2] of anelloSegmenti(fp)) {
-    muro(acc, x1, z1, x2, z2, H, H + 0.5, CREMA);
+    muro(acc, x1, z1, x2, z2, H, H + 0.3, CREMA);
+  }
+
+  // il fondale chiaro della loggia: rivestimento interno con le porte
+  // scure, così dalla corte non si vede il retro rosso del muro esterno
+  for (const [x1, z1, x2, z2] of anelloSegmenti(fp)) {
+    const mx = (x1 + x2) / 2;
+    const mz = (z1 + z2) / 2;
+    if (vicinoAVarco(mx, mz, varchi)) continue;
+    const L = Math.hypot(x2 - x1, z2 - z1);
+    if (L < 2) continue;
+    const ex = (x2 - x1) / L;
+    const ez = (z2 - z1) / L;
+    let nx = z2 - z1;
+    let nz = -(x2 - x1);
+    const nl = Math.hypot(nx, nz) || 1;
+    nx /= nl;
+    nz /= nl;
+    if (nx * (mx - pcx) + nz * (mz - pcz) < 0) {
+      nx = -nx;
+      nz = -nz;
+    }
+    // verso la corte = -n
+    muro(acc, x1 - nx * 0.18, z1 - nz * 0.18, x2 - nx * 0.18, z2 - nz * 0.18, 0.1, H_ARCO, SOFFITTO);
+    const giroY = Math.atan2(ez, ex);
+    for (let s = 3.5; s < L - 2; s += 7) {
+      box(acc, x1 + ex * s - nx * 0.24, 1.7, z1 + ez * s - nz * 0.24, 2.2, 3.2, 0.05, new THREE.Color('#3E362E'), giroY);
+    }
   }
 
   // arcate sulla corte: pilastri ritmati + fascia degli archi;
@@ -233,7 +277,8 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
     const mx = (x1 + x2) / 2;
     const mz = (z1 + z2) / 2;
     const L = Math.hypot(x2 - x1, z2 - z1);
-    muro(acc, x1, z1, x2, z2, H_ARCO, H, INTONACO);
+    // la fascia sopra gli archi della corte è rosata come l'esterno
+    muro(acc, x1, z1, x2, z2, H_ARCO, H, new THREE.Color('#B06A54'));
     if (L < 2) continue;
     const dx = (x2 - x1) / L;
     const dz = (z2 - z1) / L;
@@ -249,7 +294,8 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
     // pilastri fino alla linea d'imposta, poi gli ARCHI: pennacchi curvi
     // che salgono dal capitello alla fascia — è il ritmo vero del Pavaglione
     const IMPOSTA = 4.15;
-    const nPil = Math.max(1, Math.round(L / 4.3));
+    // il ritmo fitto delle arcate vere: un pilastro ogni ~3.6 m
+    const nPil = Math.max(1, Math.round(L / 3.6));
     const posPil: (null | [number, number])[] = [];
     for (let k = 0; k <= nPil; k++) {
       const t = k / nPil;
@@ -260,9 +306,16 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
         continue;
       }
       posPil.push([px, pz]);
-      box(acc, px, IMPOSTA / 2, pz, 0.55, IMPOSTA, 0.55, BIANCO);
-      box(acc, px, IMPOSTA + 0.08, pz, 0.72, 0.16, 0.72, BIANCO); // capitello
-      if (doppia) box(acc, px + fx * 3.1, IMPOSTA / 2, pz + fz * 3.1, 0.5, IMPOSTA, 0.5, BIANCO);
+      box(acc, px, IMPOSTA / 2, pz, 0.72, IMPOSTA, 0.72, BIANCO);
+      box(acc, px, IMPOSTA + 0.08, pz, 0.9, 0.16, 0.9, BIANCO); // capitello
+      if (doppia) box(acc, px + fx * 3.1, IMPOSTA / 2, pz + fz * 3.1, 0.6, IMPOSTA, 0.6, BIANCO);
+      // la finestrella del registro sopra ogni campata, verso la corte
+      if (k < nPil) {
+        const tf = (k + 0.5) / nPil;
+        const fxm = x1 + (x2 - x1) * tf;
+        const fzm = z1 + (z2 - z1) * tf;
+        box(acc, fxm - fx * 0.06, 6.6, fzm - fz * 0.06, 0.9, 0.7, 0.05, new THREE.Color('#3A342C'), Math.atan2(dz, dx));
+      }
     }
     for (let k = 0; k + 1 < posPil.length; k++) {
       const pa = posPil[k];
@@ -279,17 +332,237 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
         const zb = pa[1] + (pb[1] - pa[1]) * tB;
         const ya = IMPOSTA + salita * Math.sin(Math.PI * tA);
         const yb = IMPOSTA + salita * Math.sin(Math.PI * tB);
-        // il pennacchio riempie dall'arco fino alla fascia
-        quadVerticale(acc, xa, za, ya, H_ARCO, xb, zb, yb, H_ARCO, INTONACO);
+        // il pennacchio riempie dall'arco fino alla fascia: crema come i
+        // pilastri, così la curva dell'arco resta leggibile
+        quadVerticale(acc, xa, za, ya, H_ARCO, xb, zb, yb, H_ARCO, CREMA);
       }
     }
   }
 
-  // tetto a corona e soffitto della loggia
-  piano(acc, fp, [corte], H + 0.5, COPPI);
+  // ── il tetto a padiglione: doppia falda di coppi con il colmo a metà
+  // dell'anello, come si vede nelle foto aeree. Le falde si costruiscono
+  // sul rettangolo minimo (il quadriportico è regolare), gli angoli fanno
+  // da displuvi da soli perché gli anelli condividono i vertici.
+  const COPPI_EST = new THREE.Color('#A05A4C');
+  const COPPI_INT = new THREE.Color('#AA6355');
+  const ux = Math.cos(rect.angle);
+  const uzA = Math.sin(rect.angle);
+  const vxA = -uzA;
+  const vzA = ux;
+  // estensione E CENTRO della corte nel sistema di assi del rettangolo
+  // esterno: la corte vera è decentrata di ~1 m, l'anello va centrato su
+  // di lei o resta scoperta una striscia di sottotetto
+  let minU = Infinity, maxU = -Infinity, minV = Infinity, maxV = -Infinity;
+  for (let i = 0; i < corte.length; i += 2) {
+    const du = (corte[i] - rect.cx) * ux + (corte[i + 1] - rect.cz) * uzA;
+    const dv = (corte[i] - rect.cx) * vxA + (corte[i + 1] - rect.cz) * vzA;
+    minU = Math.min(minU, du);
+    maxU = Math.max(maxU, du);
+    minV = Math.min(minV, dv);
+    maxV = Math.max(maxV, dv);
+  }
+  const cU = (minU + maxU) / 2;
+  const cV = (minV + maxV) / 2;
+  const angoli = (offU: number, offV: number, hw: number, hd: number): [number, number][] => {
+    const ox2 = rect.cx + ux * offU + vxA * offV;
+    const oz2 = rect.cz + uzA * offU + vzA * offV;
+    return [
+      [ox2 + ux * hw + vxA * hd, oz2 + uzA * hw + vzA * hd],
+      [ox2 - ux * hw + vxA * hd, oz2 - uzA * hw + vzA * hd],
+      [ox2 - ux * hw - vxA * hd, oz2 - uzA * hw - vzA * hd],
+      [ox2 + ux * hw - vxA * hd, oz2 + uzA * hw - vzA * hd],
+    ];
+  };
+  const esterno = angoli(0, 0, rect.hw + 0.9, rect.hd + 0.9);
+  const interno = angoli(cU, cV, (maxU - minU) / 2 - 0.7, (maxV - minV) / 2 - 0.7);
+  const colmo: [number, number][] = esterno.map((p, i) => [
+    (p[0] + interno[i][0]) / 2,
+    (p[1] + interno[i][1]) / 2,
+  ]);
+  const Y_GRONDA = H + 0.15;
+  const Y_COLMO = H + 2.6;
+  const falda = (
+    a: [number, number], b: [number, number], ya: number,
+    c: [number, number], d: [number, number], yc: number,
+    tinta: THREE.Color,
+  ) => {
+    // normale vera della falda, per la luce radente
+    const e1x = b[0] - a[0], e1y = 0, e1z = b[1] - a[1];
+    const e2x = d[0] - a[0], e2y = yc - ya, e2z = d[1] - a[1];
+    let nx2 = e1y * e2z - e1z * e2y;
+    let ny2 = e1z * e2x - e1x * e2z;
+    let nz2 = e1x * e2y - e1y * e2x;
+    const nl2 = Math.hypot(nx2, ny2, nz2) || 1;
+    nx2 /= nl2; ny2 /= nl2; nz2 /= nl2;
+    if (ny2 < 0) { nx2 = -nx2; ny2 = -ny2; nz2 = -nz2; }
+    acc.tri(a[0], ya, a[1], b[0], ya, b[1], c[0], yc, c[1], nx2, ny2, nz2, tinta.r, tinta.g, tinta.b);
+    acc.tri(a[0], ya, a[1], c[0], yc, c[1], d[0], yc, d[1], nx2, ny2, nz2, tinta.r, tinta.g, tinta.b);
+  };
+  for (let i = 0; i < 4; i++) {
+    const j = (i + 1) % 4;
+    falda(esterno[i], esterno[j], Y_GRONDA, colmo[j], colmo[i], Y_COLMO, COPPI_EST);
+    falda(colmo[i], colmo[j], Y_COLMO, interno[j], interno[i], Y_GRONDA, COPPI_INT);
+  }
+  // la linea di colmo chiara che disegna la doppia falda dall'alto
+  const LINEA_COLMO = new THREE.Color('#C07A5E');
+  for (let i = 0; i < 4; i++) {
+    const j = (i + 1) % 4;
+    const dxC = colmo[j][0] - colmo[i][0];
+    const dzC = colmo[j][1] - colmo[i][1];
+    const Lc = Math.hypot(dxC, dzC);
+    box(
+      acc,
+      (colmo[i][0] + colmo[j][0]) / 2, Y_COLMO + 0.05,
+      (colmo[i][1] + colmo[j][1]) / 2,
+      Lc + 0.3, 0.12, 0.35, LINEA_COLMO, Math.atan2(dzC, dxC),
+    );
+  }
+  // comignoli radi, tono su tono col manto
+  const COMIGNOLO = new THREE.Color('#9C6A52');
+  for (let i = 0; i < 4; i++) {
+    const j = (i + 1) % 4;
+    const Lc = Math.hypot(colmo[j][0] - colmo[i][0], colmo[j][1] - colmo[i][1]);
+    for (let s = 12; s < Lc - 8; s += 24) {
+      const t = s / Lc;
+      box(
+        acc,
+        colmo[i][0] + (colmo[j][0] - colmo[i][0]) * t, Y_COLMO + 0.35,
+        colmo[i][1] + (colmo[j][1] - colmo[i][1]) * t,
+        0.6, 0.6, 0.6, COMIGNOLO, rect.angle,
+      );
+    }
+  }
+  // sottotetto di chiusura: sia sul footprint sia sull'intero anello del
+  // tetto, così agli angoli rientranti sotto la falda si vede un soffitto
+  // scuro e mai il cielo
+  const SOTTOTETTO = new THREE.Color('#6E5A4C');
+  piano(acc, fp, [corte], H + 0.1, SOTTOTETTO);
+  for (let i = 0; i < 4; i++) {
+    const j = (i + 1) % 4;
+    quadVerticale(acc, esterno[i][0], esterno[i][1], H + 0.08, H + 0.09, esterno[j][0], esterno[j][1], H + 0.08, H + 0.09, SOTTOTETTO);
+    acc.tri(esterno[i][0], H + 0.08, esterno[i][1], esterno[j][0], H + 0.08, esterno[j][1], interno[j][0], H + 0.08, interno[j][1], 0, -1, 0, SOTTOTETTO.r, SOTTOTETTO.g, SOTTOTETTO.b);
+    acc.tri(esterno[i][0], H + 0.08, esterno[i][1], interno[j][0], H + 0.08, interno[j][1], interno[i][0], H + 0.08, interno[i][1], 0, -1, 0, SOTTOTETTO.r, SOTTOTETTO.g, SOTTOTETTO.b);
+  }
   piano(acc, fp, [corte], H_ARCO, SOFFITTO, true);
-  // lastrico della corte
-  piano(acc, corte, [], 0.16, PIETRA);
+
+  // ── i portali monumentali: lesene binate, arco alto due piani con la
+  // lunetta rossa, trabeazione e timpano chiuso che rompe la gronda
+  // (foto da Corso Mazzini e dal lato Martiri)
+  const CAMPO_TIMPANO = new THREE.Color('#A9503A');
+  const LUNETTA = new THREE.Color('#8F4A3C');
+  const portale = (vx2: number, vz2: number, cieco: boolean) => {
+    // normale del lato: dal centro verso il punto, sull'asse dominante
+    let dnx = vx2 - rect.cx;
+    let dnz = vz2 - rect.cz;
+    const suU = Math.abs(dnx * ux + dnz * uzA) / (Math.hypot(dnx, dnz) || 1);
+    if (suU > 0.7) {
+      const s = Math.sign(dnx * ux + dnz * uzA) || 1;
+      dnx = ux * s;
+      dnz = uzA * s;
+    } else {
+      const s = Math.sign(dnx * vxA + dnz * vzA) || 1;
+      dnx = vxA * s;
+      dnz = vzA * s;
+    }
+    const tx2 = -dnz;
+    const tz2 = dnx;
+    const giro = Math.atan2(tz2, tx2);
+    const fuoriX = vx2 + dnx * 0.28;
+    const fuoriZ = vz2 + dnz * 0.28;
+    // lesene binate ai lati, alte fino alla trabeazione
+    for (const lato of [3.1, 4.6, -3.1, -4.6]) {
+      box(acc, fuoriX + tx2 * lato, 7.5 / 2, fuoriZ + tz2 * lato, 1.0, 7.5, 0.5, CREMA, giro);
+    }
+    // la lunetta rossa dentro l'arco alto (nei portali ciechi è l'arco
+    // cieco incassato nella campitura)
+    box(acc, fuoriX - dnx * 0.06, cieco ? 4.4 : 6.2, fuoriZ - dnz * 0.06, 6.0, cieco ? 5.2 : 2.0, 0.1, LUNETTA, giro);
+    // trabeazione crema orizzontale su tutto l'avancorpo
+    box(acc, fuoriX, 7.85, fuoriZ, 10.6, 0.7, 0.55, CREMA, giro);
+    // il timpano: prisma triangolare CHIUSO (facce, spioventi e fondo)
+    const yBase = H + 0.3;
+    const yApice = H + 2.5;
+    const mezzaL = 5.2;
+    const ax3 = fuoriX + tx2 * mezzaL;
+    const az3 = fuoriZ + tz2 * mezzaL;
+    const bx3 = fuoriX - tx2 * mezzaL;
+    const bz3 = fuoriZ - tz2 * mezzaL;
+    const MEZZO_SP = 0.35;
+    for (const lato of [MEZZO_SP, -MEZZO_SP]) {
+      const ox2 = dnx * lato;
+      const oz2 = dnz * lato;
+      acc.tri(
+        ax3 + ox2, yBase, az3 + oz2, bx3 + ox2, yBase, bz3 + oz2,
+        fuoriX + ox2, yApice, fuoriZ + oz2,
+        dnx * Math.sign(lato), 0, dnz * Math.sign(lato),
+        CREMA.r, CREMA.g, CREMA.b,
+      );
+    }
+    // spioventi e fondo che chiudono il prisma
+    const chiudi = (
+      px1: number, pz1: number, py1: number,
+      px2: number, pz2: number, py2: number,
+    ) => {
+      const fx1 = px1 + dnx * MEZZO_SP, fz1 = pz1 + dnz * MEZZO_SP;
+      const bx1 = px1 - dnx * MEZZO_SP, bz1 = pz1 - dnz * MEZZO_SP;
+      const fx2 = px2 + dnx * MEZZO_SP, fz2 = pz2 + dnz * MEZZO_SP;
+      const bx2 = px2 - dnx * MEZZO_SP, bz2 = pz2 - dnz * MEZZO_SP;
+      // normale approssimata verso l'alto lungo lo spiovente
+      acc.tri(fx1, py1, fz1, fx2, py2, fz2, bx2, py2, bz2, 0, 1, 0, CREMA.r, CREMA.g, CREMA.b);
+      acc.tri(fx1, py1, fz1, bx2, py2, bz2, bx1, py1, bz1, 0, 1, 0, CREMA.r, CREMA.g, CREMA.b);
+    };
+    chiudi(ax3, az3, yBase, fuoriX, fuoriZ, yApice);
+    chiudi(fuoriX, fuoriZ, yApice, bx3, bz3, yBase);
+    chiudi(ax3, az3, yBase - 0.02, bx3, bz3, yBase - 0.02);
+    // campo rosso del timpano, appena in rilievo sulla faccia esterna
+    acc.tri(
+      ax3 * 0.82 + fuoriX * 0.18 + dnx * (MEZZO_SP + 0.04), yBase + 0.25, az3 * 0.82 + fuoriZ * 0.18 + dnz * (MEZZO_SP + 0.04),
+      bx3 * 0.82 + fuoriX * 0.18 + dnx * (MEZZO_SP + 0.04), yBase + 0.25, bz3 * 0.82 + fuoriZ * 0.18 + dnz * (MEZZO_SP + 0.04),
+      fuoriX + dnx * (MEZZO_SP + 0.04), yApice - 0.42, fuoriZ + dnz * (MEZZO_SP + 0.04),
+      dnx, 0, dnz,
+      CAMPO_TIMPANO.r, CAMPO_TIMPANO.g, CAMPO_TIMPANO.b,
+    );
+  };
+  for (const [vx2, vz2] of varchi) portale(vx2, vz2, false);
+  // gli avancorpi ciechi ripetuti sui lati lunghi, come nella foto
+  for (const lato of [1, -1]) {
+    for (const quarto of [0.5, -0.5]) {
+      portale(
+        rect.cx + ux * (rect.hw * quarto) + vxA * (rect.hd * lato),
+        rect.cz + uzA * (rect.hw * quarto) + vzA * (rect.hd * lato),
+        true,
+      );
+    }
+  }
+
+  // lastrico della corte: sabbia quasi bianca, con la croce dei
+  // camminamenti che unisce i quattro varchi
+  const CORTE_CHIARA = new THREE.Color('#E5DED0');
+  const RIGA_CORTE = new THREE.Color('#CDC5B2');
+  piano(acc, corte, [], 0.16, CORTE_CHIARA);
+  const rc = rettangoloMinimo(corte);
+  const rux = Math.cos(rc.angle);
+  const ruz = Math.sin(rc.angle);
+  box(acc, rc.cx, 0.172, rc.cz, rc.hw * 1.9, 0.012, 3.0, RIGA_CORTE, rc.angle);
+  box(acc, rc.cx, 0.174, rc.cz, 3.0, 0.012, rc.hd * 1.9, RIGA_CORTE, rc.angle);
+  // il palco a ridosso del lato nord, con le file di sedie davanti
+  let offVx = -ruz * rc.hd * 0.72;
+  let offVz = rux * rc.hd * 0.72;
+  if (offVz > 0) {
+    // il nord è dove z mondiale decresce
+    offVx = -offVx;
+    offVz = -offVz;
+  }
+  const palcoX = rc.cx + offVx + rux * 6;
+  const palcoZ = rc.cz + offVz + ruz * 6;
+  box(acc, palcoX, 0.55, palcoZ, 9, 0.9, 5.2, new THREE.Color('#6E6254'), rc.angle);
+  box(acc, rc.cx + offVx * 0.9 - rux * 14, 1.35, rc.cz + offVz * 0.9 - ruz * 14, 5.2, 2.7, 3.4, new THREE.Color('#7C6E5E'), rc.angle);
+  const versoCorteX = -offVx / (rc.hd * 0.72);
+  const versoCorteZ = -offVz / (rc.hd * 0.72);
+  const SEDIE = new THREE.Color('#B8B0A1');
+  for (let fila = 0; fila < 8; fila++) {
+    const d = 4.2 + fila * 1.4;
+    box(acc, palcoX + versoCorteX * d, 0.21, palcoZ + versoCorteZ * d, 7, 0.35, 0.35, SEDIE, rc.angle);
+  }
 
   // il camminamento rosato che circonda il quadriportico, come dall'alto
   const ROSATO = new THREE.Color('#B08A80');
@@ -503,7 +776,105 @@ export function Landmarks() {
         best = [cx, cz];
       }
     }
-    return best ? { x: best[0] + 8, z: best[1] - 6 } : null;
+    if (!best) return null;
+    // nelle foto sta SUL lastricato accanto allo spigolo del Pavaglione
+    // verso la stele: la si ancora lì, non al prato
+    const bar = mondo.poi.get('baracca');
+    const pav = mondo.buildings.find((b) => b.landmark === 'pavaglione' && b.fori.length > 0);
+    if (!bar || !pav) return { x: best[0] + 8, z: best[1] - 6 };
+    const r = rettangoloMinimo(pav.fp);
+    const rux2 = Math.cos(r.angle);
+    const ruz2 = Math.sin(r.angle);
+    let angolo: [number, number] | null = null;
+    let dMin = Infinity;
+    for (const su of [1, -1]) {
+      for (const sv of [1, -1]) {
+        const axc = r.cx + rux2 * r.hw * su + -ruz2 * r.hd * sv;
+        const azc = r.cz + ruz2 * r.hw * su + rux2 * r.hd * sv;
+        const d = Math.hypot(axc - bar.xm, azc - bar.zm);
+        if (d < dMin) {
+          dMin = d;
+          angolo = [axc, azc];
+        }
+      }
+    }
+    if (!angolo) return null;
+    // 14 m fuori dallo spigolo, lungo la diagonale che esce dal centro
+    let dx = angolo[0] - r.cx;
+    let dz = angolo[1] - r.cz;
+    const dl = Math.hypot(dx, dz) || 1;
+    dx /= dl;
+    dz /= dl;
+    let gx = angolo[0] + dx * 14;
+    let gz = angolo[1] + dz * 14;
+    const dBar = Math.hypot(gx - bar.xm, gz - bar.zm);
+    if (dBar < 13) {
+      // mai addosso alla stele
+      const s = 13 / (dBar || 1);
+      gx = bar.xm + (gx - bar.xm) * s;
+      gz = bar.zm + (gz - bar.zm) * s;
+    }
+    return { x: gx, z: gz };
+  }, [mondo]);
+
+  // il tetto a spicchi bianchi e rosa della giostra, come nelle foto
+  const tettoGiostra = useMemo(() => {
+    const acc = new Accumulo();
+    const chiaro = new THREE.Color('#F0EAE0');
+    const rosa = new THREE.Color('#C25E78');
+    const R = 4.5; // il tendone vero è largo ~9 m
+    for (let i = 0; i < 10; i++) {
+      const a0 = (i / 10) * Math.PI * 2;
+      const a1 = ((i + 1) / 10) * Math.PI * 2;
+      const c = i % 2 ? rosa : chiaro;
+      const x0 = Math.cos(a0) * R;
+      const z0 = Math.sin(a0) * R;
+      const x1 = Math.cos(a1) * R;
+      const z1 = Math.sin(a1) * R;
+      const mx = (x0 + x1) / 2;
+      const mz = (z0 + z1) / 2;
+      const ml = Math.hypot(mx, mz) || 1;
+      acc.tri(x0, 2.75, z0, x1, 2.75, z1, 0, 4.45, 0, (mx / ml) * 0.8, 0.6, (mz / ml) * 0.8, c.r, c.g, c.b);
+    }
+    return acc.build();
+  }, []);
+
+  // le bancarelle scure in fila lungo il fianco del Pavaglione verso la
+  // stele, come nella vista aerea
+  const bancarelle = useMemo(() => {
+    const pav = mondo.buildings.find((b) => b.landmark === 'pavaglione' && b.fori.length > 0);
+    const bar = mondo.poi.get('baracca');
+    if (!pav || !bar) return [];
+    const r = rettangoloMinimo(pav.fp);
+    const bux = Math.cos(r.angle);
+    const buz = Math.sin(r.angle);
+    const bvx = -buz;
+    const bvz = bux;
+    const du = (bar.xm - r.cx) * bux + (bar.zm - r.cz) * buz;
+    const dv = (bar.xm - r.cx) * bvx + (bar.zm - r.cz) * bvz;
+    const suU = Math.abs(du) / r.hw > Math.abs(dv) / r.hd;
+    const out: { x: number; z: number; rot: number }[] = [];
+    // quattro banchi, passo irregolare e un filo fuori asse, come dal vivo
+    for (let k = -2; k <= 1; k++) {
+      const s = k * 6.8 + ((k * 37) % 5) * 0.5 + 3.4;
+      const scarto = (((k * 53) % 7) - 3) * 0.27;
+      if (suU) {
+        const segno = Math.sign(du) || 1;
+        out.push({
+          x: r.cx + bux * segno * (r.hw + 6.5 + scarto) + bvx * s,
+          z: r.cz + buz * segno * (r.hw + 6.5 + scarto) + bvz * s,
+          rot: r.angle + Math.PI / 2,
+        });
+      } else {
+        const segno = Math.sign(dv) || 1;
+        out.push({
+          x: r.cx + bvx * segno * (r.hd + 6.5 + scarto) + bux * s,
+          z: r.cz + bvz * segno * (r.hd + 6.5 + scarto) + buz * s,
+          rot: r.angle,
+        });
+      }
+    }
+    return out;
   }, [mondo]);
 
   return (
@@ -628,25 +999,22 @@ export function Landmarks() {
       {giostra && (
         <group position={[giostra.x, 0, giostra.z]}>
           <mesh position={[0, 0.22, 0]} receiveShadow>
-            <cylinderGeometry args={[2.9, 3.1, 0.44, 12]} />
+            <cylinderGeometry args={[4.2, 4.4, 0.44, 12]} />
             <meshLambertMaterial color="#C8B8A8" />
           </mesh>
           <mesh position={[0, 1.8, 0]}>
-            <cylinderGeometry args={[0.12, 0.12, 3, 6]} />
+            <cylinderGeometry args={[0.14, 0.14, 3, 6]} />
             <meshLambertMaterial color="#8A8578" />
           </mesh>
-          <mesh position={[0, 3.6, 0]} castShadow>
-            <coneGeometry args={[3.2, 1.7, 10]} />
-            <meshLambertMaterial color="#D87A90" />
-          </mesh>
+          <mesh geometry={tettoGiostra} material={materiale} castShadow />
           <mesh position={[0, 2.85, 0]}>
-            <cylinderGeometry args={[3.15, 3.15, 0.18, 10]} />
+            <cylinderGeometry args={[4.55, 4.55, 0.18, 12]} />
             <meshLambertMaterial color="#F2EDE2" />
           </mesh>
-          {[0, 1, 2, 3].map((i) => {
-            const a = (i / 4) * Math.PI * 2;
+          {[0, 1, 2, 3, 4, 5].map((i) => {
+            const a = (i / 6) * Math.PI * 2;
             return (
-              <mesh key={i} position={[Math.cos(a) * 1.9, 1.05, Math.sin(a) * 1.9]}>
+              <mesh key={i} position={[Math.cos(a) * 2.9, 1.05, Math.sin(a) * 2.9]}>
                 <boxGeometry args={[0.7, 0.5, 0.3]} />
                 <meshLambertMaterial color={i % 2 ? '#E8E2D2' : '#C05A64'} />
               </mesh>
@@ -654,6 +1022,28 @@ export function Landmarks() {
           })}
         </group>
       )}
+
+      {/* le bancarelle del mercato lungo il fianco del Pavaglione */}
+      {bancarelle.map((b, i) => (
+        <group key={i} position={[b.x, 0, b.z]} rotation={[0, -b.rot, 0]}>
+          <mesh position={[0, 0.45, 0]} castShadow>
+            <boxGeometry args={[2.6, 0.9, 1.6]} />
+            <meshLambertMaterial color="#8A7A66" />
+          </mesh>
+          <mesh position={[1.15, 1.45, 0.65]}>
+            <boxGeometry args={[0.08, 1.3, 0.08]} />
+            <meshLambertMaterial color="#4A453C" />
+          </mesh>
+          <mesh position={[-1.15, 1.45, -0.65]}>
+            <boxGeometry args={[0.08, 1.3, 0.08]} />
+            <meshLambertMaterial color="#4A453C" />
+          </mesh>
+          <mesh position={[0, 2.16, 0]} castShadow>
+            <boxGeometry args={[3.0, 0.14, 2.0]} />
+            <meshLambertMaterial color={i % 2 ? '#A34A3E' : '#D8D2C4'} />
+          </mesh>
+        </group>
+      ))}
     </group>
   );
 }

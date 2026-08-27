@@ -545,7 +545,10 @@ function dentroPoly(x: number, z: number, poly: Float32Array): boolean {
 function fasceRosaPiazze(acc: Accumulo, mondo: MondoLugo) {
   const pav = mondo.poi.get('pavaglione');
   if (!pav) return;
+  const bar = mondo.poi.get('baracca');
   const cRosa = new THREE.Color('#C79A8F');
+  // in Piazza dei Martiri i camminamenti sono lastre d'ardesia grigio-azzurra
+  const cPietra = new THREE.Color('#72767D');
   const y = QUOTA.piazza + 0.006;
   const MEZZA = 1.3; // semilarghezza della fascia
   for (const a of mondo.aree) {
@@ -566,6 +569,11 @@ function fasceRosaPiazze(acc: Accumulo, mondo: MondoLugo) {
     cx /= n;
     cz /= n;
     if (Math.hypot(cx - pav.xm, cz - pav.zm) > 160) continue;
+    // rosa solo dal lato della stele di Baracca, grigio pietra ai Martiri;
+    // senza il POI si torna al vecchio comportamento (tutte rosa)
+    const versoBaracca =
+      !bar || Math.hypot(cx - bar.xm, cz - bar.zm) < Math.hypot(cx - pav.xm, cz - pav.zm);
+    const cFascia = versoBaracca ? cRosa : cPietra;
 
     // gli edifici che stanno sulla piazza: le fasce non ci passano sotto
     const ostacoli: Float32Array[] = [];
@@ -614,8 +622,8 @@ function fasceRosaPiazze(acc: Accumulo, mondo: MondoLugo) {
           const bz = r.cz + uz * s + vz * t1;
           const ox = ux * MEZZA;
           const oz = uz * MEZZA;
-          acc.tri(ax - ox, y, az - oz, ax + ox, y, az + oz, bx + ox, y, bz + oz, 0, 1, 0, cRosa.r, cRosa.g, cRosa.b);
-          acc.tri(ax - ox, y, az - oz, bx + ox, y, bz + oz, bx - ox, y, bz - oz, 0, 1, 0, cRosa.r, cRosa.g, cRosa.b);
+          acc.tri(ax - ox, y, az - oz, ax + ox, y, az + oz, bx + ox, y, bz + oz, 0, 1, 0, cFascia.r, cFascia.g, cFascia.b);
+          acc.tri(ax - ox, y, az - oz, bx + ox, y, bz + oz, bx - ox, y, bz - oz, 0, 1, 0, cFascia.r, cFascia.g, cFascia.b);
         }
       }
     }
