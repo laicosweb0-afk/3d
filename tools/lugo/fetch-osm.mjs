@@ -55,6 +55,7 @@ const QUERY = `[out:json][timeout:90];
   node["natural"="tree"](${B});
   node["highway"~"^(crossing|traffic_signals|bus_stop)$"](${B});
   node["amenity"="fountain"](${B});
+  way["amenity"="parking"](${B});
   nwr["amenity"="police"](${B});
 );
 out body;

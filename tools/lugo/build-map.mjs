@@ -569,6 +569,16 @@ for (const w of ways.values()) {
     continue;
   }
 
+  // i piazzali di sosta chiari che si vedono dall'alto
+  if (tags.amenity === 'parking' && !tags.building) {
+    const r = simplifyRing(wayRing(w), 0.5);
+    if (r.length >= 3 && Math.abs(signedArea(r)) > 120) {
+      stretch(r);
+      aree.push({ kind: 'parcheggio', poly: flatQ(r) });
+    }
+    continue;
+  }
+
   // monumenti/memoriali mappati come way
   if (tags.historic) {
     const lm = landmarkOf(tags);
@@ -610,6 +620,12 @@ for (const n of nodes.values()) {
   else if (tags.highway === 'traffic_signals') arredi.push({ t: 'semaforo', x: q(x), z: q(z) });
   else if (tags.highway === 'bus_stop') arredi.push({ t: 'bus', x: q(x), z: q(z) });
   else if (tags.amenity === 'fountain') arredi.push({ t: 'fontana', x: q(x), z: q(z) });
+  else if (
+    (tags.historic === 'memorial' || tags.historic === 'monument') &&
+    !/baracca/i.test(tags.name || '')
+  ) {
+    arredi.push({ t: 'obelisco', x: q(x), z: q(z) });
+  }
   if (tags.railway === 'station') {
     const prev = poiCand.get('stazione');
     poiCand.set('stazione', { id: 'stazione', nome: tags.name || 'Stazione', x, z, rot: prev ? prev.rot : 0, area: Infinity });
@@ -643,7 +659,7 @@ for (const c of poiCand.values()) {
 // le insegne più vicine al Pavaglione hanno la precedenza; ogni tipo di
 // arredo ha il suo tetto per non gonfiare il file
 negozi.sort((a, b) => Math.hypot(a.x, a.z - 810) - Math.hypot(b.x, b.z - 810));
-const tettiArredi = { albero: 900, zebre: 240, semaforo: 80, bus: 90, fontana: 24 };
+const tettiArredi = { albero: 900, zebre: 240, semaforo: 80, bus: 90, fontana: 24, obelisco: 12 };
 const contatori = {};
 const arrediFiltrati = arredi.filter((a) => {
   contatori[a.t] = (contatori[a.t] || 0) + 1;
