@@ -36,6 +36,8 @@ interface LugoState {
   avviso: string | null;
   /** Suggerimento contestuale persistente ("Premi E…"). */
   hint: string | null;
+  /** Nome della via su cui ci si trova (stile GTA, in basso). */
+  via: string | null;
 
   avvia: () => void;
   setMode: (m: Modalita) => void;
@@ -48,6 +50,7 @@ interface LugoState {
   setTempoResiduo: (s: number | null) => void;
   setAvviso: (msg: string | null) => void;
   setHint: (msg: string | null) => void;
+  setVia: (nome: string | null) => void;
 }
 
 export const useLugo = create<LugoState>((set) => ({
@@ -64,6 +67,7 @@ export const useLugo = create<LugoState>((set) => ({
   tempoResiduo: null,
   avviso: null,
   hint: null,
+  via: null,
 
   avvia: () => set({ fase: 'gioco' }),
   setMode: (mode) => set({ mode }),
@@ -76,6 +80,7 @@ export const useLugo = create<LugoState>((set) => ({
   setTempoResiduo: (tempoResiduo) => set({ tempoResiduo }),
   setAvviso: (avviso) => set({ avviso }),
   setHint: (hint) => set({ hint }),
+  setVia: (via) => set({ via }),
 }));
 
 export const DPR_PER_TIER: Record<QualitaTier, number> = {

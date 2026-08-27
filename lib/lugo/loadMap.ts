@@ -8,7 +8,7 @@
 import { use } from 'react';
 import { asset } from '@/lib/asset';
 import { puntiVarco, vicinoAVarco } from './gates';
-import type { LugoMap, ClasseStrada, PoiMap } from './types';
+import type { LugoMap, ClasseStrada, PoiMap, TipoArredo } from './types';
 
 export interface StradaRT {
   classe: ClasseStrada;
@@ -63,6 +63,12 @@ export interface NegozioRT {
   z: number;
 }
 
+export interface ArredoRT {
+  tipo: TipoArredo;
+  x: number;
+  z: number;
+}
+
 export interface MondoLugo {
   bounds: { minX: number; minZ: number; maxX: number; maxZ: number };
   roads: StradaRT[];
@@ -71,6 +77,7 @@ export interface MondoLugo {
   rail: Float32Array[];
   poi: Map<string, PoiMap & { xm: number; zm: number }>;
   negozi: NegozioRT[];
+  arredi: ArredoRT[];
 }
 
 const M = 0.1; // dm → m
@@ -190,6 +197,7 @@ async function carica(): Promise<MondoLugo> {
     rail: raw.rail.map(toMeters),
     poi,
     negozi: (raw.negozi ?? []).map((s) => ({ nome: s.n, x: s.x * M, z: s.z * M })),
+    arredi: (raw.arredi ?? []).map((a) => ({ tipo: a.t, x: a.x * M, z: a.z * M })),
   };
 }
 

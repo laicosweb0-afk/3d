@@ -26,6 +26,7 @@ export function Hud() {
   const avviso = useLugo((s) => s.avviso);
   const hint = useLugo((s) => s.hint);
   const mode = useLugo((s) => s.mode);
+  const via = useLugo((s) => s.via);
   const audioOn = useLugo((s) => s.audioOn);
   const toggleAudio = useLugo((s) => s.toggleAudio);
 
@@ -81,6 +82,12 @@ export function Hud() {
       >
         {audioOn ? '♪' : '∅'}
       </button>
+
+      {via && (
+        <div className="lugo-via" data-hud="via" key={via}>
+          {via}
+        </div>
+      )}
 
       <div className="lugo-tachimetro" data-hud="tachimetro">
         <span className="lugo-kmh">{kmh}</span>

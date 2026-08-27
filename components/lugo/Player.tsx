@@ -10,7 +10,7 @@ import { useKeyboardControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { useMondo } from '@/lib/lugo/loadMap';
 import { infraGioco } from '@/lib/lugo/veicoli';
-import { stepAuto, puntoStradaVicino } from '@/lib/lugo/car';
+import { stepAuto, puntoStradaVicino, viaVicina } from '@/lib/lugo/car';
 import { stepPersona, PERSONA } from '@/lib/lugo/character';
 import type { StatoInput } from '@/lib/lugo/input';
 import { runtime, type RuntimeGioco } from '@/lib/lugo/runtime';
@@ -111,6 +111,8 @@ export function Player() {
   const resetPrima = useRef(false);
   const hudAcc = useRef(0);
   const hintPrima = useRef<string | null>(null);
+  const viaAcc = useRef(0);
+  const viaPrima = useRef<string | null>(null);
 
   // hook di verifica/debug
   useEffect(() => {
@@ -284,6 +286,18 @@ export function Player() {
       hudAcc.current = 0;
       const v = st.mode === 'auto' ? Math.abs(rt.vAuto) : rt.vPersona;
       st.setKmh(Math.round(v * 3.6));
+    }
+
+    // il nome della via, come nei giochi veri
+    viaAcc.current += dt;
+    if (viaAcc.current > 0.5) {
+      viaAcc.current = 0;
+      const t = st.mode === 'auto' ? rt.auto : rt.persona;
+      const nome = viaVicina(mondo, t.x, t.z);
+      if (nome !== viaPrima.current) {
+        viaPrima.current = nome;
+        st.setVia(nome);
+      }
     }
   });
 

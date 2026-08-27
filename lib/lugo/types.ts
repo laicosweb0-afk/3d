@@ -74,6 +74,14 @@ export interface NegozioMap {
   z: number;
 }
 
+export type TipoArredo = 'albero' | 'zebre' | 'semaforo' | 'bus' | 'fontana';
+
+export interface ArredoMap {
+  t: TipoArredo;
+  x: number;
+  z: number;
+}
+
 export interface LugoMap {
   version: 1;
   origin: { lat: number; lon: number };
@@ -85,6 +93,8 @@ export interface LugoMap {
   /** Polilinee ferroviarie, ciascuna [x0,z0,…] in dm. */
   rail: number[][];
   poi: PoiMap[];
-  /** Botteghe del centro con nome vero (assente nelle mappe vecchie). */
+  /** Botteghe con nome vero (assente nelle mappe vecchie). */
   negozi?: NegozioMap[];
+  /** Arredi urbani mappati uno per uno (assente nelle mappe vecchie). */
+  arredi?: ArredoMap[];
 }

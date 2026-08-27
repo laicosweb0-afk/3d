@@ -83,11 +83,13 @@ export function Insegne() {
     const cartelli = trovaMuri(mondo);
     if (!cartelli.length) return null;
 
-    // atlas dei nomi: una riga per insegna
+    // atlas dei nomi: una riga per insegna, su più colonne se sono tante
     const RIGA = 44;
+    const colonne = Math.max(1, Math.ceil((cartelli.length * RIGA) / 8192));
+    const righePerCol = Math.ceil(cartelli.length / colonne);
     const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = Math.max(64, 2 ** Math.ceil(Math.log2(cartelli.length * RIGA)));
+    canvas.width = 512 * colonne;
+    canvas.height = Math.min(8192, Math.max(64, 2 ** Math.ceil(Math.log2(righePerCol * RIGA))));
     const ctx = canvas.getContext('2d')!;
     ctx.fillStyle = '#2A2430';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -95,11 +97,13 @@ export function Insegne() {
     ctx.textBaseline = 'middle';
     cartelli.forEach((c, i) => {
       const nome = mondo.negozi[i]?.nome ?? '';
+      const col = Math.floor(i / righePerCol);
+      const riga = i % righePerCol;
       ctx.fillStyle = '#1E1A28';
-      ctx.fillRect(0, i * RIGA + 2, 512, RIGA - 4);
+      ctx.fillRect(col * 512, riga * RIGA + 2, 512, RIGA - 4);
       ctx.fillStyle = '#F0E6CE';
       ctx.font = 'bold 26px ui-sans-serif, system-ui, sans-serif';
-      ctx.fillText(nome.toUpperCase().slice(0, 24), 256, i * RIGA + RIGA / 2);
+      ctx.fillText(nome.toUpperCase().slice(0, 24), col * 512 + 256, riga * RIGA + RIGA / 2);
     });
     const atlas = new THREE.CanvasTexture(canvas);
     atlas.anisotropy = 4;
@@ -122,9 +126,13 @@ export function Insegne() {
         cxp + hx, y1, czp + hz,
         cxp - hx, y1, czp - hz,
       );
-      const v0 = 1 - ((i + 1) * RIGA) / canvas.height;
-      const v1 = 1 - (i * RIGA) / canvas.height;
-      uv.push(0, v0, 1, v0, 1, v1, 0, v1);
+      const col = Math.floor(i / righePerCol);
+      const riga = i % righePerCol;
+      const u0 = col / colonne;
+      const u1 = (col + 1) / colonne;
+      const v0 = 1 - ((riga + 1) * RIGA) / canvas.height;
+      const v1 = 1 - (riga * RIGA) / canvas.height;
+      uv.push(u0, v0, u1, v0, u1, v1, u0, v1);
       idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
     });
     const geo = new THREE.BufferGeometry();

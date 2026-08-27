@@ -302,6 +302,23 @@
   }
 }
 
+.lugo-via {
+  position: absolute;
+  bottom: 1.7rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.35rem 1.3rem;
+  border-radius: 0.4rem;
+  background: rgba(24, 20, 52, 0.8);
+  border: 1px solid rgba(245, 233, 214, 0.35);
+  font-size: 1.02rem;
+  font-style: italic;
+  letter-spacing: 0.05em;
+  color: #f5e9d6;
+  white-space: nowrap;
+  animation: lugo-appare 0.3s ease-out;
+}
+
 .lugo-hint {
   position: absolute;
   bottom: 5.4rem;

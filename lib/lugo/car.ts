@@ -119,6 +119,32 @@ export function stepAuto(
   return { urto, v: vFinale };
 }
 
+/** Il nome della via più vicina a (x,z), se ce n'è una con nome entro maxD metri. */
+export function viaVicina(mondo: MondoLugo, x: number, z: number, maxD = 14): string | null {
+  let bestD = maxD;
+  let nome: string | null = null;
+  for (const r of mondo.roads) {
+    if (!r.nome) continue;
+    const pts = r.pts;
+    for (let i = 0; i + 3 < pts.length; i += 2) {
+      const ax = pts[i];
+      const az = pts[i + 1];
+      // scarto rapido: il segmento è lontano
+      if (Math.abs(ax - x) > bestD + 60 || Math.abs(az - z) > bestD + 60) continue;
+      const abx = pts[i + 2] - ax;
+      const abz = pts[i + 3] - az;
+      const len2 = abx * abx + abz * abz || 1;
+      const t = Math.max(0, Math.min(1, ((x - ax) * abx + (z - az) * abz) / len2));
+      const d = Math.hypot(x - (ax + abx * t), z - (az + abz * t));
+      if (d < bestD) {
+        bestD = d;
+        nome = r.nome;
+      }
+    }
+  }
+  return nome;
+}
+
 /** Punto di strada carrabile più vicino a (x,z): per lo spawn e il tasto R. */
 export function puntoStradaVicino(
   mondo: MondoLugo,
