@@ -25,8 +25,8 @@ const BIANCO = new THREE.Color('#F4EFE3');
 const COPPI = new THREE.Color('#A05A38');
 const SOFFITTO = new THREE.Color('#EFE6D2');
 // il mattone vero della Rocca nelle foto: bruno-tabacco, non rosso acceso
-const MATTONE = new THREE.Color('#8A5C40');
-const MATTONE_CUPO = new THREE.Color('#6B4630');
+const MATTONE = new THREE.Color('#9C7258');
+const MATTONE_CUPO = new THREE.Color('#7A5540');
 const PIETRA = new THREE.Color('#B9AF9E');
 const BRONZO = new THREE.Color('#54544A');
 const GIALLO_FS = new THREE.Color('#D8B24A');
@@ -560,10 +560,10 @@ export function Landmarks() {
             <boxGeometry args={[5.2, 0.28, 4]} />
             <meshLambertMaterial color="#D2CCBE" />
           </mesh>
-          {/* la stele: prisma rastremato, appiattito a lama */}
-          <mesh position={[-0.6, 7.4, 0]} rotation={[0, Math.PI / 4, 0]} scale={[1, 1, 0.42]} castShadow>
-            <cylinderGeometry args={[0.62, 1.5, 13.4, 4]} />
-            <meshLambertMaterial color="#DCD8CC" />
+          {/* la stele: prisma rastremato, sottile come una lama bianca */}
+          <mesh position={[-0.6, 6.8, 0]} rotation={[0, Math.PI / 4, 0]} scale={[1, 1, 0.28]} castShadow>
+            <cylinderGeometry args={[0.4, 0.95, 12.2, 4]} />
+            <meshLambertMaterial color="#E4E0D4" />
           </mesh>
           {/* l'aviatore in bronzo, in piedi accanto alla lama */}
           <mesh position={[1.7, 1.7, 0.2]} castShadow>

@@ -15,26 +15,26 @@ export const PALETTE = {
     '#C98E6B',
     '#D8A794',
   ],
-  /** Il coppo arancio vivo delle viste aeree. */
-  tetto: '#BE5C34',
-  // asfalto chiaro come nelle foto dall'alto: al sole è quasi bianco
+  /** Il coppo delle viste aeree: rosso mattone chiaro, rosato al sole. */
+  tetto: '#C97060',
+  // asfalto grigio neutro chiaro come nelle foto dall'alto
   strade: {
-    primaria: '#A8A4AE',
-    secondaria: '#B0ACB4',
-    residenziale: '#B8B4BA',
-    servizio: '#BEBAC0',
-    pedonale: '#C6BAA6',
+    primaria: '#A4A3A0',
+    secondaria: '#ACABA8',
+    residenziale: '#B4B3B0',
+    servizio: '#BBBAB7',
+    pedonale: '#DAD2C2',
   },
   segnaletica: '#E8E2D6',
-  marciapiede: '#C9C5CC',
+  marciapiede: '#C6C3BC',
   finestraSpenta: '#46525E',
   finestraAccesa: '#FFDFA0',
-  terreno: '#A9B27B',
-  verde: '#6FA351',
+  terreno: '#9EA383',
+  verde: '#7C9C55',
   acqua: '#5E8A9C',
-  piazza: '#9C8D7C',
+  piazza: '#C8BFAF',
   ferrovia: '#3E3A42',
-  cielo: { alto: '#3D7EDB', basso: '#DCE9F2' },
+  cielo: { alto: '#5F97DC', basso: '#DCE9F2' },
   nebbia: '#D6E2EC',
 } as const;
 
@@ -44,7 +44,7 @@ export const LUCE = {
   /** Cielo/terra: riempimento azzurro del cielo sereno. */
   hemi: { cielo: '#BFD9F2', terra: '#9A9078', intensity: 0.7 },
   ambient: { color: '#E8EEF4', intensity: 0.32 },
-  nebbia: { colore: '#D6E2EC', vicino: 220, lontano: 780 },
+  nebbia: { colore: '#D6E2EC', vicino: 300, lontano: 1300 },
   toneMappingExposure: 1.12,
 } as const;
 

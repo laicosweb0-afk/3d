@@ -469,7 +469,8 @@ export function generaCitta(mondo: MondoLugo, senzaLandmark: string[] = []): Cit
 
   const tetto = new THREE.Color(PALETTE.tetto);
   const tinte = PALETTE.intonaci.map((c) => new THREE.Color(c));
-  const tettoTinte = tinte.map((t) => tetto.clone().lerp(t, 0.25));
+  // i tetti veri variano molto casa per casa: dal mattone al rosa slavato
+  const tettoTinte = tinte.map((t) => tetto.clone().lerp(t, 0.45));
 
   const esclusi = new Set(senzaLandmark);
   for (const b of mondo.buildings) {
@@ -482,7 +483,8 @@ export function generaCitta(mondo: MondoLugo, senzaLandmark: string[] = []): Cit
   const cVerde = new THREE.Color(PALETTE.verde);
   const cAcqua = new THREE.Color(PALETTE.acqua);
   const cPiazza = new THREE.Color(PALETTE.piazza);
-  const cParcheggio = new THREE.Color('#C4C0C6');
+  // più scuro delle strisce, così gli stalli bianchi si leggono
+  const cParcheggio = new THREE.Color('#A9A6AC');
   const cFerro = new THREE.Color(PALETTE.ferrovia);
   for (const a of mondo.aree) {
     const y = QUOTA[a.kind];
@@ -515,8 +517,149 @@ export function generaCitta(mondo: MondoLugo, senzaLandmark: string[] = []): Cit
   }
 
   isoleRotonde(suolo, mondo);
+  fasceRosaPiazze(suolo, mondo);
+  stalliParcheggi(suolo, mondo);
 
   return { edifici: edifici.build(), suolo: suolo.build() };
+}
+
+function dentroPoly(x: number, z: number, poly: Float32Array): boolean {
+  let dentro = false;
+  const n = poly.length / 2;
+  for (let i = 0, j = n - 1; i < n; j = i++) {
+    const xi = poly[i * 2];
+    const zi = poly[i * 2 + 1];
+    const xj = poly[j * 2];
+    const zj = poly[j * 2 + 1];
+    if (zi > z !== zj > z && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) dentro = !dentro;
+  }
+  return dentro;
+}
+
+/**
+ * Le fasce di mattone rosato che attraversano il lastricato chiaro delle
+ * piazze del centro (Martiri e Baracca), come si vedono dall'alto: larghe
+ * ~2.6 m, rade, e ritagliate sia sul poligono della piazza sia sugli
+ * edifici che vi sorgono (la corte del Pavaglione resta pulita).
+ */
+function fasceRosaPiazze(acc: Accumulo, mondo: MondoLugo) {
+  const pav = mondo.poi.get('pavaglione');
+  if (!pav) return;
+  const cRosa = new THREE.Color('#C79A8F');
+  const y = QUOTA.piazza + 0.006;
+  const MEZZA = 1.3; // semilarghezza della fascia
+  for (const a of mondo.aree) {
+    if (a.kind !== 'piazza') continue;
+    const n = a.poly.length / 2;
+    let cx = 0, cz = 0;
+    let minX = Infinity, minZ = Infinity, maxX = -Infinity, maxZ = -Infinity;
+    for (let i = 0; i < n; i++) {
+      const px = a.poly[i * 2];
+      const pz = a.poly[i * 2 + 1];
+      cx += px;
+      cz += pz;
+      minX = Math.min(minX, px);
+      maxX = Math.max(maxX, px);
+      minZ = Math.min(minZ, pz);
+      maxZ = Math.max(maxZ, pz);
+    }
+    cx /= n;
+    cz /= n;
+    if (Math.hypot(cx - pav.xm, cz - pav.zm) > 160) continue;
+
+    // gli edifici che stanno sulla piazza: le fasce non ci passano sotto
+    const ostacoli: Float32Array[] = [];
+    for (const b of mondo.buildings) {
+      let bx = 0, bz = 0;
+      const nb = b.fp.length / 2;
+      for (let i = 0; i < nb; i++) {
+        bx += b.fp[i * 2];
+        bz += b.fp[i * 2 + 1];
+      }
+      bx /= nb;
+      bz /= nb;
+      if (bx > minX - 10 && bx < maxX + 10 && bz > minZ - 10 && bz < maxZ + 10) ostacoli.push(b.fp);
+    }
+    const libero = (px: number, pz: number): boolean => {
+      if (!dentroPoly(px, pz, a.poly)) return false;
+      for (const fp of ostacoli) if (dentroPoly(px, pz, fp)) return false;
+      return true;
+    };
+
+    const r = rettangoloMinimo(a.poly);
+    const ux = Math.cos(r.angle);
+    const uz = Math.sin(r.angle);
+    const vx = -uz;
+    const vz = ux;
+    // bande trasversali ogni 18 m, verificate anche sui due lembi
+    for (let s = -r.hw + 6; s < r.hw; s += 18) {
+      let inizio: number | null = null;
+      for (let t = -r.hd; t <= r.hd + 1.2; t += 1.2) {
+        const px = r.cx + ux * s + vx * t;
+        const pz = r.cz + uz * s + vz * t;
+        const dentro =
+          t <= r.hd &&
+          libero(px, pz) &&
+          libero(px + ux * MEZZA, pz + uz * MEZZA) &&
+          libero(px - ux * MEZZA, pz - uz * MEZZA);
+        if (dentro && inizio === null) inizio = t;
+        else if (!dentro && inizio !== null) {
+          const t0 = inizio;
+          const t1 = t - 1.2;
+          inizio = null;
+          if (t1 - t0 < 3.6) continue;
+          const ax = r.cx + ux * s + vx * t0;
+          const az = r.cz + uz * s + vz * t0;
+          const bx = r.cx + ux * s + vx * t1;
+          const bz = r.cz + uz * s + vz * t1;
+          const ox = ux * MEZZA;
+          const oz = uz * MEZZA;
+          acc.tri(ax - ox, y, az - oz, ax + ox, y, az + oz, bx + ox, y, bz + oz, 0, 1, 0, cRosa.r, cRosa.g, cRosa.b);
+          acc.tri(ax - ox, y, az - oz, bx + ox, y, bz + oz, bx - ox, y, bz - oz, 0, 1, 0, cRosa.r, cRosa.g, cRosa.b);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Le strisce bianche degli stalli nei piazzali di sosta: file di divisori
+ * regolari, come nelle foto aeree del piazzale dietro la Rocca.
+ */
+function stalliParcheggi(acc: Accumulo, mondo: MondoLugo) {
+  const cBianco = new THREE.Color(PALETTE.segnaletica);
+  const y = QUOTA.parcheggio + 0.006;
+  let divisori = 0;
+  for (const a of mondo.aree) {
+    if (a.kind !== 'parcheggio') continue;
+    const r = rettangoloMinimo(a.poly);
+    if (r.hw < 6 || r.hd < 6) continue; // piazzali minuscoli: niente righe
+    const ux = Math.cos(r.angle);
+    const uz = Math.sin(r.angle);
+    const vx = -uz;
+    const vz = ux;
+    // una fila di stalli ogni 10 m sull'asse corto, divisori ogni 2.6 m.
+    // Il tetto copre TUTTI i piazzali della mappa vera (~2300 divisori):
+    // è solo un paracadute contro dati anomali.
+    for (let d = -r.hd + 5; d < r.hd - 4; d += 10) {
+      for (let s = -r.hw + 3; s < r.hw - 2; s += 2.6) {
+        if (divisori > 2600) return;
+        const px = r.cx + ux * s + vx * d;
+        const pz = r.cz + uz * s + vz * d;
+        if (!dentroPoly(px, pz, a.poly)) continue;
+        const ax = px - vx * 2.3;
+        const az = pz - vz * 2.3;
+        const bx = px + vx * 2.3;
+        const bz = pz + vz * 2.3;
+        if (!dentroPoly(ax, az, a.poly) || !dentroPoly(bx, bz, a.poly)) continue;
+        const ox = ux * 0.07;
+        const oz = uz * 0.07;
+        acc.tri(ax - ox, y, az - oz, ax + ox, y, az + oz, bx + ox, y, bz + oz, 0, 1, 0, cBianco.r, cBianco.g, cBianco.b);
+        acc.tri(ax - ox, y, az - oz, bx + ox, y, bz + oz, bx - ox, y, bz - oz, 0, 1, 0, cBianco.r, cBianco.g, cBianco.b);
+        divisori++;
+      }
+    }
+  }
 }
 
 /**

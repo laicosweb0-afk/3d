@@ -35,6 +35,8 @@ interface Posa {
   z: number;
   scala: number;
   rot: number;
+  /** 'cono' per i viali potati, 'tondo' per le chiome scure di parchi e cortili. */
+  tipo: 'cono' | 'tondo';
 }
 
 function calcolaAlberi(mondo: MondoLugo): Posa[] {
@@ -63,12 +65,15 @@ function calcolaAlberi(mondo: MondoLugo): Posa[] {
       }
       area = Math.abs(area / 2);
       if (area < 45) continue;
-      const quanti = b.landmark === 'rocca' ? 8 : area > 220 ? 3 : area > 90 ? 2 : 1;
+      const quanti = b.landmark === 'rocca' ? 16 : area > 220 ? 3 : area > 90 ? 2 : 1;
+      const sparso = b.landmark === 'rocca' ? 0.85 : 0.5;
       for (let k = 0; k < quanti; k++) {
-        const jx = cx + (rand01(seme) - 0.5) * Math.sqrt(area) * 0.5;
-        const jz = cz + (rand01(seme) - 0.5) * Math.sqrt(area) * 0.5;
+        const jx = cx + (rand01(seme) - 0.5) * Math.sqrt(area) * sparso;
+        const jz = cz + (rand01(seme) - 0.5) * Math.sqrt(area) * sparso;
         if (!dentroPoligono(jx, jz, foro)) continue;
-        out.push({ x: jx, z: jz, scala: 0.75 + rand01(seme) * 0.6, rot: rand01(seme) * Math.PI * 2 });
+        // nel giardino pensile della Rocca le chiome svettano sopra le mura
+        const scala = b.landmark === 'rocca' ? 1.5 + rand01(seme) * 0.9 : 0.75 + rand01(seme) * 0.6;
+        out.push({ x: jx, z: jz, scala, rot: rand01(seme) * Math.PI * 2, tipo: 'tondo' });
       }
     }
   }
@@ -99,6 +104,7 @@ function calcolaAlberi(mondo: MondoLugo): Posa[] {
       z: r.cz + vz * (r.hd + 3.4) + uz * scosta,
       scala: 0.7 + rand01(seme) * 0.6,
       rot: rand01(seme) * Math.PI * 2,
+      tipo: 'tondo',
     });
     giardini++;
   }
@@ -125,6 +131,7 @@ function calcolaAlberi(mondo: MondoLugo): Posa[] {
           z: az + uz * s + ux * off,
           scala: 0.85 + rand01(seme) * 0.4,
           rot: rand01(seme) * Math.PI * 2,
+          tipo: 'cono',
         });
       }
     }
@@ -139,15 +146,24 @@ function calcolaAlberi(mondo: MondoLugo): Posa[] {
       minZ = Math.min(minZ, area.poly[i + 1]);
       maxZ = Math.max(maxZ, area.poly[i + 1]);
     }
-    const passo = 15;
+    const passo = 10;
     for (let x = minX + passo / 2; x < maxX; x += passo) {
       for (let z = minZ + passo / 2; z < maxZ; z += passo) {
         if (out.length >= MAX_ALBERI) return out;
-        if (rand01(seme) > 0.55) continue;
-        const jx = x + (rand01(seme) - 0.5) * 9;
-        const jz = z + (rand01(seme) - 0.5) * 9;
+        if (rand01(seme) > 0.62) continue;
+        const jx = x + (rand01(seme) - 0.5) * 7;
+        const jz = z + (rand01(seme) - 0.5) * 7;
         if (!dentroPoligono(jx, jz, area.poly)) continue;
-        out.push({ x: jx, z: jz, scala: 0.8 + rand01(seme) * 0.7, rot: rand01(seme) * Math.PI * 2 });
+        // nei parchi domina la chioma tonda e scura delle viste aeree:
+        // grandi, fitte, che si toccano fino a fare una macchia unica
+        const tondo = rand01(seme) < 0.78;
+        out.push({
+          x: jx,
+          z: jz,
+          scala: tondo ? 1.4 + rand01(seme) * 1.1 : 0.9 + rand01(seme) * 0.5,
+          rot: rand01(seme) * Math.PI * 2,
+          tipo: tondo ? 'tondo' : 'cono',
+        });
       }
     }
   }
@@ -175,7 +191,7 @@ function calcolaLampioni(mondo: MondoLugo): Posa[] {
         const px = ax + ux * s;
         const pz = az + uz * s;
         const off = (r.larghezza / 2 + 0.9) * lato;
-        out.push({ x: px - uz * off, z: pz + ux * off, scala: 1, rot: Math.atan2(uz, ux) });
+        out.push({ x: px - uz * off, z: pz + ux * off, scala: 1, rot: Math.atan2(uz, ux), tipo: 'cono' });
         lato = -lato;
         s += 34;
       }
@@ -192,6 +208,7 @@ export function Props() {
 
   const tronchi = useRef<THREE.InstancedMesh>(null);
   const chiome = useRef<THREE.InstancedMesh>(null);
+  const chiomeTonde = useRef<THREE.InstancedMesh>(null);
   const pali = useRef<THREE.InstancedMesh>(null);
   const luci = useRef<THREE.InstancedMesh>(null);
   const globi = useRef<THREE.InstancedMesh>(null);
@@ -200,12 +217,28 @@ export function Props() {
     const m = new THREE.Matrix4();
     const q = new THREE.Quaternion();
     const su = new THREE.Vector3(0, 1, 0);
+    let nConi = 0;
+    let nTondi = 0;
     alberi.forEach((a, i) => {
       q.setFromAxisAngle(su, a.rot);
-      m.compose(new THREE.Vector3(a.x, 1.1 * a.scala, a.z), q, new THREE.Vector3(a.scala, a.scala, a.scala));
-      tronchi.current?.setMatrixAt(i, m);
-      m.compose(new THREE.Vector3(a.x, 3.4 * a.scala, a.z), q, new THREE.Vector3(a.scala, a.scala, a.scala));
-      chiome.current?.setMatrixAt(i, m);
+      if (a.tipo === 'cono') {
+        m.compose(new THREE.Vector3(a.x, 1.1 * a.scala, a.z), q, new THREE.Vector3(a.scala, a.scala, a.scala));
+        tronchi.current?.setMatrixAt(i, m);
+        m.compose(new THREE.Vector3(a.x, 3.4 * a.scala, a.z), q, new THREE.Vector3(a.scala, a.scala, a.scala));
+        chiome.current?.setMatrixAt(nConi++, m);
+      } else {
+        // il tronco si allunga per reggere la chioma tonda più in alto
+        m.compose(
+          new THREE.Vector3(a.x, 2.05 * a.scala, a.z), q,
+          new THREE.Vector3(a.scala, a.scala * 1.9, a.scala),
+        );
+        tronchi.current?.setMatrixAt(i, m);
+        m.compose(
+          new THREE.Vector3(a.x, 4.3 * a.scala, a.z), q,
+          new THREE.Vector3(a.scala * 1.05, a.scala * 0.92, a.scala),
+        );
+        chiomeTonde.current?.setMatrixAt(nTondi++, m);
+      }
     });
     let nGlobi = 0;
     lampioni.forEach((l, i) => {
@@ -224,14 +257,18 @@ export function Props() {
         globi.current.setMatrixAt(nGlobi++, m);
       }
     });
-    for (const ref of [tronchi, chiome, pali, luci, globi]) {
+    for (const ref of [tronchi, chiome, chiomeTonde, pali, luci, globi]) {
       if (ref.current) {
         ref.current.count =
-          ref === tronchi || ref === chiome
+          ref === tronchi
             ? alberi.length
-            : ref === globi
-              ? nGlobi
-              : lampioni.length;
+            : ref === chiome
+              ? nConi
+              : ref === chiomeTonde
+                ? nTondi
+                : ref === globi
+                  ? nGlobi
+                  : lampioni.length;
         ref.current.instanceMatrix.needsUpdate = true;
       }
     }
@@ -246,6 +283,11 @@ export function Props() {
       <instancedMesh ref={chiome} args={[undefined, undefined, MAX_ALBERI]} frustumCulled={false} castShadow>
         <coneGeometry args={[1.9, 4.4, 7]} />
         <meshLambertMaterial color="#4E7A3C" />
+      </instancedMesh>
+      {/* le chiome tonde e scure di parchi e cortili, come nelle viste aeree */}
+      <instancedMesh ref={chiomeTonde} args={[undefined, undefined, MAX_ALBERI]} frustumCulled={false} castShadow>
+        <icosahedronGeometry args={[2.2, 1]} />
+        <meshLambertMaterial color="#3A5352" />
       </instancedMesh>
       <instancedMesh ref={pali} args={[undefined, undefined, MAX_LAMPIONI]} frustumCulled={false}>
         <cylinderGeometry args={[0.07, 0.1, 4.8, 6]} />

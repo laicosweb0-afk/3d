@@ -55,17 +55,18 @@ function Cielo() {
   return (
     <group>
       <mesh geometry={geometria} material={materiale} frustumCulled={false} />
-      {/* le colline dell'Appennino a sud, azzurrine nella foschia diurna */}
+      {/* le colline dell'Appennino a sud: una striscia bassa e sbiadita
+          all'orizzonte, come nelle foto aeree */}
       {[
-        [45, 1650, 560, 140], [62, 1580, 440, 105], [78, 1720, 640, 160],
-        [95, 1600, 480, 115], [110, 1780, 590, 135], [126, 1660, 430, 95],
-        [140, 1740, 530, 120],
+        [45, 1650, 560, 52], [62, 1580, 440, 40], [78, 1720, 640, 60],
+        [95, 1600, 480, 44], [110, 1780, 590, 50], [126, 1660, 430, 36],
+        [140, 1740, 530, 46],
       ].map(([gradi, dist, raggio, altezza]) => {
         const a = (gradi * Math.PI) / 180;
         return (
           <mesh key={gradi} position={[Math.cos(a) * dist, altezza / 2 - 22, Math.sin(a) * dist]}>
             <coneGeometry args={[raggio, altezza, 7]} />
-            <meshBasicMaterial color="#A9BACE" fog={false} />
+            <meshBasicMaterial color="#C2CEDA" fog={false} />
           </mesh>
         );
       })}
@@ -114,6 +115,21 @@ function Nuvole() {
         });
       }
     }
+    // i cirri: veli sottili e allungati come pennellate, anche sopra il
+    // centro, così riempiono il cielo pure in vista bassa
+    for (let c = 0; c < 16; c++) {
+      const a = rnd() * Math.PI * 2;
+      const d = 100 + rnd() * 700;
+      out.push({
+        x: Math.cos(a) * d,
+        y: 340 + rnd() * 160,
+        z: Math.sin(a) * d,
+        sx: 220 + rnd() * 260,
+        sy: 5 + rnd() * 3,
+        sz: 30 + rnd() * 34,
+        rot: rnd() * Math.PI,
+      });
+    }
     return out;
   }, []);
 
@@ -135,7 +151,7 @@ function Nuvole() {
   return (
     <instancedMesh ref={mesh} args={[undefined, undefined, Math.max(1, pose.length)]} frustumCulled={false}>
       <icosahedronGeometry args={[1, 1]} />
-      <meshBasicMaterial color="#F8FBFE" fog={false} />
+      <meshBasicMaterial color="#F8FBFE" fog={false} transparent opacity={0.72} depthWrite={false} />
     </instancedMesh>
   );
 }
