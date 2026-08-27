@@ -56,7 +56,52 @@ export function CityMeshes({ senzaLandmark = [] }: { senzaLandmark?: string[] })
     () => new THREE.MeshLambertMaterial({ vertexColors: true, map: intonaco ?? undefined }),
     [intonaco],
   );
-  const matSuolo = useMemo(() => new THREE.MeshLambertMaterial({ vertexColors: true }), []);
+
+  // il ciottolato delle piazze (come in Piazza dei Martiri): sassi chiari su
+  // fuga appena più scura, bordo bianco del tile = le fasce di lastre chiare
+  const ciottoli = useMemo(() => {
+    if (typeof document === 'undefined') return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = '#C8C0B2';
+    ctx.fillRect(0, 0, 128, 128);
+    let seme = 24681357;
+    const rnd = () => {
+      seme = (seme * 1664525 + 1013904223) >>> 0;
+      return seme / 4294967296;
+    };
+    for (let gy = 0; gy < 12; gy++) {
+      for (let gx = 0; gx < 12; gx++) {
+        const cx = gx * 10.6 + 5 + (rnd() - 0.5) * 3;
+        const cy = gy * 10.6 + 5 + (rnd() - 0.5) * 3;
+        const r = 3.6 + rnd() * 1.6;
+        const v = 225 + Math.floor(rnd() * 30);
+        ctx.fillStyle = `rgb(${v},${v - 4},${v - 10})`;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, r, r * (0.75 + rnd() * 0.3), rnd() * Math.PI, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    // bordo bianco: le superfici senza UV campionano qui e restano neutre,
+    // e sulle piazze diventa la fuga chiara ogni ripetizione
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, 128, 1);
+    ctx.fillRect(0, 127, 128, 1);
+    ctx.fillRect(0, 0, 1, 128);
+    ctx.fillRect(127, 0, 1, 128);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.anisotropy = 4;
+    return tex;
+  }, []);
+
+  const matSuolo = useMemo(
+    () => new THREE.MeshLambertMaterial({ vertexColors: true, map: ciottoli ?? undefined }),
+    [ciottoli],
+  );
 
   const terreno = useMemo(() => {
     const { minX, minZ, maxX, maxZ } = mondo.bounds;

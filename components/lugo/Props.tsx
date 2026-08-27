@@ -103,6 +103,7 @@ export function Props() {
   const chiome = useRef<THREE.InstancedMesh>(null);
   const pali = useRef<THREE.InstancedMesh>(null);
   const luci = useRef<THREE.InstancedMesh>(null);
+  const globi = useRef<THREE.InstancedMesh>(null);
 
   useLayoutEffect(() => {
     const m = new THREE.Matrix4();
@@ -115,16 +116,31 @@ export function Props() {
       m.compose(new THREE.Vector3(a.x, 3.4 * a.scala, a.z), q, new THREE.Vector3(a.scala, a.scala, a.scala));
       chiome.current?.setMatrixAt(i, m);
     });
+    let nGlobi = 0;
     lampioni.forEach((l, i) => {
       q.setFromAxisAngle(su, l.rot);
       m.compose(new THREE.Vector3(l.x, 2.4, l.z), q, new THREE.Vector3(1, 1, 1));
       pali.current?.setMatrixAt(i, m);
       m.compose(new THREE.Vector3(l.x, 4.85, l.z), q, new THREE.Vector3(1, 1, 1));
       luci.current?.setMatrixAt(i, m);
+      // in centro storico il lampione è a candelabro: due globi laterali
+      if (Math.hypot(l.x, l.z) < 260 && globi.current) {
+        const px = -Math.sin(l.rot) * 0.48;
+        const pz = Math.cos(l.rot) * 0.48;
+        m.compose(new THREE.Vector3(l.x + px, 4.55, l.z + pz), q, new THREE.Vector3(1, 1, 1));
+        globi.current.setMatrixAt(nGlobi++, m);
+        m.compose(new THREE.Vector3(l.x - px, 4.55, l.z - pz), q, new THREE.Vector3(1, 1, 1));
+        globi.current.setMatrixAt(nGlobi++, m);
+      }
     });
-    for (const ref of [tronchi, chiome, pali, luci]) {
+    for (const ref of [tronchi, chiome, pali, luci, globi]) {
       if (ref.current) {
-        ref.current.count = ref === tronchi || ref === chiome ? alberi.length : lampioni.length;
+        ref.current.count =
+          ref === tronchi || ref === chiome
+            ? alberi.length
+            : ref === globi
+              ? nGlobi
+              : lampioni.length;
         ref.current.instanceMatrix.needsUpdate = true;
       }
     }
@@ -147,6 +163,10 @@ export function Props() {
       <instancedMesh ref={luci} args={[undefined, undefined, MAX_LAMPIONI]} frustumCulled={false}>
         <sphereGeometry args={[0.22, 8, 6]} />
         <meshLambertMaterial color="#FFE9A8" emissive="#FFD98A" emissiveIntensity={1.8} />
+      </instancedMesh>
+      <instancedMesh ref={globi} args={[undefined, undefined, MAX_LAMPIONI * 2]} frustumCulled={false}>
+        <sphereGeometry args={[0.17, 8, 6]} />
+        <meshLambertMaterial color="#FFE9A8" emissive="#FFD98A" emissiveIntensity={1.6} />
       </instancedMesh>
     </group>
   );

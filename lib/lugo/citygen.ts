@@ -75,7 +75,13 @@ const QUOTA = {
 } as const;
 
 /** Poligono piatto triangolato (earcut di three) nel piano XZ alla quota y. */
-function poligonoPiatto(acc: Accumulo, poly: Float32Array, y: number, colore: THREE.Color) {
+function poligonoPiatto(
+  acc: Accumulo,
+  poly: Float32Array,
+  y: number,
+  colore: THREE.Color,
+  conUV = false,
+) {
   const n = poly.length / 2;
   if (n < 3) return;
   const contour: THREE.Vector2[] = [];
@@ -87,13 +93,27 @@ function poligonoPiatto(acc: Accumulo, poly: Float32Array, y: number, colore: TH
     return; // anello degenere: lo si salta senza drammi
   }
   for (const [a, b, c] of tris) {
-    acc.tri(
-      contour[a].x, y, contour[a].y,
-      contour[b].x, y, contour[b].y,
-      contour[c].x, y, contour[c].y,
-      0, 1, 0,
-      colore.r, colore.g, colore.b,
-    );
+    if (conUV) {
+      // UV planari in metri: il ciottolato si ripete ogni ~2.4 m
+      acc.triUV(
+        contour[a].x, y, contour[a].y,
+        contour[b].x, y, contour[b].y,
+        contour[c].x, y, contour[c].y,
+        0, 1, 0,
+        colore.r, colore.g, colore.b,
+        contour[a].x / 2.4, contour[a].y / 2.4,
+        contour[b].x / 2.4, contour[b].y / 2.4,
+        contour[c].x / 2.4, contour[c].y / 2.4,
+      );
+    } else {
+      acc.tri(
+        contour[a].x, y, contour[a].y,
+        contour[b].x, y, contour[b].y,
+        contour[c].x, y, contour[c].y,
+        0, 1, 0,
+        colore.r, colore.g, colore.b,
+      );
+    }
   }
 }
 
@@ -448,7 +468,8 @@ export function generaCitta(mondo: MondoLugo, senzaLandmark: string[] = []): Cit
   for (const a of mondo.aree) {
     const y = QUOTA[a.kind];
     const c = a.kind === 'verde' ? cVerde : a.kind === 'acqua' ? cAcqua : cPiazza;
-    poligonoPiatto(suolo, a.poly, y, c);
+    // le piazze hanno il ciottolato (texture con UV planari, come dal vivo)
+    poligonoPiatto(suolo, a.poly, y, c, a.kind === 'piazza');
   }
   const cStrade = Object.fromEntries(
     Object.entries(PALETTE.strade).map(([k, v]) => [k, new THREE.Color(v)]),

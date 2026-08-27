@@ -30,7 +30,7 @@ export const PALETTE = {
   terreno: '#A3B07A',
   verde: '#7DA25E',
   acqua: '#5A7D8C',
-  piazza: '#B4A48C',
+  piazza: '#9C8D7C',
   ferrovia: '#3E3A42',
   cielo: { alto: '#2E2A5E', basso: '#FF9E5E' },
   nebbia: '#C77A62',

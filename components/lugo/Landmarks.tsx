@@ -17,11 +17,16 @@ import { puntoStradaVicino } from '@/lib/lugo/car';
 import { GazzellaMesh } from './Npcs';
 
 const INTONACO = new THREE.Color('#E4CE8F'); // il "giallino" di Lugo
+const TERRACOTTA = new THREE.Color('#BC6040'); // l'aranciato del Pavaglione visto da fuori
+const CREMA = new THREE.Color('#EBDCA8'); // le lesene
+const PERSIANA = new THREE.Color('#3E5A3C'); // le persiane verdi
+const VETRO_SCURO = new THREE.Color('#2A333E');
 const BIANCO = new THREE.Color('#F4EFE3');
 const COPPI = new THREE.Color('#A05A38');
 const SOFFITTO = new THREE.Color('#EFE6D2');
-const MATTONE = new THREE.Color('#8A4632');
-const MATTONE_CUPO = new THREE.Color('#6E3626');
+// il mattone vero della Rocca nelle foto: bruno-tabacco, non rosso acceso
+const MATTONE = new THREE.Color('#8A5C40');
+const MATTONE_CUPO = new THREE.Color('#6B4630');
 const PIETRA = new THREE.Color('#B9AF9E');
 const BRONZO = new THREE.Color('#54544A');
 const GIALLO_FS = new THREE.Color('#D8B24A');
@@ -155,19 +160,60 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
   const rect = rettangoloMinimo(fp);
   const [ccx, ccz] = centroDi(corte);
 
-  // perimetro esterno: pannelli pieni, sopra i varchi resta l'architrave
+  // perimetro esterno come nelle foto: campiture terracotta ritmate da
+  // lesene crema, finestre con persiane verdi al piano nobile
+  const [pcx, pcz] = centroDi(fp);
   for (const [x1, z1, x2, z2] of anelloSegmenti(fp)) {
     const mx = (x1 + x2) / 2;
     const mz = (z1 + z2) / 2;
-    if (vicinoAVarco(mx, mz, varchi)) {
-      muro(acc, x1, z1, x2, z2, H_ARCO, H, INTONACO);
+    const alVarco = vicinoAVarco(mx, mz, varchi);
+    if (alVarco) {
+      muro(acc, x1, z1, x2, z2, H_ARCO, H, TERRACOTTA);
     } else {
-      muro(acc, x1, z1, x2, z2, 0, H, INTONACO);
+      muro(acc, x1, z1, x2, z2, 0, H, TERRACOTTA);
+    }
+    const L = Math.hypot(x2 - x1, z2 - z1);
+    if (L < 3) continue;
+    const ex = (x2 - x1) / L;
+    const ez = (z2 - z1) / L;
+    // normale verso l'esterno del quadriportico
+    let nx = z2 - z1;
+    let nz = -(x2 - x1);
+    const nl = Math.hypot(nx, nz) || 1;
+    nx /= nl;
+    nz /= nl;
+    if (nx * (mx - pcx) + nz * (mz - pcz) < 0) {
+      nx = -nx;
+      nz = -nz;
+    }
+    const nCampi = Math.max(1, Math.round(L / 4.3));
+    for (let k = 0; k <= nCampi; k++) {
+      const t = k / nCampi;
+      const px = x1 + (x2 - x1) * t;
+      const pz = z1 + (z2 - z1) * t;
+      if (!vicinoAVarco(px, pz, varchi, 3.4)) {
+        // lesena crema, dal suolo alla cornice
+        box(acc, px + nx * 0.08, H / 2, pz + nz * 0.08, 0.52, H, 0.2, CREMA, Math.atan2(ez, ex));
+      }
+      // finestra del piano nobile al centro del campo, con le persiane
+      if (k < nCampi) {
+        const tw = (k + 0.5) / nCampi;
+        const wx = x1 + (x2 - x1) * tw;
+        const wz = z1 + (z2 - z1) * tw;
+        if (vicinoAVarco(wx, wz, varchi, 3.2)) continue;
+        const ox = nx * 0.07;
+        const oz = nz * 0.07;
+        const giroY = Math.atan2(ez, ex);
+        box(acc, wx + ox, 6.55, wz + oz, 1.0, 1.7, 0.05, VETRO_SCURO, giroY);
+        box(acc, wx + ox + ex * 0.72, 6.55, wz + oz + ez * 0.72, 0.38, 1.7, 0.04, PERSIANA, giroY);
+        box(acc, wx + ox - ex * 0.72, 6.55, wz + oz - ez * 0.72, 0.38, 1.7, 0.04, PERSIANA, giroY);
+        box(acc, wx + ox, 5.55, wz + oz, 1.5, 0.14, 0.08, CREMA, giroY);
+      }
     }
   }
-  // cornice bianca in sommità
+  // cornice chiara in sommità
   for (const [x1, z1, x2, z2] of anelloSegmenti(fp)) {
-    muro(acc, x1, z1, x2, z2, H, H + 0.5, BIANCO);
+    muro(acc, x1, z1, x2, z2, H, H + 0.5, CREMA);
   }
 
   // arcate sulla corte: pilastri ritmati + fascia degli archi;

@@ -44,6 +44,33 @@ export function Arredi() {
     const semafori = mondo.arredi.filter((a) => a.tipo === 'semaforo');
     const bus = mondo.arredi.filter((a) => a.tipo === 'bus');
 
+    // i paletti grigi attorno alle piazze del centro (come ai Martiri)
+    const paletti: [number, number][] = [];
+    for (const area of mondo.aree) {
+      if (area.kind !== 'piazza' || paletti.length >= 260) continue;
+      const poly = area.poly;
+      const n = poly.length / 2;
+      let cx = 0, cz = 0;
+      for (let i = 0; i < n; i++) {
+        cx += poly[i * 2];
+        cz += poly[i * 2 + 1];
+      }
+      cx /= n;
+      cz /= n;
+      if (Math.hypot(cx, cz) > 320) continue;
+      for (let i = 0; i < n && paletti.length < 260; i++) {
+        const j = (i + 1) % n;
+        const ax = poly[i * 2];
+        const az = poly[i * 2 + 1];
+        const dx = poly[j * 2] - ax;
+        const dz = poly[j * 2 + 1] - az;
+        const L = Math.hypot(dx, dz);
+        for (let s = 1.6; s < L && paletti.length < 260; s += 3.2) {
+          paletti.push([ax + (dx / L) * s, az + (dz / L) * s]);
+        }
+      }
+    }
+
     // strisce e fontane: geometria fusa, un draw call
     const acc = new Accumulo();
     const bianco = new THREE.Color('#DAD4C6');
@@ -100,7 +127,7 @@ export function Arredi() {
       }
     }
 
-    return { alberi, semafori, bus, fusa: acc.pos.length ? acc.build() : null };
+    return { alberi, semafori, bus, paletti, fusa: acc.pos.length ? acc.build() : null };
   }, [mondo]);
 
   const tronchi = useRef<THREE.InstancedMesh>(null);
@@ -109,6 +136,7 @@ export function Arredi() {
   const testeSem = useRef<THREE.InstancedMesh>(null);
   const paliBus = useRef<THREE.InstancedMesh>(null);
   const cartelliBus = useRef<THREE.InstancedMesh>(null);
+  const bollard = useRef<THREE.InstancedMesh>(null);
 
   useLayoutEffect(() => {
     const m = new THREE.Matrix4();
@@ -138,6 +166,11 @@ export function Arredi() {
       m.compose(new THREE.Vector3(a.x, 2.75, a.z), q, new THREE.Vector3(1, 1, 1));
       cartelliBus.current?.setMatrixAt(i, m);
     });
+    dati.paletti.forEach(([x, z], i) => {
+      q.identity();
+      m.compose(new THREE.Vector3(x, 0.45, z), q, new THREE.Vector3(1, 1, 1));
+      bollard.current?.setMatrixAt(i, m);
+    });
     const coppie: [React.RefObject<THREE.InstancedMesh | null>, number][] = [
       [tronchi, dati.alberi.length],
       [chiome, dati.alberi.length],
@@ -145,6 +178,7 @@ export function Arredi() {
       [testeSem, dati.semafori.length],
       [paliBus, dati.bus.length],
       [cartelliBus, dati.bus.length],
+      [bollard, dati.paletti.length],
     ];
     for (const [ref, n] of coppie) {
       if (ref.current) {
@@ -188,6 +222,14 @@ export function Arredi() {
       <instancedMesh ref={cartelliBus} args={[undefined, undefined, maxB]} frustumCulled={false}>
         <boxGeometry args={[0.55, 0.55, 0.06]} />
         <meshLambertMaterial color="#D9862E" />
+      </instancedMesh>
+      <instancedMesh
+        ref={bollard}
+        args={[undefined, undefined, Math.max(1, dati.paletti.length)]}
+        frustumCulled={false}
+      >
+        <cylinderGeometry args={[0.07, 0.08, 0.9, 6]} />
+        <meshLambertMaterial color="#585862" />
       </instancedMesh>
     </group>
   );
