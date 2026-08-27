@@ -8,7 +8,7 @@ import { useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useMondo, type MondoLugo } from '@/lib/lugo/loadMap';
 
-const MAX_ALBERI = 420;
+const MAX_ALBERI = 900;
 const MAX_LAMPIONI = 260;
 
 function dentroPoligono(x: number, z: number, poly: Float32Array): boolean {
@@ -39,6 +39,66 @@ interface Posa {
 function calcolaAlberi(mondo: MondoLugo): Posa[] {
   const seme = { s: 4242 };
   const out: Posa[] = [];
+
+  // il verde nascosto dei cortili: nelle viste aeree ogni isolato ha i suoi
+  // alberi. La corte del Pavaglione però resta vuota, com'è davvero;
+  // quella della Rocca è il giardino pensile e ne merita un boschetto.
+  for (const b of mondo.buildings) {
+    if (b.landmark === 'pavaglione') continue;
+    for (const foro of b.fori) {
+      if (out.length >= MAX_ALBERI - 350) break;
+      const n = foro.length / 2;
+      let cx = 0, cz = 0;
+      for (let i = 0; i < n; i++) {
+        cx += foro[i * 2];
+        cz += foro[i * 2 + 1];
+      }
+      cx /= n;
+      cz /= n;
+      let area = 0;
+      for (let i = 0; i < n; i++) {
+        const j = (i + 1) % n;
+        area += foro[i * 2] * foro[j * 2 + 1] - foro[j * 2] * foro[i * 2 + 1];
+      }
+      area = Math.abs(area / 2);
+      if (area < 45) continue;
+      const quanti = b.landmark === 'rocca' ? 8 : area > 220 ? 3 : area > 90 ? 2 : 1;
+      for (let k = 0; k < quanti; k++) {
+        const jx = cx + (rand01(seme) - 0.5) * Math.sqrt(area) * 0.5;
+        const jz = cz + (rand01(seme) - 0.5) * Math.sqrt(area) * 0.5;
+        if (!dentroPoligono(jx, jz, foro)) continue;
+        out.push({ x: jx, z: jz, scala: 0.75 + rand01(seme) * 0.6, rot: rand01(seme) * Math.PI * 2 });
+      }
+    }
+  }
+
+  // i viali alberati regolari lungo le strade principali
+  for (const r of mondo.roads) {
+    if (r.classe !== 'primaria') continue;
+    let lato = 1;
+    for (let i = 0; i + 3 < r.pts.length && out.length < MAX_ALBERI - 200; i += 2) {
+      const ax = r.pts[i];
+      const az = r.pts[i + 1];
+      const dx = r.pts[i + 2] - ax;
+      const dz = r.pts[i + 3] - az;
+      const L = Math.hypot(dx, dz);
+      if (L < 12) continue;
+      const ux = dx / L;
+      const uz = dz / L;
+      for (let s = 8; s < L; s += 26) {
+        lato = -lato;
+        if (rand01(seme) > 0.8) continue;
+        const off = (r.larghezza / 2 + 2.4) * lato;
+        out.push({
+          x: ax + ux * s - uz * off,
+          z: az + uz * s + ux * off,
+          scala: 0.85 + rand01(seme) * 0.4,
+          rot: rand01(seme) * Math.PI * 2,
+        });
+      }
+    }
+  }
+
   for (const area of mondo.aree) {
     if (area.kind !== 'verde') continue;
     let minX = Infinity, minZ = Infinity, maxX = -Infinity, maxZ = -Infinity;

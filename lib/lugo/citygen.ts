@@ -412,6 +412,23 @@ function estrudiEdificio(acc: Accumulo, b: EdificioRT, tintaBase: THREE.Color, t
     // timpani alle testate, color facciata
     triAuto(acc, A[0], h, A[1], D[0], h, D[1], R1[0], hc, R1[1], tinta, -ux, -uz);
     triAuto(acc, B[0], h, B[1], C[0], h, C[1], R2[0], hc, R2[1], tinta, ux, uz);
+
+    // qualche falda ha i pannelli solari, come si vede dall'alto
+    if (lucePseudo(r.cx, h, r.cz) < 0.09 && hw > 3.5 && hd > 2.2) {
+      const cPannello = new THREE.Color('#26364E');
+      const nPan = Math.min(4, Math.floor(hw / 1.6));
+      for (let k = 0; k < nPan; k++) {
+        const t = (k + 0.5) / nPan - 0.5;
+        // sul falso piano della falda sud: leggermente sopra, a metà pendenza
+        const bx = r.cx + ux * t * hw * 1.6 + vx * hd * 0.5;
+        const bz = r.cz + uz * t * hw * 1.6 + vz * hd * 0.5;
+        const by = h + salita * 0.5 + 0.06;
+        const ax2 = ux * 0.65, az2 = uz * 0.65;
+        const bx2 = vx * 0.5, bz2 = vz * 0.5;
+        triAuto(acc, bx - ax2 - bx2, by - 0.25, bz - az2 - bz2, bx + ax2 - bx2, by - 0.25, bz + az2 - bz2, bx + ax2 + bx2, by + 0.25, bz + az2 + bz2, cPannello);
+        triAuto(acc, bx - ax2 - bx2, by - 0.25, bz - az2 - bz2, bx + ax2 + bx2, by + 0.25, bz + az2 + bz2, bx - ax2 + bx2, by + 0.25, bz - az2 + bz2, cPannello);
+      }
+    }
   }
 
   // campanile per gli edifici di culto
@@ -564,17 +581,48 @@ function isoleRotonde(acc: Accumulo, mondo: MondoLugo) {
         0, 1, 0, cVerde.r, cVerde.g, cVerde.b,
       );
     }
-    // cespuglio al centro (cono basso)
-    const rC = Math.min(2.2, rIsola * 0.45);
-    for (let i = 0; i < 8; i++) {
-      const a0 = (i / 8) * Math.PI * 2;
-      const a1 = ((i + 1) / 8) * Math.PI * 2;
+    // l'isola è alberata, come nelle viste aeree: un gruppo di chiome
+    const alberelli: [number, number, number][] = [
+      [0, 0, Math.min(3.4, rIsola * 0.6)],
+      [rIsola * 0.32, rIsola * 0.2, Math.min(2.4, rIsola * 0.45)],
+      [-rIsola * 0.3, -rIsola * 0.24, Math.min(2.1, rIsola * 0.4)],
+    ];
+    for (const [ox, oz, rC] of alberelli) {
+      if (rC < 1) continue;
+      const bx = cx + ox;
+      const bz = cz + oz;
+      for (let i = 0; i < 8; i++) {
+        const a0 = (i / 8) * Math.PI * 2;
+        const a1 = ((i + 1) / 8) * Math.PI * 2;
+        acc.tri(
+          bx + Math.cos(a0) * rC, y, bz + Math.sin(a0) * rC,
+          bx + Math.cos(a1) * rC, y, bz + Math.sin(a1) * rC,
+          bx, y + rC * 1.7, bz,
+          Math.cos((a0 + a1) / 2), 0.6, Math.sin((a0 + a1) / 2),
+          cCespuglio.r, cCespuglio.g, cCespuglio.b,
+        );
+      }
+    }
+
+    // l'anello rosso della ciclabile attorno alla rotonda
+    const cRosso = new THREE.Color('#B8453A');
+    const rAnello = rMin + g.larghezza / 2 + 0.55;
+    const tratti = 16;
+    for (let i = 0; i < tratti; i++) {
+      if (i % 2 === 1) continue;
+      const a0 = (i / tratti) * Math.PI * 2;
+      const a1 = ((i + 0.85) / tratti) * Math.PI * 2;
       acc.tri(
-        cx + Math.cos(a0) * rC, y, cz + Math.sin(a0) * rC,
-        cx + Math.cos(a1) * rC, y, cz + Math.sin(a1) * rC,
-        cx, y + rC * 0.9, cz,
-        Math.cos((a0 + a1) / 2), 0.6, Math.sin((a0 + a1) / 2),
-        cCespuglio.r, cCespuglio.g, cCespuglio.b,
+        cx + Math.cos(a0) * rAnello, 0.272, cz + Math.sin(a0) * rAnello,
+        cx + Math.cos(a1) * rAnello, 0.272, cz + Math.sin(a1) * rAnello,
+        cx + Math.cos(a1) * (rAnello + 0.5), 0.272, cz + Math.sin(a1) * (rAnello + 0.5),
+        0, 1, 0, cRosso.r, cRosso.g, cRosso.b,
+      );
+      acc.tri(
+        cx + Math.cos(a0) * rAnello, 0.272, cz + Math.sin(a0) * rAnello,
+        cx + Math.cos(a1) * (rAnello + 0.5), 0.272, cz + Math.sin(a1) * (rAnello + 0.5),
+        cx + Math.cos(a0) * (rAnello + 0.5), 0.272, cz + Math.sin(a0) * (rAnello + 0.5),
+        0, 1, 0, cRosso.r, cRosso.g, cRosso.b,
       );
     }
   }

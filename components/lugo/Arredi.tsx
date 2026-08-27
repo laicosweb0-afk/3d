@@ -40,7 +40,21 @@ export function Arredi() {
   const mondo = useMondo();
 
   const dati = useMemo(() => {
-    const alberi = mondo.arredi.filter((a) => a.tipo === 'albero');
+    // la corte del Pavaglione è vuota nelle foto aeree: nessun albero lì
+    const pav = mondo.buildings.find((b) => b.landmark === 'pavaglione');
+    const dentroPav = (x: number, z: number): boolean => {
+      if (!pav) return false;
+      const fp = pav.fp;
+      const n = fp.length / 2;
+      let dentro = false;
+      for (let i = 0, j = n - 1; i < n; j = i++) {
+        const xi = fp[i * 2], zi = fp[i * 2 + 1];
+        const xj = fp[j * 2], zj = fp[j * 2 + 1];
+        if (zi > z !== zj > z && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) dentro = !dentro;
+      }
+      return dentro;
+    };
+    const alberi = mondo.arredi.filter((a) => a.tipo === 'albero' && !dentroPav(a.x, a.z));
     const semafori = mondo.arredi.filter((a) => a.tipo === 'semaforo');
     const bus = mondo.arredi.filter((a) => a.tipo === 'bus');
 

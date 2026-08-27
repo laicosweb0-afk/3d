@@ -14,17 +14,18 @@ export const PALETTE = {
     '#C98E6B',
     '#D8A794',
   ],
-  /** I tetti scuriscono l'intonaco verso il coppo. */
-  tetto: '#9E5B3C',
+  /** Il coppo arancio vivo delle viste aeree. */
+  tetto: '#BE5C34',
+  // asfalto chiaro come nelle foto dall'alto: al sole è quasi bianco
   strade: {
-    primaria: '#767183',
-    secondaria: '#7E7989',
-    residenziale: '#868290',
-    servizio: '#8E8A96',
-    pedonale: '#B2A695',
+    primaria: '#A8A4AE',
+    secondaria: '#B0ACB4',
+    residenziale: '#B8B4BA',
+    servizio: '#BEBAC0',
+    pedonale: '#C6BAA6',
   },
-  segnaletica: '#D8D2C4',
-  marciapiede: '#ABA5AE',
+  segnaletica: '#E8E2D6',
+  marciapiede: '#C9C5CC',
   finestraSpenta: '#39434F',
   finestraAccesa: '#FFDFA0',
   terreno: '#A3B07A',
