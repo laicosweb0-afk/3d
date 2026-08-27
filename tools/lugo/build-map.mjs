@@ -583,20 +583,25 @@ for (const b of relBuildings) {
 }
 for (const p of relPoi) candidatePoi('caserma', p.nome, p.ring, p.tags);
 
-// POI da nodi: stazione, monumenti, bar/caffè, e le botteghe vere del centro
+// POI da nodi: stazione, monumenti, bar/caffè, le botteghe vere e gli
+// arredi urbani mappati uno per uno (alberi, strisce, semafori, fermate)
 const barNodes = [];
 const negozi = [];
+const arredi = [];
 for (const n of nodes.values()) {
   const tags = n.tags || {};
   if (!Object.keys(tags).length) continue;
   const [x, z] = proj(n.lat, n.lon);
-  // insegne: negozi e locali con un nome, nel raggio del centro
+  // insegne: TUTTI i negozi e locali con un nome, ovunque siano
   const nomeNegozio = tags.name;
   if (nomeNegozio && (tags.shop || /^(cafe|bar|restaurant|pharmacy)$/.test(tags.amenity || ''))) {
-    if (Math.hypot(x, z) < 450 && nomeNegozio.length <= 26) {
-      negozi.push({ n: nomeNegozio, x: q(x), z: q(z) });
-    }
+    if (nomeNegozio.length <= 30) negozi.push({ n: nomeNegozio, x: q(x), z: q(z) });
   }
+  if (tags.natural === 'tree') arredi.push({ t: 'albero', x: q(x), z: q(z) });
+  else if (tags.highway === 'crossing') arredi.push({ t: 'zebre', x: q(x), z: q(z) });
+  else if (tags.highway === 'traffic_signals') arredi.push({ t: 'semaforo', x: q(x), z: q(z) });
+  else if (tags.highway === 'bus_stop') arredi.push({ t: 'bus', x: q(x), z: q(z) });
+  else if (tags.amenity === 'fountain') arredi.push({ t: 'fontana', x: q(x), z: q(z) });
   if (tags.railway === 'station') {
     const prev = poiCand.get('stazione');
     poiCand.set('stazione', { id: 'stazione', nome: tags.name || 'Stazione', x, z, rot: prev ? prev.rot : 0, area: Infinity });
@@ -627,8 +632,15 @@ for (const c of poiCand.values()) {
 }
 
 // ── output ──────────────────────────────────────────────────────────────────
-// al massimo 90 insegne, le più vicine al Pavaglione hanno la precedenza
+// le insegne più vicine al Pavaglione hanno la precedenza; ogni tipo di
+// arredo ha il suo tetto per non gonfiare il file
 negozi.sort((a, b) => Math.hypot(a.x, a.z - 810) - Math.hypot(b.x, b.z - 810));
+const tettiArredi = { albero: 900, zebre: 240, semaforo: 80, bus: 90, fontana: 24 };
+const contatori = {};
+const arrediFiltrati = arredi.filter((a) => {
+  contatori[a.t] = (contatori[a.t] || 0) + 1;
+  return contatori[a.t] <= (tettiArredi[a.t] ?? 50);
+});
 
 const map = {
   version: 1,
@@ -639,7 +651,8 @@ const map = {
   aree,
   rail,
   poi,
-  negozi: negozi.slice(0, 90),
+  negozi: negozi.slice(0, 350),
+  arredi: arrediFiltrati,
 };
 
 const json = JSON.stringify(map);
@@ -668,6 +681,7 @@ console.log('── mappa di Lugo ───────────────�
 console.log(`strade:  ${roads.length}  (${roads.reduce((s, r) => s + r.pts.length / 2, 0)} punti)`);
 console.log(`edifici: ${buildings.length}  (di cui landmark: ${buildings.filter((b) => b.landmark).length})`);
 console.log(`aree:    ${aree.length}  ·  ferrovia: ${rail.length} tratte`);
+console.log(`negozi:  ${Math.min(350, negozi.length)}  ·  arredi: ${arrediFiltrati.length} (${Object.entries(contatori).map(([k, v]) => k + ' ' + Math.min(v, tettiArredi[k] ?? 50)).join(', ')})`);
 console.log(`mondo:   ${((maxX - minX) / 1000).toFixed(2)} × ${((maxZ - minZ) / 1000).toFixed(2)} km`);
 console.log(`file:    ${kb(bytes)} → ${OUT}`);
 console.log('── POI ────────────────────────────────────────');
