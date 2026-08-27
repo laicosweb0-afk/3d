@@ -1,0 +1,51 @@
+name: Dati di Lugo (OpenStreetMap)
+
+# Scarica da Overpass i dati veri di Lugo di Ravenna e committa la mappa
+# processata (public/lugo/map.json) sul branch di lavoro del gioco.
+# Gira solo quando cambiano gli script della pipeline — il commit della
+# mappa non fa ripartire il workflow (il token di Actions non ri-triggera
+# e il file committato non rientra nei paths).
+
+on:
+  push:
+    branches: ['claude/gta6-lugo-ravenna-hzd00f']
+    paths:
+      - 'tools/lugo/fetch-osm.mjs'
+      - 'tools/lugo/build-map.mjs'
+      - '.github/workflows/lugo-dati.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lugo-dati
+  cancel-in-progress: true
+
+jobs:
+  mappa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Scarica i dati grezzi da Overpass
+        run: node tools/lugo/fetch-osm.mjs --force
+      - name: Costruisci la mappa del gioco
+        run: node tools/lugo/build-map.mjs
+      - name: Committa la mappa sul branch
+        run: |
+          if [ -n "$(git status --porcelain public/lugo/map.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add public/lugo/map.json
+            git commit -m "La mappa vera di Lugo entra nel gioco: strade, edifici e piazze da OpenStreetMap"
+            # il branch può avanzare durante il run: rebase e riprova
+            for i in 1 2 3; do
+              git push && break
+              git pull --rebase origin "$GITHUB_REF_NAME"
+            done
+          else
+            echo "mappa invariata: nessun commit"
+          fi
