@@ -333,3 +333,99 @@
   color: rgba(245, 233, 214, 0.9);
   white-space: nowrap;
 }
+
+/* ── joystick virtuale: la palla a destra, sopra la minimappa ────────── */
+
+.lugo-comandi {
+  position: absolute;
+  right: 1.1rem;
+  bottom: calc(1.4rem + 180px + 1.6rem);
+  display: flex;
+  align-items: flex-end;
+  gap: 0.9rem;
+  z-index: 5;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lugo-joystick {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background: rgba(24, 20, 52, 0.42);
+  border: 2px solid rgba(245, 233, 214, 0.35);
+  touch-action: none;
+  cursor: grab;
+}
+
+.lugo-joystick:active {
+  cursor: grabbing;
+}
+
+.lugo-joystick-palla {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff3d0, #ffd9a0 55%, #c9962e);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  will-change: transform;
+}
+
+.lugo-freccia {
+  position: absolute;
+  color: rgba(245, 233, 214, 0.55);
+  font-size: 12px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.lugo-freccia.fu { top: 7px; left: 50%; transform: translateX(-50%); }
+.lugo-freccia.fg { bottom: 7px; left: 50%; transform: translateX(-50%) rotate(180deg); }
+.lugo-freccia.fs { left: 7px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+.lugo-freccia.fd { right: 7px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+
+.lugo-pulsanti {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.lugo-pulsante {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 2px solid rgba(245, 233, 214, 0.4);
+  background: rgba(24, 20, 52, 0.55);
+  color: #ffd9a0;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.lugo-pulsante:active {
+  background: rgba(255, 217, 160, 0.28);
+}
+
+@media (max-width: 700px) {
+  .lugo-comandi {
+    right: 0.8rem;
+    bottom: calc(1.4rem + 150px);
+  }
+  .lugo-joystick {
+    width: 116px;
+    height: 116px;
+  }
+}

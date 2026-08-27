@@ -102,6 +102,37 @@ try {
     }
   }
 
+  // ── fase 2b: joystick virtuale ────────────────────────────────────────
+  const pad = page.locator('[data-hud="joystick-pad"]');
+  if (await pad.count()) {
+    const box = await pad.boundingBox();
+    if (box) {
+      const cx = box.x + box.width / 2;
+      const cy = box.y + box.height / 2;
+      const p0 = await lugo('L.pos()');
+      await page.mouse.move(cx, cy);
+      await page.mouse.down();
+      await page.mouse.move(cx, cy - 40, { steps: 6 });
+      await page.waitForTimeout(2400);
+      await page.mouse.up();
+      const p1 = await lugo('L.pos()');
+      const d = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
+      if (d > 2) ok('joystick guida', `${d.toFixed(1)} m trascinando la palla`);
+      else ko('joystick guida', `spostamento ${d.toFixed(2)} m`);
+      // al rilascio la palla torna al centro e i comandi si azzerano
+      await page.waitForTimeout(300);
+      const trasf = await page.evaluate(
+        () => document.querySelector('[data-hud="joystick-palla"]')?.style.transform ?? '',
+      );
+      if (trasf === '' || trasf === 'translate(0px, 0px)') ok('joystick si azzera al rilascio');
+      else ko('joystick si azzera al rilascio', `transform=${trasf}`);
+      // si frena subito, così la discesa a piedi della fase dopo resta valida
+      await page.keyboard.down('Space');
+      await page.waitForTimeout(1400);
+      await page.keyboard.up('Space');
+    }
+  }
+
   // ── fase 3: a piedi ───────────────────────────────────────────────────
   if ((await lugo('typeof L.mode')) === 'function') {
     // si scende solo quasi da fermi: frenata prima di aprire la portiera

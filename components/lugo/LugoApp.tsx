@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { KeyboardControls } from '@react-three/drei';
 import { GameCanvas } from './GameCanvas';
 import { Hud } from './Hud';
+import { Joystick } from './Joystick';
 import { StartScreen } from './StartScreen';
 import { CONTROLLI } from '@/lib/lugo/input';
 import { useLugo } from '@/lib/lugo/store';
@@ -31,6 +32,7 @@ export function LugoApp() {
       <div className="lugo-root">
         <GameCanvas />
         {fase === 'start' ? <StartScreen /> : <Hud />}
+        <Joystick />
       </div>
     </KeyboardControls>
   );
