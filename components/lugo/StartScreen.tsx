@@ -62,7 +62,10 @@ export function StartScreen() {
         <button type="button" className="lugo-gioca" data-hud="gioca" onClick={gioca}>
           GIOCA
         </button>
-        <p className="lugo-start-nota">Per ora si gioca con la tastiera: da computer, non da telefono.</p>
+        <p className="lugo-start-nota">
+          Si guida con la tastiera (frecce o WASD) oppure trascinando la palla a destra:
+          col mouse dal computer, col dito dal telefono.
+        </p>
       </div>
     </div>
   );

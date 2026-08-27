@@ -13,6 +13,7 @@ import { infraGioco } from '@/lib/lugo/veicoli';
 import { stepAuto, puntoStradaVicino, viaVicina } from '@/lib/lugo/car';
 import { stepPersona, PERSONA } from '@/lib/lugo/character';
 import type { StatoInput } from '@/lib/lugo/input';
+import { conStick } from '@/lib/lugo/stick';
 import { runtime, type RuntimeGioco } from '@/lib/lugo/runtime';
 import { updateAudio, suonaEvento } from '@/lib/lugo/audio';
 import { useLugo } from '@/lib/lugo/store';
@@ -176,7 +177,8 @@ export function Player() {
       avanti: false, indietro: false, sinistra: false, destra: false,
       corri: false, freno: false, interagisci: false, reset: false,
     };
-    const input = st.fase === 'gioco' ? (getInput() as unknown as StatoInput) : fermo;
+    // tastiera + joystick virtuale, fusi in un unico punto
+    const input = st.fase === 'gioco' ? conStick(getInput() as unknown as StatoInput) : fermo;
 
     if (st.mode === 'auto') {
       const esito = stepAuto(rt.auto, input, dt, fisica, mondo.bounds);
