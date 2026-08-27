@@ -494,6 +494,7 @@ for (const w of ways.values()) {
     stretch(line);
     const road = { classe, larghezza: LARGHEZZA[classe], pts: flatQ(line) };
     if (tags.name) road.nome = tags.name;
+    if (tags.junction === 'roundabout') road.rotonda = 1;
     if (road.pts.length >= 4) roads.push(road);
     continue;
   }
@@ -592,10 +593,17 @@ for (const n of nodes.values()) {
   const tags = n.tags || {};
   if (!Object.keys(tags).length) continue;
   const [x, z] = proj(n.lat, n.lon);
-  // insegne: TUTTI i negozi e locali con un nome, ovunque siano
+  // insegne: TUTTI i negozi e locali con un nome, con la loro categoria
   const nomeNegozio = tags.name;
   if (nomeNegozio && (tags.shop || /^(cafe|bar|restaurant|pharmacy)$/.test(tags.amenity || ''))) {
-    if (nomeNegozio.length <= 30) negozi.push({ n: nomeNegozio, x: q(x), z: q(z) });
+    if (nomeNegozio.length <= 30) {
+      let cat = 'negozio';
+      if (tags.shop === 'tobacco' || /tabac/i.test(nomeNegozio)) cat = 'tabacchi';
+      else if (tags.amenity === 'pharmacy' || tags.shop === 'chemist') cat = 'farmacia';
+      else if (tags.amenity === 'cafe' || tags.amenity === 'bar') cat = 'bar';
+      else if (tags.amenity === 'restaurant' || /^(bakery|pastry|butcher|greengrocer|deli|seafood)$/.test(tags.shop || '')) cat = 'cibo';
+      negozi.push({ n: nomeNegozio, c: cat, x: q(x), z: q(z) });
+    }
   }
   if (tags.natural === 'tree') arredi.push({ t: 'albero', x: q(x), z: q(z) });
   else if (tags.highway === 'crossing') arredi.push({ t: 'zebre', x: q(x), z: q(z) });
