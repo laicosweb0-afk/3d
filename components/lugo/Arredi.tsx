@@ -111,6 +111,61 @@ export function Arredi() {
             0, 1, 0, bianco.r, bianco.g, bianco.b,
           );
         }
+      } else if (a.tipo === 'obelisco') {
+        // il monumento bianco da piazza: basamento e ago rastremato
+        const marmo = new THREE.Color('#DCD8CC');
+        const pietra = new THREE.Color('#B9AF9E');
+        const quadV = (
+          x1: number, z1: number, x2: number, z2: number,
+          y0: number, y1: number, nx: number, nz: number, c: THREE.Color,
+        ) => {
+          acc.tri(x1, y0, z1, x2, y0, z2, x2, y1, z2, nx, 0, nz, c.r, c.g, c.b);
+          acc.tri(x1, y0, z1, x2, y1, z2, x1, y1, z1, nx, 0, nz, c.r, c.g, c.b);
+        };
+        const scatola = (half: number, y0: number, y1: number, c: THREE.Color) => {
+          quadV(a.x - half, a.z - half, a.x + half, a.z - half, y0, y1, 0, -1, c);
+          quadV(a.x + half, a.z - half, a.x + half, a.z + half, y0, y1, 1, 0, c);
+          quadV(a.x + half, a.z + half, a.x - half, a.z + half, y0, y1, 0, 1, c);
+          quadV(a.x - half, a.z + half, a.x - half, a.z - half, y0, y1, -1, 0, c);
+          acc.tri(a.x - half, y1, a.z - half, a.x + half, y1, a.z - half, a.x + half, y1, a.z + half, 0, 1, 0, c.r, c.g, c.b);
+          acc.tri(a.x - half, y1, a.z - half, a.x + half, y1, a.z + half, a.x - half, y1, a.z + half, 0, 1, 0, c.r, c.g, c.b);
+        };
+        scatola(1.5, 0, 0.9, pietra);
+        scatola(1.0, 0.9, 1.7, pietra);
+        // l'ago: quattro facce rastremate fino alla punta
+        const b0 = 0.6;
+        const b1 = 0.16;
+        const y0 = 1.7;
+        const y1 = 9.4;
+        const punte: [number, number][][] = [
+          [[-b0, -b0], [b0, -b0]],
+          [[b0, -b0], [b0, b0]],
+          [[b0, b0], [-b0, b0]],
+          [[-b0, b0], [-b0, -b0]],
+        ];
+        for (const [[ax0, az0], [bx0, bz0]] of punte) {
+          const nx = (ax0 + bx0) / 2;
+          const nz = (az0 + bz0) / 2;
+          const nl = Math.hypot(nx, nz) || 1;
+          acc.tri(
+            a.x + ax0, y0, a.z + az0,
+            a.x + bx0, y0, a.z + bz0,
+            a.x + (bx0 / b0) * b1, y1, a.z + (bz0 / b0) * b1,
+            nx / nl, 0.1, nz / nl, marmo.r, marmo.g, marmo.b,
+          );
+          acc.tri(
+            a.x + ax0, y0, a.z + az0,
+            a.x + (bx0 / b0) * b1, y1, a.z + (bz0 / b0) * b1,
+            a.x + (ax0 / b0) * b1, y1, a.z + (az0 / b0) * b1,
+            nx / nl, 0.1, nz / nl, marmo.r, marmo.g, marmo.b,
+          );
+          acc.tri(
+            a.x + (ax0 / b0) * b1, y1, a.z + (az0 / b0) * b1,
+            a.x + (bx0 / b0) * b1, y1, a.z + (bz0 / b0) * b1,
+            a.x, y1 + 0.9, a.z,
+            nx / nl, 0.5, nz / nl, marmo.r, marmo.g, marmo.b,
+          );
+        }
       } else if (a.tipo === 'fontana') {
         const acqua = new THREE.Color('#5A7D8C');
         const pietra = new THREE.Color('#B9AF9E');

@@ -7,8 +7,9 @@
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useMondo, type MondoLugo } from '@/lib/lugo/loadMap';
+import { rettangoloMinimo } from '@/lib/lugo/gates';
 
-const MAX_ALBERI = 900;
+const MAX_ALBERI = 1300;
 const MAX_LAMPIONI = 260;
 
 function dentroPoligono(x: number, z: number, poly: Float32Array): boolean {
@@ -70,6 +71,36 @@ function calcolaAlberi(mondo: MondoLugo): Posa[] {
         out.push({ x: jx, z: jz, scala: 0.75 + rand01(seme) * 0.6, rot: rand01(seme) * Math.PI * 2 });
       }
     }
+  }
+
+  // i giardini delle case: dall'alto ogni villetta ha il suo albero dietro
+  let giardini = 0;
+  for (const b of mondo.buildings) {
+    if (giardini >= 340 || out.length >= MAX_ALBERI - 420) break;
+    if (b.landmark || !b.falde || b.fori.length) continue;
+    if (rand01(seme) > 0.24) continue;
+    let area = 0;
+    const nf = b.fp.length / 2;
+    for (let i = 0; i < nf; i++) {
+      const j = (i + 1) % nf;
+      area += b.fp[i * 2] * b.fp[j * 2 + 1] - b.fp[j * 2] * b.fp[i * 2 + 1];
+    }
+    area = Math.abs(area / 2);
+    if (area < 60 || area > 320) continue;
+    const r = rettangoloMinimo(b.fp);
+    const lato = rand01(seme) < 0.5 ? 1 : -1;
+    const vx = -Math.sin(r.angle) * lato;
+    const vz = Math.cos(r.angle) * lato;
+    const ux = Math.cos(r.angle);
+    const uz = Math.sin(r.angle);
+    const scosta = (rand01(seme) - 0.5) * r.hw;
+    out.push({
+      x: r.cx + vx * (r.hd + 3.4) + ux * scosta,
+      z: r.cz + vz * (r.hd + 3.4) + uz * scosta,
+      scala: 0.7 + rand01(seme) * 0.6,
+      rot: rand01(seme) * Math.PI * 2,
+    });
+    giardini++;
   }
 
   // i viali alberati regolari lungo le strade principali

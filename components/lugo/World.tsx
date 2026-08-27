@@ -54,6 +54,21 @@ function Cielo() {
   return (
     <group>
       <mesh geometry={geometria} material={materiale} frustumCulled={false} />
+      {/* le colline dell'Appennino a sud, come si vedono da Lugo */}
+      {[
+        [45, 1650, 560, 140], [62, 1580, 440, 105], [78, 1720, 640, 160],
+        [95, 1600, 480, 115], [110, 1780, 590, 135], [126, 1660, 430, 95],
+        [140, 1740, 530, 120],
+      ].map(([gradi, dist, raggio, altezza]) => {
+        const a = (gradi * Math.PI) / 180;
+        return (
+          <mesh key={gradi} position={[Math.cos(a) * dist, altezza / 2 - 22, Math.sin(a) * dist]}>
+            <coneGeometry args={[raggio, altezza, 7]} />
+            <meshBasicMaterial color="#8A7385" fog={false} />
+          </mesh>
+        );
+      })}
+
       {/* il sole basso a ovest, con l'alone */}
       <mesh position={[-1030, 300, 256]} ref={(m) => m?.lookAt(0, 120, 0)}>
         <circleGeometry args={[52, 24]} />

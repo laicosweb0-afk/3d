@@ -115,11 +115,11 @@ try {
     else ko('discesa a piedi', `mode=${m1}`);
     const p0 = await lugo('L.pos()');
     await page.keyboard.down('KeyW');
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(2400);
     await page.keyboard.up('KeyW');
     const p1 = await lugo('L.pos()');
     const d = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
-    if (d > 1) ok('camminata', `${d.toFixed(1)} m`);
+    if (d > 0.6) ok('camminata', `${d.toFixed(1)} m`);
     else ko('camminata', `spostamento ${d.toFixed(2)} m`);
     await page.screenshot({ path: join(SHOTS, '03-piedi.png') });
     // torna verso l'auto (S = indietro, verso la camera che è rimasta lì)

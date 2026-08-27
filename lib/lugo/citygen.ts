@@ -65,6 +65,7 @@ export class Accumulo {
 const QUOTA = {
   verde: 0.05,
   acqua: 0.1,
+  parcheggio: 0.13,
   piazza: 0.15,
   pedonale: 0.18,
   servizio: 0.2,
@@ -481,13 +482,18 @@ export function generaCitta(mondo: MondoLugo, senzaLandmark: string[] = []): Cit
   const cVerde = new THREE.Color(PALETTE.verde);
   const cAcqua = new THREE.Color(PALETTE.acqua);
   const cPiazza = new THREE.Color(PALETTE.piazza);
+  const cParcheggio = new THREE.Color('#C4C0C6');
   const cFerro = new THREE.Color(PALETTE.ferrovia);
   for (const a of mondo.aree) {
     const y = QUOTA[a.kind];
-    const c = a.kind === 'verde' ? cVerde : a.kind === 'acqua' ? cAcqua : cPiazza;
+    const c =
+      a.kind === 'verde' ? cVerde : a.kind === 'acqua' ? cAcqua : a.kind === 'parcheggio' ? cParcheggio : cPiazza;
     // le piazze hanno il ciottolato (texture con UV planari, come dal vivo)
     poligonoPiatto(suolo, a.poly, y, c, a.kind === 'piazza');
   }
+
+  // la campagna della centuriazione: il mosaico dei campi attorno all'abitato
+  campagna(suolo, mondo);
   const cStrade = Object.fromEntries(
     Object.entries(PALETTE.strade).map(([k, v]) => [k, new THREE.Color(v)]),
   ) as Record<keyof typeof PALETTE.strade, THREE.Color>;
@@ -704,6 +710,43 @@ function porticiPiazza(acc: Accumulo, mondo: MondoLugo, esclusi: Set<string>) {
         pilastri++;
       }
     }
+  }
+}
+
+/**
+ * Il mosaico dei campi romagnoli attorno all'abitato: strisce rettangolari
+ * allineate agli assi (la centuriazione romana lo è davvero), nei toni di
+ * paglia e verde. Si disegnano solo fuori dal raggio urbano.
+ */
+function campagna(acc: Accumulo, mondo: MondoLugo) {
+  const TONI = ['#C9B87E', '#D6C892', '#9FAE6E', '#B5A46B', '#8FA05F', '#DCCB9A', '#C2AE74'].map(
+    (c) => new THREE.Color(c),
+  );
+  const R_URBANO = 1060;
+  const { minX, minZ, maxX, maxZ } = mondo.bounds;
+  const margine = 380;
+  let seme = 555777;
+  const rnd = () => {
+    seme = (seme * 1664525 + 1013904223) >>> 0;
+    return seme / 4294967296;
+  };
+  let z = minZ - margine;
+  while (z < maxZ + margine) {
+    const dz = 110 + rnd() * 150;
+    let x = minX - margine;
+    while (x < maxX + margine) {
+      const dx = 55 + rnd() * 130;
+      const cx = x + dx / 2;
+      const cz = z + dz / 2;
+      if (Math.hypot(cx, cz) > R_URBANO) {
+        const c = TONI[Math.floor(rnd() * TONI.length)];
+        const y = 0.015;
+        acc.tri(x, y, z, x + dx - 3, y, z, x + dx - 3, y, z + dz - 3, 0, 1, 0, c.r, c.g, c.b);
+        acc.tri(x, y, z, x + dx - 3, y, z + dz - 3, x, y, z + dz - 3, 0, 1, 0, c.r, c.g, c.b);
+      }
+      x += dx;
+    }
+    z += dz;
   }
 }
 

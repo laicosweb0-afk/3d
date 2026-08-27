@@ -55,7 +55,7 @@ export interface EdificioRT {
 }
 
 export interface AreaRT {
-  kind: 'verde' | 'acqua' | 'piazza';
+  kind: 'verde' | 'acqua' | 'piazza' | 'parcheggio';
   poly: Float32Array;
 }
 

@@ -31,6 +31,7 @@ function disegnaBase(mondo: MondoLugo): { off: HTMLCanvasElement; minX: number; 
   for (const a of mondo.aree) {
     if (a.kind === 'acqua') ctx.fillStyle = '#3E5A68';
     else if (a.kind === 'verde') ctx.fillStyle = '#3C5238';
+    else if (a.kind === 'parcheggio') ctx.fillStyle = '#55505C';
     else ctx.fillStyle = '#4A4252';
     ctx.beginPath();
     for (let i = 0; i < a.poly.length; i += 2) {

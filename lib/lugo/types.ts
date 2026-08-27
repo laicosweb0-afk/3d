@@ -54,7 +54,7 @@ export interface EdificioMap {
 }
 
 export interface AreaMap {
-  kind: 'verde' | 'acqua' | 'piazza';
+  kind: 'verde' | 'acqua' | 'piazza' | 'parcheggio';
   /** Poligono [x0,z0,…] in dm. */
   poly: number[];
 }
@@ -78,7 +78,7 @@ export interface NegozioMap {
   z: number;
 }
 
-export type TipoArredo = 'albero' | 'zebre' | 'semaforo' | 'bus' | 'fontana';
+export type TipoArredo = 'albero' | 'zebre' | 'semaforo' | 'bus' | 'fontana' | 'obelisco';
 
 export interface ArredoMap {
   t: TipoArredo;
