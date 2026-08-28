@@ -100,7 +100,9 @@ export function Missioni() {
             }
           }
           s.addDenaro(euro);
-          s.addMissioneFatta(m.id);
+          // solo la storia entra nel salvataggio: le consegne sono infinite
+          // e riempirebbero localStorage di id inutili
+          if (m.tipo === 'storia') s.addMissioneFatta(m.id);
           s.setEsito({ titolo: m.titolo, denaro: euro, rep: m.ricompensa, extra });
           s.setTempoResiduo(null);
           suonaEvento('successo');

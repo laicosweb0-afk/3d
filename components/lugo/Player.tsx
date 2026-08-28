@@ -251,17 +251,8 @@ export function Player() {
           }
         }
       }
-      decadimento.current += dt;
-      if (decadimento.current > 20 && calore.current > 0) {
-        decadimento.current = 0;
-        calore.current = Math.max(0, calore.current - 2);
-        const wanted = calore.current >= 7 ? 3 : calore.current >= 4 ? 2 : calore.current >= 2 ? 1 : 0;
-        if (wanted !== st.wanted) st.setWanted(wanted);
-        if (wanted === 0 && st.wanted > 0) st.setAvviso('I Carabinieri ti hanno perso di vista.');
-      }
-      runtime.caccia = st.wanted > 0;
       // beccato: gazzella addosso e quasi fermo → multa e si ricomincia
-      if (runtime.caccia && runtime.gazzella) {
+      if (st.wanted > 0 && runtime.gazzella) {
         const dG = Math.hypot(rt.auto.x - runtime.gazzella.x, rt.auto.z - runtime.gazzella.z);
         if (dG < 4.2 && Math.abs(esito.v) < 2.5) {
           const multa = Math.min(st.denaro, 30 * st.wanted);
@@ -339,6 +330,19 @@ export function Player() {
     }
     interagiscePrima.current = input.interagisci;
     resetPrima.current = input.reset;
+
+    // il calore si raffredda comunque, anche mentre si scappa a piedi
+    decadimento.current += dt;
+    if (decadimento.current > 20 && calore.current > 0) {
+      decadimento.current = 0;
+      calore.current = Math.max(0, calore.current - 2);
+      const wanted = calore.current >= 7 ? 3 : calore.current >= 4 ? 2 : calore.current >= 2 ? 1 : 0;
+      if (wanted !== st.wanted) {
+        st.setWanted(wanted);
+        if (wanted === 0) st.setAvviso('I Carabinieri ti hanno perso di vista.');
+      }
+    }
+    runtime.caccia = useLugo.getState().wanted > 0;
 
     // suggerimento contestuale sul tasto E
     let hint: string | null = null;

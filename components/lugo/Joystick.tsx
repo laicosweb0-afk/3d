@@ -20,6 +20,13 @@ export function Joystick() {
   const palla = useRef<HTMLDivElement>(null);
   const puntatore = useRef<number | null>(null);
 
+  // salendo o scendendo dall'auto il pulsante cambia (FRENO ↔ CORRI): se
+  // era premuto, il tasto vecchio resterebbe incollato
+  useEffect(() => {
+    stick.freno = false;
+    stick.corriBtn = false;
+  }, [mode]);
+
   // qualunque uscita dalla finestra molla tutto: mai comandi "incollati"
   useEffect(() => {
     const molla = () => {

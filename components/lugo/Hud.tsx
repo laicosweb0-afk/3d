@@ -193,7 +193,8 @@ export function Hud() {
         </div>
       )}
 
-      {avvisoMostrato && (
+      {/* l'avviso cede il posto alle schede: dicono già la stessa cosa */}
+      {avvisoMostrato && !intro && !esito && (
         <div className="lugo-avviso" data-hud="avviso" key={avvisoMostrato}>
           {avvisoMostrato}
         </div>
