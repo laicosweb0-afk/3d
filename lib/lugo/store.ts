@@ -56,6 +56,8 @@ interface LugoState {
   /** Indice tinta auto scelta nello start screen. */
   tintaAuto: number;
   audioOn: boolean;
+  /** Volumi 0–1 del mixer. */
+  volumi: { effetti: number; voce: number; ambiente: number; musica: number };
 
   // HUD (aggiornati a ~5 Hz dal loop, non ogni frame)
   kmh: number;
@@ -97,6 +99,7 @@ interface LugoState {
   setQualita: (q: QualitaTier) => void;
   setTintaAuto: (i: number) => void;
   toggleAudio: () => void;
+  setVolume: (canale: 'effetti' | 'voce' | 'ambiente' | 'musica', v: number) => void;
   setKmh: (v: number) => void;
   addPunti: (v: number) => void;
   /** Aggiunge (o toglie, mai sotto zero) denaro. */
@@ -121,6 +124,7 @@ export const useLugo = create<LugoState>((set) => ({
   qualita: 'alta',
   tintaAuto: 0,
   audioOn: true,
+  volumi: { effetti: 1, voce: 1, ambiente: 1, musica: 0.7 },
   kmh: 0,
   punteggio: 0,
   denaro: 20,
@@ -144,6 +148,8 @@ export const useLugo = create<LugoState>((set) => ({
   setQualita: (qualita) => set({ qualita }),
   setTintaAuto: (tintaAuto) => set({ tintaAuto }),
   toggleAudio: () => set((s) => ({ audioOn: !s.audioOn })),
+  setVolume: (canale, v) =>
+    set((s) => ({ volumi: { ...s.volumi, [canale]: Math.max(0, Math.min(1, v)) } })),
   setKmh: (kmh) => set({ kmh }),
   addPunti: (v) => set((s) => ({ punteggio: s.punteggio + v })),
   addDenaro: (v) => set((s) => ({ denaro: Math.max(0, Math.round((s.denaro + v) * 100) / 100) })),

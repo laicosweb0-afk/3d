@@ -27,6 +27,8 @@ const N_NPC = QA ? 30 : 130;
 const PELLI = ['#D9A67C', '#C08A5E', '#E8C09A', '#8A5A3C'];
 const TUTE_MARANZA = ['#1A1A20', '#E8E8EC', '#22366E', '#3A3A42'];
 const GIACCHE_ANZIANO = ['#6B655B', '#4E5A66', '#7A6A58', '#55584E'];
+const FELPE_STUDENTE = ['#C0503F', '#2F6F8A', '#D9A62E', '#4A7A48'];
+const MAGLIE_CICLISTA = ['#E8E4DC', '#3E6FB0', '#D9603F', '#2E3540'];
 const DIVISA = '#1A2238';
 const ROSSO_BANDA = '#B02A26';
 
@@ -42,6 +44,9 @@ interface Parti {
   bastone: THREE.InstancedMesh;
   bandaD: THREE.InstancedMesh;
   bandaS: THREE.InstancedMesh;
+  biciTelaio: THREE.InstancedMesh;
+  biciRuotaA: THREE.InstancedMesh;
+  biciRuotaP: THREE.InstancedMesh;
 }
 
 const _m = new THREE.Matrix4();
@@ -80,12 +85,16 @@ function setParte(
 function coloreTorso(n: Npc): string {
   if (n.tipo === 'carabiniere') return DIVISA;
   if (n.tipo === 'maranza') return TUTE_MARANZA[n.variante % TUTE_MARANZA.length];
+  if (n.tipo === 'studente') return FELPE_STUDENTE[n.variante % FELPE_STUDENTE.length];
+  if (n.tipo === 'ciclista') return MAGLIE_CICLISTA[n.variante % MAGLIE_CICLISTA.length];
   return GIACCHE_ANZIANO[n.variante % GIACCHE_ANZIANO.length];
 }
 
 function coloreCopricapo(n: Npc): string {
   if (n.tipo === 'carabiniere') return DIVISA;
   if (n.tipo === 'maranza') return n.variante % 2 ? '#E8E8EC' : '#16161C';
+  if (n.tipo === 'ciclista') return '#E8E4DC'; // il casco
+  if (n.tipo === 'studente') return n.variante % 2 ? '#2E2620' : '#4A3E30';
   return '#3A342C';
 }
 
@@ -115,13 +124,26 @@ export function Npcs() {
       const braccia = n.tipo === 'anziano' ? coloreTorso(n) : n.tipo === 'carabiniere' ? DIVISA : coloreTorso(n);
       p.braccioD.setColorAt(i, c.set(braccia));
       p.braccioS.setColorAt(i, c.set(braccia));
-      const gambe = n.tipo === 'maranza' ? coloreTorso(n) : n.tipo === 'carabiniere' ? DIVISA : '#3E3B36';
+      const gambe =
+        n.tipo === 'maranza'
+          ? coloreTorso(n)
+          : n.tipo === 'carabiniere'
+            ? DIVISA
+            : n.tipo === 'ciclista'
+              ? '#2A2E36'
+              : n.tipo === 'studente'
+                ? '#3A4356'
+                : '#3E3B36';
       p.gambaD.setColorAt(i, c.set(gambe));
       p.gambaS.setColorAt(i, c.set(gambe));
       p.marsupio.setColorAt(i, c.set('#101014'));
       p.bastone.setColorAt(i, c.set('#6E5537'));
       p.bandaD.setColorAt(i, c.set(ROSSO_BANDA));
       p.bandaS.setColorAt(i, c.set(ROSSO_BANDA));
+      const telaio = ['#2E3540', '#7A2E2E', '#2E5A46', '#B0AAA0'][n.variante % 4];
+      p.biciTelaio.setColorAt(i, c.set(telaio));
+      p.biciRuotaA.setColorAt(i, c.set('#22222A'));
+      p.biciRuotaP.setColorAt(i, c.set('#22222A'));
     });
     for (const mesh of Object.values(p)) {
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
@@ -146,19 +168,28 @@ export function Npcs() {
     runtime.npcs = npcs;
 
     const base = new THREE.Matrix4();
+    const baseTerra = new THREE.Matrix4();
     const rot = new THREE.Matrix4();
     npcs.forEach((n, i) => {
       const vNorm = Math.min(1, n.v / Math.max(0.4, n.passo));
       const bob = Math.abs(Math.sin(n.fase)) * 0.045 * vNorm;
-      base.makeTranslation(n.x, bob, n.z);
+      const inSella = n.tipo === 'ciclista';
+      // la bici resta a terra, il ciclista sopra: due basi, stessa rotazione
+      baseTerra.makeTranslation(n.x, 0, n.z);
       rot.makeRotationY(-n.yaw);
+      baseTerra.multiply(rot);
+      base.makeTranslation(n.x, bob + (inSella ? 0.5 : 0), n.z);
       base.multiply(rot);
       // il maranza ciondola: rollio lento del busto
       const rollio = n.tipo === 'maranza' ? Math.sin(n.fase * 0.5) * 0.1 : 0;
-      const curva = n.tipo === 'anziano' ? 0.32 : n.tipo === 'maranza' ? -0.06 : 0;
+      const curva =
+        n.tipo === 'anziano' ? 0.32 : n.tipo === 'maranza' ? -0.06 : inSella ? 0.42 : 0;
       const avantiTesta = Math.sin(curva) * 0.42;
 
-      const oscG = Math.sin(n.fase) * (n.tipo === 'anziano' ? 0.3 : n.tipo === 'maranza' ? 0.6 : 0.45) * vNorm;
+      const oscG =
+        Math.sin(inSella ? n.fase * 1.8 : n.fase) *
+        (n.tipo === 'anziano' ? 0.3 : n.tipo === 'maranza' ? 0.6 : inSella ? 0.75 : 0.45) *
+        vNorm;
       const oscB = Math.sin(n.fase + Math.PI) * (n.tipo === 'maranza' ? 0.5 : 0.35) * vNorm;
 
       setParte(p.torso, i, base, 0, 1.06, 0, curva, rollio, 0, 0, 0, 1, n.tipo === 'anziano' ? 0.92 : 1, 1);
@@ -174,6 +205,15 @@ export function Npcs() {
       else p.marsupio.setMatrixAt(i, ZERO);
       if (n.tipo === 'anziano') setParte(p.bastone, i, base, 0.15, 1.05, -0.26, 0.08, -oscB * 0.4 - 0.12, 0, -0.4, 0);
       else p.bastone.setMatrixAt(i, ZERO);
+      if (inSella) {
+        setParte(p.biciTelaio, i, baseTerra, 0, 0.62, 0, 0, 0.15, 0, 0, 0);
+        setParte(p.biciRuotaA, i, baseTerra, 0.62, 0.34, 0, Math.PI / 2, 0, 0, 0, 0);
+        setParte(p.biciRuotaP, i, baseTerra, -0.62, 0.34, 0, Math.PI / 2, 0, 0, 0, 0);
+      } else {
+        p.biciTelaio.setMatrixAt(i, ZERO);
+        p.biciRuotaA.setMatrixAt(i, ZERO);
+        p.biciRuotaP.setMatrixAt(i, ZERO);
+      }
       if (n.tipo === 'carabiniere') {
         setParte(p.bandaD, i, base, 0, 0.85, 0.152, 0, oscG, 0, -0.38, 0);
         setParte(p.bandaS, i, base, 0, 0.85, -0.152, 0, -oscG, 0, -0.38, 0);
@@ -244,6 +284,18 @@ export function Npcs() {
       </instancedMesh>
       <instancedMesh ref={ref('bandaD')} args={[undefined, undefined, N_NPC]} frustumCulled={false}>
         <boxGeometry args={[0.02, 0.76, 0.03]} />
+        <meshLambertMaterial />
+      </instancedMesh>
+      <instancedMesh ref={ref('biciTelaio')} args={[undefined, undefined, N_NPC]} frustumCulled={false} castShadow>
+        <boxGeometry args={[1.25, 0.09, 0.07]} />
+        <meshLambertMaterial />
+      </instancedMesh>
+      <instancedMesh ref={ref('biciRuotaA')} args={[undefined, undefined, N_NPC]} frustumCulled={false}>
+        <cylinderGeometry args={[0.34, 0.34, 0.05, 10]} />
+        <meshLambertMaterial />
+      </instancedMesh>
+      <instancedMesh ref={ref('biciRuotaP')} args={[undefined, undefined, N_NPC]} frustumCulled={false}>
+        <cylinderGeometry args={[0.34, 0.34, 0.05, 10]} />
         <meshLambertMaterial />
       </instancedMesh>
       <instancedMesh ref={ref('bandaS')} args={[undefined, undefined, N_NPC]} frustumCulled={false}>

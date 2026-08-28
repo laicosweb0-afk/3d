@@ -13,6 +13,7 @@ export const CONTROLLI: { name: string; keys: string[] }[] = [
   { name: 'freno', keys: ['Space'] },
   { name: 'interagisci', keys: ['KeyE', 'Enter'] },
   { name: 'reset', keys: ['KeyR'] },
+  { name: 'colpisci', keys: ['KeyF'] },
 ];
 
 export interface StatoInput {
@@ -24,4 +25,5 @@ export interface StatoInput {
   freno: boolean;
   interagisci: boolean;
   reset: boolean;
+  colpisci: boolean;
 }

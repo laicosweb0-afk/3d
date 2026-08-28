@@ -7,7 +7,7 @@
 import { useState } from 'react';
 import { useLugo } from '@/lib/lugo/store';
 import { TINTE_AUTO } from '@/lib/lugo/palette';
-import { setAudioAttivo } from '@/lib/lugo/audio';
+import { setAudioAttivo, setVolumi } from '@/lib/lugo/audio';
 
 const COMANDI: [string, string][] = [
   ['W A S D / Frecce', 'guida e cammina'],
@@ -24,6 +24,8 @@ export function StartScreen() {
   const setTintaAuto = useLugo((s) => s.setTintaAuto);
   const audioOn = useLugo((s) => s.audioOn);
   const toggleAudio = useLugo((s) => s.toggleAudio);
+  const volumi = useLugo((s) => s.volumi);
+  const setVolume = useLugo((s) => s.setVolume);
   const denaro = useLugo((s) => s.denaro);
   const missioniFatte = useLugo((s) => s.missioniFatte);
   const [pannello, setPannello] = useState<'niente' | 'comandi' | 'impostazioni'>('niente');
@@ -98,6 +100,25 @@ export function StartScreen() {
                   {audioOn ? 'ACCESO' : 'SPENTO'}
                 </button>
               </div>
+              {(['effetti', 'voce', 'ambiente', 'musica'] as const).map((c) => (
+                <div className="lugo-start-imp" key={c}>
+                  <span className="lugo-imp-etichetta">
+                    {c === 'effetti' ? 'Effetti' : c === 'voce' ? 'Voci' : c === 'ambiente' ? 'Ambiente' : 'Musica'}
+                  </span>
+                  <input
+                    type="range"
+                    className="lugo-slider"
+                    min={0}
+                    max={100}
+                    value={Math.round(volumi[c] * 100)}
+                    onChange={(e) => {
+                      const v = Number(e.target.value) / 100;
+                      setVolume(c, v);
+                      setVolumi({ [c]: v });
+                    }}
+                  />
+                </div>
+              ))}
               <div className="lugo-start-imp">
                 <span>La tua auto</span>
                 <span className="lugo-start-tinte">

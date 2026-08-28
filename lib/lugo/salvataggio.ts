@@ -17,6 +17,7 @@ export interface Salvataggio {
   tintaAuto: number;
   audioOn: boolean;
   outfit: number;
+  volumi: { effetti: number; voce: number; ambiente: number; musica: number };
 }
 
 export function caricaSalvataggio(): Partial<Salvataggio> | null {
@@ -32,6 +33,15 @@ export function caricaSalvataggio(): Partial<Salvataggio> | null {
       tintaAuto: typeof dati.tintaAuto === 'number' ? dati.tintaAuto : undefined,
       audioOn: typeof dati.audioOn === 'boolean' ? dati.audioOn : undefined,
       outfit: typeof dati.outfit === 'number' ? dati.outfit : undefined,
+      volumi:
+        dati.volumi && typeof dati.volumi === 'object'
+          ? {
+              effetti: Number(dati.volumi.effetti) || 0,
+              voce: Number(dati.volumi.voce) || 0,
+              ambiente: Number(dati.volumi.ambiente) || 0,
+              musica: Number(dati.volumi.musica) || 0,
+            }
+          : undefined,
     };
   } catch {
     return null;
@@ -62,6 +72,7 @@ export function avviaSalvataggio() {
       ...(dati.tintaAuto !== undefined ? { tintaAuto: dati.tintaAuto } : {}),
       ...(dati.audioOn !== undefined ? { audioOn: dati.audioOn } : {}),
       ...(dati.outfit !== undefined ? { outfit: dati.outfit } : {}),
+      ...(dati.volumi !== undefined ? { volumi: dati.volumi } : {}),
     });
   }
 
@@ -73,7 +84,8 @@ export function avviaSalvataggio() {
       s.missioniFatte === prima.missioniFatte &&
       s.tintaAuto === prima.tintaAuto &&
       s.audioOn === prima.audioOn &&
-      s.outfit === prima.outfit
+      s.outfit === prima.outfit &&
+      s.volumi === prima.volumi
     ) {
       return;
     }
@@ -87,6 +99,7 @@ export function avviaSalvataggio() {
         tintaAuto: st.tintaAuto,
         audioOn: st.audioOn,
         outfit: st.outfit,
+        volumi: st.volumi,
       });
     }, 600);
   });
