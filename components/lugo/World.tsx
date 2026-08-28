@@ -16,6 +16,7 @@ import { Props } from './Props';
 import { Veicoli } from './Veicoli';
 import { Insegne } from './Insegne';
 import { Arredi } from './Arredi';
+import { Imperfezioni } from './Imperfezioni';
 import { Festa } from './Festa';
 import { Eventi } from './Eventi';
 import { useMondo } from '@/lib/lugo/loadMap';
@@ -23,6 +24,8 @@ import { runtime } from '@/lib/lugo/runtime';
 import { useLugo } from '@/lib/lugo/store';
 import { LUCE, PALETTE } from '@/lib/lugo/palette';
 import { caratteriCitta } from '@/lib/lugo/carattere';
+import { imperfezioniCitta } from '@/lib/lugo/imperfezioni';
+import { infraGioco } from '@/lib/lugo/veicoli';
 import { passaTempo, tempo } from '@/lib/lugo/tempo';
 
 function Cielo({
@@ -278,6 +281,29 @@ function HookVerifica() {
       edifici: mondo.buildings.length,
       strade: mondo.roads.length,
       poi: Object.fromEntries([...mondo.poi.values()].map((p) => [p.id, { x: p.xm, z: p.zm, nome: p.nome }])),
+      // il punto di carreggiata più vicino: la verifica lo usa per mettersi
+      // in mezzo alla strada invece che dentro un muro
+      suStrada: (x: number, z: number) => {
+        let best: [number, number] = [x, z];
+        let bestD = Infinity;
+        for (const r of mondo.roads) {
+          if (r.classe === 'pedonale') continue;
+          const n = r.pts.length / 2;
+          for (let i = 0; i + 1 < n; i++) {
+            const ax = r.pts[i * 2], az = r.pts[i * 2 + 1];
+            const dx = r.pts[(i + 1) * 2] - ax, dz = r.pts[(i + 1) * 2 + 1] - az;
+            const L2 = dx * dx + dz * dz || 1;
+            const t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L2));
+            const qx = ax + dx * t, qz = az + dz * t;
+            const d = (qx - x) * (qx - x) + (qz - z) * (qz - z);
+            if (d < bestD) {
+              bestD = d;
+              best = [qx, qz];
+            }
+          }
+        }
+        return best;
+      },
       // il ritratto statistico della città: serve alla verifica per
       // dimostrare che gli edifici non sono più tutti uguali
       citta: () => {
@@ -300,6 +326,7 @@ function HookVerifica() {
           zone: conta((c) => c.zona),
           botteghe: k.filter((c) => c.bottega).length,
           tinteDistinte: new Set(k.map((c) => c.tinta.getHexString())).size,
+          imperfezioni: imperfezioniCitta(mondo, infraGioco(mondo).fisica).length,
         };
       },
       // orologio pilotabile: serve alle cartoline notturne della verifica
@@ -326,6 +353,7 @@ export function World() {
       <Veicoli />
       <Insegne />
       <Arredi />
+      <Imperfezioni />
       <Festa />
       <Eventi />
       <Player />

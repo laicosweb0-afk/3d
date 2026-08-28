@@ -322,8 +322,8 @@ export function carattereDi(b: EdificioRT, ctx: ContestoCitta): Carattere {
     condizionatori: dettaglio === 2 && piani >= 2 ? Math.floor(estrai(s, 26) * 3.2) : 0,
     bottega,
     dettaglio,
-    budgetFinestre: dettaglio === 2 ? 34 : dettaglio === 1 ? 18 : 8,
-    passo: 3.0 + estrai(s, 27) * 1.5,
+    budgetFinestre: dettaglio === 2 ? 96 : dettaglio === 1 ? 44 : 14,
+    passo: 2.9 + estrai(s, 27) * 1.2,
   };
 }
 

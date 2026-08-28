@@ -215,7 +215,7 @@ function lucePseudo(x: number, y: number, z: number): number {
 const cFinSpenta = new THREE.Color(PALETTE.finestraSpenta);
 const cFinAccesa = new THREE.Color(PALETTE.finestraAccesa);
 const cCornice = new THREE.Color('#EDE5D2');
-const cVetrina = new THREE.Color('#3B454E');
+const cVetrina = new THREE.Color('#46525C');
 const cFerro = new THREE.Color('#3A3A38');
 const cTecnico = new THREE.Color('#B7BBBA');
 const cPorta = new THREE.Color('#3A281C');
@@ -297,7 +297,10 @@ function finestreLato(
   if (L < 3.2 || budget.n <= 0) return;
   const dx = x2 - x1, dz = z2 - z1;
   const ex = dx / L, ez = dz / L;
-  const nFin = Math.max(1, Math.min(6, Math.floor(L / k.passo)));
+  // le finestre seguono la lunghezza del muro: su un fronte di sessanta
+  // metri sei buchi facevano parete cieca, ed era proprio quello a dare
+  // l'aria di città finta
+  const nFin = Math.max(1, Math.min(16, Math.round(L / k.passo) - 1));
 
   for (let p = 0; p < k.piani; p++) {
     const base = quotaPiano(k, p);
@@ -335,7 +338,12 @@ function finestreLato(
   }
 }
 
-/** La vetrina del piano terra: fascia scura, zoccolo e cimasa dell'insegna. */
+/**
+ * Il piano terra commerciale, campata per campata: pilastrini d'intonaco,
+ * vetrine con la cornice chiara, una porta di legno e la cimasa dove
+ * Insegne.tsx appende il cartello. Una fascia scura continua per tutto il
+ * fronte era proprio quello che faceva "centro commerciale finto".
+ */
 function vetrina(
   acc: Accumulo,
   x1: number, z1: number, x2: number, z2: number,
@@ -346,11 +354,26 @@ function vetrina(
   if (L < 4) return;
   const dx = x2 - x1, dz = z2 - z1;
   const yTop = Math.max(2.2, k.hTerra - 0.85);
-  bandaV(acc, x1, z1, dx, dz, 0.12, 0.88, 0.42, yTop, nx, nz, cVetrina, 0.06);
-  // cimasa: la fascia dove Insegne.tsx appende il cartello
-  bandaV(acc, x1, z1, dx, dz, 0.1, 0.9, yTop, yTop + 0.5, nx, nz, k.tinta.clone().multiplyScalar(0.86), 0.07);
-  // porta del negozio, sulla sinistra
-  bandaV(acc, x1, z1, dx, dz, 0.14, 0.24, 0, yTop - 0.1, nx, nz, cPorta, 0.09);
+  const campate = Math.max(1, Math.min(9, Math.round(L / 5.2)));
+  const porta = Math.floor(lucePseudo(x1, yTop, z1) * campate);
+  const cTelaio = cCornice.clone().lerp(k.tinta, 0.25);
+  for (let b = 0; b < campate; b++) {
+    // ogni campata lascia il pilastrino d'intonaco ai due lati
+    const t0 = (b + 0.16) / campate;
+    const t1 = (b + 0.84) / campate;
+    if (b === porta) {
+      bandaV(acc, x1, z1, dx, dz, t0 + 0.02, t1 - 0.02, 0, yTop - 0.05, nx, nz, cTelaio, 0.05);
+      bandaV(acc, x1, z1, dx, dz, t0 + 0.05, t1 - 0.05, 0, yTop - 0.18, nx, nz, cPorta, 0.08);
+      continue;
+    }
+    bandaV(acc, x1, z1, dx, dz, t0, t1, 0.32, yTop, nx, nz, cTelaio, 0.05);
+    bandaV(acc, x1, z1, dx, dz, t0 + 0.012, t1 - 0.012, 0.45, yTop - 0.14, nx, nz, cVetrina, 0.08);
+    // lo zoccolo di pietra sotto la vetrina
+    bandaV(acc, x1, z1, dx, dz, t0, t1, 0, 0.32, nx, nz, k.zoccolo, 0.06);
+  }
+  // cimasa dell'insegna, con la sua cornicetta
+  bandaV(acc, x1, z1, dx, dz, 0.04, 0.96, yTop, yTop + 0.52, nx, nz, k.tinta.clone().multiplyScalar(0.9), 0.07);
+  bandaV(acc, x1, z1, dx, dz, 0.02, 0.98, yTop + 0.52, yTop + 0.66, nx, nz, cCornice, 0.09);
 }
 
 /** Il balcone: soletta aggettante e ringhiera di ferro. */
