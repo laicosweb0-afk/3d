@@ -22,6 +22,7 @@ import { useMondo } from '@/lib/lugo/loadMap';
 import { runtime } from '@/lib/lugo/runtime';
 import { useLugo } from '@/lib/lugo/store';
 import { LUCE, PALETTE } from '@/lib/lugo/palette';
+import { caratteriCitta } from '@/lib/lugo/carattere';
 import { passaTempo, tempo } from '@/lib/lugo/tempo';
 
 function Cielo({
@@ -33,8 +34,16 @@ function Cielo({
   sole: React.MutableRefObject<THREE.Mesh | null>;
   alone: React.MutableRefObject<THREE.Mesh | null>;
 }) {
+  // il cielo viaggia col giocatore: la mappa è larga cinque chilometri e
+  // una cupola ancorata all'origine si finiva per attraversarla
+  const volta = useRef<THREE.Group>(null);
+  useFrame(({ camera }) => {
+    if (!volta.current) return;
+    volta.current.position.x = camera.position.x;
+    volta.current.position.z = camera.position.z;
+  });
   const { geometria, materiale } = useMemo(() => {
-    const geometria = new THREE.SphereGeometry(1500, 24, 12);
+    const geometria = new THREE.SphereGeometry(1850, 24, 12);
     const materiale = new THREE.ShaderMaterial({
       side: THREE.BackSide,
       depthWrite: false,
@@ -64,14 +73,14 @@ function Cielo({
   }, []);
   matCielo.current = materiale;
   return (
-    <group>
+    <group ref={volta}>
       <mesh geometry={geometria} material={materiale} frustumCulled={false} />
       {/* le colline dell'Appennino a sud: una striscia bassa e sbiadita
           all'orizzonte, come nelle foto aeree */}
       {[
-        [45, 1650, 560, 52], [62, 1580, 440, 40], [78, 1720, 640, 60],
-        [95, 1600, 480, 44], [110, 1780, 590, 50], [126, 1660, 430, 36],
-        [140, 1740, 530, 46],
+        [45, 1380, 470, 52], [62, 1320, 370, 40], [78, 1440, 540, 60],
+        [95, 1340, 400, 44], [110, 1490, 500, 50], [126, 1390, 360, 36],
+        [140, 1450, 450, 46],
       ].map(([gradi, dist, raggio, altezza]) => {
         const a = (gradi * Math.PI) / 180;
         return (
@@ -269,6 +278,30 @@ function HookVerifica() {
       edifici: mondo.buildings.length,
       strade: mondo.roads.length,
       poi: Object.fromEntries([...mondo.poi.values()].map((p) => [p.id, { x: p.xm, z: p.zm, nome: p.nome }])),
+      // il ritratto statistico della città: serve alla verifica per
+      // dimostrare che gli edifici non sono più tutti uguali
+      citta: () => {
+        const k = [...caratteriCitta(mondo).values()];
+        const alt = k.map((c) => c.h);
+        const conta = (f: (c: (typeof k)[number]) => string) => {
+          const m: Record<string, number> = {};
+          for (const c of k) m[f(c)] = (m[f(c)] ?? 0) + 1;
+          return m;
+        };
+        return {
+          n: k.length,
+          hMin: Math.min(...alt),
+          hMax: Math.max(...alt),
+          hMedia: alt.reduce((a, b) => a + b, 0) / alt.length,
+          altezzeDistinte: new Set(alt.map((h) => Math.round(h * 10))).size,
+          piani: conta((c) => String(c.piani)),
+          materiali: conta((c) => c.materiale),
+          tetti: conta((c) => c.tetto),
+          zone: conta((c) => c.zona),
+          botteghe: k.filter((c) => c.bottega).length,
+          tinteDistinte: new Set(k.map((c) => c.tinta.getHexString())).size,
+        };
+      },
       // orologio pilotabile: serve alle cartoline notturne della verifica
       ora: (h?: number) => {
         if (typeof h === 'number') tempo.ora = ((h % 24) + 24) % 24;

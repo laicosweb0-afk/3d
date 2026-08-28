@@ -40,7 +40,7 @@ export function GameCanvas() {
     <Canvas
       className="lugo-canvas"
       shadows={!QA}
-      camera={{ position: [80, 120, 180], fov: 55, near: 0.5, far: 2000 }}
+      camera={{ position: [80, 120, 180], fov: 55, near: 0.5, far: 2600 }}
       dpr={QA ? 0.7 : [1, 1.75]}
       gl={{ antialias: !QA, powerPreference: 'high-performance' }}
       onCreated={({ gl }) => {
