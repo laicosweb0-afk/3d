@@ -927,3 +927,200 @@
   border: none;
   cursor: pointer;
 }
+
+/* ── Esplorazione: la scheda "SCOPERTO" e il diario ─────────────────────── */
+
+.lugo-diario-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  transform: translateY(8.6rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.05rem;
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 50%;
+  border: 1px solid var(--bordo);
+  background: var(--vetro);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--testo);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 0.15s;
+}
+
+.lugo-diario-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.lugo-diario-icona {
+  font-size: 0.8rem;
+  color: var(--accento);
+  line-height: 1;
+}
+
+.lugo-diario-conta {
+  font-size: 0.6rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
+  line-height: 1;
+}
+
+.lugo-scoperta {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(21rem, 88vw);
+  padding: 0.7rem 1rem 0.75rem;
+  text-align: center;
+  background: var(--vetro-forte);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid var(--bordo);
+  border-top: 2px solid var(--accento);
+  border-radius: var(--raggio);
+  box-shadow: var(--ombra);
+  animation: lugo-scheda-entra 0.3s ease-out both;
+}
+
+.lugo-scoperta-etichetta {
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  color: var(--accento);
+  margin-bottom: 0.18rem;
+}
+
+.lugo-scoperta-nome {
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.lugo-scoperta-cosa {
+  margin-top: 0.2rem;
+  font-size: 0.76rem;
+  opacity: 0.78;
+  line-height: 1.3;
+}
+
+.lugo-scoperta-distintivo {
+  margin-top: 0.45rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--bordo);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accento);
+}
+
+.lugo-diario {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(25rem, 92vw);
+  max-height: min(34rem, 84vh);
+  overflow-y: auto;
+  padding: 0.95rem 1.15rem 0.9rem;
+  background: var(--vetro-forte);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid var(--bordo);
+  border-radius: var(--raggio);
+  box-shadow: var(--ombra);
+  pointer-events: auto;
+  animation: lugo-scheda-entra 0.26s ease-out both;
+}
+
+.lugo-diario-testa {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.lugo-diario-barra {
+  margin-top: 0.7rem;
+  height: 0.34rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.lugo-diario-barra-piena {
+  height: 100%;
+  background: var(--accento);
+  transition: width 0.4s ease-out;
+}
+
+.lugo-diario-conteggi {
+  margin-top: 0.4rem;
+  font-size: 0.74rem;
+  opacity: 0.75;
+}
+
+.lugo-diario-conteggi span {
+  font-weight: 700;
+  opacity: 1;
+  color: var(--accento);
+}
+
+.lugo-diario-lista {
+  margin-top: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+}
+
+.lugo-distintivo {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--bordo);
+  border-radius: calc(var(--raggio) * 0.6);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.lugo-distintivo-ok {
+  border-color: var(--accento);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.lugo-distintivo-testa {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.lugo-distintivo-nome {
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.lugo-distintivo-ok .lugo-distintivo-nome {
+  color: var(--accento);
+}
+
+.lugo-distintivo-conta {
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+.lugo-distintivo-testo {
+  margin-top: 0.12rem;
+  font-size: 0.72rem;
+  opacity: 0.68;
+}
+
+.lugo-diario-nota {
+  margin-top: 0.8rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--bordo);
+  font-size: 0.66rem;
+  line-height: 1.35;
+  opacity: 0.55;
+}

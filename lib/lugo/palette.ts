@@ -78,7 +78,7 @@ export const LUCE = {
   /** Cielo/terra: riempimento azzurro del cielo sereno. */
   hemi: { cielo: '#BFD9F2', terra: '#9A9078', intensity: 0.7 },
   ambient: { color: '#E8EEF4', intensity: 0.32 },
-  nebbia: { colore: '#D6E2EC', vicino: 300, lontano: 1300 },
+  nebbia: { colore: '#D6E2EC', vicino: 280, lontano: 1050 },
   toneMappingExposure: 1.12,
 } as const;
 

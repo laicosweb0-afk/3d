@@ -297,7 +297,7 @@ export function Props() {
       </instancedMesh>
       {/* le chiome tonde e scure di parchi e cortili, come nelle viste aeree */}
       <instancedMesh ref={chiomeTonde} args={[undefined, undefined, MAX_ALBERI]} frustumCulled={false} castShadow>
-        <icosahedronGeometry args={[2.2, 1]} />
+        <icosahedronGeometry args={[2.2, 0]} />
         <meshLambertMaterial color="#3A5352" />
       </instancedMesh>
       <instancedMesh ref={pali} args={[undefined, undefined, MAX_LAMPIONI]} frustumCulled={false}>
@@ -305,11 +305,11 @@ export function Props() {
         <meshLambertMaterial color="#3E3B44" />
       </instancedMesh>
       <instancedMesh ref={luci} args={[undefined, undefined, MAX_LAMPIONI]} frustumCulled={false}>
-        <sphereGeometry args={[0.22, 8, 6]} />
+        <sphereGeometry args={[0.22, 6, 4]} />
         <meshLambertMaterial color="#F2EFE2" emissive="#FFF0C8" emissiveIntensity={0.25} />
       </instancedMesh>
       <instancedMesh ref={globi} args={[undefined, undefined, MAX_LAMPIONI * 2]} frustumCulled={false}>
-        <sphereGeometry args={[0.17, 8, 6]} />
+        <sphereGeometry args={[0.17, 6, 4]} />
         <meshLambertMaterial color="#F2EFE2" emissive="#FFF0C8" emissiveIntensity={0.25} />
       </instancedMesh>
     </group>

@@ -15,6 +15,8 @@ import { stepPersona, PERSONA } from '@/lib/lugo/character';
 import type { StatoInput } from '@/lib/lugo/input';
 import { conStick } from '@/lib/lugo/stick';
 import { attivitaVicina, registroAttivita } from '@/lib/lugo/attivita';
+import { poiDaScoprire, puntiInteresse } from '@/lib/lugo/poi';
+import { DISTINTIVI, distintiviRaggiunti } from '@/lib/lugo/distintivi';
 import { FRASI_STRADA } from '@/lib/lugo/npc';
 import { runtime, type RuntimeGioco } from '@/lib/lugo/runtime';
 import { updateAudio, suonaEvento, updateAmbiente, parla, campanello } from '@/lib/lugo/audio';
@@ -152,6 +154,9 @@ export function Player() {
   const decadimento = useRef(0);
   const cooldownDialogo = useRef(0);
   const colpiscePrima = useRef(false);
+  // l'esplorazione si controlla due volte al secondo, non a ogni frame
+  const scansione = useRef(0);
+  const scopertaTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cooldownPugno = useRef(0);
   const ambienteAcc = useRef(0);
   const vocaAcc = useRef(0);
@@ -174,6 +179,16 @@ export function Player() {
         v: Math.hypot(rt.persona.vx, rt.persona.vz),
       }),
       attivita: () => registroAttivitaHook(),
+      // guardia sulle regole commerciali: senza autorizzazione scritta
+      // nessuna attività può risultare partner né mostrare promo o logo
+      autorizzazioni: () => {
+        const tutte = registroAttivita(mondo);
+        return {
+          partner: tutte.filter((a) => a.partner).length,
+          promo: tutte.filter((a) => a.promo).length,
+          logo: tutte.filter((a) => a.logo).length,
+        };
+      },
       mode: () => useLugo.getState().mode,
       teleport: (x: number, z: number, yaw?: number) => {
         const a = attivo();
@@ -450,6 +465,41 @@ export function Player() {
       }
     }
     runtime.caccia = useLugo.getState().wanted > 0;
+
+    // l'esplorazione: si scopre camminando, mai passandoci davanti in auto
+    scansione.current -= dt;
+    if (st.fase === 'gioco' && st.mode === 'piedi' && !st.scoperta && scansione.current <= 0) {
+      scansione.current = 0.35;
+      const trovato = poiDaScoprire(mondo, rt.persona.x, rt.persona.z, st.poiVisitati);
+      if (trovato && st.scopriPoi(trovato.id)) {
+        const dopo = useLugo.getState();
+        const elenco = puntiInteresse(mondo);
+        const tipoDi = new Map(elenco.map((p) => [p.id, p.tipo]));
+        const stato = {
+          poiVisitati: dopo.poiVisitati,
+          monumenti: dopo.poiVisitati.filter((id) => tipoDi.get(id) === 'monumento').length,
+          botteghe: dopo.poiVisitati.filter((id) => tipoDi.get(id) === 'attivita').length,
+          missioniFatte: dopo.missioniFatte,
+          punteggio: dopo.punteggio,
+        };
+        const raggiunti = distintiviRaggiunti(stato);
+        const nuovo = raggiunti.find((id) => !dopo.distintivi.includes(id));
+        if (raggiunti.length !== dopo.distintivi.length) dopo.setDistintivi(raggiunti);
+        st.setScoperta({
+          nome: trovato.nome,
+          cosa: trovato.cosa,
+          tipo: trovato.tipo,
+          distintivo: nuovo ? DISTINTIVI.find((d) => d.id === nuovo)?.nome : undefined,
+        });
+        st.addPunti(nuovo ? 25 : 5);
+        suonaEvento('tappa');
+        if (scopertaTimer.current) clearTimeout(scopertaTimer.current);
+        // i monumenti meritano una scheda lunga, le botteghe un lampo:
+        // camminando in centro se ne incontra una ogni pochi passi
+        const durata = nuovo ? 5200 : trovato.tipo === 'attivita' ? 1900 : 4200;
+        scopertaTimer.current = setTimeout(() => useLugo.getState().setScoperta(null), durata);
+      }
+    }
 
     // suggerimento contestuale sul tasto E
     let hint: string | null = null;

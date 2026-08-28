@@ -3,7 +3,7 @@
 // Le mesh fuse della città + il terreno di base. Due draw call per tutta
 // Lugo: uno per gli edifici estrusi, uno per le superfici piatte.
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { useMondo } from '@/lib/lugo/loadMap';
 import { generaCitta } from '@/lib/lugo/citygen';
@@ -13,6 +13,20 @@ export function CityMeshes({ senzaLandmark = [] }: { senzaLandmark?: string[] })
   const mondo = useMondo();
 
   const { edifici, suolo } = useMemo(() => generaCitta(mondo, senzaLandmark), [mondo, senzaLandmark]);
+
+  // conteggio ispezionabile: quanto pesa la città, tassello per tassello
+  useEffect(() => {
+    const w = window as unknown as { __LUGO__?: Record<string, unknown> };
+    const tri = (g: THREE.BufferGeometry) => g.getAttribute('position').count / 3;
+    w.__LUGO__ = {
+      ...(w.__LUGO__ ?? {}),
+      citta3d: () => ({
+        tasselli: edifici.length,
+        triEdifici: edifici.reduce((a, g) => a + tri(g), 0),
+        triSuolo: tri(suolo),
+      }),
+    };
+  }, [edifici, suolo]);
 
   // la grana dell'intonaco: texture procedurale (nessun asset), moltiplicata
   // coi vertex colors. Il texel (0,0) resta bianco puro: le superfici senza
@@ -116,7 +130,9 @@ export function CityMeshes({ senzaLandmark = [] }: { senzaLandmark?: string[] })
 
   return (
     <group>
-      <mesh geometry={edifici} material={matEdifici} castShadow receiveShadow />
+      {edifici.map((g, i) => (
+        <mesh key={i} geometry={g} material={matEdifici} castShadow receiveShadow />
+      ))}
       <mesh geometry={suolo} material={matSuolo} receiveShadow />
       <mesh position={[terreno.x, 0, terreno.z]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[terreno.w, terreno.d]} />

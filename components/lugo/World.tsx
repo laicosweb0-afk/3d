@@ -5,7 +5,7 @@
 // notte — sopra la città generata dai dati OSM.
 
 import { useEffect, useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { CityMeshes } from './CityMeshes';
 import { Landmarks } from './Landmarks';
@@ -25,18 +25,11 @@ import { useLugo } from '@/lib/lugo/store';
 import { LUCE, PALETTE } from '@/lib/lugo/palette';
 import { caratteriCitta } from '@/lib/lugo/carattere';
 import { imperfezioniCitta } from '@/lib/lugo/imperfezioni';
+import { puntiInteresse } from '@/lib/lugo/poi';
 import { infraGioco } from '@/lib/lugo/veicoli';
 import { passaTempo, tempo } from '@/lib/lugo/tempo';
 
-function Cielo({
-  matCielo,
-  sole,
-  alone,
-}: {
-  matCielo: React.MutableRefObject<THREE.ShaderMaterial | null>;
-  sole: React.MutableRefObject<THREE.Mesh | null>;
-  alone: React.MutableRefObject<THREE.Mesh | null>;
-}) {
+function Cielo({ matCielo }: { matCielo: React.MutableRefObject<THREE.ShaderMaterial | null> }) {
   // il cielo viaggia col giocatore: la mappa è larga cinque chilometri e
   // una cupola ancorata all'origine si finiva per attraversarla
   const volta = useRef<THREE.Group>(null);
@@ -46,7 +39,7 @@ function Cielo({
     volta.current.position.z = camera.position.z;
   });
   const { geometria, materiale } = useMemo(() => {
-    const geometria = new THREE.SphereGeometry(1850, 24, 12);
+    const geometria = new THREE.SphereGeometry(1240, 24, 12);
     const materiale = new THREE.ShaderMaterial({
       side: THREE.BackSide,
       depthWrite: false,
@@ -81,9 +74,9 @@ function Cielo({
       {/* le colline dell'Appennino a sud: una striscia bassa e sbiadita
           all'orizzonte, come nelle foto aeree */}
       {[
-        [45, 1380, 470, 52], [62, 1320, 370, 40], [78, 1440, 540, 60],
-        [95, 1340, 400, 44], [110, 1490, 500, 50], [126, 1390, 360, 36],
-        [140, 1450, 450, 46],
+        [45, 1120, 380, 44], [62, 1070, 300, 34], [78, 1170, 440, 50],
+        [95, 1090, 325, 37], [110, 1200, 405, 42], [126, 1130, 292, 30],
+        [140, 1175, 365, 39],
       ].map(([gradi, dist, raggio, altezza]) => {
         const a = (gradi * Math.PI) / 180;
         return (
@@ -94,7 +87,25 @@ function Cielo({
         );
       })}
 
-      {/* il sole, che sale e tramonta con l'orologio */}
+      <Nuvole />
+    </group>
+  );
+}
+
+/**
+ * Il sole e il suo alone stanno FUORI dalla volta che segue la camera:
+ * `Meteo` scrive le loro posizioni in coordinate di mondo, e dentro un
+ * gruppo traslato finivano al doppio della distanza.
+ */
+function Sole({
+  sole,
+  alone,
+}: {
+  sole: React.MutableRefObject<THREE.Mesh | null>;
+  alone: React.MutableRefObject<THREE.Mesh | null>;
+}) {
+  return (
+    <>
       <mesh ref={sole} position={[-420, 900, 270]}>
         <circleGeometry args={[46, 24]} />
         <meshBasicMaterial color="#FFFCEE" fog={false} />
@@ -103,8 +114,7 @@ function Cielo({
         <circleGeometry args={[110, 24]} />
         <meshBasicMaterial color="#FFF6D8" transparent opacity={0.2} fog={false} depthWrite={false} />
       </mesh>
-      <Nuvole />
-    </group>
+    </>
   );
 }
 
@@ -265,7 +275,8 @@ function Meteo() {
         shadow-camera-near={1}
         shadow-camera-far={500}
       />
-      <Cielo matCielo={matCielo} sole={sole} alone={alone} />
+      <Cielo matCielo={matCielo} />
+      <Sole sole={sole} alone={alone} />
     </>
   );
 }
@@ -273,6 +284,8 @@ function Meteo() {
 /** Espone lo stato ispezionabile per la verifica Playwright. */
 function HookVerifica() {
   const mondo = useMondo();
+  const gl = useThree((s) => s.gl);
+  const scenaGlobale = useThree((s) => s.scene);
   useEffect(() => {
     const w = window as unknown as { __LUGO__?: Record<string, unknown> };
     w.__LUGO__ = {
@@ -303,6 +316,41 @@ function HookVerifica() {
           }
         }
         return best;
+      },
+      // chi pesa davvero: i dieci oggetti più costosi della scena
+      pesi: () => {
+        const out: { nome: string; tri: number }[] = [];
+        gl.info.autoReset = gl.info.autoReset;
+        scenaGlobale?.traverse((o) => {
+          const m = o as THREE.Mesh & { count?: number; isInstancedMesh?: boolean };
+          const g = m.geometry as THREE.BufferGeometry | undefined;
+          if (!g || !g.getAttribute) return;
+          const pos = g.getAttribute('position');
+          if (!pos) return;
+          const base = g.index ? g.index.count / 3 : pos.count / 3;
+          const n = m.isInstancedMesh ? base * (m.count ?? 0) : base;
+          if (n > 500) out.push({ nome: m.name || m.type + ':' + (m.material as THREE.Material)?.type, tri: Math.round(n) });
+        });
+        return out.sort((a, b) => b.tri - a.tri).slice(0, 14);
+      },
+      // il costo di un fotogramma: triangoli e draw call dell'ultimo frame
+      render: () => ({
+        triangoli: gl.info.render.triangles,
+        chiamate: gl.info.render.calls,
+        texture: gl.info.memory.textures,
+        geometrie: gl.info.memory.geometries,
+      }),
+      // stato dell'esplorazione, per il collaudo
+      esplorazione: () => {
+        const st = useLugo.getState();
+        const tutti = puntiInteresse(mondo);
+        return {
+          visitati: st.poiVisitati.length,
+          totale: tutti.length,
+          distintivi: st.distintivi,
+          monumenti: tutti.filter((p) => p.tipo === 'monumento').length,
+          attivita: tutti.filter((p) => p.tipo === 'attivita').length,
+        };
       },
       // il ritratto statistico della città: serve alla verifica per
       // dimostrare che gli edifici non sono più tutti uguali
@@ -338,7 +386,7 @@ function HookVerifica() {
         tempo.scorre = on;
       },
     };
-  }, [mondo]);
+  }, [mondo, gl, scenaGlobale]);
   return null;
 }
 

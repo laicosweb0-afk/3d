@@ -41,6 +41,15 @@ export interface VetrinaAperta {
   articoli: { nome: string; prezzo: number; effetto?: string }[];
 }
 
+/** La scheda "SCOPERTO" di un punto di interesse appena visitato. */
+export interface Scoperta {
+  nome: string;
+  cosa: string;
+  tipo: string;
+  /** Distintivo appena guadagnato, se la scoperta lo ha completato. */
+  distintivo?: string;
+}
+
 /** Un dialogo a scelte con un NPC. */
 export interface Dialogo {
   id: string;
@@ -87,6 +96,14 @@ interface LugoState {
   dialogo: Dialogo | null;
   /** Vetrina del negozio aperta. */
   vetrina: VetrinaAperta | null;
+  /** Id dei punti di interesse scoperti a piedi. */
+  poiVisitati: string[];
+  /** Id dei distintivi guadagnati. */
+  distintivi: string[];
+  /** Scheda "SCOPERTO" appena comparsa (si dissolve da sola). */
+  scoperta: Scoperta | null;
+  /** true quando il diario dell'esplorazione è aperto. */
+  diario: boolean;
   /** Indice del vestito indossato (si compra nei negozi). */
   outfit: number;
   /** Messaggio transitorio a centro schermo (esiti, tappe). */
@@ -115,13 +132,18 @@ interface LugoState {
   setEsito: (e: EsitoMissione | null) => void;
   setDialogo: (d: Dialogo | null) => void;
   setVetrina: (v: VetrinaAperta | null) => void;
+  /** Registra la scoperta di un punto; restituisce false se era già noto. */
+  scopriPoi: (id: string) => boolean;
+  setDistintivi: (ids: string[]) => void;
+  setScoperta: (s: Scoperta | null) => void;
+  setDiario: (aperto: boolean) => void;
   setOutfit: (i: number) => void;
   setAvviso: (msg: string | null) => void;
   setHint: (msg: string | null) => void;
   setVia: (nome: string | null) => void;
 }
 
-export const useLugo = create<LugoState>((set) => ({
+export const useLugo = create<LugoState>((set, get) => ({
   fase: 'start',
   mode: 'auto',
   qualita: 'alta',
@@ -142,6 +164,10 @@ export const useLugo = create<LugoState>((set) => ({
   esito: null,
   dialogo: null,
   vetrina: null,
+  poiVisitati: [],
+  distintivi: [],
+  scoperta: null,
+  diario: false,
   outfit: 0,
   avviso: null,
   hint: null,
@@ -167,6 +193,14 @@ export const useLugo = create<LugoState>((set) => ({
   setEsito: (esito) => set({ esito }),
   setDialogo: (dialogo) => set({ dialogo }),
   setVetrina: (vetrina) => set({ vetrina }),
+  scopriPoi: (id) => {
+    if (get().poiVisitati.includes(id)) return false;
+    set((s) => ({ poiVisitati: [...s.poiVisitati, id] }));
+    return true;
+  },
+  setDistintivi: (distintivi) => set({ distintivi }),
+  setScoperta: (scoperta) => set({ scoperta }),
+  setDiario: (diario) => set({ diario }),
   setOutfit: (outfit) => set({ outfit }),
   setAvviso: (avviso) => set({ avviso }),
   setHint: (hint) => set({ hint }),

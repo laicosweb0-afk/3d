@@ -28,12 +28,13 @@ export function Imperfezioni() {
     const eul = new THREE.Euler();
     const qua = new THREE.Quaternion();
     for (const o of oggetti) {
-      const cy = Math.cos(-o.rot);
-      const sy = Math.sin(-o.rot);
+      // rotazione.y = -rot manda il +X locale su (cos rot, sin rot) e il +Z
+      // locale su (-sin rot, cos rot): gli scostamenti dei pezzi seguono
+      const cy = Math.cos(o.rot);
+      const sy = Math.sin(o.rot);
       for (const pz of PEZZI[o.t]) {
-        // dal riferimento locale (x avanti, z laterale) al mondo three
         const lx = pz.p[0];
-        const lz = -pz.p[2];
+        const lz = pz.p[2];
         per[pz.forma].push({
           m: new THREE.Matrix4().compose(
             pos.set(o.x + lx * cy - lz * sy, pz.p[1], o.z + lx * sy + lz * cy),
@@ -73,28 +74,28 @@ export function Imperfezioni() {
   return (
     <group>
       <instancedMesh
+        name="imperfezioni-scatole"
         ref={scatole}
         args={[undefined, undefined, Math.max(1, gruppi.scatola.length)]}
         frustumCulled={false}
-        castShadow
       >
         <boxGeometry args={[1, 1, 1]} />
         <meshLambertMaterial />
       </instancedMesh>
       <instancedMesh
+        name="imperfezioni-cilindri"
         ref={cilindri}
         args={[undefined, undefined, Math.max(1, gruppi.cilindro.length)]}
         frustumCulled={false}
-        castShadow
       >
-        <cylinderGeometry args={[0.5, 0.5, 1, 10]} />
+        <cylinderGeometry args={[0.5, 0.5, 1, 7]} />
         <meshLambertMaterial />
       </instancedMesh>
       <instancedMesh
+        name="imperfezioni-sfere"
         ref={sfere}
         args={[undefined, undefined, Math.max(1, gruppi.sfera.length)]}
         frustumCulled={false}
-        castShadow
       >
         <icosahedronGeometry args={[0.5, 0]} />
         <meshLambertMaterial />

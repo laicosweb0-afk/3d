@@ -11,6 +11,9 @@ import { missioneById } from '@/lib/lugo/missions';
 import { setAudioAttivo, suonaEvento } from '@/lib/lugo/audio';
 import { orologio } from '@/lib/lugo/tempo';
 import { Minimap } from './Minimap';
+import { useMondo } from '@/lib/lugo/loadMap';
+import { contaPoi, puntiInteresse } from '@/lib/lugo/poi';
+import { DISTINTIVI } from '@/lib/lugo/distintivi';
 
 function tempoMMSS(s: number): string {
   const mm = Math.floor(s / 60);
@@ -50,6 +53,13 @@ export function Hud() {
   const addDenaro = useLugo((s) => s.addDenaro);
   const addPunti = useLugo((s) => s.addPunti);
   const setAvviso = useLugo((s) => s.setAvviso);
+  const scoperta = useLugo((s) => s.scoperta);
+  const poiVisitati = useLugo((s) => s.poiVisitati);
+  const distintivi = useLugo((s) => s.distintivi);
+  const diario = useLugo((s) => s.diario);
+  const setDiario = useLugo((s) => s.setDiario);
+  const missioniFatte = useLugo((s) => s.missioniFatte);
+  const mondo = useMondo();
 
   // l'ora di gioco, aggiornata due volte al secondo (basta e avanza)
   const [ora, setOra] = useState(orologio());
@@ -176,6 +186,29 @@ export function Hud() {
         {audioOn ? '♪' : '∅'}
       </button>
 
+      <button
+        type="button"
+        className="lugo-diario-btn"
+        data-hud="diario-apri"
+        title="Diario dell'esplorazione"
+        onClick={() => setDiario(!diario)}
+      >
+        <span className="lugo-diario-icona">◈</span>
+        <span className="lugo-diario-conta">{poiVisitati.length}</span>
+      </button>
+
+      {/* la scheda che compare scoprendo un luogo camminando */}
+      {scoperta && (
+        <div className="lugo-scoperta" data-hud="scoperta" key={scoperta.nome}>
+          <div className="lugo-scoperta-etichetta">SCOPERTO</div>
+          <div className="lugo-scoperta-nome">{scoperta.nome}</div>
+          <div className="lugo-scoperta-cosa">{scoperta.cosa}</div>
+          {scoperta.distintivo && (
+            <div className="lugo-scoperta-distintivo">◈ {scoperta.distintivo}</div>
+          )}
+        </div>
+      )}
+
       {via && (
         <div className="lugo-via" data-hud="via" key={via}>
           {via}
@@ -190,6 +223,63 @@ export function Hud() {
       <div className="lugo-minimappa-box">
         <Minimap />
       </div>
+
+      {/* il diario dell'esplorazione: dove sono stato, cosa mi manca */}
+      {diario && (
+        <div className="lugo-diario" data-hud="diario">
+          <div className="lugo-diario-testa">
+            <div>
+              <div className="lugo-vetrina-cat">Diario</div>
+              <div className="lugo-vetrina-nome">Lugo esplorata</div>
+            </div>
+            <button type="button" className="lugo-vetrina-chiudi" onClick={() => setDiario(false)}>
+              ✕
+            </button>
+          </div>
+          <div className="lugo-diario-barra">
+            <div
+              className="lugo-diario-barra-piena"
+              style={{ width: `${Math.min(100, (poiVisitati.length / Math.max(1, puntiInteresse(mondo).length)) * 100)}%` }}
+            />
+          </div>
+          <div className="lugo-diario-conteggi">
+            <span data-hud="diario-poi">{poiVisitati.length}</span> luoghi su{' '}
+            {puntiInteresse(mondo).length} — {contaPoi(mondo).monumento} monumenti,{' '}
+            {contaPoi(mondo).attivita} botteghe
+          </div>
+          <div className="lugo-diario-lista">
+            {DISTINTIVI.map((d) => {
+              const tipoDi = new Map(puntiInteresse(mondo).map((p) => [p.id, p.tipo]));
+              const stato = {
+                poiVisitati,
+                monumenti: poiVisitati.filter((id) => tipoDi.get(id) === 'monumento').length,
+                botteghe: poiVisitati.filter((id) => tipoDi.get(id) === 'attivita').length,
+                missioniFatte,
+                punteggio,
+              };
+              const p = Math.min(d.meta, d.progresso(stato));
+              const fatto = distintivi.includes(d.id);
+              return (
+                <div key={d.id} className={`lugo-distintivo${fatto ? ' lugo-distintivo-ok' : ''}`}>
+                  <div className="lugo-distintivo-testa">
+                    <span className="lugo-distintivo-nome">
+                      {fatto ? '◈' : '◇'} {d.nome}
+                    </span>
+                    <span className="lugo-distintivo-conta">
+                      {p}/{d.meta}
+                    </span>
+                  </div>
+                  <div className="lugo-distintivo-testo">{d.testo}</div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="lugo-diario-nota">
+            I luoghi si scoprono a piedi. Le attività compaiono con il nome e la
+            categoria già pubblici su OpenStreetMap.
+          </div>
+        </div>
+      )}
 
       {/* scheda cinematografica di inizio missione */}
       {intro && (

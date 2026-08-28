@@ -50,6 +50,8 @@ export interface Carattere {
   condizionatori: number;
   /** Piano terra commerciale: vetrina scura e fascia dell'insegna. */
   bottega: boolean;
+  /** Capannone o rimessa: nastro finestrato in alto e costoloni di lamiera. */
+  industriale: boolean;
   /** 0 = solo volume e tinta, 1 = facciata, 2 = tutto il minuto. */
   dettaglio: 0 | 1 | 2;
   /** Quante finestre al massimo si possono disegnare. */
@@ -295,8 +297,10 @@ export function carattereDi(b: EdificioRT, ctx: ContestoCitta): Carattere {
         : tinge(TETTI.coppo, estrai(s, 12), estrai(s, 13), estrai(s, 14));
 
   // ── dettaglio: fitto dove si cammina, sobrio in lontananza ──
+  // il minuto costa: si tiene dove si cammina davvero (centro, piazze,
+  // fronti di bottega), si dirada subito fuori
   const dettaglio: 0 | 1 | 2 =
-    dist < 520 || suPiazza || bottegaVicina ? 2 : dist < 950 ? 1 : 0;
+    dist < 300 || suPiazza || bottegaVicina ? 2 : dist < 850 ? 1 : 0;
 
   const bottega = !rimessa && !capannone && !b.chiesa && (bottegaVicina || suPiazza || (zona === 'centro' && estrai(s, 15) < 0.34));
 
@@ -321,8 +325,9 @@ export function carattereDi(b: EdificioRT, ctx: ContestoCitta): Carattere {
     antenna: dettaglio >= 1 && !capannone && estrai(s, 25) < 0.45,
     condizionatori: dettaglio === 2 && piani >= 2 ? Math.floor(estrai(s, 26) * 3.2) : 0,
     bottega,
+    industriale: capannone || (materiale === 'metallo' && piani === 1),
     dettaglio,
-    budgetFinestre: dettaglio === 2 ? 96 : dettaglio === 1 ? 44 : 14,
+    budgetFinestre: dettaglio === 2 ? 72 : dettaglio === 1 ? 34 : 10,
     passo: 2.9 + estrai(s, 27) * 1.2,
   };
 }

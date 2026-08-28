@@ -7,7 +7,7 @@
 import * as THREE from 'three';
 import { PALETTE } from './palette';
 import { rettangoloMinimo } from './gates';
-import { caratteriCitta, type Carattere } from './carattere';
+import { caratteriCitta, centroide, type Carattere } from './carattere';
 import type { MondoLugo, EdificioRT } from './loadMap';
 
 export class Accumulo {
@@ -60,6 +60,36 @@ export class Accumulo {
     g.setAttribute('color', new THREE.Float32BufferAttribute(this.col, 3));
     g.setAttribute('uv', new THREE.Float32BufferAttribute(this.uv, 2));
     return g;
+  }
+}
+
+/**
+ * La città a tasselli. Fondere tutti gli edifici in un'unica geometria
+ * costava due draw call ma toglieva a three ogni possibilità di scartare
+ * ciò che sta fuori inquadratura: si disegnava un milione di triangoli
+ * anche guardando un vicolo. Qui la stessa fusione avviene per celle di
+ * 220 m, così ogni tassello ha il suo volume di contenimento e viene
+ * saltato quando è dietro le spalle.
+ */
+export class Griglia {
+  private celle = new Map<string, Accumulo>();
+  constructor(private lato = 190) {}
+  /** L'accumulo della cella che contiene questo punto. */
+  a(x: number, z: number): Accumulo {
+    const k = `${Math.floor(x / this.lato)}:${Math.floor(z / this.lato)}`;
+    let acc = this.celle.get(k);
+    if (!acc) {
+      acc = new Accumulo();
+      this.celle.set(k, acc);
+    }
+    return acc;
+  }
+  build(): THREE.BufferGeometry[] {
+    const out: THREE.BufferGeometry[] = [];
+    for (const acc of this.celle.values()) {
+      if (acc.pos.length) out.push(acc.build());
+    }
+    return out;
   }
 }
 
@@ -215,10 +245,25 @@ function lucePseudo(x: number, y: number, z: number): number {
 const cFinSpenta = new THREE.Color(PALETTE.finestraSpenta);
 const cFinAccesa = new THREE.Color(PALETTE.finestraAccesa);
 const cCornice = new THREE.Color('#EDE5D2');
-const cVetrina = new THREE.Color('#46525C');
+const cVetrina = new THREE.Color('#57646F');
 const cFerro = new THREE.Color('#3A3A38');
 const cTecnico = new THREE.Color('#B7BBBA');
-const cPorta = new THREE.Color('#3A281C');
+const cPorta = new THREE.Color('#4C3726');
+
+/**
+ * Quanto è fitta la grana sul muro, materiale per materiale: è quello che
+ * fa distinguere il mattone dall'intonaco quando ci batte il sole. Il
+ * metallo vale 0, cioè campiona il texel bianco della texture e resta
+ * liscio come una lamiera.
+ */
+const GRANA: Record<string, number> = {
+  intonaco: 3.2,
+  mattone: 1.05,
+  pietra: 2.1,
+  cemento: 5.4,
+  metallo: 0,
+  legno: 1.5,
+};
 const cComignolo = new THREE.Color('#9A6250');
 const cFuliggine = new THREE.Color('#5C4438');
 const cPannello = new THREE.Color('#26364E');
@@ -292,6 +337,8 @@ function finestreLato(
   nx: number, nz: number,
   k: Carattere,
   budget: { n: number },
+  /** true solo sul muro che ospita davvero la vetrina. */
+  conVetrina: boolean,
 ) {
   const L = Math.hypot(x2 - x1, z2 - z1);
   if (L < 3.2 || budget.n <= 0) return;
@@ -306,8 +353,9 @@ function finestreLato(
     const base = quotaPiano(k, p);
     const alt = p === 0 ? k.hTerra : k.hPiano;
     if (base + alt > k.h + 0.01) break;
-    // il piano terra commerciale ha la vetrina, non le finestre
-    if (p === 0 && k.bottega) continue;
+    // il piano terra ha la vetrina solo sul muro che la porta: sugli altri
+    // tre lati restava cieco al livello della strada
+    if (p === 0 && conVetrina) continue;
     const hFin = Math.min(1.45, alt - 1.05);
     if (hFin < 0.7) continue;
     const y0 = base + (p === 0 ? 0.95 : 0.92);
@@ -324,7 +372,7 @@ function finestreLato(
       // vetro
       const acceso = lucePseudo(wx, y0, wz) < 0.05;
       quadV(acc, wx - fx, wz - fz, wx + fx, wz + fz, y0, y0 + hFin, nx, nz, acceso ? cFinAccesa : cFinSpenta, 0.075);
-      if (k.dettaglio < 2) continue;
+      if (k.dettaglio < 2 || p > 2) continue;
       // davanzale
       quadV(acc, wx - cx2 * 1.1, wz - cz2 * 1.1, wx + cx2 * 1.1, wz + cz2 * 1.1, y0 - 0.22, y0 - 0.1, nx, nz, cCornice, 0.11);
       if (!k.persiane) continue;
@@ -430,6 +478,14 @@ function facciata(acc: Accumulo, anello: Float32Array, k: Carattere, budget: { n
   const h = k.h;
   const hZoccolo = k.materiale === 'metallo' ? 0.35 : 0.62 + (k.gronda % 0.3);
   const cMarca = cCornice.clone().lerp(k.tinta, 0.35);
+  // il budget si divide fra i lati: prima il primo muro se lo mangiava
+  // tutto e gli altri restavano ciechi
+  let latiUtili = 0;
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    if (Math.hypot(anello[j * 2] - anello[i * 2], anello[j * 2 + 1] - anello[i * 2 + 1]) >= 3.2) latiUtili++;
+  }
+  const quotaLato = budget ? Math.max(3, Math.ceil(budget.n / Math.max(1, latiUtili))) : 0;
 
   for (let i = 0; i < n; i++) {
     const j = (i + 1) % n;
@@ -447,9 +503,10 @@ function facciata(acc: Accumulo, anello: Float32Array, k: Carattere, budget: { n
       nz = -nz;
     }
 
-    // il muro, con la grana dell'intonaco (UV in metri)
-    const uMax = L / 3.2;
-    const vMax = h / 3.2;
+    // il muro, con la grana del suo materiale (UV in metri)
+    const grana = GRANA[k.materiale] ?? 3.2;
+    const uMax = grana ? L / grana : 0;
+    const vMax = grana ? h / grana : 0;
     acc.triUV(x1, 0, z1, x2, 0, z2, x2, h, z2, nx, 0, nz, k.tinta.r, k.tinta.g, k.tinta.b, 0, 0, uMax, 0, uMax, vMax);
     acc.triUV(x1, 0, z1, x2, h, z2, x1, h, z1, nx, 0, nz, k.tinta.r, k.tinta.g, k.tinta.b, 0, 0, uMax, vMax, 0, vMax);
 
@@ -507,13 +564,55 @@ function facciata(acc: Accumulo, anello: Float32Array, k: Carattere, budget: { n
     }
 
     // pluviale nell'angolo
-    if (k.dettaglio === 2 && h > 5 && i % 2 === 0) {
-      const tx = x1 + (x2 - x1) * 0.02, tz = z1 + (z2 - z1) * 0.02;
-      const ux = x1 + (x2 - x1) * 0.06, uz = z1 + (z2 - z1) * 0.06;
-      quadV(acc, tx, tz, ux, uz, 0, h, nx, nz, k.zoccolo, 0.09);
+    if (k.dettaglio === 2 && h > 5 && i % 2 === 0 && L > 2) {
+      // larghezza fissa: in proporzione al muro diventava una fascia
+      const t0 = 0.25 / L;
+      const t1 = t0 + 0.14 / L;
+      bandaV(acc, x1, z1, x2 - x1, z2 - z1, t0, t1, 0, h, nx, nz, k.zoccolo, 0.09);
     }
 
-    finestreLato(acc, x1, z1, x2, z2, nx, nz, k, budget);
+    if (k.industriale) {
+      // il capannone: nastro finestrato sotto la gronda e costoloni
+      nastroIndustriale(acc, x1, z1, x2, z2, nx, nz, k, L);
+    } else {
+      const quota = { n: Math.min(quotaLato, budget.n) };
+      const partenza = quota.n;
+      finestreLato(acc, x1, z1, x2, z2, nx, nz, k, quota, k.bottega && i === latoLungo);
+      budget.n -= partenza - quota.n;
+    }
+  }
+}
+
+/**
+ * La facciata di un capannone: il nastro di vetrate sotto la gronda e i
+ * costoloni verticali della lamiera. Senza, restava un muro cieco lungo
+ * quaranta metri — l'immagine stessa della città finta.
+ */
+function nastroIndustriale(
+  acc: Accumulo,
+  x1: number, z1: number, x2: number, z2: number,
+  nx: number, nz: number,
+  k: Carattere,
+  L: number,
+) {
+  if (L < 5) return;
+  const dx = x2 - x1, dz = z2 - z1;
+  const h = k.h;
+  const yb = Math.max(2.4, h - 2.3);
+  if (yb + 1.1 < h) {
+    bandaV(acc, x1, z1, dx, dz, 0.06, 0.94, yb, yb + 1.05, nx, nz, cFinSpenta, 0.05);
+    bandaV(acc, x1, z1, dx, dz, 0.05, 0.95, yb + 1.05, yb + 1.2, nx, nz, cCornice, 0.06);
+  }
+  // costoloni: bande appena più scure, come le nervature della lamiera
+  const costole = Math.min(14, Math.max(2, Math.round(L / 3.4)));
+  const scuro = k.tinta.clone().multiplyScalar(0.9);
+  for (let c = 1; c < costole; c++) {
+    const t = c / costole;
+    bandaV(acc, x1, z1, dx, dz, t - 0.06 / L, t + 0.06 / L, 0, h, nx, nz, scuro, 0.04);
+  }
+  // il portone del capannone, sul lato lungo
+  if (L > 9) {
+    bandaV(acc, x1, z1, dx, dz, 0.42, 0.58, 0, Math.min(4.2, h - 0.6), nx, nz, k.zoccolo, 0.06);
   }
 }
 
@@ -745,7 +844,8 @@ function estrudiEdificio(acc: Accumulo, b: EdificioRT, k: Carattere) {
 }
 
 export interface CittaGeometrie {
-  edifici: THREE.BufferGeometry;
+  /** Un tassello per cella di città: three ne scarta quelli fuori campo. */
+  edifici: THREE.BufferGeometry[];
   suolo: THREE.BufferGeometry;
 }
 
@@ -754,7 +854,7 @@ export interface CittaGeometrie {
  * cui footprint NON vanno estrusi (hanno modelli bespoke in Landmarks.tsx).
  */
 export function generaCitta(mondo: MondoLugo, senzaLandmark: string[] = []): CittaGeometrie {
-  const edifici = new Accumulo();
+  const edifici = new Griglia(190);
   const suolo = new Accumulo();
 
   const esclusi = new Set(senzaLandmark);
@@ -766,7 +866,9 @@ export function generaCitta(mondo: MondoLugo, senzaLandmark: string[] = []): Cit
   for (const b of mondo.buildings) {
     if (b.landmark && esclusi.has(b.landmark)) continue;
     const k = caratteri.get(b);
-    if (k) estrudiEdificio(edifici, b, k);
+    if (!k) continue;
+    const c = centroide(b.fp);
+    estrudiEdificio(edifici.a(c.x, c.z), b, k);
   }
 
   porticiPiazza(edifici, mondo, esclusi);
@@ -1082,7 +1184,7 @@ function isoleRotonde(acc: Accumulo, mondo: MondoLugo) {
  * "eleganti palazzi porticati". Sugli edifici che guardano il monumento:
  * piano terra in ombra, solaio a sbalzo e pilastri bianchi ritmati.
  */
-function porticiPiazza(acc: Accumulo, mondo: MondoLugo, esclusi: Set<string>) {
+function porticiPiazza(griglia: Griglia, mondo: MondoLugo, esclusi: Set<string>) {
   const p = mondo.poi.get('baracca');
   if (!p) return;
   const cPil = new THREE.Color('#EFE8D8');
@@ -1104,6 +1206,7 @@ function porticiPiazza(acc: Accumulo, mondo: MondoLugo, esclusi: Set<string>) {
     cx /= n;
     cz /= n;
     if (Math.hypot(cx - p.xm, cz - p.zm) > 78) continue;
+    const acc = griglia.a(cx, cz);
 
     for (let i = 0; i < n; i++) {
       const j = (i + 1) % n;

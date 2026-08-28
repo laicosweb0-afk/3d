@@ -273,7 +273,7 @@ export function Arredi() {
         <meshLambertMaterial color="#6E5537" />
       </instancedMesh>
       <instancedMesh ref={chiome} args={[undefined, undefined, maxA]} frustumCulled={false} castShadow>
-        <sphereGeometry args={[1.7, 7, 5]} />
+        <sphereGeometry args={[1.7, 6, 4]} />
         <meshLambertMaterial color="#557A42" flatShading />
       </instancedMesh>
       <instancedMesh ref={paliSem} args={[undefined, undefined, maxS]} frustumCulled={false}>

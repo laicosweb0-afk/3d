@@ -8,6 +8,7 @@
 import { useEffect, useRef } from 'react';
 import { mondoLugo, type MondoLugo } from '@/lib/lugo/loadMap';
 import { registroAttivita, COLORE_CATEGORIA } from '@/lib/lugo/attivita';
+import { puntiInteresse } from '@/lib/lugo/poi';
 import { missioneById, posTappa } from '@/lib/lugo/missions';
 import { runtime } from '@/lib/lugo/runtime';
 import { useLugo } from '@/lib/lugo/store';
@@ -107,6 +108,33 @@ export function Minimap() {
           cx - finestraPx / 2, cz - finestraPx / 2, finestraPx, finestraPx,
           0, 0, lato, lato,
         );
+
+        // i luoghi da scoprire: rombo pieno se già visitato, vuoto se no
+        {
+          const pxm = lato / FINESTRA;
+          for (const pt of puntiInteresse(mondo)) {
+            if (pt.tipo === 'attivita') continue;
+            const dx = (pt.x - t.x) * pxm;
+            const dz = (pt.z - t.z) * pxm;
+            if (Math.hypot(dx, dz) > lato / 2 - 6 * dpr) continue;
+            const visto = s.poiVisitati.includes(pt.id);
+            ctx.save();
+            ctx.translate(lato / 2 + dx, lato / 2 + dz);
+            ctx.rotate(Math.PI / 4);
+            const r = 3.4 * dpr;
+            ctx.beginPath();
+            ctx.rect(-r, -r, r * 2, r * 2);
+            if (visto) {
+              ctx.fillStyle = '#B4762A';
+              ctx.fill();
+            } else {
+              ctx.strokeStyle = '#6E6252';
+              ctx.lineWidth = 1.4 * dpr;
+              ctx.stroke();
+            }
+            ctx.restore();
+          }
+        }
 
         // blip dell'obiettivo
         if (s.statoMissione === 'attiva' && s.missioneId) {

@@ -4,7 +4,7 @@
 // screen e l'HUD completi arrivano con la milestone missioni; per ora la
 // partita comincia subito.
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { KeyboardControls } from '@react-three/drei';
 import { GameCanvas } from './GameCanvas';
 import { Hud } from './Hud';
@@ -37,7 +37,15 @@ export function LugoApp() {
     <KeyboardControls map={CONTROLLI}>
       <div className="lugo-root">
         <GameCanvas />
-        {fase === 'start' ? <StartScreen /> : <Hud />}
+        {fase === 'start' ? (
+          <StartScreen />
+        ) : (
+          // l'HUD legge la mappa (punti di interesse del diario): serve la
+          // rete di sicurezza, anche se a partita avviata è già caricata
+          <Suspense fallback={null}>
+            <Hud />
+          </Suspense>
+        )}
         <Joystick />
       </div>
     </KeyboardControls>

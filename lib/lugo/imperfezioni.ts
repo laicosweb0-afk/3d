@@ -82,8 +82,8 @@ export const PEZZI: Record<TipoImperfezione, readonly Pezzo[]> = {
     { forma: 'cilindro', p: [0, 2.05, 0], s: [0.62, 0.05, 0.62], rx: Math.PI / 2, col: '#000', tinte: ['#C0392B', '#2D6CB0', '#E8E4DA', '#D9A62E'] },
   ],
   cestino: [
-    { forma: 'cilindro', p: [0, 0.42, 0], s: [0.36, 0.72, 0.36], col: '#000', tinte: ['#47504F', '#5A5148', '#3E4A52'] },
-    { forma: 'cilindro', p: [0, 0.8, 0], s: [0.4, 0.06, 0.4], col: '#2E3432' },
+    { forma: 'cilindro', p: [0, 0.42, 0], s: [0.6, 0.74, 0.6], col: '#000', tinte: ['#47504F', '#5A5148', '#3E4A52'] },
+    { forma: 'cilindro', p: [0, 0.81, 0], s: [0.66, 0.06, 0.66], col: '#2E3432' },
   ],
 };
 
@@ -96,7 +96,7 @@ const MENU: Record<string, readonly [TipoImperfezione, number][]> = {
   primaria: [['cartello', 40], ['cassonetto', 14], ['cestino', 22], ['panchina', 16], ['bici', 8]],
 };
 
-const MAX = 1500;
+const MAX = 1150;
 
 /**
  * Semina l'ingombro dei marciapiedi lungo le strade del centro abitato.
