@@ -15,6 +15,7 @@ export interface Salvataggio {
   punteggio: number;
   missioniFatte: string[];
   tintaAuto: number;
+  modelloAuto: number;
   audioOn: boolean;
   outfit: number;
   volumi: { effetti: number; voce: number; ambiente: number; musica: number };
@@ -31,6 +32,7 @@ export function caricaSalvataggio(): Partial<Salvataggio> | null {
       punteggio: typeof dati.punteggio === 'number' && isFinite(dati.punteggio) ? Math.max(0, dati.punteggio) : undefined,
       missioniFatte: Array.isArray(dati.missioniFatte) ? dati.missioniFatte.filter((x) => typeof x === 'string').slice(0, 200) : undefined,
       tintaAuto: typeof dati.tintaAuto === 'number' ? dati.tintaAuto : undefined,
+      modelloAuto: typeof dati.modelloAuto === 'number' ? dati.modelloAuto : undefined,
       audioOn: typeof dati.audioOn === 'boolean' ? dati.audioOn : undefined,
       outfit: typeof dati.outfit === 'number' ? dati.outfit : undefined,
       volumi:
@@ -70,6 +72,7 @@ export function avviaSalvataggio() {
       ...(dati.punteggio !== undefined ? { punteggio: dati.punteggio } : {}),
       ...(dati.missioniFatte !== undefined ? { missioniFatte: dati.missioniFatte } : {}),
       ...(dati.tintaAuto !== undefined ? { tintaAuto: dati.tintaAuto } : {}),
+      ...(dati.modelloAuto !== undefined ? { modelloAuto: dati.modelloAuto } : {}),
       ...(dati.audioOn !== undefined ? { audioOn: dati.audioOn } : {}),
       ...(dati.outfit !== undefined ? { outfit: dati.outfit } : {}),
       ...(dati.volumi !== undefined ? { volumi: dati.volumi } : {}),
@@ -83,6 +86,7 @@ export function avviaSalvataggio() {
       s.punteggio === prima.punteggio &&
       s.missioniFatte === prima.missioniFatte &&
       s.tintaAuto === prima.tintaAuto &&
+      s.modelloAuto === prima.modelloAuto &&
       s.audioOn === prima.audioOn &&
       s.outfit === prima.outfit &&
       s.volumi === prima.volumi
@@ -97,6 +101,7 @@ export function avviaSalvataggio() {
         punteggio: st.punteggio,
         missioniFatte: st.missioniFatte,
         tintaAuto: st.tintaAuto,
+        modelloAuto: st.modelloAuto,
         audioOn: st.audioOn,
         outfit: st.outfit,
         volumi: st.volumi,

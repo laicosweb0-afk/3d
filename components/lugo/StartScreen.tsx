@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import { useLugo } from '@/lib/lugo/store';
 import { TINTE_AUTO } from '@/lib/lugo/palette';
+import { CARROZZERIE } from '@/lib/lugo/carrozzerie';
 import { setAudioAttivo, setVolumi } from '@/lib/lugo/audio';
 
 const COMANDI: [string, string][] = [
@@ -22,6 +23,8 @@ export function StartScreen() {
   const avvia = useLugo((s) => s.avvia);
   const tintaAuto = useLugo((s) => s.tintaAuto);
   const setTintaAuto = useLugo((s) => s.setTintaAuto);
+  const modelloAuto = useLugo((s) => s.modelloAuto);
+  const setModelloAuto = useLugo((s) => s.setModelloAuto);
   const audioOn = useLugo((s) => s.audioOn);
   const toggleAudio = useLugo((s) => s.toggleAudio);
   const volumi = useLugo((s) => s.volumi);
@@ -120,7 +123,17 @@ export function StartScreen() {
                 </div>
               ))}
               <div className="lugo-start-imp">
-                <span>La tua auto</span>
+                <span className="lugo-imp-etichetta">Carrozzeria</span>
+                <button
+                  type="button"
+                  className="lugo-start-btn"
+                  onClick={() => setModelloAuto((modelloAuto + 1) % CARROZZERIE.length)}
+                >
+                  {CARROZZERIE[modelloAuto % CARROZZERIE.length].nome}
+                </button>
+              </div>
+              <div className="lugo-start-imp">
+                <span className="lugo-imp-etichetta">Colore</span>
                 <span className="lugo-start-tinte">
                   {TINTE_AUTO.map((t, i) => (
                     <button

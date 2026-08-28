@@ -55,6 +55,8 @@ interface LugoState {
   qualita: QualitaTier;
   /** Indice tinta auto scelta nello start screen. */
   tintaAuto: number;
+  /** Indice della carrozzeria scelta. */
+  modelloAuto: number;
   audioOn: boolean;
   /** Volumi 0–1 del mixer. */
   volumi: { effetti: number; voce: number; ambiente: number; musica: number };
@@ -98,6 +100,7 @@ interface LugoState {
   setMode: (m: Modalita) => void;
   setQualita: (q: QualitaTier) => void;
   setTintaAuto: (i: number) => void;
+  setModelloAuto: (i: number) => void;
   toggleAudio: () => void;
   setVolume: (canale: 'effetti' | 'voce' | 'ambiente' | 'musica', v: number) => void;
   setKmh: (v: number) => void;
@@ -123,6 +126,7 @@ export const useLugo = create<LugoState>((set) => ({
   mode: 'auto',
   qualita: 'alta',
   tintaAuto: 0,
+  modelloAuto: 0,
   audioOn: true,
   volumi: { effetti: 1, voce: 1, ambiente: 1, musica: 0.7 },
   kmh: 0,
@@ -147,6 +151,7 @@ export const useLugo = create<LugoState>((set) => ({
   setMode: (mode) => set({ mode }),
   setQualita: (qualita) => set({ qualita }),
   setTintaAuto: (tintaAuto) => set({ tintaAuto }),
+  setModelloAuto: (modelloAuto) => set({ modelloAuto }),
   toggleAudio: () => set((s) => ({ audioOn: !s.audioOn })),
   setVolume: (canale, v) =>
     set((s) => ({ volumi: { ...s.volumi, [canale]: Math.max(0, Math.min(1, v)) } })),
