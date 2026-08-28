@@ -49,23 +49,36 @@ function ChaseCamera({ rt }: { rt: RuntimeGioco }) {
     const mode = useLugo.getState().mode;
     const t = mode === 'auto' ? rt.auto : rt.persona;
 
-    let dirX: number;
-    let dirZ: number;
+    // ── l'orientamento della camera è STATO, non una misura della
+    // posizione: se lo si ricavasse dal vettore camera→giocatore si
+    // creerebbe un anello di retroazione (i comandi muovono il giocatore,
+    // il giocatore ruota la camera, la camera ruota i comandi) e le
+    // direzioni si invertirebbero. Qui invece:
+    //   • in auto segue il muso della macchina;
+    //   • a piedi resta ferma, e si riallinea DOLCEMENTE dietro le spalle
+    //     solo mentre si cammina in avanti. Andando indietro o di lato non
+    //     si muove: la direzione dei tasti resta quella che vedi.
     if (mode === 'auto') {
-      dirX = Math.cos(rt.auto.yaw);
-      dirZ = Math.sin(rt.auto.yaw);
-      if (rt.vAuto < -0.5) {
-        dirX = -dirX;
-        dirZ = -dirZ;
-      }
+      let avantiAuto = rt.auto.yaw;
+      if (rt.vAuto < -0.5) avantiAuto += Math.PI;
+      rt.cameraYaw = avantiAuto;
     } else {
-      // a piedi la camera trascina: direzione = camera → personaggio
-      dirX = t.x - camera.position.x;
-      dirZ = t.z - camera.position.z;
-      const l = Math.hypot(dirX, dirZ) || 1;
-      dirX /= l;
-      dirZ /= l;
+      // la camera si rimette dietro le spalle SOLO mentre cammini dritto
+      // in avanti. Se lo facesse anche di lato ruoterebbe il riferimento
+      // dei comandi mentre li stai usando (diagonali storte), e se lo
+      // facesse andando indietro inseguirebbe chi le cammina incontro,
+      // ribaltando la direzione: sono i due modi in cui il movimento si
+      // invertiva. Andando dritti facing e camera coincidono già, quindi
+      // qui non c'è nessuna deriva: solo una correzione che converge.
+      if (runtime.assi.az > 0.35 && Math.abs(runtime.assi.ax) < 0.3) {
+        let scarto = rt.persona.yaw - rt.cameraYaw;
+        while (scarto > Math.PI) scarto -= Math.PI * 2;
+        while (scarto < -Math.PI) scarto += Math.PI * 2;
+        rt.cameraYaw += scarto * (1 - Math.exp(-1.8 * dt));
+      }
     }
+    const dirX = Math.cos(rt.cameraYaw);
+    const dirZ = Math.sin(rt.cameraYaw);
 
     const dist = mode === 'auto' ? 8.5 : 4.2;
     const alt = mode === 'auto' ? 3.4 : 2.1;
@@ -99,8 +112,6 @@ function ChaseCamera({ rt }: { rt: RuntimeGioco }) {
       camera.position.y += Math.cos(t2 * 47) * scossa.current * 0.6;
       scossa.current *= Math.exp(-dt * 6);
     }
-
-    rt.cameraYaw = Math.atan2(t.z - camera.position.z, t.x - camera.position.x);
   });
   return null;
 }
@@ -154,6 +165,14 @@ export function Player() {
     w.__LUGO__ = {
       ...(w.__LUGO__ ?? {}),
       pos: () => [attivo().x, attivo().z],
+      // diagnosi del movimento: riferimento camera, direzione guardata e velocità
+      direzione: () => ({
+        camYaw: rt.cameraYaw,
+        yaw: rt.persona.yaw,
+        vx: rt.persona.vx,
+        vz: rt.persona.vz,
+        v: Math.hypot(rt.persona.vx, rt.persona.vz),
+      }),
       attivita: () => registroAttivitaHook(),
       mode: () => useLugo.getState().mode,
       teleport: (x: number, z: number, yaw?: number) => {
@@ -188,6 +207,7 @@ export function Player() {
         rt.auto.vx = 0;
         rt.auto.vz = 0;
         const input: StatoInput = {
+          ax: 0, az: 1,
           avanti: true, indietro: false, sinistra: false, destra: false,
           corri: false, freno: false, interagisci: false, reset: false, colpisci: false,
         };
@@ -208,10 +228,12 @@ export function Player() {
     const st = useLugo.getState();
     const fermo: StatoInput = {
       avanti: false, indietro: false, sinistra: false, destra: false,
-      corri: false, freno: false, interagisci: false, reset: false, colpisci: false,
+      corri: false, freno: false, interagisci: false, reset: false, colpisci: false, ax: 0, az: 0,
     };
     // tastiera + joystick virtuale, fusi in un unico punto
     const input = st.fase === 'gioco' ? conStick(getInput() as unknown as StatoInput) : fermo;
+    runtime.assi.ax = input.ax;
+    runtime.assi.az = input.az;
 
     if (st.mode === 'auto') {
       const esito = stepAuto(rt.auto, input, dt, fisica, mondo.bounds);

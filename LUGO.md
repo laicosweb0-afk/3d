@@ -53,6 +53,13 @@ nei negozi (e il vestito comprato si vede addosso).
   merlatura e il mastio.
 - **Fisica**: motore arcade 2D senza librerie (`lib/lugo/{physics,car,character}.ts`),
   collisioni cerchio-vs-OBB/segmenti su spatial hash. Lugo è in pianura.
+- **Movimento a piedi**: un solo ingresso (`lib/lugo/stick.ts`) fonde
+  tastiera e joystick in due assi normalizzati; `character.ts` li ruota nel
+  riferimento della camera, gira il personaggio verso la direzione chiesta e
+  lo fa camminare lungo lo sguardo, con accelerazione, decelerazione e
+  rallentamento nelle virate strette. La camera a piedi ha uno yaw **di
+  stato**, mai ricavato dalla posizione: si rimette dietro le spalle solo
+  mentre cammini dritto in avanti, così i comandi non ruotano sotto le dita.
 - **Missioni**: architettura data-driven in `lib/lugo/missions.ts` — storia
   a catena + consegne generate al volo dai negozi veri della mappa. Per
   aggiungerne basta una voce nell'array (o un generatore come `creaConsegna`).

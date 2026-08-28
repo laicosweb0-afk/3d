@@ -169,6 +169,140 @@ try {
     else ko('risalita in auto', `mode=${m2}`);
   }
 
+  // ── fase 3a: matrice delle otto direzioni ─────────────────────────────
+  // Si misura lo spostamento REALE e lo si confronta con la direzione
+  // attesa nel riferimento della camera: 0° = avanti, 180° = indietro,
+  // +90° = destra. Copre tastiera, WASD e joystick.
+  if ((await lugo('typeof L.direzione')) === 'function' && (await lugo('typeof L.teleport')) === 'function') {
+    const centro = await lugo('L.poi.pavaglione');
+    if (centro) {
+      await page.evaluate(() => window.__LUGO__.tempoScorre(false));
+      await page.evaluate(() => window.__LUGO__.ora(14)); // niente mercato in corte
+      // si prova a piedi, nella corte del Pavaglione: spazio libero
+      if ((await lugo('L.mode()')) === 'auto') {
+        await page.keyboard.down('Space');
+        await page.waitForTimeout(1000);
+        await page.keyboard.up('Space');
+        await page.keyboard.press('KeyE');
+        await page.waitForTimeout(500);
+      }
+
+      const prova = async (nome, tasti, attesoGradi) => {
+        await page.evaluate(([x, z]) => window.__LUGO__.teleport(x, z), [centro.x, centro.z]);
+        await page.waitForTimeout(300);
+        const camYaw = (await lugo('L.direzione()')).camYaw;
+        for (const t of tasti) await page.keyboard.down(t);
+        // mezzo secondo per girarsi, poi si misura il tratto a regime
+        await page.waitForTimeout(600);
+        const p0 = await lugo('L.pos()');
+        await page.waitForTimeout(900);
+        const p1 = await lugo('L.pos()');
+        for (const t of tasti) await page.keyboard.up(t);
+        await page.waitForTimeout(250);
+
+        const dx = p1[0] - p0[0];
+        const dz = p1[1] - p0[1];
+        const dist = Math.hypot(dx, dz);
+        if (dist < 0.35) {
+          ko(`direzione ${nome}`, `direzione morta: ${dist.toFixed(2)} m`);
+          return;
+        }
+        // angolo del moto rispetto all'avanti della camera, in gradi
+        let rel = ((Math.atan2(dz, dx) - camYaw) * 180) / Math.PI;
+        while (rel > 180) rel -= 360;
+        while (rel < -180) rel += 360;
+        let err = Math.abs(rel - attesoGradi);
+        if (err > 180) err = 360 - err;
+        if (err < 32) ok(`direzione ${nome}`, `${rel.toFixed(0)}° (atteso ${attesoGradi}°), ${dist.toFixed(1)} m`);
+        else ko(`direzione ${nome}`, `va a ${rel.toFixed(0)}° invece di ${attesoGradi}°`);
+      };
+
+      await prova('SU', ['ArrowUp'], 0);
+      await prova('GIÙ', ['ArrowDown'], 180);
+      await prova('DESTRA', ['ArrowRight'], 90);
+      await prova('SINISTRA', ['ArrowLeft'], -90);
+      await prova('SU+DESTRA', ['ArrowUp', 'ArrowRight'], 45);
+      await prova('SU+SINISTRA', ['ArrowUp', 'ArrowLeft'], -45);
+      await prova('GIÙ+DESTRA', ['ArrowDown', 'ArrowRight'], 135);
+      await prova('GIÙ+SINISTRA', ['ArrowDown', 'ArrowLeft'], -135);
+      await prova('W', ['KeyW'], 0);
+      await prova('S', ['KeyS'], 180);
+      await prova('D', ['KeyD'], 90);
+      await prova('A', ['KeyA'], -90);
+
+      // il rilascio deve fermare davvero
+      await page.waitForTimeout(500);
+      const fermo = await lugo('L.direzione().v');
+      if (fermo < 0.05) ok('rilascio ferma il movimento', `v=${fermo.toFixed(3)} m/s`);
+      else ko('rilascio ferma il movimento', `resta v=${fermo.toFixed(2)} m/s`);
+
+      // le diagonali non devono essere più veloci del dritto
+      const misuraVel = async (tasti) => {
+        await page.evaluate(([x, z]) => window.__LUGO__.teleport(x, z), [centro.x, centro.z]);
+        await page.waitForTimeout(300);
+        for (const t of tasti) await page.keyboard.down(t);
+        await page.waitForTimeout(900);
+        const v = await lugo('L.direzione().v');
+        for (const t of tasti) await page.keyboard.up(t);
+        await page.waitForTimeout(250);
+        return v;
+      };
+      const vDritto = await misuraVel(['ArrowUp']);
+      const vDiag = await misuraVel(['ArrowUp', 'ArrowRight']);
+      if (vDiag <= vDritto * 1.08) ok('diagonale non più veloce', `${vDiag.toFixed(2)} ≤ ${vDritto.toFixed(2)} m/s`);
+      else ko('diagonale non più veloce', `${vDiag.toFixed(2)} > ${vDritto.toFixed(2)} m/s`);
+
+      // il joystick deve comportarsi come la tastiera
+      const pad2 = page.locator('[data-hud="joystick-pad"]');
+      if (await pad2.count()) {
+        const box2 = await pad2.boundingBox();
+        const provaStick = async (nome, dx, dy, attesoGradi) => {
+          await page.evaluate(([x, z]) => window.__LUGO__.teleport(x, z), [centro.x, centro.z]);
+          await page.waitForTimeout(300);
+          const camYaw = (await lugo('L.direzione()')).camYaw;
+          const cx = box2.x + box2.width / 2;
+          const cy = box2.y + box2.height / 2;
+          await page.mouse.move(cx, cy);
+          await page.mouse.down();
+          await page.mouse.move(cx + dx, cy + dy, { steps: 5 });
+          await page.waitForTimeout(600);
+          const p0 = await lugo('L.pos()');
+          await page.waitForTimeout(900);
+          const p1 = await lugo('L.pos()');
+          await page.mouse.up();
+          await page.waitForTimeout(250);
+          const ddx = p1[0] - p0[0];
+          const ddz = p1[1] - p0[1];
+          if (Math.hypot(ddx, ddz) < 0.35) {
+            ko(`joystick ${nome}`, 'direzione morta');
+            return;
+          }
+          let rel = ((Math.atan2(ddz, ddx) - camYaw) * 180) / Math.PI;
+          while (rel > 180) rel -= 360;
+          while (rel < -180) rel += 360;
+          let err = Math.abs(rel - attesoGradi);
+          if (err > 180) err = 360 - err;
+          if (err < 32) ok(`joystick ${nome}`, `${rel.toFixed(0)}° (atteso ${attesoGradi}°)`);
+          else ko(`joystick ${nome}`, `va a ${rel.toFixed(0)}° invece di ${attesoGradi}°`);
+        };
+        await provaStick('su', 0, -42, 0);
+        await provaStick('giù', 0, 42, 180);
+        await provaStick('destra', 42, 0, 90);
+        await provaStick('sinistra', -42, 0, -90);
+        await provaStick('diagonale', 30, -30, 45);
+      }
+
+      await page.evaluate(() => window.__LUGO__.tempoScorre(true));
+      // si torna in auto per le fasi successive
+      let mA = await lugo('L.mode()');
+      for (let i = 0; i < 4 && mA !== 'auto'; i++) {
+        await page.keyboard.press('KeyE');
+        await page.waitForTimeout(400);
+        mA = await lugo('L.mode()');
+      }
+    }
+  }
+
   // ── fase 3b: la vetrina di un'attività ────────────────────────────────
   if ((await lugo('typeof L.attivita')) === 'function') {
     const negozi = await lugo('L.attivita()');
