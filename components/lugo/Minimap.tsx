@@ -7,6 +7,7 @@
 
 import { useEffect, useRef } from 'react';
 import { mondoLugo, type MondoLugo } from '@/lib/lugo/loadMap';
+import { registroAttivita, COLORE_CATEGORIA } from '@/lib/lugo/attivita';
 import { missioneById, posTappa } from '@/lib/lugo/missions';
 import { runtime } from '@/lib/lugo/runtime';
 import { useLugo } from '@/lib/lugo/store';
@@ -53,6 +54,15 @@ function disegnaBase(mondo: MondoLugo): { off: HTMLCanvasElement; minX: number; 
     }
     ctx.stroke();
   }
+  // le attività: un pallino del colore della categoria
+  for (const a of registroAttivita(mondo)) {
+    const [px, pz] = w2p(a.x, a.z);
+    ctx.fillStyle = COLORE_CATEGORIA[a.categoria];
+    ctx.beginPath();
+    ctx.arc(px, pz, 2.6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
   return { off, minX, minZ };
 }
 

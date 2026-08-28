@@ -25,6 +25,7 @@ export function Joystick() {
   useEffect(() => {
     stick.freno = false;
     stick.corriBtn = false;
+    stick.pugnoBtn = false;
   }, [mode]);
 
   // qualunque uscita dalla finestra molla tutto: mai comandi "incollati"
@@ -34,6 +35,7 @@ export function Joystick() {
       resetStick();
       stick.freno = false;
       stick.corriBtn = false;
+      stick.pugnoBtn = false;
       stick.interagisci = false;
       if (palla.current) palla.current.style.transform = 'translate(0px, 0px)';
     };
@@ -84,7 +86,7 @@ export function Joystick() {
   };
 
   const premi =
-    (campo: 'freno' | 'corriBtn' | 'interagisci', valore: boolean) => (e: ReactPointerEvent) => {
+    (campo: 'freno' | 'corriBtn' | 'pugnoBtn' | 'interagisci', valore: boolean) => (e: ReactPointerEvent) => {
       if (valore) {
         try {
           (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -122,17 +124,30 @@ export function Joystick() {
             FRENO
           </button>
         ) : (
-          <button
-            type="button"
-            className="lugo-pulsante"
-            aria-label="Corri"
-            onPointerDown={premi('corriBtn', true)}
-            onPointerUp={premi('corriBtn', false)}
-            onPointerCancel={premi('corriBtn', false)}
-            onLostPointerCapture={() => (stick.corriBtn = false)}
-          >
-            CORRI
-          </button>
+          <>
+            <button
+              type="button"
+              className="lugo-pulsante"
+              aria-label="Corri"
+              onPointerDown={premi('corriBtn', true)}
+              onPointerUp={premi('corriBtn', false)}
+              onPointerCancel={premi('corriBtn', false)}
+              onLostPointerCapture={() => (stick.corriBtn = false)}
+            >
+              CORRI
+            </button>
+            <button
+              type="button"
+              className="lugo-pulsante lugo-pulsante-pugno"
+              aria-label="Colpisci"
+              onPointerDown={premi('pugnoBtn', true)}
+              onPointerUp={premi('pugnoBtn', false)}
+              onPointerCancel={premi('pugnoBtn', false)}
+              onLostPointerCapture={() => (stick.pugnoBtn = false)}
+            >
+              ✊
+            </button>
+          </>
         )}
       </div>
       <div

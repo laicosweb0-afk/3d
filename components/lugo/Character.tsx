@@ -9,15 +9,20 @@ import { forwardRef, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { RuntimeGioco } from './Player';
+import { useLugo } from '@/lib/lugo/store';
 
 const PELLE = '#D9A67C';
-const GIACCA = '#4A6B78'; // giubbotto blu-petrolio
-const MAGLIA = '#D8D2C4';
-const PANTALONI = '#3A4356'; // jeans
 const CAPELLI = '#2E2620';
-const SCARPE = '#E8E4DC'; // sneakers chiare
 
-function Gamba({ z, fase, rt }: { z: number; fase: number; rt: RuntimeGioco }) {
+/** I vestiti che si comprano nei negozi del centro. */
+const GUARDAROBA = [
+  { giacca: '#4A6B78', maglia: '#D8D2C4', pantaloni: '#3A4356', scarpe: '#E8E4DC' },
+  { giacca: '#2F3540', maglia: '#C8503F', pantaloni: '#2A2E38', scarpe: '#F0EDE6' },
+  { giacca: '#7A5C3E', maglia: '#EDE4CE', pantaloni: '#46504A', scarpe: '#2E2A26' },
+  { giacca: '#3E5A4A', maglia: '#E8C86A', pantaloni: '#26303C', scarpe: '#D8D2C4' },
+];
+
+function Gamba({ z, fase, rt, pantaloni, scarpe }: { z: number; fase: number; rt: RuntimeGioco; pantaloni: string; scarpe: string }) {
   const anca = useRef<THREE.Group>(null);
   const ginocchio = useRef<THREE.Group>(null);
   useFrame(() => {
@@ -37,24 +42,24 @@ function Gamba({ z, fase, rt }: { z: number; fase: number; rt: RuntimeGioco }) {
       {/* coscia */}
       <mesh position={[0, -0.22, 0]} castShadow>
         <boxGeometry args={[0.17, 0.44, 0.16]} />
-        <meshLambertMaterial color={PANTALONI} />
+        <meshLambertMaterial color={pantaloni} />
       </mesh>
       {/* polpaccio + scarpa, articolati sul ginocchio */}
       <group position={[0, -0.44, 0]} ref={ginocchio}>
         <mesh position={[0, -0.2, 0]} castShadow>
           <boxGeometry args={[0.15, 0.4, 0.14]} />
-          <meshLambertMaterial color={PANTALONI} />
+          <meshLambertMaterial color={pantaloni} />
         </mesh>
         <mesh position={[0.06, -0.42, 0]}>
           <boxGeometry args={[0.3, 0.11, 0.15]} />
-          <meshLambertMaterial color={SCARPE} />
+          <meshLambertMaterial color={scarpe} />
         </mesh>
       </group>
     </group>
   );
 }
 
-function Braccio({ z, fase, rt }: { z: number; fase: number; rt: RuntimeGioco }) {
+function Braccio({ z, fase, rt, giacca }: { z: number; fase: number; rt: RuntimeGioco; giacca: string }) {
   const spalla = useRef<THREE.Group>(null);
   const gomito = useRef<THREE.Group>(null);
   useFrame(() => {
@@ -69,12 +74,12 @@ function Braccio({ z, fase, rt }: { z: number; fase: number; rt: RuntimeGioco })
     <group position={[0, 1.34, z]} ref={spalla}>
       <mesh position={[0, -0.17, 0]} castShadow>
         <boxGeometry args={[0.12, 0.34, 0.12]} />
-        <meshLambertMaterial color={GIACCA} />
+        <meshLambertMaterial color={giacca} />
       </mesh>
       <group position={[0, -0.34, 0]} ref={gomito}>
         <mesh position={[0, -0.14, 0]}>
           <boxGeometry args={[0.1, 0.28, 0.1]} />
-          <meshLambertMaterial color={GIACCA} />
+          <meshLambertMaterial color={giacca} />
         </mesh>
         <mesh position={[0, -0.32, 0]}>
           <boxGeometry args={[0.09, 0.1, 0.09]} />
@@ -90,6 +95,8 @@ export const Character = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function 
   ref,
 ) {
   const busto = useRef<THREE.Group>(null);
+  const outfit = useLugo((s) => s.outfit);
+  const { giacca, maglia, pantaloni, scarpe } = GUARDAROBA[outfit % GUARDAROBA.length];
 
   useFrame(({ clock }) => {
     if (!busto.current) return;
@@ -108,17 +115,17 @@ export const Character = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function 
         {/* bacino */}
         <mesh position={[0, 0.92, 0]} castShadow>
           <boxGeometry args={[0.24, 0.16, 0.34]} />
-          <meshLambertMaterial color={PANTALONI} />
+          <meshLambertMaterial color={pantaloni} />
         </mesh>
         {/* torso col giubbotto, spalle un filo più larghe */}
         <mesh position={[0, 1.18, 0]} castShadow>
           <boxGeometry args={[0.26, 0.42, 0.4]} />
-          <meshLambertMaterial color={GIACCA} />
+          <meshLambertMaterial color={giacca} />
         </mesh>
         {/* la maglia che spunta dal giubbotto */}
         <mesh position={[0.11, 1.12, 0]}>
           <boxGeometry args={[0.06, 0.28, 0.16]} />
-          <meshLambertMaterial color={MAGLIA} />
+          <meshLambertMaterial color={maglia} />
         </mesh>
         {/* collo e testa proporzionati */}
         <mesh position={[0, 1.42, 0]}>
@@ -138,11 +145,11 @@ export const Character = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function 
           <boxGeometry args={[0.05, 0.14, 0.22]} />
           <meshLambertMaterial color={CAPELLI} />
         </mesh>
-        <Braccio z={0.26} fase={Math.PI} rt={rt} />
-        <Braccio z={-0.26} fase={0} rt={rt} />
+        <Braccio z={0.26} fase={Math.PI} rt={rt} giacca={giacca} />
+        <Braccio z={-0.26} fase={0} rt={rt} giacca={giacca} />
       </group>
-      <Gamba z={0.09} fase={0} rt={rt} />
-      <Gamba z={-0.09} fase={Math.PI} rt={rt} />
+      <Gamba z={0.09} fase={0} rt={rt} pantaloni={pantaloni} scarpe={scarpe} />
+      <Gamba z={-0.09} fase={Math.PI} rt={rt} pantaloni={pantaloni} scarpe={scarpe} />
     </group>
   );
 });

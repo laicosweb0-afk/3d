@@ -86,11 +86,11 @@ try {
   if ((await lugo('typeof L.pos')) === 'function') {
     const p0 = await lugo('L.pos()');
     await page.keyboard.down('ArrowUp');
-    await page.waitForTimeout(3200);
+    await page.waitForTimeout(4200);
     await page.keyboard.up('ArrowUp');
     const p1 = await lugo('L.pos()');
     const d = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
-    if (d > 2) ok('auto si muove', `${d.toFixed(1)} m in 3.2 s`);
+    if (d > 2) ok('auto si muove', `${d.toFixed(1)} m in 4.2 s`);
     else ko('auto si muove', `spostamento ${d.toFixed(2)} m`);
     await page.screenshot({ path: join(SHOTS, '02-guida.png') });
 
@@ -167,6 +167,52 @@ try {
     }
     if (m2 === 'auto') ok('risalita in auto');
     else ko('risalita in auto', `mode=${m2}`);
+  }
+
+  // ── fase 3b: la vetrina di un'attività ────────────────────────────────
+  if ((await lugo('typeof L.attivita')) === 'function') {
+    const negozi = await lugo('L.attivita()');
+    if (negozi && negozi.length) {
+      const n = negozi[0];
+      // la bottega si visita a piedi: prima si scende, POI ci si sposta
+      // (così l'auto resta lontana e la E non fa risalire in macchina)
+      if ((await lugo('L.mode()')) === 'auto') {
+        await page.keyboard.down('Space');
+        await page.waitForTimeout(1000);
+        await page.keyboard.up('Space');
+        await page.keyboard.press('KeyE');
+        await page.waitForTimeout(500);
+      }
+      await page.evaluate(([x, z]) => window.__LUGO__.teleport(x, z), [n.x, n.z]);
+      await page.waitForTimeout(700);
+      await page.keyboard.press('KeyE');
+      await page.waitForTimeout(600);
+      const aperta = await page.locator('[data-hud="vetrina"]').count();
+      if (aperta) {
+        ok('vetrina attività', n.nome);
+        await page.screenshot({ path: join(SHOTS, '05-negozio.png') });
+        // si compra il primo articolo alla portata, se ce n'è
+        const soldiPrima = await lugo('typeof L.denaro === "function" ? L.denaro() : 0');
+        const art = page.locator('[data-hud="vetrina"] .lugo-vetrina-art:not([disabled])').first();
+        if (await art.count()) {
+          await art.click();
+          await page.waitForTimeout(400);
+          const soldiDopo = await lugo('L.denaro()');
+          if (soldiDopo !== soldiPrima) ok('acquisto in bottega', `${soldiPrima} → ${soldiDopo}`);
+        }
+        await page.locator('[data-hud="vetrina"] .lugo-vetrina-chiudi').click();
+        await page.waitForTimeout(300);
+      } else {
+        ko('vetrina attività', 'la vetrina non si è aperta');
+      }
+      // si torna in auto per le fasi successive
+      let m3 = await lugo('L.mode()');
+      for (let i = 0; i < 4 && m3 !== 'auto'; i++) {
+        await page.keyboard.press('KeyE');
+        await page.waitForTimeout(400);
+        m3 = await lugo('L.mode()');
+      }
+    }
   }
 
   // ── fase 4: missioni ──────────────────────────────────────────────────

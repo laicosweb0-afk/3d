@@ -9,7 +9,7 @@ import type { MondoLugo } from './loadMap';
 import type { MondoFisico } from './physics';
 import type { RuntimeGioco } from './runtime';
 
-export type TipoNpc = 'maranza' | 'anziano' | 'carabiniere';
+export type TipoNpc = 'maranza' | 'anziano' | 'carabiniere' | 'studente' | 'ciclista';
 export type StatoNpc = 'cammina' | 'fermo' | 'balzo';
 
 export interface Npc {
@@ -40,7 +40,7 @@ export interface Npc {
 
 export const RAGGIO_NPC = 0.3;
 
-const PASSO = { maranza: 1.5, anziano: 0.7, carabiniere: 1.1 } as const;
+const PASSO = { maranza: 1.5, anziano: 0.7, carabiniere: 1.1, studente: 1.7, ciclista: 4.2 } as const;
 
 export const FRASI_BALZO = [
   'Uè! Sta’ attento!',
@@ -48,6 +48,18 @@ export const FRASI_BALZO = [
   'Ciò! Guarda dove vai!',
   'Socmel!',
   'Ma sei matto?!',
+] as const;
+
+/** Battute di città, dette quando il giocatore passa vicino a piedi. */
+export const FRASI_STRADA = [
+  'Oh, bella!',
+  'Che caldo oggi, eh.',
+  'Dove vai di bello?',
+  'Ci vediamo al Pavaglione.',
+  'Hai visto che roba?',
+  'Andiamo a prendere un caffè?',
+  'Ma quanto è bello il centro oggi.',
+  'Ciao ciao, ci si vede.',
 ] as const;
 
 function rand(seme: { s: number }): number {
@@ -155,8 +167,25 @@ export function creaNpcs(mondo: MondoLugo, quanti: number): Npc[] {
     }
   }
 
+  // studenti: a coppie, veloci, vicino al centro e alla stazione
+  const nStudenti = Math.floor(quanti * 0.16);
+  for (let i = 0; i < nStudenti; i += 2) {
+    const [ax, az] = ancore[Math.floor(rand(seme) * ancore.length)];
+    const [gx, gz] = puntoStradaCasuale(mondo, ax, az, 200, seme);
+    spawn('studente', gx, gz, 8);
+    if (i + 1 < nStudenti) spawn('studente', gx, gz, 8);
+  }
+
+  // ciclisti: in Romagna la bici è di serie
+  const nCiclisti = Math.floor(quanti * 0.12);
+  for (let i = 0; i < nCiclisti; i++) {
+    const [ax, az] = ancore[Math.floor(rand(seme) * ancore.length)];
+    const c = spawn('ciclista', ax, az, 260);
+    c.stato = 'cammina'; // in bici non ci si ferma a chiacchierare
+  }
+
   // anziani: sparsi, lenti
-  const nAnziani = quanti - npcs.length;
+  const nAnziani = Math.max(0, quanti - npcs.length);
   for (let i = 0; i < nAnziani; i++) {
     const [ax, az] = ancore[Math.floor(rand(seme) * ancore.length)];
     spawn('anziano', ax, az, 240);

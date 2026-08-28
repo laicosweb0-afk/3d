@@ -29,6 +29,18 @@ export interface EsitoMissione {
   extra?: string; // "MANCIA €5" e simili
 }
 
+/** La vetrina di un'attività, aperta con E davanti al negozio. */
+export interface VetrinaAperta {
+  id: string;
+  nome: string;
+  categoria: string;
+  descrizione: string;
+  /** true solo per attività che hanno autorizzato la presenza premium. */
+  partner: boolean;
+  promo: string | null;
+  articoli: { nome: string; prezzo: number; effetto?: string }[];
+}
+
 /** Un dialogo a scelte con un NPC. */
 export interface Dialogo {
   id: string;
@@ -43,7 +55,11 @@ interface LugoState {
   qualita: QualitaTier;
   /** Indice tinta auto scelta nello start screen. */
   tintaAuto: number;
+  /** Indice della carrozzeria scelta. */
+  modelloAuto: number;
   audioOn: boolean;
+  /** Volumi 0–1 del mixer. */
+  volumi: { effetti: number; voce: number; ambiente: number; musica: number };
 
   // HUD (aggiornati a ~5 Hz dal loop, non ogni frame)
   kmh: number;
@@ -69,6 +85,10 @@ interface LugoState {
   esito: EsitoMissione | null;
   /** Dialogo a scelte aperto (mette in pausa l'attenzione, non il mondo). */
   dialogo: Dialogo | null;
+  /** Vetrina del negozio aperta. */
+  vetrina: VetrinaAperta | null;
+  /** Indice del vestito indossato (si compra nei negozi). */
+  outfit: number;
   /** Messaggio transitorio a centro schermo (esiti, tappe). */
   avviso: string | null;
   /** Suggerimento contestuale persistente ("Premi E…"). */
@@ -80,7 +100,9 @@ interface LugoState {
   setMode: (m: Modalita) => void;
   setQualita: (q: QualitaTier) => void;
   setTintaAuto: (i: number) => void;
+  setModelloAuto: (i: number) => void;
   toggleAudio: () => void;
+  setVolume: (canale: 'effetti' | 'voce' | 'ambiente' | 'musica', v: number) => void;
   setKmh: (v: number) => void;
   addPunti: (v: number) => void;
   /** Aggiunge (o toglie, mai sotto zero) denaro. */
@@ -92,6 +114,8 @@ interface LugoState {
   setIntro: (i: IntroMissione | null) => void;
   setEsito: (e: EsitoMissione | null) => void;
   setDialogo: (d: Dialogo | null) => void;
+  setVetrina: (v: VetrinaAperta | null) => void;
+  setOutfit: (i: number) => void;
   setAvviso: (msg: string | null) => void;
   setHint: (msg: string | null) => void;
   setVia: (nome: string | null) => void;
@@ -102,10 +126,12 @@ export const useLugo = create<LugoState>((set) => ({
   mode: 'auto',
   qualita: 'alta',
   tintaAuto: 0,
+  modelloAuto: 0,
   audioOn: true,
+  volumi: { effetti: 1, voce: 1, ambiente: 1, musica: 0.7 },
   kmh: 0,
   punteggio: 0,
-  denaro: 0,
+  denaro: 20,
   wanted: 0,
   missioneId: null,
   statoMissione: 'idle',
@@ -115,6 +141,8 @@ export const useLugo = create<LugoState>((set) => ({
   intro: null,
   esito: null,
   dialogo: null,
+  vetrina: null,
+  outfit: 0,
   avviso: null,
   hint: null,
   via: null,
@@ -123,7 +151,10 @@ export const useLugo = create<LugoState>((set) => ({
   setMode: (mode) => set({ mode }),
   setQualita: (qualita) => set({ qualita }),
   setTintaAuto: (tintaAuto) => set({ tintaAuto }),
+  setModelloAuto: (modelloAuto) => set({ modelloAuto }),
   toggleAudio: () => set((s) => ({ audioOn: !s.audioOn })),
+  setVolume: (canale, v) =>
+    set((s) => ({ volumi: { ...s.volumi, [canale]: Math.max(0, Math.min(1, v)) } })),
   setKmh: (kmh) => set({ kmh }),
   addPunti: (v) => set((s) => ({ punteggio: s.punteggio + v })),
   addDenaro: (v) => set((s) => ({ denaro: Math.max(0, Math.round((s.denaro + v) * 100) / 100) })),
@@ -135,6 +166,8 @@ export const useLugo = create<LugoState>((set) => ({
   setIntro: (intro) => set({ intro }),
   setEsito: (esito) => set({ esito }),
   setDialogo: (dialogo) => set({ dialogo }),
+  setVetrina: (vetrina) => set({ vetrina }),
+  setOutfit: (outfit) => set({ outfit }),
   setAvviso: (avviso) => set({ avviso }),
   setHint: (hint) => set({ hint }),
   setVia: (via) => set({ via }),

@@ -14,8 +14,11 @@ import { stepAuto, puntoStradaVicino, viaVicina } from '@/lib/lugo/car';
 import { stepPersona, PERSONA } from '@/lib/lugo/character';
 import type { StatoInput } from '@/lib/lugo/input';
 import { conStick } from '@/lib/lugo/stick';
+import { attivitaVicina, registroAttivita } from '@/lib/lugo/attivita';
+import { FRASI_STRADA } from '@/lib/lugo/npc';
 import { runtime, type RuntimeGioco } from '@/lib/lugo/runtime';
-import { updateAudio, suonaEvento } from '@/lib/lugo/audio';
+import { updateAudio, suonaEvento, updateAmbiente, parla, campanello } from '@/lib/lugo/audio';
+import { cieloOra, tempo } from '@/lib/lugo/tempo';
 import { useLugo } from '@/lib/lugo/store';
 import { Car } from './Car';
 import { Character } from './Character';
@@ -137,14 +140,21 @@ export function Player() {
   const cooldownUrto = useRef(0);
   const decadimento = useRef(0);
   const cooldownDialogo = useRef(0);
+  const colpiscePrima = useRef(false);
+  const cooldownPugno = useRef(0);
+  const ambienteAcc = useRef(0);
+  const vocaAcc = useRef(0);
 
   // hook di verifica/debug
   useEffect(() => {
     const w = window as unknown as { __LUGO__?: Record<string, unknown> };
     const attivo = () => (useLugo.getState().mode === 'auto' ? rt.auto : rt.persona);
+    const registroAttivitaHook = () =>
+      registroAttivita(mondo).slice(0, 40).map((a) => ({ nome: a.nome, x: a.x, z: a.z, cat: a.categoria }));
     w.__LUGO__ = {
       ...(w.__LUGO__ ?? {}),
       pos: () => [attivo().x, attivo().z],
+      attivita: () => registroAttivitaHook(),
       mode: () => useLugo.getState().mode,
       teleport: (x: number, z: number, yaw?: number) => {
         const a = attivo();
@@ -179,7 +189,7 @@ export function Player() {
         rt.auto.vz = 0;
         const input: StatoInput = {
           avanti: true, indietro: false, sinistra: false, destra: false,
-          corri: false, freno: false, interagisci: false, reset: false,
+          corri: false, freno: false, interagisci: false, reset: false, colpisci: false,
         };
         for (let i = 0; i < 150; i++) stepAuto(rt.auto, input, 1 / 60, fisica, mondo.bounds);
         const dx = rt.auto.x - c.cx;
@@ -198,7 +208,7 @@ export function Player() {
     const st = useLugo.getState();
     const fermo: StatoInput = {
       avanti: false, indietro: false, sinistra: false, destra: false,
-      corri: false, freno: false, interagisci: false, reset: false,
+      corri: false, freno: false, interagisci: false, reset: false, colpisci: false,
     };
     // tastiera + joystick virtuale, fusi in un unico punto
     const input = st.fase === 'gioco' ? conStick(getInput() as unknown as StatoInput) : fermo;
@@ -303,9 +313,21 @@ export function Player() {
       cooldownDialogo.current -= dt;
       const dAuto = Math.hypot(rt.persona.x - rt.auto.x, rt.persona.z - rt.auto.z);
       if (input.interagisci && !interagiscePrima.current) {
+        const bottega = st.vetrina || st.dialogo ? null : attivitaVicina(mondo, rt.persona.x, rt.persona.z, 9);
         if (dAuto < DIST_SALITA) {
           st.setMode('auto');
           suonaEvento('salita');
+        } else if (bottega) {
+          st.setVetrina({
+            id: bottega.id,
+            nome: bottega.nome,
+            categoria: bottega.categoria,
+            descrizione: bottega.descrizione,
+            partner: bottega.partner,
+            promo: bottega.promo,
+            articoli: bottega.articoli,
+          });
+          suonaEvento('tappa');
         } else if (!st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
           for (const n of runtime.npcs) {
             if (n.tipo !== 'maranza') continue;
@@ -328,6 +350,69 @@ export function Player() {
         }
       }
     }
+    // ── pugno arcade: solo a piedi, corto raggio, con conseguenze ──────
+    cooldownPugno.current -= dt;
+    if (
+      st.mode === 'piedi' &&
+      input.colpisci &&
+      !colpiscePrima.current &&
+      cooldownPugno.current <= 0 &&
+      !st.vetrina &&
+      !st.dialogo &&
+      runtime.npcs
+    ) {
+      cooldownPugno.current = 0.7;
+      const fx = Math.cos(rt.persona.yaw);
+      const fz = Math.sin(rt.persona.yaw);
+      let colpito: { tipo: string; x: number; z: number } | null = null;
+      let dMin = 2.4;
+      for (const n of runtime.npcs) {
+        const dx = n.x - rt.persona.x;
+        const dz = n.z - rt.persona.z;
+        const d = Math.hypot(dx, dz);
+        if (d > dMin || d < 0.01) continue;
+        // deve stare davanti, non alle spalle
+        if ((dx / d) * fx + (dz / d) * fz < 0.35) continue;
+        dMin = d;
+        colpito = n;
+      }
+      if (colpito) {
+        const bersaglio = colpito as unknown as {
+          tipo: string; x: number; z: number; stato: string; timer: number; bx: number; bz: number;
+        };
+        const dx = bersaglio.x - rt.persona.x;
+        const dz = bersaglio.z - rt.persona.z;
+        const d = Math.hypot(dx, dz) || 1;
+        bersaglio.stato = 'balzo';
+        bersaglio.timer = 0.5;
+        bersaglio.bx = dx / d;
+        bersaglio.bz = dz / d;
+        suonaEvento('fallita');
+        st.setAvviso(FRASI_STRADA.length ? 'Ohi! Ma sei scemo?!' : 'Ohi!');
+        // i Carabinieri non gradiscono: se uno vede, sono guai
+        let visto = bersaglio.tipo === 'carabiniere';
+        if (!visto) {
+          for (const n of runtime.npcs) {
+            if (n.tipo !== 'carabiniere') continue;
+            if (Math.hypot(n.x - rt.persona.x, n.z - rt.persona.z) < 22) {
+              visto = true;
+              break;
+            }
+          }
+        }
+        if (visto) {
+          calore.current += 2;
+          decadimento.current = 0;
+          const w = calore.current >= 7 ? 3 : calore.current >= 4 ? 2 : 1;
+          if (w !== st.wanted) {
+            st.setWanted(w);
+            st.setAvviso('Ti hanno visto: arrivano i Carabinieri!');
+          }
+        }
+      }
+    }
+    colpiscePrima.current = input.colpisci;
+
     interagiscePrima.current = input.interagisci;
     resetPrima.current = input.reset;
 
@@ -351,7 +436,11 @@ export function Player() {
       else if (st.mode === 'piedi') {
         const d = Math.hypot(rt.persona.x - rt.auto.x, rt.persona.z - rt.auto.z);
         if (d < DIST_SALITA) hint = 'Premi E per salire in auto';
-        else if (!st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
+        else if (!st.vetrina && !st.dialogo) {
+          const bottega = attivitaVicina(mondo, rt.persona.x, rt.persona.z, 9);
+          if (bottega) hint = `Premi E · ${bottega.nome}`;
+        }
+        if (!hint && !st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
           for (const n of runtime.npcs) {
             if (n.tipo !== 'maranza') continue;
             if (Math.hypot(n.x - rt.persona.x, n.z - rt.persona.z) < 3.4) {
@@ -379,6 +468,35 @@ export function Player() {
     }
 
     updateAudio(rt, st.mode, dt);
+
+    // ── il suono della città: brusio, grilli, uccelli, voci e campanelli ──
+    ambienteAcc.current += dt;
+    if (ambienteAcc.current > 0.75) {
+      ambienteAcc.current = 0;
+      const g = st.mode === 'auto' ? rt.auto : rt.persona;
+      let vicini = 0;
+      let biciVicina = false;
+      if (runtime.npcs) {
+        for (const n of runtime.npcs) {
+          const d = Math.hypot(n.x - g.x, n.z - g.z);
+          if (d < 26) vicini++;
+          if (n.tipo === 'ciclista' && d < 9) biciVicina = true;
+        }
+      }
+      updateAmbiente(cieloOra().luci, vicini, tempo.ora);
+      if (biciVicina && Math.random() < 0.35) campanello();
+      // ogni tanto qualcuno dice la sua, ma solo a piedi e da vicino
+      vocaAcc.current += 0.75;
+      if (st.mode === 'piedi' && vocaAcc.current > 7 && runtime.npcs) {
+        for (const n of runtime.npcs) {
+          if (Math.hypot(n.x - g.x, n.z - g.z) < 6) {
+            vocaAcc.current = 0;
+            parla(n.tipo);
+            break;
+          }
+        }
+      }
+    }
 
     // HUD a bassa frequenza
     hudAcc.current += dt;
