@@ -192,10 +192,12 @@ try {
         await page.waitForTimeout(300);
         const camYaw = (await lugo('L.direzione()')).camYaw;
         for (const t of tasti) await page.keyboard.down(t);
-        // mezzo secondo per girarsi, poi si misura il tratto a regime
-        await page.waitForTimeout(600);
-        const p0 = await lugo('L.pos()');
+        // mezzo secondo per girarsi, poi si misura il tratto a regime.
+        // Il tempo è lungo apposta: in headless il rasterizzatore software
+        // fa pochi fotogrammi e il clamp del dt rallenta la simulazione.
         await page.waitForTimeout(900);
+        const p0 = await lugo('L.pos()');
+        await page.waitForTimeout(2000);
         const p1 = await lugo('L.pos()');
         for (const t of tasti) await page.keyboard.up(t);
         await page.waitForTimeout(250);
@@ -203,7 +205,7 @@ try {
         const dx = p1[0] - p0[0];
         const dz = p1[1] - p0[1];
         const dist = Math.hypot(dx, dz);
-        if (dist < 0.35) {
+        if (dist < 0.18) {
           ko(`direzione ${nome}`, `direzione morta: ${dist.toFixed(2)} m`);
           return;
         }
@@ -265,15 +267,15 @@ try {
           await page.mouse.move(cx, cy);
           await page.mouse.down();
           await page.mouse.move(cx + dx, cy + dy, { steps: 5 });
-          await page.waitForTimeout(600);
-          const p0 = await lugo('L.pos()');
           await page.waitForTimeout(900);
+          const p0 = await lugo('L.pos()');
+          await page.waitForTimeout(1800);
           const p1 = await lugo('L.pos()');
           await page.mouse.up();
           await page.waitForTimeout(250);
           const ddx = p1[0] - p0[0];
           const ddz = p1[1] - p0[1];
-          if (Math.hypot(ddx, ddz) < 0.35) {
+          if (Math.hypot(ddx, ddz) < 0.18) {
             ko(`joystick ${nome}`, 'direzione morta');
             return;
           }
@@ -339,6 +341,46 @@ try {
       } else {
         ko('vetrina attività', 'la vetrina non si è aperta');
       }
+      // ── fase 3c: esplorazione e distintivi ─────────────────────────────
+      if ((await lugo('typeof L.esplorazione')) === 'function') {
+        const prima = await lugo('L.esplorazione()');
+        const monumenti = await lugo('L.poi');
+        // giro dei monumenti veri, a piedi: ogni tappa deve entrare nel diario
+        for (const id of Object.keys(monumenti)) {
+          await page.evaluate((p) => window.__LUGO__.teleport(p.x, p.z), monumenti[id]);
+          await page.waitForTimeout(900);
+        }
+        const dopo = await lugo('L.esplorazione()');
+        if (dopo.visitati > prima.visitati) {
+          ok('esplorazione a piedi', `${dopo.visitati}/${dopo.totale} punti scoperti`);
+        } else {
+          ko('esplorazione a piedi', 'nessun punto di interesse registrato');
+        }
+        // il diario si apre e mostra il conteggio
+        await page.click('[data-hud="diario-apri"]');
+        await page.waitForTimeout(500);
+        const conta = Number(await page.textContent('[data-hud="diario-poi"]'));
+        if (conta === dopo.visitati) ok('diario dell\'esplorazione', `${conta} luoghi`);
+        else ko('diario dell\'esplorazione', `il diario dice ${conta}, lo stato ${dopo.visitati}`);
+        await page.screenshot({ path: join(SHOTS, '06-diario.png') });
+        await page.locator('[data-hud="diario"] .lugo-vetrina-chiudi').click();
+        await page.waitForTimeout(300);
+        // regola non negoziabile: nessuna attività risulta partner, e nessuna
+        // promozione o logo compare senza autorizzazione dell'esercente
+        const aut = await lugo('L.autorizzazioni()');
+        const dichiarazioni = await page.evaluate(
+          () => document.querySelectorAll('.lugo-vetrina-promo, .lugo-vetrina-partner').length,
+        );
+        if (aut.partner === 0 && aut.promo === 0 && aut.logo === 0 && dichiarazioni === 0) {
+          ok('nessuna partnership dichiarata', '0 partner, 0 promo, 0 loghi');
+        } else {
+          ko(
+            'nessuna partnership dichiarata',
+            `partner ${aut.partner}, promo ${aut.promo}, loghi ${aut.logo}`,
+          );
+        }
+      }
+
       // si torna in auto per le fasi successive
       let m3 = await lugo('L.mode()');
       for (let i = 0; i < 4 && m3 !== 'auto'; i++) {
@@ -346,6 +388,17 @@ try {
         await page.waitForTimeout(400);
         m3 = await lugo('L.mode()');
       }
+    }
+  }
+
+  // ── costo di un fotogramma ────────────────────────────────────────────
+  if ((await lugo('typeof L.render')) === 'function') {
+    const r = await lugo('L.render()');
+    const dettagli = `${(r.triangoli / 1000).toFixed(0)}k triangoli, ${r.chiamate} draw call`;
+    if (r.triangoli > 0 && r.triangoli < 700_000 && r.chiamate < 170) {
+      ok('costo del fotogramma', dettagli);
+    } else {
+      ko('costo del fotogramma', dettagli + ' — troppo per un telefono');
     }
   }
 

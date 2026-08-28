@@ -1,0 +1,26 @@
+{
+  "versione": 1,
+  "nota": "Dati di presentazione delle attivita di Lugo, tenuti FUORI dal codice apposta: si aggiornano senza toccare il motore. Nome e categoria arrivano da OpenStreetMap; tutto il resto e' facoltativo. I campi partner, promo, logo, banner e sito restano null finche' l'esercente non ha dato autorizzazione scritta: il gioco non mostra mai una promozione, un prezzo reale, un logo o una dicitura di partnership che non sia stata autorizzata dall'attivita' interessata.",
+  "schema": {
+    "chiave": "il nome esatto dell'attivita' come compare su OpenStreetMap",
+    "descrizione": "una riga di presentazione, scritta o approvata dall'esercente",
+    "insegna": { "fondo": "#RRGGBB", "testo": "#RRGGBB", "tenda": "#RRGGBB" },
+    "partner": "true solo con autorizzazione scritta",
+    "promo": "testo della promozione autorizzata, altrimenti null",
+    "logo": "percorso di un'immagine autorizzata sotto /lugo/insegne/, altrimenti null",
+    "banner": "percorso di un banner autorizzato, altrimenti null",
+    "sito": "indirizzo del sito dell'attivita', altrimenti null"
+  },
+  "esempio": {
+    "Nome Attivita Di Esempio": {
+      "descrizione": "Una riga di presentazione.",
+      "insegna": { "fondo": "#2A3550", "testo": "#F2E9D8", "tenda": "#8A3A30" },
+      "partner": false,
+      "promo": null,
+      "logo": null,
+      "banner": null,
+      "sito": null
+    }
+  },
+  "attivita": {}
+}

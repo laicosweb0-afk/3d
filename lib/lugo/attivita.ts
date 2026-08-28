@@ -13,6 +13,46 @@
 
 import type { MondoLugo } from './loadMap';
 
+/**
+ * I dati di presentazione stanno FUORI dal codice, in
+ * `public/lugo/attivita.json`: nome e categoria arrivano da OpenStreetMap,
+ * il resto (riga di presentazione, colori dell'insegna, eventuale logo o
+ * promozione autorizzata) si aggiorna cambiando quel file, senza toccare
+ * il motore. Finché il file è vuoto — e di serie lo è — il gioco mostra
+ * solo nome e categoria, e nessuna attività risulta partner.
+ */
+export interface SchedaAttivita {
+  descrizione?: string;
+  insegna?: { fondo?: string; testo?: string; tenda?: string };
+  partner?: boolean;
+  promo?: string | null;
+  logo?: string | null;
+  banner?: string | null;
+  sito?: string | null;
+}
+
+let schede: Record<string, SchedaAttivita> = {};
+let schedeCaricate = false;
+
+/** Carica una volta sola le schede autorizzate. Se manca il file, pazienza. */
+export async function caricaSchedeAttivita(base = ''): Promise<void> {
+  if (schedeCaricate) return;
+  schedeCaricate = true;
+  try {
+    const res = await fetch(`${base}/lugo/attivita.json`, { cache: 'force-cache' });
+    if (!res.ok) return;
+    const dati = (await res.json()) as { attivita?: Record<string, SchedaAttivita> };
+    if (dati && typeof dati.attivita === 'object' && dati.attivita) schede = dati.attivita;
+  } catch {
+    // nessuna scheda: si resta ai soli nome e categoria pubblici
+  }
+}
+
+/** La scheda autorizzata di un'attività, se c'è. */
+export function schedaDi(nome: string): SchedaAttivita | undefined {
+  return schede[nome];
+}
+
 export type CategoriaAttivita =
   | 'bar'
   | 'cibo'
@@ -44,6 +84,8 @@ export interface Attivita {
   /** Logo autorizzato; null finché non c'è accordo. */
   logo: string | null;
   sito: string | null;
+  /** Colori dell'insegna, se l'esercente ne ha forniti. */
+  insegna?: { fondo?: string; testo?: string; tenda?: string };
   /** L'attività può ospitare missioni / eventi (per il futuro). */
   missioni: boolean;
   eventi: boolean;
@@ -106,19 +148,23 @@ export function registroAttivita(mondo: MondoLugo): Attivita[] {
   const out: Attivita[] = mondo.negozi.map((n, i) => {
     const categoria = normalizza(n.categoria);
     const listino = LISTINI[categoria];
+    const nome = n.nome || 'Attività del centro';
+    // la scheda vale solo se esiste ed è stata autorizzata: senza di essa
+    // partner resta false e promo/logo restano vuoti, per costruzione
+    const sch = schedaDi(nome);
     return {
       id: 'att_' + i,
-      nome: n.nome || 'Attività del centro',
+      nome,
       categoria,
       x: n.x,
       z: n.z,
-      descrizione: listino.desc,
+      descrizione: sch?.descrizione || listino.desc,
       articoli: listino.articoli,
-      // finché non c'è un accordo firmato, questi restano così
-      partner: false,
-      promo: null,
-      logo: null,
-      sito: null,
+      partner: sch?.partner === true,
+      promo: sch?.partner === true ? (sch.promo ?? null) : null,
+      logo: sch?.partner === true ? (sch.logo ?? null) : null,
+      sito: sch?.sito ?? null,
+      insegna: sch?.insegna,
       missioni: categoria === 'bar' || categoria === 'cibo',
       eventi: false,
     };

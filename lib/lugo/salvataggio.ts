@@ -18,6 +18,8 @@ export interface Salvataggio {
   modelloAuto: number;
   audioOn: boolean;
   outfit: number;
+  poiVisitati: string[];
+  distintivi: string[];
   volumi: { effetti: number; voce: number; ambiente: number; musica: number };
 }
 
@@ -35,6 +37,8 @@ export function caricaSalvataggio(): Partial<Salvataggio> | null {
       modelloAuto: typeof dati.modelloAuto === 'number' ? dati.modelloAuto : undefined,
       audioOn: typeof dati.audioOn === 'boolean' ? dati.audioOn : undefined,
       outfit: typeof dati.outfit === 'number' ? dati.outfit : undefined,
+      poiVisitati: Array.isArray(dati.poiVisitati) ? dati.poiVisitati.filter((x) => typeof x === 'string').slice(0, 400) : undefined,
+      distintivi: Array.isArray(dati.distintivi) ? dati.distintivi.filter((x) => typeof x === 'string').slice(0, 60) : undefined,
       volumi:
         dati.volumi && typeof dati.volumi === 'object'
           ? {
@@ -75,6 +79,8 @@ export function avviaSalvataggio() {
       ...(dati.modelloAuto !== undefined ? { modelloAuto: dati.modelloAuto } : {}),
       ...(dati.audioOn !== undefined ? { audioOn: dati.audioOn } : {}),
       ...(dati.outfit !== undefined ? { outfit: dati.outfit } : {}),
+      ...(dati.poiVisitati !== undefined ? { poiVisitati: dati.poiVisitati } : {}),
+      ...(dati.distintivi !== undefined ? { distintivi: dati.distintivi } : {}),
       ...(dati.volumi !== undefined ? { volumi: dati.volumi } : {}),
     });
   }
@@ -89,6 +95,8 @@ export function avviaSalvataggio() {
       s.modelloAuto === prima.modelloAuto &&
       s.audioOn === prima.audioOn &&
       s.outfit === prima.outfit &&
+      s.poiVisitati === prima.poiVisitati &&
+      s.distintivi === prima.distintivi &&
       s.volumi === prima.volumi
     ) {
       return;
@@ -104,6 +112,8 @@ export function avviaSalvataggio() {
         modelloAuto: st.modelloAuto,
         audioOn: st.audioOn,
         outfit: st.outfit,
+        poiVisitati: st.poiVisitati,
+        distintivi: st.distintivi,
         volumi: st.volumi,
       });
     }, 600);

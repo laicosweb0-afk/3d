@@ -8,6 +8,7 @@
 import { use } from 'react';
 import { asset } from '@/lib/asset';
 import { puntiVarco, vicinoAVarco } from './gates';
+import { caricaSchedeAttivita } from './attivita';
 import type { LugoMap, ClasseStrada, PoiMap, TipoArredo } from './types';
 
 export interface StradaRT {
@@ -146,7 +147,12 @@ function colliderDa(
 }
 
 async function carica(): Promise<MondoLugo> {
-  const res = await fetch(asset('/lugo/map.json'));
+  // le schede di presentazione delle attività viaggiano insieme alla mappa,
+  // così il registro nasce già con i dati autorizzati (se ce ne sono)
+  const [res] = await Promise.all([
+    fetch(asset('/lugo/map.json')),
+    caricaSchedeAttivita(asset('')),
+  ]);
   if (!res.ok) throw new Error('mappa di Lugo non trovata (' + res.status + ')');
   const raw = (await res.json()) as LugoMap;
 

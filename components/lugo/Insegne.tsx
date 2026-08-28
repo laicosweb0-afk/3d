@@ -7,8 +7,28 @@
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useMondo, type MondoLugo } from '@/lib/lugo/loadMap';
+import { COLORE_CATEGORIA, schedaDi, type CategoriaAttivita } from '@/lib/lugo/attivita';
 
-const TENDE = ['#8A3A30', '#3E6248', '#B89B5E', '#3E5068'];
+/**
+ * L'identità visiva di una bottega: fondo dell'insegna, colore del testo e
+ * tenda da sole. Di serie discende dalla CATEGORIA (bar, farmacia,
+ * tabaccheria…), che è un dato pubblico di OpenStreetMap. Se l'esercente ha
+ * autorizzato colori suoi, `public/lugo/attivita.json` li sostituisce: mai
+ * un logo o un marchio senza il suo consenso.
+ */
+function identita(nome: string, categoria: string): { fondo: string; testo: string; tenda: string } {
+  const cat = (COLORE_CATEGORIA[categoria as CategoriaAttivita] ? categoria : 'servizi') as CategoriaAttivita;
+  const base = new THREE.Color(COLORE_CATEGORIA[cat]);
+  // il fondo dell'insegna: la tinta di categoria, scurita da cartello
+  const fondo = base.clone().multiplyScalar(0.3).offsetHSL(0, -0.12, 0);
+  const tenda = base.clone().multiplyScalar(0.62);
+  const sch = schedaDi(nome)?.insegna;
+  return {
+    fondo: sch?.fondo ?? '#' + fondo.getHexString(),
+    testo: sch?.testo ?? '#F2EAD8',
+    tenda: sch?.tenda ?? '#' + tenda.getHexString(),
+  };
+}
 
 interface Cartello {
   x: number;
@@ -96,14 +116,19 @@ export function Insegne() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     cartelli.forEach((c, i) => {
-      const nome = mondo.negozi[i]?.nome ?? '';
+      const neg = mondo.negozi[i];
+      const nome = neg?.nome ?? '';
+      const id = identita(nome, neg?.categoria ?? 'servizi');
       const col = Math.floor(i / righePerCol);
       const riga = i % righePerCol;
-      ctx.fillStyle = '#1E1A28';
+      ctx.fillStyle = id.fondo;
       ctx.fillRect(col * 512, riga * RIGA + 2, 512, RIGA - 4);
-      ctx.fillStyle = '#F0E6CE';
+      // filetto di categoria: due botteghe vicine non hanno la stessa insegna
+      ctx.fillStyle = COLORE_CATEGORIA[(neg?.categoria ?? 'servizi') as CategoriaAttivita] ?? '#8A8A96';
+      ctx.fillRect(col * 512, riga * RIGA + RIGA - 6, 512, 3);
+      ctx.fillStyle = id.testo;
       ctx.font = 'bold 26px ui-sans-serif, system-ui, sans-serif';
-      ctx.fillText(nome.toUpperCase().slice(0, 24), col * 512 + 256, riga * RIGA + RIGA / 2);
+      ctx.fillText(nome.toUpperCase().slice(0, 24), col * 512 + 256, riga * RIGA + RIGA / 2 - 1);
     });
     const atlas = new THREE.CanvasTexture(canvas);
     atlas.anisotropy = 4;
@@ -115,8 +140,11 @@ export function Insegne() {
     cartelli.forEach((c, i) => {
       const cxp = c.x + c.nx * 0.09;
       const czp = c.z + c.nz * 0.09;
-      const hx = c.ex * 1.7;
-      const hz = c.ez * 1.7;
+      // la tangente si ricava dalla normale del muro, così la faccia con il
+      // testo è SEMPRE quella rivolta alla strada (prima metà delle insegne
+      // si leggeva allo specchio)
+      const hx = c.nz * 1.7;
+      const hz = -c.nx * 1.7;
       const y0 = 2.75;
       const y1 = 3.3;
       const base = pos.length / 3;
@@ -161,7 +189,7 @@ export function Insegne() {
       q.setFromEuler(e);
       m.compose(new THREE.Vector3(c.x + c.nx * 0.55, 2.5, c.z + c.nz * 0.55), q, uno);
       tende.current!.setMatrixAt(i, m);
-      tende.current!.setColorAt(i, col.set(TENDE[i % TENDE.length]));
+      tende.current!.setColorAt(i, col.set(identita(mondo.negozi[i]?.nome ?? '', mondo.negozi[i]?.categoria ?? 'servizi').tenda));
       // vetrina e porta del negozio, sotto l'insegna
       e.set(0, -angolo, 0, 'YXZ');
       q.setFromEuler(e);

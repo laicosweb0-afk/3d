@@ -37,7 +37,16 @@ Rocca.
 
 **Le attività**: le 65 botteghe vere della mappa si visitano a piedi con E —
 caffè al bar, piadina in trattoria, gratta e vinci dal tabaccaio, vestiti
-nei negozi (e il vestito comprato si vede addosso).
+nei negozi (e il vestito comprato si vede addosso). Ognuna ha la sua
+insegna, la tenda e i colori della categoria.
+
+**L'esplorazione**: Lugo si scopre camminando. Passando accanto a un
+monumento, a una piazza o a una bottega il luogo entra nel **diario**
+(bottone ◈ in alto a destra) e vale reputazione; completando le raccolte si
+guadagnano i **distintivi** — «Esploratore del centro», «Giro dei
+monumenti», «Cliente affezionato». L'idea di legare il gioco ai luoghi veri
+della propria città è il punto di partenza: grafica, meccaniche e materiali
+sono tutti originali di questo progetto.
 
 ## Com'è fatto
 
@@ -46,6 +55,17 @@ nei negozi (e il vestito comprato si vede addosso).
   `public/lugo/map.json` (~440 KB): 921 strade, ~2.000 edifici coi cortili
   veri (fori nei footprint), aree, ferrovia e POI riconosciuti per nome.
   Rilancio: tab Actions → "Dati di Lugo", o un push che tocca gli script.
+- **Il carattere degli edifici**: OSM non dichiara l'altezza per il 95% dei
+  fabbricati, e la città usciva a blocchi tutti uguali. `lib/lugo/carattere.ts`
+  dà a ogni edificio piani veri, materiale (intonaco, mattone, pietra,
+  cemento, lamiera, legno), tinta spostata di tono casa per casa e forma di
+  tetto (falde, padiglione, piano, lamiera), dedotti in modo deterministico
+  da posizione, area e forma del footprint: **137 altezze diverse da 2,5 a
+  21 m e 1.687 tinte**. Il dettaglio di facciata si dirada con la distanza
+  dal centro.
+- **Le imperfezioni**: `lib/lugo/imperfezioni.ts` semina 1.500 fra bici
+  appoggiate ai muri, motorini, cassonetti, fioriere, panchine, cestini e
+  cartelli lungo le vie, con tre sole geometrie instanziate.
 - **Città**: edifici estrusi e fusi in due draw call con vertex colors
   (`lib/lugo/citygen.ts`); landmark bespoke sui footprint reali
   (`components/lugo/Landmarks.tsx`) — il Pavaglione ha il tetto a padiglione,
@@ -63,11 +83,18 @@ nei negozi (e il vestito comprato si vede addosso).
 - **Missioni**: architettura data-driven in `lib/lugo/missions.ts` — storia
   a catena + consegne generate al volo dai negozi veri della mappa. Per
   aggiungerne basta una voce nell'array (o un generatore come `creaConsegna`).
-- **Attività ed eventi**: `lib/lugo/attivita.ts` e `lib/lugo/eventi.ts` sono
+- **Attività, punti di interesse ed eventi**: `lib/lugo/attivita.ts`,
+  `lib/lugo/poi.ts`, `lib/lugo/distintivi.ts` ed `lib/lugo/eventi.ts` sono
   **sistemi dati separati dal motore**: si aggiunge una riga e il mondo la
-  mette in scena. I campi `partner`, `promo` e `logo` restano vuoti per
-  costruzione — un'attività reale compare solo con nome e categoria, come
-  già pubblici su OpenStreetMap, finché l'esercente non autorizza.
+  mette in scena.
+  I materiali commerciali stanno addirittura **fuori dal codice**, in
+  `public/lugo/attivita.json`: descrizione, colori dell'insegna, logo,
+  banner, promozione e sito si aggiornano lì, senza toccare il motore. Di
+  serie quel file è **vuoto**: un'attività reale compare solo con nome e
+  categoria, come già pubblici su OpenStreetMap. I campi `partner`, `promo`
+  e `logo` restano nulli finché l'esercente non dà autorizzazione scritta —
+  e il collaudo lo verifica a ogni giro («nessuna partnership dichiarata»).
+  Nessun prezzo reale, nessuna promozione inventata, nessun marchio altrui.
 - **Tempo**: `lib/lugo/tempo.ts` interpola sei momenti della giornata e
   guida sole, cielo, nebbia e luci artificiali.
 - **Veicoli**: `lib/lugo/carrozzerie.ts` descrive cinque sagome italiane per
