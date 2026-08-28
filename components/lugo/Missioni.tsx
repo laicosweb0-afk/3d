@@ -41,6 +41,7 @@ export function Missioni() {
         useLugo.getState().setAvviso(m.titolo + ' — ' + m.tappe[0].titolo);
         return true;
       },
+      denaro: () => useLugo.getState().denaro,
       tappaCorrente: () => {
         const s = useLugo.getState();
         const m = s.missioneId ? missioneById(s.missioneId) : null;
@@ -85,7 +86,24 @@ export function Missioni() {
         } else {
           s.setMissione(m.id, 'completata', s.tappa);
           s.addPunti(m.ricompensa);
-          s.setAvviso(`Missione completata · +${m.ricompensa} punti`);
+          // le consegne pagano di più chi arriva prima, mancia compresa
+          let euro = m.denaro;
+          let extra: string | undefined;
+          if (m.bonusVelocita && m.tempoLimite) {
+            const frazione = Math.max(0, tempo.current / m.tempoLimite);
+            if (frazione > 0.55) euro += 8;
+            else if (frazione > 0.3) euro += 4;
+            const mancia = frazione > 0.45 ? 3 + (m.id.length % 4) : 0;
+            if (mancia > 0) {
+              euro += mancia;
+              extra = `MANCIA €${mancia}`;
+            }
+          }
+          s.addDenaro(euro);
+          // solo la storia entra nel salvataggio: le consegne sono infinite
+          // e riempirebbero localStorage di id inutili
+          if (m.tipo === 'storia') s.addMissioneFatta(m.id);
+          s.setEsito({ titolo: m.titolo, denaro: euro, rep: m.ricompensa, extra });
           s.setTempoResiduo(null);
           suonaEvento('successo');
           attesa.current = PAUSA_CATENA;
@@ -106,17 +124,25 @@ export function Missioni() {
         }
       }
     } else {
-      // catena: idle → prima missione; completata → prossima; fallita → retry
+      // catena: idle → prima missione; completata → prossima; fallita →
+      // retry per la storia, consegna nuova per le consegne
       attesa.current -= dt;
       if (attesa.current <= 0) {
-        const m =
-          s.statoMissione === 'fallita' && s.missioneId
-            ? missioneById(s.missioneId)!
-            : prossimaMissione(s.missioneId);
+        const fallitaStoria =
+          s.statoMissione === 'fallita' && s.missioneId && missioneById(s.missioneId)?.tipo === 'storia';
+        const m = fallitaStoria
+          ? missioneById(s.missioneId!)!
+          : prossimaMissione(mondo, s.missioneId, s.missioniFatte);
         s.setMissione(m.id, 'attiva', 0);
         tempo.current = m.tempoLimite ?? 0;
         s.setTempoResiduo(m.tempoLimite ?? null);
-        s.setAvviso(m.titolo + ' — ' + m.tappe[0].titolo);
+        s.setIntro({
+          etichetta: m.tipo === 'consegna' ? 'CONSEGNA' : 'NUOVA MISSIONE',
+          titolo: m.titolo,
+          frase: m.frase,
+          obiettivo: m.tappe[0].titolo,
+        });
+        suonaEvento('tappa');
       }
     }
 

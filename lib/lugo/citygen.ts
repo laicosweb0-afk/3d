@@ -473,9 +473,61 @@ export function generaCitta(mondo: MondoLugo, senzaLandmark: string[] = []): Cit
   const tettoTinte = tinte.map((t) => tetto.clone().lerp(t, 0.45));
 
   const esclusi = new Set(senzaLandmark);
+
+  // il contorno delle piazze del centro: nelle foto i fronti sono continui
+  // a due-tre piani, ma dove OSM non ha l'altezza gli edifici uscivano a
+  // denti di sega (uno alto, uno basso). Chi affaccia sulle piazze intorno
+  // al Pavaglione viene normalizzato a palazzo da centro storico.
+  const piazzeCentro: Float32Array[] = [];
+  const pavPoi = mondo.poi.get('pavaglione');
+  if (pavPoi) {
+    for (const a of mondo.aree) {
+      if (a.kind !== 'piazza') continue;
+      let cx = 0, cz = 0;
+      const n = a.poly.length / 2;
+      for (let i = 0; i < n; i++) {
+        cx += a.poly[i * 2];
+        cz += a.poly[i * 2 + 1];
+      }
+      if (Math.hypot(cx / n - pavPoi.xm, cz / n - pavPoi.zm) < 170) piazzeCentro.push(a.poly);
+    }
+  }
+  const affacciaSuPiazza = (px: number, pz: number): boolean => {
+    for (const poly of piazzeCentro) {
+      const n = poly.length / 2;
+      for (let i = 0; i < n; i++) {
+        const j = (i + 1) % n;
+        const ax = poly[i * 2], az = poly[i * 2 + 1];
+        const bx = poly[j * 2], bz = poly[j * 2 + 1];
+        const dx = bx - ax, dz = bz - az;
+        const L2 = dx * dx + dz * dz || 1;
+        const t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / L2));
+        const qx = ax + dx * t - px;
+        const qz = az + dz * t - pz;
+        if (qx * qx + qz * qz < 30 * 30) return true;
+      }
+    }
+    return false;
+  };
+
   for (const b of mondo.buildings) {
     if (b.landmark && esclusi.has(b.landmark)) continue;
-    estrudiEdificio(edifici, b, tinte[b.tinta % tinte.length], tettoTinte[b.tinta % tinte.length]);
+    let eb = b;
+    if (!b.landmark && piazzeCentro.length) {
+      let bcx = 0, bcz = 0;
+      const nb = b.fp.length / 2;
+      for (let i = 0; i < nb; i++) {
+        bcx += b.fp[i * 2];
+        bcz += b.fp[i * 2 + 1];
+      }
+      bcx /= nb;
+      bcz /= nb;
+      if (affacciaSuPiazza(bcx, bcz)) {
+        const hNorm = b.h < 8 ? 8.6 + (b.tinta % 3) * 1.1 : Math.min(b.h, 13);
+        if (hNorm !== b.h) eb = { ...b, h: hNorm };
+      }
+    }
+    estrudiEdificio(edifici, eb, tinte[b.tinta % tinte.length], tettoTinte[b.tinta % tinte.length]);
   }
   porticiPiazza(edifici, mondo, esclusi);
 

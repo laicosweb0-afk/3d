@@ -29,8 +29,9 @@ function ChaseCamera({ rt }: { rt: RuntimeGioco }) {
   const desiderata = useMemo(() => new THREE.Vector3(), []);
   const mira = useMemo(() => new THREE.Vector3(), []);
   const avviata = useRef(false);
+  const scossa = useRef(0);
 
-  useFrame(({ camera }, dtRaw) => {
+  useFrame(({ camera, clock }, dtRaw) => {
     const dt = Math.min(dtRaw, 0.05);
     const override = runtime.cameraOverride;
     if (override) {
@@ -79,6 +80,23 @@ function ChaseCamera({ rt }: { rt: RuntimeGioco }) {
     mira.set(t.x + dirX * avantiMira, 1.4, t.z + dirZ * avantiMira);
     camera.lookAt(mira);
 
+    // FOV dinamico: in velocità il campo si allarga, piano piano
+    const cam = camera as THREE.PerspectiveCamera;
+    const fovTarget = mode === 'auto' ? 55 + Math.min(12, Math.abs(rt.vAuto) * 0.5) : 55;
+    if (Math.abs(cam.fov - fovTarget) > 0.05) {
+      cam.fov += (fovTarget - cam.fov) * Math.min(1, dt * 2.5);
+      cam.updateProjectionMatrix();
+    }
+
+    // scossone leggerissimo agli urti, che si spegne da solo
+    if (rt.urto > 3) scossa.current = Math.min(0.4, rt.urto * 0.035);
+    if (scossa.current > 0.004) {
+      const t2 = clock.elapsedTime;
+      camera.position.x += Math.sin(t2 * 53) * scossa.current;
+      camera.position.y += Math.cos(t2 * 47) * scossa.current * 0.6;
+      scossa.current *= Math.exp(-dt * 6);
+    }
+
     rt.cameraYaw = Math.atan2(t.z - camera.position.z, t.x - camera.position.x);
   });
   return null;
@@ -114,6 +132,11 @@ export function Player() {
   const hintPrima = useRef<string | null>(null);
   const viaAcc = useRef(0);
   const viaPrima = useRef<string | null>(null);
+  // polizia: "calore" per guida spericolata, con decadimento
+  const calore = useRef(0);
+  const cooldownUrto = useRef(0);
+  const decadimento = useRef(0);
+  const cooldownDialogo = useRef(0);
 
   // hook di verifica/debug
   useEffect(() => {
@@ -185,8 +208,10 @@ export function Player() {
       rt.vAuto = esito.v;
       rt.urto = esito.urto;
       rt.faseRuote += (esito.v * dt) / RAGGIO_RUOTA;
+      runtime.frenata = input.freno || (input.indietro && esito.v > 0.5);
 
       // i veicoli in movimento sono solidi: gazzella e traffico civile
+      let urtoMobile = false;
       const mobili: { x: number; z: number }[] = [...infra.traffico];
       if (runtime.gazzella) mobili.push(runtime.gazzella);
       for (const g of mobili) {
@@ -206,7 +231,37 @@ export function Player() {
             rt.auto.vx *= 0.8;
             rt.auto.vz *= 0.8;
             rt.urto = Math.max(rt.urto, -vn);
+            if (-vn > 2) urtoMobile = true;
           }
+        }
+      }
+
+      // ── polizia: la guida spericolata scalda gli animi ────────────────
+      cooldownUrto.current -= dt;
+      if ((urtoMobile || rt.urto > 7) && cooldownUrto.current <= 0) {
+        cooldownUrto.current = 1.5;
+        calore.current += 1;
+        decadimento.current = 0;
+        const wanted = calore.current >= 7 ? 3 : calore.current >= 4 ? 2 : calore.current >= 2 ? 1 : 0;
+        if (wanted !== st.wanted) {
+          st.setWanted(wanted);
+          if (wanted > st.wanted || (wanted === 1 && st.wanted === 0)) {
+            st.setAvviso('I Carabinieri ti hanno notato!');
+            suonaEvento('fallita');
+          }
+        }
+      }
+      // beccato: gazzella addosso e quasi fermo → multa e si ricomincia
+      if (st.wanted > 0 && runtime.gazzella) {
+        const dG = Math.hypot(rt.auto.x - runtime.gazzella.x, rt.auto.z - runtime.gazzella.z);
+        if (dG < 4.2 && Math.abs(esito.v) < 2.5) {
+          const multa = Math.min(st.denaro, 30 * st.wanted);
+          st.addDenaro(-multa);
+          calore.current = 0;
+          st.setWanted(0);
+          runtime.caccia = false;
+          st.setAvviso(multa > 0 ? `Fermato dai Carabinieri · Multa €${multa}` : 'Fermato dai Carabinieri · Solo un avvertimento');
+          suonaEvento('fallita');
         }
       }
 
@@ -242,18 +297,52 @@ export function Player() {
       }
     } else {
       rt.vPersona = stepPersona(rt.persona, input, dt, fisica, rt.cameraYaw);
+      runtime.frenata = false;
 
-      // salita: vicino all'auto
+      // salita: vicino all'auto. Altrimenti, E parla col maranza vicino.
+      cooldownDialogo.current -= dt;
+      const dAuto = Math.hypot(rt.persona.x - rt.auto.x, rt.persona.z - rt.auto.z);
       if (input.interagisci && !interagiscePrima.current) {
-        const d = Math.hypot(rt.persona.x - rt.auto.x, rt.persona.z - rt.auto.z);
-        if (d < DIST_SALITA) {
+        if (dAuto < DIST_SALITA) {
           st.setMode('auto');
           suonaEvento('salita');
+        } else if (!st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
+          for (const n of runtime.npcs) {
+            if (n.tipo !== 'maranza') continue;
+            if (Math.hypot(n.x - rt.persona.x, n.z - rt.persona.z) < 3.4) {
+              cooldownDialogo.current = 45;
+              st.setDialogo({
+                id: 'sigaretta',
+                chi: 'Un ragazzo in tuta',
+                testo: '“Bella! Hai mica una sigaretta?”',
+                opzioni: [
+                  { id: 'si', label: '“Tieni.”' },
+                  { id: 'no', label: '“No, mi spiace.”' },
+                  { id: 'via', label: 'Tira dritto' },
+                ],
+              });
+              suonaEvento('tappa');
+              break;
+            }
+          }
         }
       }
     }
     interagiscePrima.current = input.interagisci;
     resetPrima.current = input.reset;
+
+    // il calore si raffredda comunque, anche mentre si scappa a piedi
+    decadimento.current += dt;
+    if (decadimento.current > 20 && calore.current > 0) {
+      decadimento.current = 0;
+      calore.current = Math.max(0, calore.current - 2);
+      const wanted = calore.current >= 7 ? 3 : calore.current >= 4 ? 2 : calore.current >= 2 ? 1 : 0;
+      if (wanted !== st.wanted) {
+        st.setWanted(wanted);
+        if (wanted === 0) st.setAvviso('I Carabinieri ti hanno perso di vista.');
+      }
+    }
+    runtime.caccia = useLugo.getState().wanted > 0;
 
     // suggerimento contestuale sul tasto E
     let hint: string | null = null;
@@ -262,6 +351,15 @@ export function Player() {
       else if (st.mode === 'piedi') {
         const d = Math.hypot(rt.persona.x - rt.auto.x, rt.persona.z - rt.auto.z);
         if (d < DIST_SALITA) hint = 'Premi E per salire in auto';
+        else if (!st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
+          for (const n of runtime.npcs) {
+            if (n.tipo !== 'maranza') continue;
+            if (Math.hypot(n.x - rt.persona.x, n.z - rt.persona.z) < 3.4) {
+              hint = 'Premi E per parlare';
+              break;
+            }
+          }
+        }
       }
     }
     if (hint !== hintPrima.current) {

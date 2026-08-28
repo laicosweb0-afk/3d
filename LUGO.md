@@ -1,22 +1,32 @@
 # LUGO — un open world romagnolo
 
-Un mini open-world giocabile nel browser, ambientato nella **vera Lugo di
+Un piccolo open world giocabile nel browser, ambientato nella **vera Lugo di
 Ravenna**: si guida un'utilitaria per le strade scaricate da OpenStreetMap,
-si scende a piedi, si completano missioni tra il Pavaglione, la Rocca
-Estense, la stazione e il monumento a Francesco Baracca. Route: **`/lugo`**.
+si scende a piedi, si cerca un amico scomparso tra il Pavaglione, la Rocca
+Estense, la stazione e il monumento a Francesco Baracca — e poi si vive di
+consegne, soldi e guai coi Carabinieri. Route: **`/lugo`**.
 
 ## Come si gioca
 
-| Tasto | Azione |
+| Comando | Azione |
 |---|---|
 | W A S D / Frecce | guida e cammina |
-| E / Invio | scendi e sali dall'auto |
+| E / Invio | scendi, sali, parla |
 | Shift | corri |
 | Spazio | freno a mano (derapata) |
 | R | raddrizza l'auto sulla strada |
+| Palla in basso a destra | guida col mouse o col dito (mobile) |
 
-Sette missioni in italiano si concatenano da sole (consegne, checkpoint,
-tempo e punteggio). Solo tastiera: da computer, non da telefono.
+**La storia**: *Trova il tuo amico*. Giacomo non risponde da stamattina;
+ogni missione è un indizio sui luoghi veri, fino al colpo di scena in
+caserma. Finita la storia la città continua a vivere di **consegne** stile
+rider: più corri, più guadagni (bonus velocità + mancia).
+
+**Soldi e reputazione** (€ e REP) si accumulano e si **salvano da soli** in
+localStorage: alla riapertura c'è CONTINUA. La guida spericolata alza il
+**livello ricercato** (★ fino a 3): la gazzella insegue, e se ti fermano
+paghi la multa. A piedi i maranza ti fermano per una sigaretta: **dialogo a
+scelte** con conseguenze.
 
 ## Com'è fatto
 
@@ -27,12 +37,22 @@ tempo e punteggio). Solo tastiera: da computer, non da telefono.
   Rilancio: tab Actions → "Dati di Lugo", o un push che tocca gli script.
 - **Città**: edifici estrusi e fusi in due draw call con vertex colors
   (`lib/lugo/citygen.ts`); landmark bespoke sui footprint reali
-  (`components/lugo/Landmarks.tsx`) — il quadriportico del Pavaglione ha
-  logge percorribili e quattro varchi, la Rocca la merlatura e il mastio.
+  (`components/lugo/Landmarks.tsx`) — il Pavaglione ha il tetto a padiglione,
+  i portali col timpano, la corte con palco e giostra; la Rocca la
+  merlatura e il mastio.
 - **Fisica**: motore arcade 2D senza librerie (`lib/lugo/{physics,car,character}.ts`),
   collisioni cerchio-vs-OBB/segmenti su spatial hash. Lugo è in pianura.
+- **Missioni**: architettura data-driven in `lib/lugo/missions.ts` — storia
+  a catena + consegne generate al volo dai negozi veri della mappa. Per
+  aggiungerne basta una voce nell'array (o un generatore come `creaConsegna`).
+- **Stato**: Zustand per ciò che vede la UI (`lib/lugo/store.ts`), oggetti
+  mutabili fuori da React per ciò che cambia ogni frame (`lib/lugo/runtime.ts`).
 - **NPC**: cento pedoni in undici draw call instanziati (`components/lugo/Npcs.tsx`)
-  — maranza, anziani, carabinieri in coppia — più la gazzella di pattuglia.
+  — maranza, anziani, carabinieri in coppia — più la gazzella, che passa da
+  pattuglia a inseguimento quando sei ricercato.
+- **UI**: design system unico in `app/lugo/lugo.css` (vetro scuro, accento
+  caldo, microanimazioni), HUD con schede cinematografiche di inizio e fine
+  missione, minimappa con zoom dinamico, controlli touch contestuali.
 - **Audio**: WebAudio procedurale, zero asset (`lib/lugo/audio.ts`).
 - **Qualità adattiva**: DPR a gradini dal frame time (pattern del sito).
 
@@ -43,10 +63,10 @@ npm run build && npm run lugo:verify          # smoke test headless completo
 NEXT_PUBLIC_BASE_PATH=/3d npm run build && BASE=/3d npm run lugo:verify
 ```
 
-Il test guida davvero: accelera, sbatte, scende, cammina, completa una
-missione, conta gli NPC e scatta cartoline aeree dei landmark in
-`tools/lugo/shots/`. La modalità `?qa=1` (solo per il collaudo) spegne le
-ombre e riduce DPR e NPC per il rendering software headless.
+Il test guida davvero: accelera, sbatte, guida col joystick, scende,
+cammina, completa una missione, conta gli NPC e scatta cartoline aeree dei
+landmark in `tools/lugo/shots/`. La modalità `?qa=1` (solo per il collaudo)
+spegne le ombre e riduce DPR e NPC per il rendering software headless.
 
 Il resto del repo (Mondial, Bufala, Mediapro) non è toccato: il gioco vive
 tutto in `app/lugo/`, `components/lugo/`, `lib/lugo/`, `tools/lugo/`.

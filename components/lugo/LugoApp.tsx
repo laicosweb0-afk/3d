@@ -12,11 +12,14 @@ import { Joystick } from './Joystick';
 import { StartScreen } from './StartScreen';
 import { CONTROLLI } from '@/lib/lugo/input';
 import { useLugo } from '@/lib/lugo/store';
+import { avviaSalvataggio } from '@/lib/lugo/salvataggio';
 
 export function LugoApp() {
   const fase = useLugo((s) => s.fase);
 
   useEffect(() => {
+    // i progressi si caricano e da lì in poi si salvano da soli
+    avviaSalvataggio();
     // le frecce non devono scrollare la pagina
     const blocca = (e: KeyboardEvent) => {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {

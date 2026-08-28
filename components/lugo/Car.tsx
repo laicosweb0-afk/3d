@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import type { RuntimeGioco } from './Player';
 import { TINTE_AUTO } from '@/lib/lugo/palette';
 import { useLugo } from '@/lib/lugo/store';
+import { runtime } from '@/lib/lugo/runtime';
 
 const VETRO = '#2E3A4E';
 const GOMMA = '#1E1C22';
@@ -53,9 +54,32 @@ export const Car = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function Car({ 
   const tinta = useLugo((s) => s.tintaAuto);
   const colore = TINTE_AUTO[tinta % TINTE_AUTO.length].colore;
   const scuro = useMemo(() => new THREE.Color(colore).multiplyScalar(0.75), [colore]);
+  const corpo = useRef<THREE.Group>(null);
+  const stopD = useRef<THREE.MeshLambertMaterial>(null);
+  const stopS = useRef<THREE.MeshLambertMaterial>(null);
+  const vPrima = useRef(0);
+
+  // sospensioni finte ma credibili: beccheggio in frenata/accelerazione,
+  // rollio in curva; e gli stop che si accendono davvero quando freni
+  useFrame((_, dtRaw) => {
+    const dt = Math.min(dtRaw, 0.05);
+    const c = corpo.current;
+    if (c) {
+      const acc = dt > 0 ? (rt.vAuto - vPrima.current) / dt : 0;
+      vPrima.current = rt.vAuto;
+      const beccheggio = THREE.MathUtils.clamp(-acc * 0.006, -0.05, 0.06);
+      const rollio = THREE.MathUtils.clamp(rt.auto.sterzo * rt.vAuto * 0.004, -0.05, 0.05);
+      c.rotation.z += (beccheggio - c.rotation.z) * Math.min(1, dt * 8);
+      c.rotation.x += (rollio - c.rotation.x) * Math.min(1, dt * 8);
+    }
+    const acceso = runtime.frenata ? 2.6 : 0.9;
+    if (stopD.current) stopD.current.emissiveIntensity = acceso;
+    if (stopS.current) stopS.current.emissiveIntensity = acceso;
+  });
 
   return (
     <group ref={ref}>
+      <group ref={corpo}>
       {/* scocca bassa */}
       <mesh position={[0, 0.52, 0]} castShadow>
         <boxGeometry args={[3.3, 0.52, 1.52]} />
@@ -95,11 +119,11 @@ export const Car = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function Car({ 
       </mesh>
       <mesh position={[-1.66, 0.62, 0.5]}>
         <boxGeometry args={[0.05, 0.14, 0.24]} />
-        <meshLambertMaterial color="#8A1F1A" emissive="#C0362C" emissiveIntensity={0.9} />
+        <meshLambertMaterial ref={stopD} color="#8A1F1A" emissive="#C0362C" emissiveIntensity={0.9} />
       </mesh>
       <mesh position={[-1.66, 0.62, -0.5]}>
         <boxGeometry args={[0.05, 0.14, 0.24]} />
-        <meshLambertMaterial color="#8A1F1A" emissive="#C0362C" emissiveIntensity={0.9} />
+        <meshLambertMaterial ref={stopS} color="#8A1F1A" emissive="#C0362C" emissiveIntensity={0.9} />
       </mesh>
       {/* paraurti */}
       <mesh position={[1.62, 0.36, 0]}>
@@ -110,6 +134,7 @@ export const Car = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function Car({ 
         <boxGeometry args={[0.18, 0.16, 1.5]} />
         <meshLambertMaterial color="#3A3740" />
       </mesh>
+      </group>
       <Ruota x={1.05} z={0.78} rt={rt} sterzante />
       <Ruota x={1.05} z={-0.78} rt={rt} sterzante />
       <Ruota x={-1.05} z={0.78} rt={rt} />

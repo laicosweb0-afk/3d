@@ -15,9 +15,17 @@ const CORSA = 46; // px di corsa massima della palla dal centro
 
 export function Joystick() {
   const fase = useLugo((s) => s.fase);
+  const mode = useLugo((s) => s.mode);
   const base = useRef<HTMLDivElement>(null);
   const palla = useRef<HTMLDivElement>(null);
   const puntatore = useRef<number | null>(null);
+
+  // salendo o scendendo dall'auto il pulsante cambia (FRENO ↔ CORRI): se
+  // era premuto, il tasto vecchio resterebbe incollato
+  useEffect(() => {
+    stick.freno = false;
+    stick.corriBtn = false;
+  }, [mode]);
 
   // qualunque uscita dalla finestra molla tutto: mai comandi "incollati"
   useEffect(() => {
@@ -25,6 +33,7 @@ export function Joystick() {
       puntatore.current = null;
       resetStick();
       stick.freno = false;
+      stick.corriBtn = false;
       stick.interagisci = false;
       if (palla.current) palla.current.style.transform = 'translate(0px, 0px)';
     };
@@ -75,7 +84,7 @@ export function Joystick() {
   };
 
   const premi =
-    (campo: 'freno' | 'interagisci', valore: boolean) => (e: ReactPointerEvent) => {
+    (campo: 'freno' | 'corriBtn' | 'interagisci', valore: boolean) => (e: ReactPointerEvent) => {
       if (valore) {
         try {
           (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -100,17 +109,31 @@ export function Joystick() {
         >
           E
         </button>
-        <button
-          type="button"
-          className="lugo-pulsante"
-          aria-label="Freno a mano"
-          onPointerDown={premi('freno', true)}
-          onPointerUp={premi('freno', false)}
-          onPointerCancel={premi('freno', false)}
-          onLostPointerCapture={() => (stick.freno = false)}
-        >
-          FRENO
-        </button>
+        {mode === 'auto' ? (
+          <button
+            type="button"
+            className="lugo-pulsante"
+            aria-label="Freno a mano"
+            onPointerDown={premi('freno', true)}
+            onPointerUp={premi('freno', false)}
+            onPointerCancel={premi('freno', false)}
+            onLostPointerCapture={() => (stick.freno = false)}
+          >
+            FRENO
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="lugo-pulsante"
+            aria-label="Corri"
+            onPointerDown={premi('corriBtn', true)}
+            onPointerUp={premi('corriBtn', false)}
+            onPointerCancel={premi('corriBtn', false)}
+            onLostPointerCapture={() => (stick.corriBtn = false)}
+          >
+            CORRI
+          </button>
+        )}
       </div>
       <div
         ref={base}

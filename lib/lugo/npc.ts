@@ -323,8 +323,31 @@ export function creaGazzella(mondo: MondoLugo): Gazzella | null {
 }
 
 const V_GAZZELLA = 7;
+const V_INSEGUIMENTO = 15;
 
-export function stepGazzella(g: Gazzella, dt: number): void {
+/**
+ * Pattuglia sui viali; con `caccia` punta dritta al giocatore (wanted):
+ * niente percorso, solo pressione — arcade quanto basta.
+ */
+export function stepGazzella(
+  g: Gazzella,
+  dt: number,
+  caccia?: { x: number; z: number },
+): void {
+  if (caccia) {
+    const dx = caccia.x - g.x;
+    const dz = caccia.z - g.z;
+    const d = Math.hypot(dx, dz);
+    if (d > 3.2) {
+      const passo = Math.min(V_INSEGUIMENTO * dt, d - 3);
+      g.x += (dx / d) * passo;
+      g.z += (dz / d) * passo;
+      g.yaw = Math.atan2(dz, dx);
+    }
+    // aggiorna l'ascissa al punto del percorso più vicino? No: al rientro
+    // in pattuglia riparte da dove si trova l'ascissa salvata, va benissimo.
+    return;
+  }
   g.s += V_GAZZELLA * dt * g.verso;
   if (g.s >= g.lunghezza) {
     g.s = g.lunghezza;
