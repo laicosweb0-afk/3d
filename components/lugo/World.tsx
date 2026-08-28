@@ -17,6 +17,7 @@ import { Veicoli } from './Veicoli';
 import { Insegne } from './Insegne';
 import { Arredi } from './Arredi';
 import { Festa } from './Festa';
+import { Eventi } from './Eventi';
 import { useMondo } from '@/lib/lugo/loadMap';
 import { runtime } from '@/lib/lugo/runtime';
 import { useLugo } from '@/lib/lugo/store';
@@ -293,6 +294,7 @@ export function World() {
       <Insegne />
       <Arredi />
       <Festa />
+      <Eventi />
       <Player />
       <Npcs />
       <Missioni />

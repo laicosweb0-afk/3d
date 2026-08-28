@@ -11,9 +11,10 @@ consegne, soldi e guai coi Carabinieri. Route: **`/lugo`**.
 | Comando | Azione |
 |---|---|
 | W A S D / Frecce | guida e cammina |
-| E / Invio | scendi, sali, parla |
+| E / Invio | scendi, sali, parla, **entra in bottega** |
 | Shift | corri |
 | Spazio | freno a mano (derapata) |
+| F | tira un pugno (a piedi) |
 | R | raddrizza l'auto sulla strada |
 | Palla in basso a destra | guida col mouse o col dito (mobile) |
 
@@ -27,6 +28,16 @@ localStorage: alla riapertura c'è CONTINUA. La guida spericolata alza il
 **livello ricercato** (★ fino a 3): la gazzella insegue, e se ti fermano
 paghi la multa. A piedi i maranza ti fermano per una sigaretta: **dialogo a
 scelte** con conseguenze.
+
+**Il tempo passa**: una giornata dura un quarto d'ora. All'imbrunire si
+accendono lampioni, luminarie e fari; al mattino cantano gli uccelli, la
+sera i grilli. All'ora giusta compaiono gli **eventi**: il mercato nella
+corte del Pavaglione, la musica in Piazza Baracca, il raduno di bici alla
+Rocca.
+
+**Le attività**: le 65 botteghe vere della mappa si visitano a piedi con E —
+caffè al bar, piadina in trattoria, gratta e vinci dal tabaccaio, vestiti
+nei negozi (e il vestito comprato si vede addosso).
 
 ## Com'è fatto
 
@@ -45,6 +56,15 @@ scelte** con conseguenze.
 - **Missioni**: architettura data-driven in `lib/lugo/missions.ts` — storia
   a catena + consegne generate al volo dai negozi veri della mappa. Per
   aggiungerne basta una voce nell'array (o un generatore come `creaConsegna`).
+- **Attività ed eventi**: `lib/lugo/attivita.ts` e `lib/lugo/eventi.ts` sono
+  **sistemi dati separati dal motore**: si aggiunge una riga e il mondo la
+  mette in scena. I campi `partner`, `promo` e `logo` restano vuoti per
+  costruzione — un'attività reale compare solo con nome e categoria, come
+  già pubblici su OpenStreetMap, finché l'esercente non autorizza.
+- **Tempo**: `lib/lugo/tempo.ts` interpola sei momenti della giornata e
+  guida sole, cielo, nebbia e luci artificiali.
+- **Veicoli**: `lib/lugo/carrozzerie.ts` descrive cinque sagome italiane per
+  proporzioni, senza marchi né modelli protetti.
 - **Stato**: Zustand per ciò che vede la UI (`lib/lugo/store.ts`), oggetti
   mutabili fuori da React per ciò che cambia ogni frame (`lib/lugo/runtime.ts`).
 - **NPC**: cento pedoni in undici draw call instanziati (`components/lugo/Npcs.tsx`)
@@ -53,7 +73,10 @@ scelte** con conseguenze.
 - **UI**: design system unico in `app/lugo/lugo.css` (vetro scuro, accento
   caldo, microanimazioni), HUD con schede cinematografiche di inizio e fine
   missione, minimappa con zoom dinamico, controlli touch contestuali.
-- **Audio**: WebAudio procedurale, zero asset (`lib/lugo/audio.ts`).
+- **Audio**: WebAudio procedurale, zero asset (`lib/lugo/audio.ts`): mixer a
+  quattro bus (effetti, voci, ambiente, musica) regolabile dalle
+  impostazioni, brusio di città, uccelli, grilli, campanelli e voci di
+  strada. `VOCI_FILE` è il gancio pronto per i campioni registrati.
 - **Qualità adattiva**: DPR a gradini dal frame time (pattern del sito).
 
 ## Collaudo
