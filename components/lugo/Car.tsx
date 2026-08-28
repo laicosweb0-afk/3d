@@ -12,6 +12,7 @@ import type { RuntimeGioco } from './Player';
 import { TINTE_AUTO } from '@/lib/lugo/palette';
 import { useLugo } from '@/lib/lugo/store';
 import { runtime } from '@/lib/lugo/runtime';
+import { cieloOra } from '@/lib/lugo/tempo';
 
 const VETRO = '#2E3A4E';
 const GOMMA = '#1E1C22';
@@ -57,6 +58,8 @@ export const Car = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function Car({ 
   const corpo = useRef<THREE.Group>(null);
   const stopD = useRef<THREE.MeshLambertMaterial>(null);
   const stopS = useRef<THREE.MeshLambertMaterial>(null);
+  const faroD = useRef<THREE.MeshLambertMaterial>(null);
+  const faroS = useRef<THREE.MeshLambertMaterial>(null);
   const vPrima = useRef(0);
 
   // sospensioni finte ma credibili: beccheggio in frenata/accelerazione,
@@ -75,6 +78,10 @@ export const Car = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function Car({ 
     const acceso = runtime.frenata ? 2.6 : 0.9;
     if (stopD.current) stopD.current.emissiveIntensity = acceso;
     if (stopS.current) stopS.current.emissiveIntensity = acceso;
+    // gli abbaglianti si accendono quando cala la sera
+    const fari = 0.45 + cieloOra().luci * 2.4;
+    if (faroD.current) faroD.current.emissiveIntensity = fari;
+    if (faroS.current) faroS.current.emissiveIntensity = fari;
   });
 
   return (
@@ -111,11 +118,11 @@ export const Car = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function Car({ 
       {/* fanali anteriori accesi e luci di coda */}
       <mesh position={[1.66, 0.62, 0.5]}>
         <boxGeometry args={[0.06, 0.16, 0.28]} />
-        <meshLambertMaterial color="#FFF3C8" emissive="#FFE9A8" emissiveIntensity={0.7} />
+        <meshLambertMaterial ref={faroD} color="#FFF3C8" emissive="#FFE9A8" emissiveIntensity={0.7} />
       </mesh>
       <mesh position={[1.66, 0.62, -0.5]}>
         <boxGeometry args={[0.06, 0.16, 0.28]} />
-        <meshLambertMaterial color="#FFF3C8" emissive="#FFE9A8" emissiveIntensity={0.7} />
+        <meshLambertMaterial ref={faroS} color="#FFF3C8" emissive="#FFE9A8" emissiveIntensity={0.7} />
       </mesh>
       <mesh position={[-1.66, 0.62, 0.5]}>
         <boxGeometry args={[0.05, 0.14, 0.24]} />

@@ -757,3 +757,129 @@
     transform-origin: bottom right;
   }
 }
+
+/* l'orologio di Lugo, sopra il denaro */
+.lugo-ora {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  font-variant-numeric: tabular-nums;
+  color: rgba(245, 242, 234, 0.55);
+}
+
+/* ── la vetrina di un'attività ─────────────────────────────────────────── */
+
+.lugo-vetrina {
+  position: absolute;
+  bottom: 7.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(23rem, 92vw);
+  padding: 0.9rem 1.1rem 0.8rem;
+  background: var(--vetro-forte);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid var(--bordo);
+  border-radius: var(--raggio);
+  box-shadow: var(--ombra);
+  pointer-events: auto;
+  animation: lugo-scheda-entra 0.28s ease-out both;
+}
+
+.lugo-vetrina-testa {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.lugo-vetrina-cat {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accento);
+}
+
+.lugo-vetrina-nome {
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.lugo-vetrina-chiudi {
+  flex: 0 0 auto;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  border: 1px solid var(--bordo);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--muto);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.lugo-vetrina-desc {
+  margin: 0.35rem 0 0.6rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--muto);
+}
+
+.lugo-vetrina-promo {
+  margin-bottom: 0.6rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #241a10;
+  background: linear-gradient(180deg, #ffd08a, var(--accento));
+}
+
+.lugo-vetrina-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.lugo-vetrina-art {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.88rem;
+  color: var(--testo);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--bordo);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.lugo-vetrina-art:hover:not(:disabled) {
+  background: rgba(255, 179, 92, 0.18);
+  border-color: rgba(255, 179, 92, 0.4);
+}
+
+.lugo-vetrina-art:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.lugo-vetrina-prezzo {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ok);
+}
+
+.lugo-vetrina-vuoto,
+.lugo-vetrina-piede {
+  font-size: 0.7rem;
+  color: rgba(245, 242, 234, 0.42);
+}
+
+.lugo-vetrina-piede {
+  margin-top: 0.6rem;
+  text-align: center;
+}

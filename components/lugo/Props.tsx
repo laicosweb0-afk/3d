@@ -5,7 +5,9 @@
 // in tutto, zero costo per frame.
 
 import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { cieloOra } from '@/lib/lugo/tempo';
 import { useMondo, type MondoLugo } from '@/lib/lugo/loadMap';
 import { rettangoloMinimo } from '@/lib/lugo/gates';
 
@@ -212,6 +214,15 @@ export function Props() {
   const pali = useRef<THREE.InstancedMesh>(null);
   const luci = useRef<THREE.InstancedMesh>(null);
   const globi = useRef<THREE.InstancedMesh>(null);
+
+  // i lampioni si accendono da soli quando cala la sera
+  useFrame(() => {
+    const acceso = 0.12 + cieloOra().luci * 2.4;
+    for (const ref of [luci, globi]) {
+      const m = ref.current?.material as THREE.MeshLambertMaterial | undefined;
+      if (m && m.emissiveIntensity !== acceso) m.emissiveIntensity = acceso;
+    }
+  });
 
   useLayoutEffect(() => {
     const m = new THREE.Matrix4();

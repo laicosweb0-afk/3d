@@ -5,7 +5,9 @@
 // InstancedMesh emissivo per tutte le lampadine.
 
 import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { cieloOra } from '@/lib/lugo/tempo';
 import { useMondo } from '@/lib/lugo/loadMap';
 
 const MAX_LUCI = 520;
@@ -59,6 +61,13 @@ export function Festa() {
   }, [mondo]);
 
   const mesh = useRef<THREE.InstancedMesh>(null);
+
+  // di giorno spente, la sera è festa
+  useFrame(() => {
+    const m = mesh.current?.material as THREE.MeshLambertMaterial | undefined;
+    const acceso = 0.06 + cieloOra().luci * 2.6;
+    if (m && m.emissiveIntensity !== acceso) m.emissiveIntensity = acceso;
+  });
 
   useLayoutEffect(() => {
     if (!mesh.current) return;

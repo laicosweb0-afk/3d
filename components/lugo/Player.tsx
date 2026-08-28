@@ -14,6 +14,7 @@ import { stepAuto, puntoStradaVicino, viaVicina } from '@/lib/lugo/car';
 import { stepPersona, PERSONA } from '@/lib/lugo/character';
 import type { StatoInput } from '@/lib/lugo/input';
 import { conStick } from '@/lib/lugo/stick';
+import { attivitaVicina, registroAttivita } from '@/lib/lugo/attivita';
 import { runtime, type RuntimeGioco } from '@/lib/lugo/runtime';
 import { updateAudio, suonaEvento } from '@/lib/lugo/audio';
 import { useLugo } from '@/lib/lugo/store';
@@ -142,9 +143,12 @@ export function Player() {
   useEffect(() => {
     const w = window as unknown as { __LUGO__?: Record<string, unknown> };
     const attivo = () => (useLugo.getState().mode === 'auto' ? rt.auto : rt.persona);
+    const registroAttivitaHook = () =>
+      registroAttivita(mondo).slice(0, 40).map((a) => ({ nome: a.nome, x: a.x, z: a.z, cat: a.categoria }));
     w.__LUGO__ = {
       ...(w.__LUGO__ ?? {}),
       pos: () => [attivo().x, attivo().z],
+      attivita: () => registroAttivitaHook(),
       mode: () => useLugo.getState().mode,
       teleport: (x: number, z: number, yaw?: number) => {
         const a = attivo();
@@ -303,9 +307,21 @@ export function Player() {
       cooldownDialogo.current -= dt;
       const dAuto = Math.hypot(rt.persona.x - rt.auto.x, rt.persona.z - rt.auto.z);
       if (input.interagisci && !interagiscePrima.current) {
+        const bottega = st.vetrina || st.dialogo ? null : attivitaVicina(mondo, rt.persona.x, rt.persona.z, 9);
         if (dAuto < DIST_SALITA) {
           st.setMode('auto');
           suonaEvento('salita');
+        } else if (bottega) {
+          st.setVetrina({
+            id: bottega.id,
+            nome: bottega.nome,
+            categoria: bottega.categoria,
+            descrizione: bottega.descrizione,
+            partner: bottega.partner,
+            promo: bottega.promo,
+            articoli: bottega.articoli,
+          });
+          suonaEvento('tappa');
         } else if (!st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
           for (const n of runtime.npcs) {
             if (n.tipo !== 'maranza') continue;
@@ -351,7 +367,11 @@ export function Player() {
       else if (st.mode === 'piedi') {
         const d = Math.hypot(rt.persona.x - rt.auto.x, rt.persona.z - rt.auto.z);
         if (d < DIST_SALITA) hint = 'Premi E per salire in auto';
-        else if (!st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
+        else if (!st.vetrina && !st.dialogo) {
+          const bottega = attivitaVicina(mondo, rt.persona.x, rt.persona.z, 9);
+          if (bottega) hint = `Premi E · ${bottega.nome}`;
+        }
+        if (!hint && !st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
           for (const n of runtime.npcs) {
             if (n.tipo !== 'maranza') continue;
             if (Math.hypot(n.x - rt.persona.x, n.z - rt.persona.z) < 3.4) {

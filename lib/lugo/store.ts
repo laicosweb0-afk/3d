@@ -29,6 +29,18 @@ export interface EsitoMissione {
   extra?: string; // "MANCIA €5" e simili
 }
 
+/** La vetrina di un'attività, aperta con E davanti al negozio. */
+export interface VetrinaAperta {
+  id: string;
+  nome: string;
+  categoria: string;
+  descrizione: string;
+  /** true solo per attività che hanno autorizzato la presenza premium. */
+  partner: boolean;
+  promo: string | null;
+  articoli: { nome: string; prezzo: number; effetto?: string }[];
+}
+
 /** Un dialogo a scelte con un NPC. */
 export interface Dialogo {
   id: string;
@@ -69,6 +81,10 @@ interface LugoState {
   esito: EsitoMissione | null;
   /** Dialogo a scelte aperto (mette in pausa l'attenzione, non il mondo). */
   dialogo: Dialogo | null;
+  /** Vetrina del negozio aperta. */
+  vetrina: VetrinaAperta | null;
+  /** Indice del vestito indossato (si compra nei negozi). */
+  outfit: number;
   /** Messaggio transitorio a centro schermo (esiti, tappe). */
   avviso: string | null;
   /** Suggerimento contestuale persistente ("Premi E…"). */
@@ -92,6 +108,8 @@ interface LugoState {
   setIntro: (i: IntroMissione | null) => void;
   setEsito: (e: EsitoMissione | null) => void;
   setDialogo: (d: Dialogo | null) => void;
+  setVetrina: (v: VetrinaAperta | null) => void;
+  setOutfit: (i: number) => void;
   setAvviso: (msg: string | null) => void;
   setHint: (msg: string | null) => void;
   setVia: (nome: string | null) => void;
@@ -105,7 +123,7 @@ export const useLugo = create<LugoState>((set) => ({
   audioOn: true,
   kmh: 0,
   punteggio: 0,
-  denaro: 0,
+  denaro: 20,
   wanted: 0,
   missioneId: null,
   statoMissione: 'idle',
@@ -115,6 +133,8 @@ export const useLugo = create<LugoState>((set) => ({
   intro: null,
   esito: null,
   dialogo: null,
+  vetrina: null,
+  outfit: 0,
   avviso: null,
   hint: null,
   via: null,
@@ -135,6 +155,8 @@ export const useLugo = create<LugoState>((set) => ({
   setIntro: (intro) => set({ intro }),
   setEsito: (esito) => set({ esito }),
   setDialogo: (dialogo) => set({ dialogo }),
+  setVetrina: (vetrina) => set({ vetrina }),
+  setOutfit: (outfit) => set({ outfit }),
   setAvviso: (avviso) => set({ avviso }),
   setHint: (hint) => set({ hint }),
   setVia: (via) => set({ via }),
