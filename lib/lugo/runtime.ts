@@ -31,7 +31,17 @@ export const runtime: {
   caccia: boolean;
   /** true mentre il giocatore frena (per gli stop dell'auto). */
   frenata: boolean;
-} = { rt: null, gazzella: null, cameraOverride: null, npcs: null, caccia: false, frenata: false };
+  /** Gli assi di movimento dell'ultimo frame (li legge la camera). */
+  assi: { ax: number; az: number };
+} = {
+  rt: null,
+  gazzella: null,
+  cameraOverride: null,
+  npcs: null,
+  caccia: false,
+  frenata: false,
+  assi: { ax: 0, az: 0 },
+};
 
 /** Posizione del giocatore attivo (auto o persona) secondo la modalità. */
 export function posGiocatore(mode: 'auto' | 'piedi'): { x: number; z: number; yaw: number } {

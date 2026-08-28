@@ -17,6 +17,15 @@ export const CONTROLLI: { name: string; keys: string[] }[] = [
 ];
 
 export interface StatoInput {
+  /**
+   * Assi analogici normalizzati, l'UNICA sorgente di verità per il
+   * movimento: ax = +1 a destra, az = +1 avanti, modulo mai oltre 1
+   * (le diagonali non sono più veloci). Li produce `conStick`, che fonde
+   * tastiera e joystick; i booleani qui sotto ne sono la lettura a soglia,
+   * usata dall'auto e dalle interazioni.
+   */
+  ax: number;
+  az: number;
   avanti: boolean;
   indietro: boolean;
   sinistra: boolean;
