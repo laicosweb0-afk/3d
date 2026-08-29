@@ -5,7 +5,7 @@
 // deterministico; quando l'evento finisce le cose spariscono da sole.
 // Avvicinandosi, l'HUD annuncia l'evento una volta sola.
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useMondo } from '@/lib/lugo/loadMap';
@@ -258,20 +258,60 @@ export function Eventi() {
     };
   }, [attivi, pezzi]);
 
+  // Tutti i pezzi di un evento sono scatole: due sole chiamate di disegno,
+  // una per la roba solida e una per le lampadine. Prima ogni banco, ogni
+  // cassa e ogni lampadina era una mesh a sé: un mercato faceva venti
+  // chiamate e i festoni delle luci d'inverno ne avrebbero fatte quaranta,
+  // su un margine che a piazza Baracca è di poche unità.
+  const solidi = useMemo(() => pezzi.filter((z) => z.tipo !== 'luce'), [pezzi]);
+  const lampadine = useMemo(() => pezzi.filter((z) => z.tipo === 'luce'), [pezzi]);
+  const meshSolidi = useRef<THREE.InstancedMesh>(null);
+  const meshLuci = useRef<THREE.InstancedMesh>(null);
+
+  useLayoutEffect(() => {
+    const m = new THREE.Matrix4();
+    const q = new THREE.Quaternion();
+    const e = new THREE.Euler();
+    const c = new THREE.Color();
+    const scrivi = (rif: React.RefObject<THREE.InstancedMesh | null>, elenco: Pezzo[]) => {
+      const mesh = rif.current;
+      if (!mesh) return;
+      elenco.forEach((z, i) => {
+        e.set(0, z.rot, 0, 'YXZ');
+        q.setFromEuler(e);
+        m.compose(new THREE.Vector3(z.x, z.y, z.z), q, new THREE.Vector3(z.sx, z.sy, z.sz));
+        mesh.setMatrixAt(i, m);
+        mesh.setColorAt(i, c.set(z.colore));
+      });
+      mesh.count = elenco.length;
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    };
+    scrivi(meshSolidi, solidi);
+    scrivi(meshLuci, lampadine);
+  }, [solidi, lampadine]);
+
   if (!pezzi.length) return null;
 
   return (
-    <group ref={luci}>
-      {pezzi.map((z, i) => (
-        <mesh key={i} position={[z.x, z.y, z.z]} rotation={[0, z.rot, 0]} castShadow={z.tipo !== 'luce'}>
-          <boxGeometry args={[z.sx, z.sy, z.sz]} />
-          {z.tipo === 'luce' ? (
-            <meshLambertMaterial color={z.colore} emissive="#FFD08A" emissiveIntensity={0.6} />
-          ) : (
-            <meshLambertMaterial color={z.colore} />
-          )}
-        </mesh>
-      ))}
+    <group ref={luci} name="eventi">
+      <instancedMesh
+        ref={meshSolidi}
+        args={[undefined, undefined, Math.max(1, solidi.length)]}
+        frustumCulled={false}
+        castShadow
+      >
+        <boxGeometry args={[1, 1, 1]} />
+        <meshLambertMaterial />
+      </instancedMesh>
+      <instancedMesh
+        ref={meshLuci}
+        args={[undefined, undefined, Math.max(1, lampadine.length)]}
+        frustumCulled={false}
+      >
+        <boxGeometry args={[1, 1, 1]} />
+        <meshLambertMaterial emissive="#FFD08A" emissiveIntensity={0.6} />
+      </instancedMesh>
     </group>
   );
 }

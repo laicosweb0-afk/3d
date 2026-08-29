@@ -631,13 +631,49 @@ try {
   }
 
   // ── costo di un fotogramma ────────────────────────────────────────────
+  // Si misura in QUATTRO punti e si tiene il peggiore. Con una misura sola
+  // il numero dipendeva da dove il collaudo si era fermato per caso, e il
+  // punto peggiore di Lugo — piazza Baracca, dove si vedono insieme il
+  // Pavaglione, la stele, la giostra, i banchi e mezzo centro — non veniva
+  // guardato mai. Un tetto che non si controlla dove serve non è un tetto.
   if ((await lugo('typeof L.render')) === 'function') {
-    const r = await lugo('L.render()');
-    const dettagli = `${(r.triangoli / 1000).toFixed(0)}k triangoli, ${r.chiamate} draw call`;
-    if (r.triangoli > 0 && r.triangoli < 700_000 && r.chiamate < 170) {
+    const poiCosto = (await lugo('L.poi')) ?? {};
+    const punti = [
+      ['dove sei', null],
+      ['pavaglione', poiCosto.pavaglione],
+      ['baracca', poiCosto.baracca],
+      ['rocca', poiCosto.rocca],
+    ].filter(([, p]) => p !== undefined);
+    let peggio = { nome: '', triangoli: 0, chiamate: 0 };
+    const misure = [];
+    for (const [nome, p] of punti) {
+      if (p) {
+        // il giocatore va DOVE guarda la camera: la mappa delle ombre segue
+        // lui, non l'inquadratura, e misurare la camera in piazza mentre il
+        // giocatore è in campagna dava un numero che non capita mai
+        await page.evaluate((q) => window.__LUGO__.teleport(q.x + 12, q.z + 12), p);
+        await page.evaluate(
+          (q) => window.__LUGO__.fotocamera(q.x + 26, 12, q.z + 26, q.x, 3, q.z, 2500),
+          p,
+        );
+        await page.waitForTimeout(900);
+      }
+      const r = await lugo('L.render()');
+      misure.push(`${nome} ${r.chiamate}`);
+      if (r.chiamate > peggio.chiamate) peggio = { nome, triangoli: r.triangoli, chiamate: r.chiamate };
+    }
+    const dettagli = `${(peggio.triangoli / 1000).toFixed(0)}k triangoli, ${peggio.chiamate} draw call · ${misure.join(' | ')}`;
+    if (peggio.triangoli > 0 && peggio.triangoli < 700_000 && peggio.chiamate < 170) {
       ok('costo del fotogramma', dettagli);
     } else {
-      ko('costo del fotogramma', dettagli + ' — troppo per un telefono');
+      // quando sfora si dice anche DOVE si spende: senza, la volta dopo si
+      // tira a indovinare
+      const spesa = (await lugo('typeof L.spesa === "function" ? L.spesa() : []')) ?? [];
+      const chi = spesa
+        .slice(0, 6)
+        .map((x) => `${x.nome}×${x.mesh}`)
+        .join(', ');
+      ko('costo del fotogramma', dettagli + ' — troppo per un telefono · ' + chi);
     }
   }
 

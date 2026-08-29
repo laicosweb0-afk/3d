@@ -1108,7 +1108,7 @@ export function Landmarks() {
   }, [mondo]);
 
   return (
-    <group>
+    <group name="landmark">
       {dati.pavaglione && <mesh geometry={dati.pavaglione} material={materiale} castShadow receiveShadow />}
       {dati.rocca && <mesh geometry={dati.rocca} material={materiale} castShadow receiveShadow />}
       {dati.stazione && (

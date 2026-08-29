@@ -244,7 +244,7 @@ export function Npcs() {
   };
 
   return (
-    <group>
+    <group name="npc">
       {/* una geometria unitaria per parte; forma e taglia vivono nelle matrici */}
       <instancedMesh ref={ref('torso')} args={[undefined, undefined, N_NPC]} frustumCulled={false} castShadow>
         <boxGeometry args={[0.3, 0.5, 0.42]} />

@@ -129,7 +129,7 @@ export function CityMeshes({ senzaLandmark = [] }: { senzaLandmark?: string[] })
   }, [mondo]);
 
   return (
-    <group>
+    <group name="citta">
       {edifici.map((g, i) => (
         <mesh key={i} geometry={g} material={matEdifici} castShadow receiveShadow />
       ))}
