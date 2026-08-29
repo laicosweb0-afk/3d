@@ -456,6 +456,82 @@ try {
         const max = Math.max(primaDelDiario, dopoIlDiario);
         if (conta >= min && conta <= max) ok('diario dell\'esplorazione', `${conta} luoghi`);
         else ko('diario dell\'esplorazione', `il diario dice ${conta}, lo stato ${min}–${max}`);
+        // ── incarichi del giorno e della settimana ──────────────────────
+        // Cinque traguardi che si riempiono giocando: qui se ne completa
+        // uno di forza e si controlla che il premio si possa incassare una
+        // volta sola.
+        if ((await lugo('typeof L.incarichi')) === 'function') {
+          const elencati = await page.locator('[data-hud="incarichi"] .lugo-incarico').count();
+          if (elencati === 5) ok('incarichi del giorno e della settimana', '3 di oggi, 2 della settimana');
+          else ko('incarichi del giorno e della settimana', `${elencati} incarichi a schermo`);
+
+          // si sceglie un incarico ANCORA da fare: giocando fin qui qualcuno
+          // potrebbe essersi già completato da solo (i luoghi scoperti, gli
+          // euro delle missioni), e quello direbbe poco
+          const stato0 = await lugo('L.incarichi()');
+          const scelto = stato0.giorno.find((i) => !i.completo) ?? stato0.giorno[0];
+          const prontiPrima = stato0.pronti;
+          const bottoniPrima = await page.locator('[data-hud="incarico-riscuoti"]').count();
+          await page.evaluate(
+            ([m, q]) => window.__LUGO__.avanzaIncarico(m, q),
+            [scelto.metrica, scelto.quanto],
+          );
+          await page.waitForTimeout(300);
+          const pronti = await lugo('L.incarichi().pronti');
+          if (pronti === prontiPrima + 1) ok('incarico completato', scelto.titolo);
+          else ko('incarico completato', `pronti ${prontiPrima} → ${pronti} dopo +${scelto.quanto} ${scelto.metrica}`);
+
+          const badge = await page.locator('[data-hud="incarichi-pronti"]').count();
+          if (badge) ok('avviso sul diario', 'il premio da riscuotere si vede');
+          else ko('avviso sul diario', 'nessun avviso sul tasto del diario');
+
+          const prima = { rep: await lugo('L.punteggio()'), euro: await lugo('L.denaro()') };
+          // si preme il tasto DI QUELL'incarico, non il primo che capita:
+          // altri possono essere pronti, e il premio atteso sarebbe un altro
+          const premuto = await page.evaluate((titolo) => {
+            const gruppo = document.querySelector('[data-hud="incarichi"] .lugo-incarichi-gruppo');
+            for (const riga of gruppo ? gruppo.querySelectorAll('.lugo-incarico') : []) {
+              if (riga.querySelector('.lugo-incarico-nome')?.textContent !== titolo) continue;
+              const b = riga.querySelector('[data-hud="incarico-riscuoti"]');
+              if (!b) return false;
+              b.click();
+              return true;
+            }
+            return false;
+          }, scelto.titolo);
+          if (premuto) {
+            await page.waitForTimeout(400);
+            const dopoRep = await lugo('L.punteggio()');
+            const dopoEuro = await lugo('L.denaro()');
+            if (dopoRep - prima.rep === scelto.rep && Math.round(dopoEuro - prima.euro) === scelto.denaro) {
+              ok('premio dell\'incarico', `+€${scelto.denaro} · +${scelto.rep} REP`);
+            } else {
+              ko(
+                'premio dell\'incarico',
+                `atteso +€${scelto.denaro}/+${scelto.rep} REP, arrivato +€${(dopoEuro - prima.euro).toFixed(2)}/+${dopoRep - prima.rep} REP`,
+              );
+            }
+            // il premio si incassa una volta sola: quel tasto non c'è più,
+            // e gli altri incarichi pronti restano da riscuotere
+            const ancora = await page.locator('[data-hud="incarico-riscuoti"]').count();
+            const riscosso = await page.evaluate(
+              (titolo) =>
+                window.__LUGO__
+                  .incarichi()
+                  .giorno.filter((i) => i.riscosso && i.titolo === titolo).length,
+              scelto.titolo,
+            );
+            if (riscosso === 1 && ancora === bottoniPrima) ok('premio riscosso una volta sola');
+            else
+              ko(
+                'premio riscosso una volta sola',
+                `riscossi ${riscosso}, tasti ${bottoniPrima} → ${ancora} (atteso ${bottoniPrima})`,
+              );
+          } else {
+            ko('premio dell\'incarico', 'nessun tasto RISCUOTI a schermo');
+          }
+        }
+
         await page.screenshot({ path: join(SHOTS, '06-diario.png') });
         await page
           .locator('[data-hud="diario"] .lugo-vetrina-chiudi')

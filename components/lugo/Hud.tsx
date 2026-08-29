@@ -15,6 +15,15 @@ import { Guardaroba } from './Guardaroba';
 import { useMondo } from '@/lib/lugo/loadMap';
 import { contaPoi, puntiInteresse } from '@/lib/lugo/poi';
 import { DISTINTIVI } from '@/lib/lugo/distintivi';
+import {
+  chiaveGiorno,
+  chiaveSettimana,
+  daRiscuotere,
+  incarichiDelGiorno,
+  incarichiDellaSettimana,
+  incarichiVivi,
+  type IncaricoVivo,
+} from '@/lib/lugo/incarichi';
 import { avanzamento, gradoDaRep, livelloDaRep } from '@/lib/lugo/progressione';
 
 function tempoMMSS(s: number): string {
@@ -64,10 +73,40 @@ export function Hud() {
   const setGuardaroba = useLugo((s) => s.setGuardaroba);
   const missioniFatte = useLugo((s) => s.missioniFatte);
   const consegneFatte = useLugo((s) => s.consegneFatte);
+  const totali = useLugo((s) => s.totali);
+  const baseGiorno = useLugo((s) => s.baseGiorno);
+  const baseSettimana = useLugo((s) => s.baseSettimana);
+  const incarichiRiscossi = useLugo((s) => s.incarichiRiscossi);
+  const riscuotiIncarico = useLugo((s) => s.riscuotiIncarico);
   const liv = livelloDaRep(punteggio);
   const grado = gradoDaRep(punteggio);
   const avanza = avanzamento(punteggio);
   const mondo = useMondo();
+
+  // Gli incarichi di oggi e di questa settimana, col progresso vero. Le
+  // chiavi vengono dalla data: cambiano da sole a mezzanotte e il lunedì.
+  const giornalieri = incarichiVivi(
+    incarichiDelGiorno(chiaveGiorno()),
+    totali,
+    baseGiorno,
+    incarichiRiscossi,
+  );
+  const settimanali = incarichiVivi(
+    incarichiDellaSettimana(chiaveSettimana()),
+    totali,
+    baseSettimana,
+    incarichiRiscossi,
+  );
+  const pronti = daRiscuotere(giornalieri) + daRiscuotere(settimanali);
+
+  const riscuoti = (i: IncaricoVivo) => {
+    if (!i.completo || i.riscosso) return;
+    if (!riscuotiIncarico(i.id)) return;
+    addPunti(i.rep);
+    addDenaro(i.denaro);
+    setAvviso(`${i.titolo} · +€${i.denaro} · +${i.rep} REP`);
+    suonaEvento('successo');
+  };
 
   // l'ora di gioco, aggiornata due volte al secondo (basta e avanza)
   const [ora, setOra] = useState(orologio());
@@ -119,6 +158,8 @@ export function Hud() {
       return;
     }
     addDenaro(-art.prezzo);
+    // un acquisto in bottega vale per l'incarico del giro delle attività
+    useLugo.getState().contaTotale('acquisti');
     if (art.effetto === 'outfit') {
       setOutfit((outfit + 1) % 4);
       setAvviso(`${art.nome} · nuovo look`);
@@ -215,6 +256,11 @@ export function Hud() {
       >
         <span className="lugo-diario-icona">◈</span>
         <span className="lugo-diario-conta">{poiVisitati.length}</span>
+        {pronti > 0 && (
+          <span className="lugo-diario-pronti" data-hud="incarichi-pronti">
+            {pronti}
+          </span>
+        )}
       </button>
 
       <button
@@ -282,6 +328,60 @@ export function Hud() {
             {puntiInteresse(mondo).length} — {contaPoi(mondo).monumento} monumenti,{' '}
             {contaPoi(mondo).attivita} botteghe
           </div>
+          {/* Gli incarichi: quello che Lugo ti chiede oggi e questa settimana.
+              Si riempiono da soli mentre giochi; il premio si incassa qui. */}
+          <div className="lugo-incarichi" data-hud="incarichi">
+            {([
+              ['Oggi', giornalieri],
+              ['Questa settimana', settimanali],
+            ] as const).map(([titolo, elenco]) => (
+              <div key={titolo} className="lugo-incarichi-gruppo">
+                <div className="lugo-incarichi-titolo">{titolo}</div>
+                {elenco.map((i) => (
+                  <div
+                    key={i.id}
+                    className={
+                      'lugo-incarico' +
+                      (i.riscosso ? ' lugo-incarico-riscosso' : i.completo ? ' lugo-incarico-ok' : '')
+                    }
+                  >
+                    <div className="lugo-incarico-testa">
+                      <span className="lugo-incarico-nome">{i.titolo}</span>
+                      <span className="lugo-incarico-conta">
+                        {i.metrica === 'euro' ? `€${i.fatto}/€${i.quanto}` : `${i.fatto}/${i.quanto}`}
+                      </span>
+                    </div>
+                    <div className="lugo-incarico-barra">
+                      <div
+                        className="lugo-incarico-barra-piena"
+                        style={{ width: `${(i.fatto / i.quanto) * 100}%` }}
+                      />
+                    </div>
+                    <div className="lugo-incarico-piede">
+                      <span className="lugo-incarico-testo">{i.descrizione}</span>
+                      {i.riscosso ? (
+                        <span className="lugo-incarico-fatto">RISCOSSO</span>
+                      ) : i.completo ? (
+                        <button
+                          type="button"
+                          className="lugo-incarico-btn"
+                          data-hud="incarico-riscuoti"
+                          onClick={() => riscuoti(i)}
+                        >
+                          RISCUOTI €{i.denaro} · {i.rep} REP
+                        </button>
+                      ) : (
+                        <span className="lugo-incarico-premio">
+                          €{i.denaro} · {i.rep} REP
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+
           <div className="lugo-diario-lista">
             {DISTINTIVI.map((d) => {
               const tipoDi = new Map(puntiInteresse(mondo).map((p) => [p.id, p.tipo]));
