@@ -8,6 +8,16 @@ import { puntoStradaVicino } from './car';
 
 export type TipoMissione = 'storia' | 'consegna';
 
+/** A che famiglia appartiene la missione: serve alla scheda e ai filtri. */
+export type CategoriaMissione =
+  | 'introduzione'
+  | 'storia'
+  | 'consegna'
+  | 'esplorazione'
+  | 'attivita';
+
+export type Difficolta = 'facile' | 'media' | 'tosta';
+
 export interface TappaMissione {
   /** Id POI del map.json, "viali-n|e|s|o", oppure "xz:<x>:<z>" (posizione libera). */
   poi: string;
@@ -16,6 +26,15 @@ export interface TappaMissione {
   aPiedi?: boolean;
   /** Il punto va riportato sulla carreggiata più vicina (POI dentro i muri). */
   suStrada?: boolean;
+  /**
+   * Obiettivo di ESPLORAZIONE invece che di posizione: la tappa si chiude
+   * quando il giocatore ha scoperto altri `scopri` punti di interesse da
+   * quando è cominciata. Con questo il gioco sa esprimere «conosci Lugo:
+   * scopri tre attività», che con le sole coordinate era impossibile.
+   */
+  scopri?: number;
+  /** Come sopra, ma conta gli acquisti fatti nelle botteghe. */
+  compra?: number;
 }
 
 export interface Missione {
@@ -36,6 +55,17 @@ export interface Missione {
   bonusVelocita?: boolean;
   /** Numero della consegna: fa variare la mancia. */
   semeMancia?: number;
+  /** Famiglia della missione (default: dedotta da `tipo`). */
+  categoria?: CategoriaMissione;
+  difficolta?: Difficolta;
+  /** Livello del giocatore sotto il quale la missione non viene proposta. */
+  livelloRichiesto?: number;
+  /** Attività di Lugo che ospita la missione, se ce n'è una. */
+  attivitaId?: string;
+  /** Distintivo assegnato al completamento. */
+  distintivo?: string;
+  /** true se si può rigiocare dopo averla finita. */
+  ripetibile?: boolean;
 }
 
 // ── La storia principale: TROVA IL TUO AMICO ────────────────────────────────
@@ -43,6 +73,82 @@ export interface Missione {
 // indizio che porta alla prossima, fino alla soluzione (comica) in caserma.
 
 export const MISSIONI: Missione[] = [
+  // ── L'ingresso in città: le cinque missioni che insegnano il gioco ──────
+  {
+    id: 'mvp1',
+    tipo: 'storia',
+    categoria: 'introduzione',
+    difficolta: 'facile',
+    livelloRichiesto: 1,
+    titolo: 'Appena arrivato',
+    descrizione: 'Sei a Lugo e non ti conosce nessuno. Si comincia dal posto che conoscono tutti.',
+    frase: '“Allora, il Pavaglione. Da lì in poi si vede.”',
+    tappe: [{ poi: 'pavaglione', titolo: 'Raggiungi il Pavaglione' }],
+    ricompensa: 50,
+    denaro: 100,
+  },
+  {
+    id: 'mvp2',
+    tipo: 'storia',
+    categoria: 'attivita',
+    difficolta: 'facile',
+    livelloRichiesto: 1,
+    titolo: 'Ho sete',
+    descrizione: 'Un caffè al banco è il modo più veloce per farsi vedere in giro.',
+    frase: '“Un caffè e due chiacchiere: a Lugo si comincia sempre così.”',
+    tappe: [{ poi: 'bar', titolo: 'Vai al bar del centro', suStrada: true }],
+    ricompensa: 50,
+    denaro: 150,
+  },
+  {
+    id: 'mvp3',
+    tipo: 'storia',
+    categoria: 'consegna',
+    difficolta: 'media',
+    livelloRichiesto: 1,
+    titolo: 'Una consegna al volo',
+    descrizione: 'Ritira e porta a destinazione prima che scada il tempo.',
+    frase: '“Se ci arrivi in tempo, il prossimo giro te lo do ancora a te.”',
+    tappe: [
+      { poi: 'teatro', titolo: 'Ritira il pacco al Teatro Rossini', suStrada: true },
+      { poi: 'stazione', titolo: 'Consegna in stazione', suStrada: true },
+    ],
+    tempoLimite: 240,
+    ricompensa: 100,
+    denaro: 350,
+  },
+  {
+    id: 'mvp4',
+    tipo: 'storia',
+    categoria: 'esplorazione',
+    difficolta: 'media',
+    livelloRichiesto: 1,
+    titolo: 'Conosci Lugo',
+    descrizione: 'Fatti un giro a piedi e scopri tre attività del centro.',
+    frase: '“Se non sai cosa c\'è sotto i portici, non conosci Lugo.”',
+    tappe: [{ poi: 'pavaglione', titolo: 'Scopri 3 attività a piedi', scopri: 3, aPiedi: true }],
+    ricompensa: 250,
+    denaro: 500,
+  },
+  {
+    id: 'mvp5',
+    tipo: 'storia',
+    categoria: 'introduzione',
+    difficolta: 'media',
+    livelloRichiesto: 2,
+    titolo: 'Ora ti conoscono',
+    descrizione: 'Hai fatto il giro giusto. Torna in piazza: qualcuno ti aspetta.',
+    frase: '“Ohi, ma tu sei quello che gira sempre in centro. Piacere.”',
+    tappe: [
+      { poi: 'baracca', titolo: 'Passa dal monumento a Baracca' },
+      { poi: 'pavaglione', titolo: 'Torna al Pavaglione a piedi', aPiedi: true },
+    ],
+    ricompensa: 500,
+    denaro: 1000,
+    distintivo: 'esploratore',
+  },
+
+  // ── La storia: TROVA IL TUO AMICO ───────────────────────────────────────
   {
     id: 'm01',
     tipo: 'storia',
@@ -127,7 +233,7 @@ export const MISSIONI: Missione[] = [
     frase: '“Era in caserma A FARE LA DENUNCIA: aveva perso il portafoglio. Tutto qui.”',
     tappe: [
       { poi: 'rocca', titolo: 'Passa dalla Rocca' },
-      { poi: 'caserma', titolo: 'Recupera Giacomo in caserma' },
+      { poi: 'caserma', titolo: 'Recupera Giacomo in caserma', suStrada: true },
     ],
     tempoLimite: 90,
     ricompensa: 300,
@@ -248,8 +354,13 @@ export function prossimaMissione(
   mondo: MondoLugo,
   idCorrente: string | null,
   missioniFatte: string[],
+  livello = 99,
 ): Missione {
-  const daFare = MISSIONI.find((m) => !missioniFatte.includes(m.id));
+  // una missione non si propone se il giocatore non ha ancora il livello:
+  // si passa alla successiva, non si blocca la catena
+  const daFare = MISSIONI.find(
+    (m) => !missioniFatte.includes(m.id) && (m.livelloRichiesto ?? 1) <= livello,
+  );
   if (daFare) return daFare;
   // Storia finita: si vive di consegne, e ogni quarta proposta è un
   // classico da rigiocare. Il contatore delle PROPOSTE è separato da quello

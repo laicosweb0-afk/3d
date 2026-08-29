@@ -24,6 +24,10 @@ export function Missioni() {
   const tempo = useRef(0);
   const attesa = useRef(3); // secondi prima della prima missione
   const hintPiedi = useRef(false);
+  // quanti punti erano già scoperti quando è cominciata la tappa corrente:
+  // gli obiettivi di esplorazione contano da lì in avanti
+  const baseScoperte = useRef(-1);
+  const chiaveTappa = useRef('');
 
   // hook di verifica
   useEffect(() => {
@@ -85,8 +89,20 @@ export function Missioni() {
       // qui sotto girava lo stesso e la missione risultava insieme
       // completata e fallita
       let conclusa = false;
+      // la baseline si prende alla prima volta che si guarda questa tappa
+      const chiave = `${m.id}:${s.tappa}`;
+      if (chiaveTappa.current !== chiave) {
+        chiaveTappa.current = chiave;
+        baseScoperte.current = s.poiVisitati.length;
+      }
+
+      // Obiettivi che non sono una coordinata: "scopri N punti" si chiude
+      // quando ne hai scoperti altrettanti da quando è partita la tappa.
+      let fatto = d < raggio;
+      if (t.scopri) fatto = s.poiVisitati.length - baseScoperte.current >= t.scopri;
+
       const valida = t.aPiedi ? s.mode === 'piedi' : true;
-      if (valida && d < raggio) {
+      if (valida && fatto) {
         if (s.tappa + 1 < m.tappe.length) {
           s.setMissione(m.id, 'attiva', s.tappa + 1);
           s.setAvviso(m.tappe[s.tappa + 1].titolo);
@@ -115,6 +131,10 @@ export function Missioni() {
           // l'elenco degli id — dove non entrava mai nulla.
           if (m.tipo === 'storia') s.addMissioneFatta(m.id);
           else if (m.tipo === 'consegna') s.contaConsegna();
+          // il distintivo di ricompensa, se la missione ne porta uno
+          if (m.distintivo && !s.distintivi.includes(m.distintivo)) {
+            s.setDistintivi([...s.distintivi, m.distintivo]);
+          }
           s.setEsito({ titolo: m.titolo, denaro: euro, rep: m.ricompensa, extra });
           s.setTempoResiduo(null);
           suonaEvento('successo');
@@ -144,7 +164,7 @@ export function Missioni() {
           s.statoMissione === 'fallita' && s.missioneId && missioneById(s.missioneId)?.tipo === 'storia';
         const m = fallitaStoria
           ? missioneById(s.missioneId!)!
-          : prossimaMissione(mondo, s.missioneId, s.missioniFatte);
+          : prossimaMissione(mondo, s.missioneId, s.missioniFatte, s.livello);
         s.setMissione(m.id, 'attiva', 0);
         tempo.current = m.tempoLimite ?? 0;
         s.setTempoResiduo(m.tempoLimite ?? null);
