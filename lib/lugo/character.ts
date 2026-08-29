@@ -32,6 +32,9 @@ export interface StatoPersona {
 }
 
 /** Tutti i numeri del movimento in un posto solo, facili da ritoccare. */
+/** Radianti di fase per metro percorso: 2π / 1.8 m di falcata. */
+const FALCATA = 3.5;
+
 export const PERSONA = {
   vCammina: 2.3,
   vCorsa: 5.2,
@@ -120,7 +123,12 @@ export function stepPersona(
   }
 
   // ── 5. animazione al passo con la velocità reale ─────────────────────
+  // La fase avanza con la DISTANZA percorsa, non col tempo: così il passo
+  // resta agganciato al terreno. Il fattore è la falcata: con l'ampiezza
+  // d'anca di Character.tsx (±0.5 rad su una gamba di 0.94 m) un ciclo
+  // completo copre circa 1,8 m, cioè due passi da 90 cm. Con il vecchio 2.2
+  // il ciclo copriva 2,9 m e i piedi strisciavano sull'asfalto.
   const vFinale = Math.hypot(s.vx, s.vz);
-  if (vFinale > 0.05) s.fase += vFinale * dt * 2.2;
+  if (vFinale > 0.05) s.fase += vFinale * dt * FALCATA;
   return vFinale;
 }

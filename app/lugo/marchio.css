@@ -1,0 +1,187 @@
+/* Il marchio LUGO CITY: titolo a blocchi, stemma e gonfaloni.
+   Sta in un file suo perché il design system del gioco (lugo.css) resti
+   una cosa e l'identità un'altra: il marchio si ridipinge senza toccare
+   l'interfaccia. Riferimento: la key art e il video di apertura. */
+
+.lugo-marchio {
+  --lc-blu: #1e3c72;
+  --lc-blu-chiaro: #2e5ea8;
+  --lc-oro: #f2b419;
+  --lc-oro-scuro: #b8830a;
+  --lc-bianco: #f4f2ed;
+  --lc-nero: #15171d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  user-select: none;
+}
+
+/* Le due parole del titolo: lettere spesse, bordo nero e una profondità
+   di sei gradini, come i mattoni della key art. */
+.lugo-marchio-riga {
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  line-height: 0.88;
+  font-size: clamp(3.2rem, 13vw, 7.5rem);
+  font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  -webkit-text-stroke: clamp(3px, 0.9vw, 7px) var(--lc-nero);
+  paint-order: stroke fill;
+}
+
+.lugo-marchio-lugo {
+  color: var(--lc-bianco);
+  text-shadow:
+    0 3px 0 #cfcdc7, 0 6px 0 #b4b2ab, 0 9px 0 #97958f,
+    0 12px 0 #78766f, 0 15px 0 #5a5852, 0 20px 26px rgba(0, 0, 0, 0.45);
+}
+
+.lugo-marchio-city {
+  color: var(--lc-oro);
+  text-shadow:
+    0 3px 0 #d69d0e, 0 6px 0 #bc880b, 0 9px 0 #a17408,
+    0 12px 0 #856005, 0 15px 0 #684b03, 0 20px 26px rgba(0, 0, 0, 0.45);
+}
+
+.lugo-marchio-claim {
+  margin-top: 0.55rem;
+  padding: 0.3rem 0.85rem;
+  background: var(--lc-nero);
+  border-radius: 4px;
+  font-size: clamp(0.62rem, 1.6vw, 0.86rem);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--lc-bianco);
+}
+
+.lugo-marchio-claim b {
+  color: var(--lc-oro);
+  font-weight: 900;
+}
+
+/* Lo stemma LC, disegnato in SVG così resta nitido a ogni dimensione. */
+.lugo-stemma {
+  width: 2.6rem;
+  height: 2.6rem;
+  flex: none;
+}
+
+.lugo-stemma-scudo {
+  fill: var(--lc-bianco, #f4f2ed);
+}
+
+.lugo-stemma-segno {
+  fill: none;
+  stroke: var(--lc-blu, #1e3c72);
+  stroke-width: 11;
+}
+
+/* Il pannello del menu, in stile lavagna della piazza. */
+.lugo-menu-marchio {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 12px;
+  background: linear-gradient(160deg, var(--lc-blu-chiaro), var(--lc-blu));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.lugo-menu-marchio-testo {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.lugo-menu-marchio-testo strong {
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: #f4f2ed;
+}
+
+.lugo-menu-marchio-testo span {
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* ── L'intro: il filmato di apertura ──────────────────────────────────── */
+
+.lugo-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: #05070c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: lugo-intro-entra 0.3s ease-out both;
+}
+
+@keyframes lugo-intro-entra {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.lugo-intro-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lugo-intro-comandi {
+  position: absolute;
+  right: clamp(0.8rem, 3vw, 2rem);
+  bottom: clamp(0.8rem, 3vw, 2rem);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.lugo-intro-salta,
+.lugo-intro-audio {
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  background: rgba(10, 12, 18, 0.55);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: #f4f2ed;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.lugo-intro-salta {
+  padding: 0.55rem 1.25rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+}
+
+.lugo-intro-audio {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.lugo-intro-salta:hover,
+.lugo-intro-audio:hover {
+  background: rgba(30, 60, 114, 0.8);
+  transform: translateY(-1px);
+}
+
+.lugo-intro-attesa {
+  position: absolute;
+  bottom: clamp(3.4rem, 9vw, 5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(244, 242, 237, 0.6);
+}

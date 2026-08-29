@@ -75,6 +75,15 @@ try {
   await page.screenshot({ path: join(SHOTS, '01-citta.png') });
 
   // eventuale start screen: si parte
+  // l'intro copre tutto finché non la si salta: la prova entra nel gioco,
+  // il filmato lo si guarda da giocatori
+  const salta = page.locator('[data-hud="salta-intro"]');
+  if (await salta.count()) {
+    await salta.click();
+    await page.waitForTimeout(400);
+    ok('intro di apertura', 'filmato mostrato e saltabile');
+  }
+
   const gioca = page.locator('[data-hud="gioca"]');
   if (await gioca.count()) {
     await gioca.click();
@@ -243,8 +252,15 @@ try {
         await page.evaluate(([x, z]) => window.__LUGO__.teleport(x, z), [centro.x, centro.z]);
         await page.waitForTimeout(300);
         for (const t of tasti) await page.keyboard.down(t);
-        await page.waitForTimeout(900);
-        const v = await lugo('L.direzione().v');
+        // si campiona il MASSIMO su più letture: alla prima il personaggio
+        // sta ancora girando verso la direzione chiesta, e chi gira rallenta
+        // di proposito (character.ts:92). Una lettura sola misurava la curva,
+        // non la velocità di regime.
+        let v = 0;
+        for (let i = 0; i < 5; i++) {
+          await page.waitForTimeout(500);
+          v = Math.max(v, await lugo('L.direzione().v'));
+        }
         for (const t of tasti) await page.keyboard.up(t);
         await page.waitForTimeout(250);
         return v;

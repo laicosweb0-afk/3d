@@ -394,6 +394,19 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+/* Gli offset di .lugo-audio e .lugo-diario-btn sono misurati sull'altezza di
+   .lugo-status, ma la riga delle stelline compare solo da ricercati (Hud.tsx)
+   e fa crescere il pannello di una riga: senza questo scarto i due bottoni ci
+   finiscono sopra proprio quando le stelline vanno lette. 1.3rem = la riga
+   wanted (0.95rem di testo) più il gap della colonna. */
+.lugo-hud:has(.lugo-wanted) .lugo-audio {
+  transform: translateY(6.7rem);
+}
+
+.lugo-hud:has(.lugo-wanted) .lugo-diario-btn {
+  transform: translateY(9.9rem);
+}
+
 .lugo-tachimetro {
   position: absolute;
   bottom: 1.2rem;
@@ -473,6 +486,13 @@
   letter-spacing: 0.05em;
   color: var(--testo);
   white-space: nowrap;
+  /* senza limite di larghezza i nomi lunghi ("Piazzale Camillo Benso conte di
+     Cavour", 38 caratteri) sforavano lo schermo e .lugo-pagina li tagliava da
+     tutti e due i lati. Stesso rimedio dell'avviso: il cartello si ferma
+     prima del bordo e quel che avanza diventa un'ellissi. */
+  max-width: 92vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
   animation: lugo-appare 0.3s ease-out;
 }
 
@@ -647,6 +667,16 @@
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* .lugo-comandi è renderizzato fuori da .lugo-hud (LugoApp.tsx) e con il suo
+   z-index copriva i pannelli, che non ne hanno: su telefono il joystick si
+   prendeva i tocchi destinati alla ✕ e ai pulsanti d'acquisto, e la vetrina
+   non si poteva più chiudere. Tutto ciò che si tocca col dito sta sopra. */
+.lugo-vetrina,
+.lugo-dialogo,
+.lugo-diario {
+  z-index: 20;
 }
 
 .lugo-joystick {
@@ -1123,4 +1153,78 @@
   font-size: 0.66rem;
   line-height: 1.35;
   opacity: 0.55;
+}
+
+/* ── responsive: telefoni, seconda parte ───────────────────────────────────
+   In fondo al file di proposito: queste regole ridispongono classi definite
+   sopra e, a parità di specificità, deve vincere l'ordine di sorgente. */
+
+/* Telefono in verticale: in basso al centro non c'è larghezza per stare
+   accanto al tachimetro, così il cartello della via (e con lui l'hint, che
+   gli sta sopra) sale di una fascia invece di finirgli addosso. */
+@media (max-width: 700px) and (orientation: portrait) {
+  .lugo-via {
+    bottom: 4.6rem;
+  }
+  .lugo-hint {
+    bottom: 7rem;
+  }
+}
+
+/* La missione (in alto a sinistra) e la scheda SCOPERTO (in alto al centro)
+   sono larghe quasi uguale: sotto i ~1000px di larghezza si incrociano per
+   forza, e nessuna delle due sa dell'altra. In verticale non c'è spazio
+   laterale, quindi la scheda — che è transitoria — scende alla prima fascia
+   libera, sotto le schede cinematografiche di missione. */
+@media (max-width: 1000px) and (orientation: portrait) {
+  .lugo-scoperta {
+    top: 36%;
+  }
+}
+
+/* In orizzontale invece la larghezza c'è: la missione si stringe e la scheda
+   si sposta nel vuoto fra la missione e il pannello EUR/REP. */
+@media (max-width: 1000px) and (orientation: landscape) {
+  .lugo-missione {
+    max-width: 30vw;
+  }
+  .lugo-scoperta {
+    left: 56%;
+    width: min(19rem, 46vw);
+    padding: 0.55rem 0.9rem 0.6rem;
+  }
+  .lugo-scoperta-nome {
+    font-size: 0.95rem;
+  }
+}
+
+/* Telefono in orizzontale: restano 360-390px di altezza utile e il
+   breakpoint su max-width non scatta, perché lo schermo è largo 740-844px.
+   I comandi, alzati sopra la minimappa e alti 181px per via della colonna di
+   pulsanti, uscivano dal bordo superiore. Qui i pulsanti si mettono in riga,
+   joystick e minimappa si stringono e i comandi lasciano libera a destra la
+   colonna audio/diario. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .lugo-comandi {
+    right: 3.9rem;
+    bottom: calc(1.2rem + 90px + 0.6rem);
+    gap: 0.7rem;
+  }
+  .lugo-joystick {
+    width: 108px;
+    height: 108px;
+  }
+  .lugo-pulsanti {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+  .lugo-pulsante {
+    width: 46px;
+    height: 46px;
+    font-size: 0.62rem;
+  }
+  .lugo-minimappa-box {
+    transform: scale(0.5);
+    transform-origin: bottom right;
+  }
 }

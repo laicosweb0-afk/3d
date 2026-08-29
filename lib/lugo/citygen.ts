@@ -93,6 +93,17 @@ export class Griglia {
   }
 }
 
+/**
+ * Le superfici stanno a quote leggermente diverse per evitare lo
+ * z-fighting: la piazza a 0,15, le strade fino a 0,26. Chi CAMMINA su
+ * quelle superfici deve stare alla stessa quota, altrimenti sprofonda
+ * nell'asfalto — ed è esattamente quello che succedeva alle scarpe del
+ * protagonista, che erano sotto il manto stradale e non si vedevano mai.
+ * Questo è il valor medio del calpestio: lo usano il giocatore, l'auto e
+ * i pedoni.
+ */
+export const QUOTA_CALPESTIO = 0.19;
+
 const QUOTA = {
   verde: 0.05,
   acqua: 0.1,

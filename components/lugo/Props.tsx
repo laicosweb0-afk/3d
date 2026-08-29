@@ -231,7 +231,10 @@ export function Props() {
     let nConi = 0;
     let nTondi = 0;
     alberi.forEach((a, i) => {
-      q.setFromAxisAngle(su, a.rot);
+      // gli alberi voxel si allineano alla griglia: rotazioni a quarti di
+      // giro, così i cubi non escono sbieccati e il colpo d'occhio resta
+      // quello dei mattoncini
+      q.setFromAxisAngle(su, Math.round(a.rot / (Math.PI / 2)) * (Math.PI / 2));
       if (a.tipo === 'cono') {
         m.compose(new THREE.Vector3(a.x, 1.1 * a.scala, a.z), q, new THREE.Vector3(a.scala, a.scala, a.scala));
         tronchi.current?.setMatrixAt(i, m);
@@ -287,18 +290,20 @@ export function Props() {
 
   return (
     <group>
+      {/* Alberi a blocchi, come nella key art: fusto squadrato e chioma
+          cubica. Il voxel costa anche meno del cono e dell'icosaedro. */}
       <instancedMesh ref={tronchi} args={[undefined, undefined, MAX_ALBERI]} frustumCulled={false}>
-        <cylinderGeometry args={[0.18, 0.26, 2.2, 6]} />
+        <boxGeometry args={[0.42, 2.2, 0.42]} />
         <meshLambertMaterial color="#6E5537" />
       </instancedMesh>
       <instancedMesh ref={chiome} args={[undefined, undefined, MAX_ALBERI]} frustumCulled={false} castShadow>
-        <coneGeometry args={[1.9, 4.4, 7]} />
-        <meshLambertMaterial color="#4E7A3C" />
+        <boxGeometry args={[3.4, 3.2, 3.4]} />
+        <meshLambertMaterial color="#5C8F3E" />
       </instancedMesh>
-      {/* le chiome tonde e scure di parchi e cortili, come nelle viste aeree */}
+      {/* le chiome scure dei parchi e dei cortili: un cubo più basso e largo */}
       <instancedMesh ref={chiomeTonde} args={[undefined, undefined, MAX_ALBERI]} frustumCulled={false} castShadow>
-        <icosahedronGeometry args={[2.2, 0]} />
-        <meshLambertMaterial color="#3A5352" />
+        <boxGeometry args={[3.9, 2.8, 3.9]} />
+        <meshLambertMaterial color="#3F6B44" />
       </instancedMesh>
       <instancedMesh ref={pali} args={[undefined, undefined, MAX_LAMPIONI]} frustumCulled={false}>
         <cylinderGeometry args={[0.07, 0.1, 4.8, 6]} />

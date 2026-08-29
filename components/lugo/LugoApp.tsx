@@ -4,12 +4,13 @@
 // screen e l'HUD completi arrivano con la milestone missioni; per ora la
 // partita comincia subito.
 
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { KeyboardControls } from '@react-three/drei';
 import { GameCanvas } from './GameCanvas';
 import { Hud } from './Hud';
 import { Joystick } from './Joystick';
 import { StartScreen } from './StartScreen';
+import { Intro, introGiaVista } from './Intro';
 import { CONTROLLI } from '@/lib/lugo/input';
 import { useLugo } from '@/lib/lugo/store';
 import { avviaSalvataggio } from '@/lib/lugo/salvataggio';
@@ -17,6 +18,12 @@ import { setVolumi } from '@/lib/lugo/audio';
 
 export function LugoApp() {
   const fase = useLugo((s) => s.fase);
+  // l'intro si vede una volta per scheda: ricaricare la pagina durante una
+  // partita non deve rifarla vedere ogni volta
+  const [intro, setIntro] = useState(true);
+  useEffect(() => {
+    if (introGiaVista()) setIntro(false);
+  }, []);
 
   useEffect(() => {
     // i progressi si caricano e da lì in poi si salvano da soli
@@ -37,6 +44,7 @@ export function LugoApp() {
     <KeyboardControls map={CONTROLLI}>
       <div className="lugo-root">
         <GameCanvas />
+        {intro && <Intro onFine={() => setIntro(false)} />}
         {fase === 'start' ? (
           <StartScreen />
         ) : (

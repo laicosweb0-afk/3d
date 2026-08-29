@@ -1,13 +1,14 @@
 // I pedoni di Lugo: maranza a gruppetti, anziani col bastone, carabinieri
 // in coppia attorno ai landmark, più la gazzella di pattuglia sui viali.
 // Simulazione volutamente semplice: vagabondaggio a waypoint sulle strade,
-// collisione a cerchio con scivolamento, balzo laterale quando l'auto del
-// giocatore arriva addosso. Niente investimenti: qui al massimo ci si
-// becca un'imprecazione.
+// collisione a cerchio con scivolamento, balzo laterale quando un veicolo
+// in corsa arriva addosso (il giocatore, il traffico civile, la gazzella).
+// Niente investimenti: qui al massimo ci si becca un'imprecazione.
 
 import type { MondoLugo } from './loadMap';
 import type { MondoFisico } from './physics';
-import type { RuntimeGioco } from './runtime';
+import { runtime, type RuntimeGioco } from './runtime';
+import { infraGioco } from './veicoli';
 
 export type TipoNpc = 'maranza' | 'anziano' | 'carabiniere' | 'studente' | 'ciclista';
 export type StatoNpc = 'cammina' | 'fermo' | 'balzo';
@@ -68,7 +69,66 @@ function rand(seme: { s: number }): number {
   return seme.s / 4294967296;
 }
 
-/** Punto casuale su una strada camminabile entro `raggio` da (x,z). */
+/** Un tratto di strada camminabile, già pronto per il campionamento. */
+interface SegmentoPed {
+  ax: number;
+  az: number;
+  dx: number;
+  dz: number;
+  /** Lunghezza del tratto (m). */
+  l: number;
+  larghezza: number;
+}
+
+const indiceSegmenti = new WeakMap<MondoLugo, SegmentoPed[]>();
+
+/** Tutti i tratti camminabili della mappa, appiattiti una volta per mondo. */
+function segmentiCamminabili(mondo: MondoLugo): SegmentoPed[] {
+  const memo = indiceSegmenti.get(mondo);
+  if (memo) return memo;
+  const segs: SegmentoPed[] = [];
+  for (const r of mondo.roads) {
+    if (
+      r.classe !== 'pedonale' &&
+      r.classe !== 'residenziale' &&
+      r.classe !== 'servizio' &&
+      r.classe !== 'secondaria'
+    ) {
+      continue;
+    }
+    for (let i = 0; i + 3 < r.pts.length; i += 2) {
+      const ax = r.pts[i];
+      const az = r.pts[i + 1];
+      const dx = r.pts[i + 2] - ax;
+      const dz = r.pts[i + 3] - az;
+      const l = Math.hypot(dx, dz);
+      if (l < 0.5) continue; // giunzioni degeneri: non ci si cammina
+      segs.push({ ax, az, dx, dz, l, larghezza: r.larghezza });
+    }
+  }
+  indiceSegmenti.set(mondo, segs);
+  return segs;
+}
+
+/** Punto del tratto all'ascissa `t`, scostato di `lato` verso il marciapiede. */
+function suSegmento(s: SegmentoPed, t: number, lato: number): [number, number] {
+  const px = s.ax + s.dx * t;
+  const pz = s.az + s.dz * t;
+  return [px - (s.dz / s.l) * lato, pz + (s.dx / s.l) * lato];
+}
+
+// Riusato a ogni chiamata: la selezione non è mai annidata, e così non si
+// alloca un array per ogni waypoint scelto in mezzo al frame.
+const vicini: SegmentoPed[] = [];
+
+/**
+ * Punto casuale su una strada camminabile entro `raggio` da (x,z).
+ * Si estrae fra i soli tratti che toccano davvero il disco: pescare a caso
+ * su tutte le 905 strade della mappa e rifiutare quelle fuori raggio
+ * riusciva nello 0,7% dei casi a raggio 8, e il ripiego «torna indietro la
+ * posizione di partenza» faceva nascere i gruppetti tutti nello stesso
+ * punto e inchiodava per sempre chi si fermava.
+ */
 function puntoStradaCasuale(
   mondo: MondoLugo,
   x: number,
@@ -76,31 +136,58 @@ function puntoStradaCasuale(
   raggio: number,
   seme: { s: number },
 ): [number, number] {
-  const candidate = mondo.roads.filter(
-    (r) => r.classe === 'pedonale' || r.classe === 'residenziale' || r.classe === 'servizio' || r.classe === 'secondaria',
-  );
-  for (let tentativi = 0; tentativi < 12; tentativi++) {
-    const r = candidate[Math.floor(rand(seme) * candidate.length)];
-    if (!r || r.pts.length < 4) continue;
-    const i = Math.floor(rand(seme) * (r.pts.length / 2 - 1));
-    const t = rand(seme);
-    const px = r.pts[i * 2] + (r.pts[i * 2 + 2] - r.pts[i * 2]) * t;
-    const pz = r.pts[i * 2 + 1] + (r.pts[i * 2 + 3] - r.pts[i * 2 + 1]) * t;
-    if (Math.hypot(px - x, pz - z) <= raggio) {
-      // spostati verso il bordo (marciapiede)
-      const lato = (rand(seme) - 0.5) * r.larghezza * 1.3;
-      const dx = r.pts[i * 2 + 2] - r.pts[i * 2];
-      const dz = r.pts[i * 2 + 3] - r.pts[i * 2 + 1];
-      const l = Math.hypot(dx, dz) || 1;
-      return [px - (dz / l) * lato, pz + (dx / l) * lato];
+  vicini.length = 0;
+  let piuVicino: SegmentoPed | null = null;
+  let dist2Min = Infinity;
+  let tMin = 0;
+  const r2 = raggio * raggio;
+  // scansione di tutti i tratti: al quadrato, senza radici, perché questa
+  // gira anche in mezzo al frame quando un pedone sceglie la meta
+  for (const s of segmentiCamminabili(mondo)) {
+    const t = Math.max(0, Math.min(1, ((x - s.ax) * s.dx + (z - s.az) * s.dz) / (s.l * s.l)));
+    const qx = s.ax + s.dx * t - x;
+    const qz = s.az + s.dz * t - z;
+    const d2 = qx * qx + qz * qz;
+    if (d2 <= r2) vicini.push(s);
+    else if (d2 < dist2Min) {
+      dist2Min = d2;
+      piuVicino = s;
+      tMin = t;
     }
   }
+  if (vicini.length) {
+    const s = vicini[Math.floor(rand(seme) * vicini.length)];
+    // corda del tratto dentro il disco: così è il punto estratto a stare
+    // entro `raggio`, non solo il tratto che lo contiene
+    const a = s.l * s.l;
+    const ox = s.ax - x;
+    const oz = s.az - z;
+    const b = 2 * (s.dx * ox + s.dz * oz);
+    const c = ox * ox + oz * oz - r2;
+    const disc = b * b - 4 * a * c;
+    let t0 = 0;
+    let t1 = 1;
+    if (disc > 0) {
+      const q = Math.sqrt(disc);
+      t0 = Math.max(0, (-b - q) / (2 * a));
+      t1 = Math.min(1, (-b + q) / (2 * a));
+    }
+    const t = t0 + rand(seme) * Math.max(0, t1 - t0);
+    return suSegmento(s, t, (rand(seme) - 0.5) * s.larghezza * 1.3);
+  }
+  // nessuna strada nel raggio: si punta alla più vicina, così chi è finito
+  // fuori rete torna a camminare invece di ricevere la propria posizione
+  if (piuVicino) return suSegmento(piuVicino, tMin, (rand(seme) - 0.5) * piuVicino.larghezza * 1.3);
   return [x, z];
 }
 
 export function creaNpcs(mondo: MondoLugo, quanti: number): Npc[] {
   const seme = { s: 12345 };
   const npcs: Npc[] = [];
+  // stessa spatial hash di tutti gli altri sistemi (edifici + auto in sosta):
+  // la posizione di nascita va validata come quella della discesa dall'auto
+  const fisica = infraGioco(mondo).fisica;
+  const fuori = { x: 0, z: 0 };
 
   // ancore: densi vicino ai luoghi vivi, radi altrove
   const ancore: [number, number][] = [];
@@ -111,7 +198,23 @@ export function creaNpcs(mondo: MondoLugo, quanti: number): Npc[] {
   if (!ancore.length) ancore.push([0, 0]);
 
   const spawn = (tipo: TipoNpc, ax: number, az: number, raggio: number) => {
-    const [x, z] = puntoStradaCasuale(mondo, ax, az, raggio, seme);
+    // lo scostamento verso il marciapiede arriva a 0,65 volte la larghezza
+    // della via e può finire dentro una facciata o dentro un'auto in sosta:
+    // chi nasce fermo non si muoverebbe mai e resterebbe incastrato lì
+    let x = 0;
+    let z = 0;
+    for (let tentativi = 0; tentativi < 6; tentativi++) {
+      const p = puntoStradaCasuale(mondo, ax, az, raggio, seme);
+      x = p[0];
+      z = p[1];
+      if (fisica.cerchioLibero(x, z, RAGGIO_NPC)) break;
+      if (tentativi === 5) {
+        // vie strette: nessun punto libero, si esce a spinta dal collider
+        fisica.risolviCerchio(x, z, RAGGIO_NPC, fuori);
+        x = fuori.x;
+        z = fuori.z;
+      }
+    }
     const npc: Npc = {
       tipo,
       x,
@@ -200,6 +303,12 @@ export interface EsitoNpcs {
 }
 
 const semeFrasi = { s: 777 };
+// Semi condivisi e persistenti: la partita resta deterministica ma la
+// sequenza avanza sempre, non si ripete uguale a parità di posizione.
+const semeVaganti = { s: 20260 };
+
+/** I veicoli in corsa visti dai pedoni in questo frame (buffer riusato). */
+const veicoli: { x: number; z: number; fx: number; fz: number }[] = [];
 
 export function stepNpcs(
   npcs: Npc[],
@@ -210,27 +319,49 @@ export function stepNpcs(
   modeAuto: boolean,
 ): EsitoNpcs {
   let frase: string | null = null;
-  const autoVeloce = modeAuto && Math.abs(rt.vAuto) > 4;
   const out = { x: 0, z: 0 };
 
+  // Tutto ciò che corre per strada, non solo l'auto del giocatore: prima i
+  // pedoni vedevano soltanto lui, così le sei auto civili e la gazzella li
+  // attraversavano senza che nessuno si scansasse.
+  veicoli.length = 0;
+  if (modeAuto && Math.abs(rt.vAuto) > 4) {
+    // in retromarcia il muso avanza all'indietro: il verso lo dà la velocità
+    const verso = rt.vAuto >= 0 ? 1 : -1;
+    veicoli.push({
+      x: rt.auto.x,
+      z: rt.auto.z,
+      fx: Math.cos(rt.auto.yaw) * verso,
+      fz: Math.sin(rt.auto.yaw) * verso,
+    });
+  }
+  for (const a of infraGioco(mondo).traffico) {
+    veicoli.push({ x: a.x, z: a.z, fx: Math.cos(a.yaw), fz: Math.sin(a.yaw) });
+  }
+  const g = runtime.gazzella;
+  if (g) veicoli.push({ x: g.x, z: g.z, fx: Math.cos(g.yaw), fz: Math.sin(g.yaw) });
+
   for (const n of npcs) {
-    // l'auto del giocatore arriva addosso → balzo laterale
-    if (autoVeloce && n.stato !== 'balzo') {
-      const dx = n.x - rt.auto.x;
-      const dz = n.z - rt.auto.z;
-      const d = Math.hypot(dx, dz);
-      if (d < 6.5) {
+    // un veicolo arriva addosso → balzo laterale
+    if (n.stato !== 'balzo') {
+      for (const v of veicoli) {
+        const dx = n.x - v.x;
+        const dz = n.z - v.z;
+        if (Math.abs(dx) > 6.5 || Math.abs(dz) > 6.5) continue;
+        if (Math.hypot(dx, dz) >= 6.5) continue;
+        // solo se il pedone è ancora davanti: da chi è già passato non ci
+        // si scansa, altrimenti si salterebbe a ogni auto che si allontana
+        if (dx * v.fx + dz * v.fz < -1) continue;
         n.stato = 'balzo';
         n.timer = 0.38;
-        // via dalla traiettoria: perpendicolare alla marcia dell'auto
-        const fx = Math.cos(rt.auto.yaw);
-        const fz = Math.sin(rt.auto.yaw);
-        const lato = -fz * dx + fx * dz >= 0 ? 1 : -1;
-        n.bx = -fz * lato;
-        n.bz = fx * lato;
+        // via dalla traiettoria: perpendicolare alla marcia del veicolo
+        const lato = -v.fz * dx + v.fx * dz >= 0 ? 1 : -1;
+        n.bx = -v.fz * lato;
+        n.bz = v.fx * lato;
         if (frase === null && Math.random() < 0.5) {
           frase = FRASI_BALZO[Math.floor(rand(semeFrasi) * FRASI_BALZO.length)];
         }
+        break;
       }
     }
 
@@ -256,8 +387,10 @@ export function stepNpcs(
       n.timer -= dt;
       if (n.timer <= 0) {
         n.stato = 'cammina';
-        const seme = { s: (n.x * 131 + n.z * 977) >>> 0 || 1 };
-        const [tx, tz] = puntoStradaCasuale(mondo, n.x, n.z, 130, seme);
+        // il seme deve avanzare, non ripartire dalla posizione: un NPC fermo
+        // ricalcolava lo stesso seme a ogni scadenza e quindi la stessa meta,
+        // restando immobile per tutta la partita
+        const [tx, tz] = puntoStradaCasuale(mondo, n.x, n.z, 130, semeVaganti);
         n.targetX = tx;
         n.targetZ = tz;
       }
