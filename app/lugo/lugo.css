@@ -856,6 +856,21 @@
   color: var(--muto);
 }
 
+/* La targhetta di partner: la vede solo chi ha autorizzato la presenza,
+   perché il livello di default di ogni attività è 'NESSUNO'. */
+.lugo-vetrina-partner {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid rgba(242, 180, 25, 0.55);
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  color: var(--accento);
+  background: rgba(242, 180, 25, 0.12);
+}
+
 .lugo-vetrina-promo {
   margin-bottom: 0.6rem;
   padding: 0.35rem 0.7rem;

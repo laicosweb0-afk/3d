@@ -243,6 +243,30 @@ export const MISSIONI: Missione[] = [
 
 // ── Le consegne: missioni generate, ripetibili, in stile rider ──────────────
 
+/**
+ * Le attività che possono ospitare una missione. Le riempie il registro
+ * (lib/lugo/attivita.ts) al caricamento: qui non si importa, per non legare
+ * le missioni al registro e viceversa.
+ */
+let attivitaPerMissioni: { id: string; nome: string; categoria: string; x: number; z: number }[] = [];
+
+export function registraAttivitaConMissioni(
+  elenco: { id: string; nome: string; categoria: string; x: number; z: number }[],
+): void {
+  attivitaPerMissioni = elenco;
+}
+
+/** Le attività che oggi possono ospitare una missione (sola lettura). */
+export function attivitaConMissioni(): readonly {
+  id: string;
+  nome: string;
+  categoria: string;
+  x: number;
+  z: number;
+}[] {
+  return attivitaPerMissioni;
+}
+
 /** Registro delle missioni generate al volo (consegne). */
 const DINAMICHE = new Map<string, Missione>();
 let contatoreConsegne = 0;
@@ -306,6 +330,119 @@ export function creaConsegna(mondo: MondoLugo): Missione {
   return m;
 }
 
+
+// ── Le missioni delle attività ──────────────────────────────────────────────
+// Un'attività non è un cartello: è un posto dove si va a fare qualcosa. Qui
+// non c'è nessuna missione scritta a mano per la singola bottega — c'è uno
+// STAMPO per categoria, e il registro delle attività lo riempie. Aggiungere
+// una categoria significa aggiungere una riga.
+
+interface StampoAttivita {
+  titolo: (nome: string) => string;
+  descrizione: (nome: string) => string;
+  frase: string;
+  obiettivo: (nome: string) => string;
+  rep: number;
+  denaro: number;
+  secondi: number;
+}
+
+const STAMPI: Record<string, StampoAttivita> = {
+  bar: {
+    titolo: (n) => `Tre caffè da ${n}`,
+    descrizione: (n) => `Passa da ${n}: c'è un ordine da ritirare e nessuno che lo porti.`,
+    frase: '“Tre caffè e due brioche. Corri che si freddano.”',
+    obiettivo: (n) => `Ritira l'ordine da ${n}`,
+    rep: 90,
+    denaro: 45,
+    secondi: 150,
+  },
+  cibo: {
+    titolo: (n) => `L'ordine di ${n}`,
+    descrizione: (n) => `Da ${n} è pronto da dieci minuti e sta lì che aspetta.`,
+    frase: '“È pronto da dieci minuti. Se ci arrivi caldo ti ricordi bene.”',
+    obiettivo: (n) => `Ritira da ${n}`,
+    rep: 110,
+    denaro: 60,
+    secondi: 170,
+  },
+  negozio: {
+    titolo: (n) => `Un salto da ${n}`,
+    descrizione: (n) => `Da ${n} è arrivata roba nuova. Vai a vedere com'è.`,
+    frase: '“Dicono che sia arrivata roba nuova. Vado a dare un’occhiata.”',
+    obiettivo: (n) => `Vai a vedere da ${n}`,
+    rep: 80,
+    denaro: 35,
+    secondi: 0,
+  },
+  tabacchi: {
+    titolo: (n) => `Passa da ${n}`,
+    descrizione: (n) => `Serve un salto da ${n}, e già che ci sei tenta la fortuna.`,
+    frase: '“Un gratta e vinci non si nega a nessuno.”',
+    obiettivo: (n) => `Vai da ${n}`,
+    rep: 70,
+    denaro: 30,
+    secondi: 0,
+  },
+  farmacia: {
+    titolo: (n) => `La ricetta da ${n}`,
+    descrizione: (n) => `C'è una ricetta da ritirare da ${n}, ed è meglio farlo prima che chiuda.`,
+    frase: '“Prima che chiuda, mi raccomando.”',
+    obiettivo: (n) => `Ritira da ${n}`,
+    rep: 100,
+    denaro: 40,
+    secondi: 200,
+  },
+  servizi: {
+    titolo: (n) => `Due passi da ${n}`,
+    descrizione: (n) => `Hanno chiesto di te da ${n}. Vai a sentire cosa vogliono.`,
+    frase: '“Hanno chiesto di te. Boh, vai a sentire.”',
+    obiettivo: (n) => `Fatti vedere da ${n}`,
+    rep: 70,
+    denaro: 30,
+    secondi: 0,
+  },
+};
+
+/**
+ * La missione di un'attività vera di Lugo. Usa SOLO nome, categoria e
+ * posizione — dati già pubblici su OpenStreetMap. Nessuna promozione,
+ * nessun prezzo reale, nessuna dicitura di partnership: quelli arrivano
+ * solo dal file dei dati, e solo con l'autorizzazione dell'esercente.
+ */
+export function creaMissioneAttivita(
+  mondo: MondoLugo,
+  attivita: { id: string; nome: string; categoria: string; x: number; z: number },
+): Missione {
+  const st = STAMPI[attivita.categoria] ?? STAMPI.servizi;
+  const nome = attivita.nome || 'la bottega';
+  const p = puntoStradaVicino(mondo, attivita.x, attivita.z);
+  const m: Missione = {
+    id: `att_${attivita.id}_${(contatoreAttivita++).toString(36)}`,
+    tipo: 'consegna',
+    categoria: 'attivita',
+    difficolta: st.secondi ? 'media' : 'facile',
+    livelloRichiesto: 1,
+    attivitaId: attivita.id,
+    titolo: st.titolo(nome),
+    descrizione: st.descrizione(nome),
+    frase: st.frase,
+    tappe: [{ poi: `xz:${p.x.toFixed(1)}:${p.z.toFixed(1)}`, titolo: st.obiettivo(nome) }],
+    ricompensa: st.rep,
+    denaro: st.denaro,
+    ripetibile: true,
+    ...(st.secondi ? { tempoLimite: st.secondi, bonusVelocita: true, semeMancia: contatoreAttivita } : {}),
+  };
+  DINAMICHE.set(m.id, m);
+  if (DINAMICHE.size > 40) {
+    const primo = DINAMICHE.keys().next().value;
+    if (primo) DINAMICHE.delete(primo);
+  }
+  return m;
+}
+
+let contatoreAttivita = 0;
+
 export function missioneById(id: string): Missione | undefined {
   return MISSIONI.find((m) => m.id === id) ?? DINAMICHE.get(id);
 }
@@ -368,9 +505,15 @@ export function prossimaMissione(
   // quindi la condizione restava vera per sempre e il gioco riproponeva
   // all'infinito la stessa identica missione (m01, vai al Pavaglione).
   contatoreProposte++;
-  if (contatoreProposte % 4 === 0) {
-    const idx = (contatoreProposte / 4 - 1) | 0;
+  if (contatoreProposte % 5 === 0) {
+    const idx = (contatoreProposte / 5 - 1) | 0;
     return MISSIONI[idx % MISSIONI.length];
+  }
+  // ogni seconda proposta nasce da un'attività vera del centro: è così che
+  // una bottega diventa un posto dove si va a fare qualcosa
+  if (contatoreProposte % 2 === 0 && attivitaPerMissioni.length) {
+    const a = attivitaPerMissioni[contatoreProposte % attivitaPerMissioni.length];
+    return creaMissioneAttivita(mondo, a);
   }
   return creaConsegna(mondo);
 }

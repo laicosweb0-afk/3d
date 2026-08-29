@@ -39,6 +39,8 @@ export interface VetrinaAperta {
   descrizione: string;
   /** true solo per attività che hanno autorizzato la presenza premium. */
   partner: boolean;
+  /** Livello autorizzato dall'esercente: 'NESSUNO' finché non c'è accordo. */
+  livello: 'NESSUNO' | 'BASE' | 'BOTTEGA' | 'PREMIUM';
   promo: string | null;
   articoli: { nome: string; prezzo: number; effetto?: string }[];
 }

@@ -8,7 +8,16 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useMondo } from '@/lib/lugo/loadMap';
-import { missioneById, posTappa, prossimaMissione, MISSIONI } from '@/lib/lugo/missions';
+import {
+  attivitaConMissioni,
+  creaMissioneAttivita,
+  missioneById,
+  posTappa,
+  prossimaMissione,
+  registraAttivitaConMissioni,
+  MISSIONI,
+} from '@/lib/lugo/missions';
+import { registroAttivita } from '@/lib/lugo/attivita';
 import { runtime, posGiocatore } from '@/lib/lugo/runtime';
 import { suonaEvento } from '@/lib/lugo/audio';
 import { useLugo } from '@/lib/lugo/store';
@@ -28,6 +37,28 @@ export function Missioni() {
   // gli obiettivi di esplorazione contano da lì in avanti
   const baseScoperte = useRef(-1);
   const chiaveTappa = useRef('');
+
+  // Le attività vere di Lugo diventano posti dove si va a fare qualcosa: il
+  // registro passa alle missioni nome, categoria e posizione — dati già
+  // pubblici su OpenStreetMap. Niente promozioni, niente loghi, niente
+  // diciture di partnership: quelle vivono solo nel file dei dati e solo
+  // con l'autorizzazione dell'esercente.
+  useEffect(() => {
+    const conNome = registroAttivita(mondo).filter(
+      (a) => a.nome && a.nome !== 'Attività del centro',
+    );
+    // le più centrali per prime: una missione deve portare dove c'è vita
+    conNome.sort((a, b) => a.x * a.x + a.z * a.z - (b.x * b.x + b.z * b.z));
+    registraAttivitaConMissioni(
+      conNome.slice(0, 60).map((a) => ({
+        id: a.id,
+        nome: a.nome,
+        categoria: a.categoria,
+        x: a.x,
+        z: a.z,
+      })),
+    );
+  }, [mondo]);
 
   // hook di verifica
   useEffect(() => {
@@ -54,6 +85,23 @@ export function Missioni() {
       },
       punteggio: () => useLugo.getState().punteggio,
       statoMissione: () => useLugo.getState().statoMissione,
+      // quante attività vere di Lugo possono ospitare una missione
+      attivitaConMissioni: () => attivitaConMissioni().length,
+      // genera la missione di un'attività vera e ne restituisce la scheda
+      missioneAttivita: (i = 0) => {
+        const elenco = attivitaConMissioni();
+        if (!elenco.length) return null;
+        const m = creaMissioneAttivita(mondo, elenco[i % elenco.length]);
+        return {
+          id: m.id,
+          titolo: m.titolo,
+          attivitaId: m.attivitaId,
+          categoria: m.categoria,
+          tappe: m.tappe.length,
+          denaro: m.denaro,
+          rep: m.ricompensa,
+        };
+      },
     };
     void st;
   }, [mondo]);
