@@ -311,6 +311,30 @@ try {
       }
 
       await page.evaluate(() => window.__LUGO__.tempoScorre(true));
+      // ── fase 3d: livello e guardaroba ──────────────────────────────────
+      const liv = await page.locator('[data-hud="livello"]').count();
+      if (liv) ok('livello nell\'HUD', (await page.textContent('[data-hud="livello"]')) ?? '');
+      else ko('livello nell\'HUD', 'nessun indicatore di livello');
+
+      if (await page.locator('[data-hud="guardaroba-apri"]').count()) {
+        await page.click('[data-hud="guardaroba-apri"]');
+        await page.waitForTimeout(500);
+        const soldiPrima = await lugo('L.denaro()');
+        const disponibili = page.locator('.lugo-gr-capo:not(.lugo-gr-capo-fuori):not(.lugo-gr-capo-addosso)');
+        if ((await disponibili.count()) > 0) {
+          const box = await disponibili.first().boundingBox();
+          await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+          await page.waitForTimeout(500);
+          const soldiDopo = await lugo('L.denaro()');
+          if (soldiDopo < soldiPrima) ok('acquisto nel guardaroba', `${soldiPrima} → ${soldiDopo}`);
+          else ko('acquisto nel guardaroba', `il denaro non è cambiato (${soldiDopo})`);
+        } else {
+          ok('guardaroba aperto', 'nessun capo alla portata');
+        }
+        await page.locator('[data-hud="guardaroba"] .lugo-vetrina-chiudi').click({ noWaitAfter: true }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+
       // si torna in auto per le fasi successive
       let mA = await lugo('L.mode()');
       for (let i = 0; i < 4 && mA !== 'auto'; i++) {

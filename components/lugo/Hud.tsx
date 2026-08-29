@@ -11,9 +11,11 @@ import { missioneById } from '@/lib/lugo/missions';
 import { setAudioAttivo, suonaEvento } from '@/lib/lugo/audio';
 import { orologio } from '@/lib/lugo/tempo';
 import { Minimap } from './Minimap';
+import { Guardaroba } from './Guardaroba';
 import { useMondo } from '@/lib/lugo/loadMap';
 import { contaPoi, puntiInteresse } from '@/lib/lugo/poi';
 import { DISTINTIVI } from '@/lib/lugo/distintivi';
+import { avanzamento, gradoDaRep, livelloDaRep } from '@/lib/lugo/progressione';
 
 function tempoMMSS(s: number): string {
   const mm = Math.floor(s / 60);
@@ -58,8 +60,13 @@ export function Hud() {
   const distintivi = useLugo((s) => s.distintivi);
   const diario = useLugo((s) => s.diario);
   const setDiario = useLugo((s) => s.setDiario);
+  const guardaroba = useLugo((s) => s.guardaroba);
+  const setGuardaroba = useLugo((s) => s.setGuardaroba);
   const missioniFatte = useLugo((s) => s.missioniFatte);
   const consegneFatte = useLugo((s) => s.consegneFatte);
+  const liv = livelloDaRep(punteggio);
+  const grado = gradoDaRep(punteggio);
+  const avanza = avanzamento(punteggio);
   const mondo = useMondo();
 
   // l'ora di gioco, aggiornata due volte al secondo (basta e avanza)
@@ -166,6 +173,18 @@ export function Hud() {
           {punteggio}
           <span className="lugo-rep-label"> rep</span>
         </div>
+        {/* Il livello: numero, titolo narrativo e quanto manca al prossimo.
+            La scala sta tutta in lib/lugo/progressione.ts. */}
+        <div className="lugo-livello" data-hud="livello" title={grado.nome}>
+          <span className="lugo-livello-n">LIV {liv.n}</span>
+          <span className="lugo-livello-titolo">{liv.titolo}</span>
+        </div>
+        <div
+          className="lugo-livello-barra"
+          title={avanza.prossimo ? `${avanza.mancano} rep a «${avanza.prossimo.titolo}»` : 'Livello massimo'}
+        >
+          <div className="lugo-livello-piena" style={{ width: `${Math.round(avanza.frazione * 100)}%` }} />
+        </div>
         {wanted > 0 && (
           <div className="lugo-wanted" data-hud="wanted" title="Ricercato">
             {'★'.repeat(wanted)}
@@ -197,6 +216,21 @@ export function Hud() {
         <span className="lugo-diario-icona">◈</span>
         <span className="lugo-diario-conta">{poiVisitati.length}</span>
       </button>
+
+      <button
+        type="button"
+        className="lugo-guardaroba-btn"
+        data-hud="guardaroba-apri"
+        title="Guardaroba"
+        onClick={() => {
+          setGuardaroba(!guardaroba);
+          if (!guardaroba) setDiario(false);
+        }}
+      >
+        👕
+      </button>
+
+      {guardaroba && <Guardaroba />}
 
       {/* la scheda che compare scoprendo un luogo camminando */}
       {scoperta && (

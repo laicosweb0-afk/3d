@@ -106,6 +106,8 @@ interface LugoState {
   scoperta: Scoperta | null;
   /** true quando il diario dell'esplorazione è aperto. */
   diario: boolean;
+  /** true quando il guardaroba è aperto. */
+  guardaroba: boolean;
   /** Indice del vestito indossato (si compra nei negozi). */
   outfit: number;
   /** Il look del protagonista, pezzo per pezzo (lib/lugo/avatar.ts). */
@@ -147,6 +149,7 @@ interface LugoState {
   setDistintivi: (ids: string[]) => void;
   setScoperta: (s: Scoperta | null) => void;
   setDiario: (aperto: boolean) => void;
+  setGuardaroba: (aperto: boolean) => void;
   setOutfit: (i: number) => void;
   /** Cambia un pezzo del look; il resto resta com'è. */
   setAvatar: (patch: Partial<Avatar>) => void;
@@ -187,6 +190,7 @@ export const useLugo = create<LugoState>((set, get) => ({
   distintivi: [],
   scoperta: null,
   diario: false,
+  guardaroba: false,
   outfit: 0,
   avviso: null,
   hint: null,
@@ -226,6 +230,7 @@ export const useLugo = create<LugoState>((set, get) => ({
   setDistintivi: (distintivi) => set({ distintivi }),
   setScoperta: (scoperta) => set({ scoperta }),
   setDiario: (diario) => set({ diario }),
+  setGuardaroba: (guardaroba) => set({ guardaroba }),
   setOutfit: (outfit) => set({ outfit }),
   setAvatar: (patch) => set((s) => ({ avatar: { ...s.avatar, ...patch } })),
   compraCapo: (id) => set((s) => (s.capi.includes(id) ? {} : { capi: [...s.capi, id] })),
