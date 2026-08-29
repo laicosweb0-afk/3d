@@ -18,10 +18,16 @@ export interface StatoAuto {
 }
 
 export const AUTO = {
-  vMax: 22, // ~80 km/h
-  vMaxRetro: 6,
-  accel: 9,
-  frenata: 18,
+  // Ottanta all'ora in un paese di provincia erano onesti ma noiosi: la
+  // città è larga quattro chilometri e per attraversarla ci volevano tre
+  // minuti buoni. Centoventi di punta, e soprattutto una ripresa più
+  // pronta — quello che si sente guidando non è la velocità massima, che
+  // in centro non si tocca mai, ma quanti secondi ci metti a riprenderla
+  // dopo una curva.
+  vMax: 33, // ~120 km/h
+  vMaxRetro: 7,
+  accel: 13,
+  frenata: 21,
   dragLin: 0.35,
   dragQuad: 0.012,
   passo: 2.6,
