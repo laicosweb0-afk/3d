@@ -51,6 +51,27 @@ export interface VetrinaAperta {
   articoli: { nome: string; prezzo: number; effetto?: string }[];
 }
 
+/** Una proposta di lavoro affissa a una bacheca. */
+export interface OffertaBacheca {
+  id: string;
+  titolo: string;
+  descrizione: string;
+  obiettivo: string;
+  categoria: string;
+  difficolta: string;
+  tempoLimite?: number;
+  rep: number;
+  denaro: number;
+}
+
+/** La bacheca aperta: il luogo e le sue proposte. */
+export interface BachecaAperta {
+  id: string;
+  nome: string;
+  sottotitolo: string;
+  offerte: OffertaBacheca[];
+}
+
 /** La scheda "SCOPERTO" di un punto di interesse appena visitato. */
 export interface Scoperta {
   nome: string;
@@ -94,6 +115,14 @@ interface LugoState {
   statoMissione: StatoMissione;
   /** Indice della tappa corrente della missione attiva. */
   tappa: number;
+  /**
+   * Quante missioni sono partite da inizio partita. Non serve al giocatore:
+   * serve alla macchina delle missioni per accorgersi che una missione è
+   * partita da fuori (la bacheca dei lavori) e caricare il conto alla
+   * rovescia. Con il solo id non bastava: una missione ripetibile accettata
+   * due volte ha lo stesso id tutte e due le volte.
+   */
+  avvii: number;
   /** Secondi rimasti (se la missione ha un limite). */
   tempoResiduo: number | null;
   /** Id delle missioni completate almeno una volta. */
@@ -106,6 +135,8 @@ interface LugoState {
   dialogo: Dialogo | null;
   /** Vetrina del negozio aperta. */
   vetrina: VetrinaAperta | null;
+  /** Bacheca dei lavori aperta (Pavaglione, Rocca, stazione, Baracca). */
+  bacheca: BachecaAperta | null;
   /** Id dei punti di interesse scoperti a piedi. */
   poiVisitati: string[];
   /** Id dei distintivi guadagnati. */
@@ -165,6 +196,7 @@ interface LugoState {
   setEsito: (e: EsitoMissione | null) => void;
   setDialogo: (d: Dialogo | null) => void;
   setVetrina: (v: VetrinaAperta | null) => void;
+  setBacheca: (b: BachecaAperta | null) => void;
   /** Registra la scoperta di un punto; restituisce false se era già noto. */
   scopriPoi: (id: string) => boolean;
   setDistintivi: (ids: string[]) => void;
@@ -207,12 +239,14 @@ export const useLugo = create<LugoState>((set, get) => ({
   missioneId: null,
   statoMissione: 'idle',
   tappa: 0,
+  avvii: 0,
   tempoResiduo: null,
   missioniFatte: [],
   intro: null,
   esito: null,
   dialogo: null,
   vetrina: null,
+  bacheca: null,
   avatar: { ...AVATAR_INIZIALE },
   capi: [],
   livello: 1,
@@ -257,7 +291,13 @@ export const useLugo = create<LugoState>((set, get) => ({
       totali: v > 0 ? { ...s.totali, euro: s.totali.euro + v } : s.totali,
     })),
   setWanted: (wanted) => set({ wanted: Math.max(0, Math.min(3, wanted)) }),
-  setMissione: (missioneId, statoMissione, tappa = 0) => set({ missioneId, statoMissione, tappa }),
+  setMissione: (missioneId, statoMissione, tappa = 0) =>
+    set((s) => ({
+      missioneId,
+      statoMissione,
+      tappa,
+      avvii: statoMissione === 'attiva' && tappa === 0 ? s.avvii + 1 : s.avvii,
+    })),
   addMissioneFatta: (id) =>
     set((s) => (s.missioniFatte.includes(id) ? {} : { missioniFatte: [...s.missioniFatte, id] })),
   setTempoResiduo: (tempoResiduo) => set({ tempoResiduo }),
@@ -265,6 +305,7 @@ export const useLugo = create<LugoState>((set, get) => ({
   setEsito: (esito) => set({ esito }),
   setDialogo: (dialogo) => set({ dialogo }),
   setVetrina: (vetrina) => set({ vetrina }),
+  setBacheca: (bacheca) => set({ bacheca }),
   scopriPoi: (id) => {
     if (get().poiVisitati.includes(id)) return false;
     set((s) => ({

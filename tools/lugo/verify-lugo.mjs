@@ -390,6 +390,10 @@ try {
   }
 
   // ── fase 3b: la vetrina di un'attività ────────────────────────────────
+  // si parte a mani libere: un pannello rimasto aperto dalle fasi prima
+  // renderebbe muta la E, e la vetrina non si aprirebbe mai
+  await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+  await page.waitForTimeout(200);
   if ((await lugo('typeof L.attivita')) === 'function') {
     const negozi = await lugo('L.attivita()');
     if (negozi && negozi.length) {
@@ -420,13 +424,29 @@ try {
           const soldiDopo = await lugo('L.denaro()');
           if (soldiDopo !== soldiPrima) ok('acquisto in bottega', `${soldiPrima} → ${soldiDopo}`);
         }
-        await page
-          .locator('[data-hud="vetrina"] .lugo-vetrina-chiudi')
-          .click({ noWaitAfter: true })
-          .catch(() => {});
+        // la stessa E che apre la vetrina la richiude: da tastiera non si
+        // resta mai chiusi dentro un pannello
+        await page.keyboard.press('KeyE');
+        await page.waitForTimeout(400);
+        if ((await page.locator('[data-hud="vetrina"]').count()) === 0) {
+          ok('la E richiude la vetrina');
+        } else {
+          ko('la E richiude la vetrina', 'il pannello è rimasto aperto');
+          await page
+            .locator('[data-hud="vetrina"] .lugo-vetrina-chiudi')
+            .click({ noWaitAfter: true })
+            .catch(() => {});
+        }
         await page.waitForTimeout(300);
       } else {
-        ko('vetrina attività', 'la vetrina non si è aperta');
+        const diag = {
+          negozio: n.nome,
+          mode: await lugo('L.mode()'),
+          pos: await lugo('L.pos()'),
+          bacheca: await page.locator('[data-hud="bacheca"]').count(),
+          dialogo: await page.locator('[data-hud="dialogo"]').count(),
+        };
+        ko('vetrina attività', 'la vetrina non si è aperta · ' + JSON.stringify(diag));
       }
       // ── fase 3c: esplorazione e distintivi ─────────────────────────────
       if ((await lugo('typeof L.esplorazione')) === 'function') {
@@ -503,7 +523,11 @@ try {
             await page.waitForTimeout(400);
             const dopoRep = await lugo('L.punteggio()');
             const dopoEuro = await lugo('L.denaro()');
-            if (dopoRep - prima.rep === scelto.rep && Math.round(dopoEuro - prima.euro) === scelto.denaro) {
+            // gli euro arrivano solo dall'incarico, quindi devono tornare
+            // esatti; la reputazione può crescere anche per un punto di
+            // interesse scoperto proprio in quell'istante
+            const dRep = dopoRep - prima.rep;
+            if (dRep >= scelto.rep && dRep <= scelto.rep + 60 && Math.round(dopoEuro - prima.euro) === scelto.denaro) {
               ok('premio dell\'incarico', `+€${scelto.denaro} · +${scelto.rep} REP`);
             } else {
               ko(
@@ -644,6 +668,58 @@ try {
     } else {
       ko('missione di attività', JSON.stringify(esito));
     }
+  }
+
+  // ── fase 4c: la bacheca dei lavori ────────────────────────────────────
+  // Nei luoghi grandi di Lugo si sceglie cosa fare invece di aspettare che
+  // una missione parta da sola. Qui si apre la bacheca, si accetta un
+  // lavoro e si controlla che diventi la missione attiva.
+  if ((await lugo('L.mode()')) === 'auto') {
+    await page.keyboard.down('Space');
+    await page.waitForTimeout(900);
+    await page.keyboard.up('Space');
+    await page.keyboard.press('KeyE');
+    await page.waitForTimeout(500);
+  }
+  const luoghi = await lugo('L.poi');
+  let bacheca = null;
+  for (const id of ['pavaglione', 'rocca', 'baracca', 'stazione']) {
+    const p = luoghi?.[id];
+    if (!p) continue;
+    await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+    await page.evaluate((q) => window.__LUGO__.teleport(q.x, q.z), p);
+    await page.waitForTimeout(600);
+    await page.keyboard.press('KeyE');
+    await page.waitForTimeout(500);
+    if (await page.locator('[data-hud="bacheca"]').count()) {
+      bacheca = id;
+      break;
+    }
+  }
+  if (bacheca) {
+    const offerte = await page.locator('[data-hud="bacheca"] .lugo-offerta').count();
+    if (offerte >= 2) ok('bacheca dei lavori', `${bacheca}: ${offerte} proposte`);
+    else ko('bacheca dei lavori', `${offerte} proposte`);
+    await page.screenshot({ path: join(SHOTS, '04-bacheca.png') });
+
+    const primo = page.locator('[data-hud="bacheca-accetta"]').first();
+    await primo.click({ noWaitAfter: true }).catch(() => {});
+    await page.waitForTimeout(600);
+    const stato = await lugo('L.statoMissione()');
+    const chiusa = (await page.locator('[data-hud="bacheca"]').count()) === 0;
+    if (stato === 'attiva' && chiusa) ok('lavoro accettato dalla bacheca');
+    else ko('lavoro accettato dalla bacheca', `stato ${stato}, pannello ${chiusa ? 'chiuso' : 'aperto'}`);
+
+    // una missione a tempo accettata dalla bacheca deve avere il suo conto
+    // alla rovescia: senza, fallirebbe al primo fotogramma
+    const residuo = await lugo('L.tempoResiduo ? L.tempoResiduo() : null');
+    if (residuo === null || residuo === undefined || residuo > 0) {
+      ok('conto alla rovescia del lavoro accettato', residuo ? `${residuo} s` : 'senza tempo');
+    } else {
+      ko('conto alla rovescia del lavoro accettato', `${residuo} s`);
+    }
+  } else {
+    ko('bacheca dei lavori', 'nessuna bacheca si è aperta');
   }
 
   // ── fase 5: NPC ───────────────────────────────────────────────────────

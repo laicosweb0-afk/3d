@@ -73,6 +73,10 @@ export function Hud() {
   const setGuardaroba = useLugo((s) => s.setGuardaroba);
   const missioniFatte = useLugo((s) => s.missioniFatte);
   const consegneFatte = useLugo((s) => s.consegneFatte);
+  const bacheca = useLugo((s) => s.bacheca);
+  const setBacheca = useLugo((s) => s.setBacheca);
+  const setMissione = useLugo((s) => s.setMissione);
+  const setTempoResiduo = useLugo((s) => s.setTempoResiduo);
   const totali = useLugo((s) => s.totali);
   const baseGiorno = useLugo((s) => s.baseGiorno);
   const baseSettimana = useLugo((s) => s.baseSettimana);
@@ -99,6 +103,23 @@ export function Hud() {
   );
   const pronti = daRiscuotere(giornalieri) + daRiscuotere(settimanali);
 
+  // Si accetta un lavoro dalla bacheca: da qui in poi è una missione come
+  // tutte le altre, e la macchina delle missioni la porta avanti.
+  const accetta = (o: { id: string; titolo: string; obiettivo: string }) => {
+    const m = missioneById(o.id);
+    if (!m) return;
+    setMissione(m.id, 'attiva', 0);
+    setTempoResiduo(m.tempoLimite ?? null);
+    setIntro({
+      etichetta: m.tipo === 'consegna' ? 'CONSEGNA' : 'NUOVA MISSIONE',
+      titolo: m.titolo,
+      frase: m.frase,
+      obiettivo: m.tappe[0].titolo,
+    });
+    setBacheca(null);
+    suonaEvento('tappa');
+  };
+
   const riscuoti = (i: IncaricoVivo) => {
     if (!i.completo || i.riscosso) return;
     if (!riscuotiIncarico(i.id)) return;
@@ -107,6 +128,24 @@ export function Hud() {
     setAvviso(`${i.titolo} · +€${i.denaro} · +${i.rep} REP`);
     suonaEvento('successo');
   };
+
+  // Esc chiude quello che è aperto. Senza, un pannello aperto per sbaglio
+  // si poteva chiudere solo col dito sulla ✕: sulla tastiera non c'era
+  // nessuna via d'uscita, e intanto la E non faceva più niente.
+  useEffect(() => {
+    const giu = (e: KeyboardEvent) => {
+      if (e.code !== 'Escape') return;
+      const s = useLugo.getState();
+      if (!s.vetrina && !s.bacheca && !s.diario && !s.guardaroba) return;
+      e.preventDefault();
+      s.setVetrina(null);
+      s.setBacheca(null);
+      s.setDiario(false);
+      s.setGuardaroba(false);
+    };
+    window.addEventListener('keydown', giu);
+    return () => window.removeEventListener('keydown', giu);
+  }, []);
 
   // l'ora di gioco, aggiornata due volte al secondo (basta e avanza)
   const [ora, setOra] = useState(orologio());
@@ -438,6 +477,54 @@ export function Hud() {
             <span className="lugo-premio-euro">+€{esito.denaro}</span>
             <span className="lugo-premio-rep">+{esito.rep} REP</span>
             {esito.extra && <span className="lugo-premio-extra">{esito.extra}</span>}
+          </div>
+        </div>
+      )}
+
+      {/* La bacheca dei lavori: nei luoghi grandi di Lugo si sceglie cosa
+          fare invece di aspettare che una missione parta da sola. */}
+      {bacheca && (
+        <div className="lugo-vetrina lugo-bacheca" data-hud="bacheca">
+          <div className="lugo-vetrina-testa">
+            <div>
+              <div className="lugo-vetrina-cat">Lavori</div>
+              <div className="lugo-vetrina-nome">{bacheca.nome}</div>
+            </div>
+            <button type="button" className="lugo-vetrina-chiudi" onClick={() => setBacheca(null)}>
+              ✕
+            </button>
+          </div>
+          <div className="lugo-vetrina-desc">{bacheca.sottotitolo}</div>
+          <div className="lugo-bacheca-lista">
+            {bacheca.offerte.map((o) => (
+              <div key={o.id} className="lugo-offerta">
+                <div className="lugo-offerta-testa">
+                  <span className="lugo-offerta-titolo">{o.titolo}</span>
+                  <span className={`lugo-offerta-diff lugo-diff-${o.difficolta}`}>
+                    {o.difficolta}
+                  </span>
+                </div>
+                <div className="lugo-offerta-testo">{o.descrizione}</div>
+                <div className="lugo-offerta-obiettivo">▸ {o.obiettivo}</div>
+                <div className="lugo-offerta-piede">
+                  <span className="lugo-offerta-premi">
+                    €{o.denaro} · {o.rep} REP
+                    {o.tempoLimite ? ` · ${Math.round(o.tempoLimite / 60)} min` : ''}
+                  </span>
+                  <button
+                    type="button"
+                    className="lugo-offerta-btn"
+                    data-hud="bacheca-accetta"
+                    onClick={() => accetta(o)}
+                  >
+                    ACCETTA
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="lugo-vetrina-piede">
+            Le proposte cambiano ogni volta che torni. Puoi accettarne una alla volta.
           </div>
         </div>
       )}
