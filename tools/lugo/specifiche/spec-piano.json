@@ -1,0 +1,218 @@
+{
+ "store": [
+  "export type Modalita = 'auto' | 'piedi' | 'bici' — una parola in piu, nessun campo. E l'unica modifica di tipo che si propaga fuori dallo store (posGiocatore, stepNpcs, Minimap, Hud, Joystick, audio), quindi va fatta per prima e in un colpo solo.",
+  "veicoloRubato: { colore: string; carrozzeria: number } | null — default null. E il VESTITO dell'auto che si guida adesso. NON tocca tintaAuto/modelloAuto, che sono la scelta salvata del giocatore: sovrascriverle vorrebbe dire perdere per sempre il colore scelto allo start.",
+  "setVeicoloRubato: (v: { colore: string; carrozzeria: number } | null) => void",
+  "furti: { bici: number; auto: number } — default { bici: 0, auto: 0 }. Totale di sempre, salvato in salvataggio.ts con la stessa validazione intera >= 0 di contatoriValidi. NON si salvano veicoloRubato, wanted, ne lo stato delle auto/bici rubate in giro: al ricaricamento si riparte dalla Rocca con la propria auto, com'e sempre stato per le posizioni.",
+  "contaFurto: (che: 'bici' | 'auto') => void — incrementa il contatore giusto dentro furti e nient'altro.",
+  "hintAllerta: boolean — default false. true quando il suggerimento in corso e un'azione che costa una stella.",
+  "setHint: (msg: string | null, allerta?: boolean) => void — scrive hint e hintAllerta INSIEME, con allerta che vale false quando manca. I ~4 chiamanti esistenti (tutti dentro Player) restano validi parola per parola e spengono l'allerta da soli, che e esattamente il comportamento voluto: un hint normale non deve mai ereditare il rosso di quello prima.",
+  "avvia: () => set({ fase: 'gioco', veicoloRubato: null }) — una partita nuova comincia con l'auto che ti sei scelto, non con l'ultima che avevi portato via.",
+  "VetrinaAperta.logo: string | null — il percorso del logo autorizzato. Ci arriva SOLO il valore di ritorno di logoAutorizzato(a) di lib/lugo/attivita.ts (che gia esiste, riga 267), mai a.logo grezzo. Il commento sul campo deve dirlo, perche questo campo e il punto in cui una regola non negoziabile diventa un dato dell'HUD.",
+  "VetrinaAperta.pittogramma: string — l'id del simbolo di mestiere. Tenuto come string e non come il tipo Pittogramma apposta, per non far dipendere lo store dal repertorio di lib/lugo/pittogrammi.ts: lo store e il posto piu condiviso del progetto e non deve importare geometria.",
+  "VetrinaAperta.colore: string — '#RRGGBB' del `campo` della bottega (identitaBottega(...).campo.getHexString()): tinge il pittogramma nella scheda, cosi il simbolo a schermo e lo stesso identico che si e visto sul muro.",
+  "NESSUN campo per il maranza. Il ponte HUD -> ciclo di gioco e `risposta` esportato da lib/lugo/maranza.ts, con lo stesso schema di lib/lugo/stick.ts (il DOM scrive, il frame legge, zero re-render). Metterlo nello store sarebbe stato un aggiornamento React per ogni battuta e un secondo padrone dello stato dell'incontro.",
+  "NESSUN campo per insegne, edifici e ricerca oltre ai tre di VetrinaAperta: i fronti 'edifici' e 'ricerca' dichiarano zero stato, e va tenuto cosi."
+ ],
+ "player": [
+  "IMPORT: stepBici/BICI/lasciaBici da '@/lib/lugo/bici'; bersaglioFurto/compiFurto/vistoDaiCarabinieri/hookFurti da '@/lib/lugo/furti'; TRAFFICO/respingiDaAuto da '@/lib/lugo/veicoli'; avviaIncontroDaE/subisciPugno/incontroInCorso da '@/lib/lugo/maranza'; pittogrammaDi da '@/lib/lugo/pittogrammi'; identitaBottega da '@/lib/lugo/insegneAtlante'; MISURE da '@/lib/lugo/insegneAtlante'; QA da '@/lib/lugo/qa'; { Bici } da './Bici'. Nuovo ref gruppoBici. Il file resta l'orchestratore: qui non si scrive logica, si chiamano moduli.",
+  "ChaseCamera: nuovo ramo `else if (mode === 'bici')` che aggancia rt.cameraYaw a rt.persona.yaw con rt.cameraYaw += scarto * (1 - Math.exp(-7 * dt)). In sella si sterza col manubrio: se il riferimento restasse quello dei piedi si comanderebbe la bici con la direzione di dieci secondi fa. I cinque ternari mode === 'auto' ? A : B diventano a tre vie — dist 8.5/6.0/4.2, alt 3.4/2.7/2.1, k del lerp 3.4/4.5/5.5, avantiMira 5/2.6/1.2, fovTarget in bici 55 + min(6, rt.vPersona * 0.4).",
+  "useEffect degli hook (riga ~201): si fondono ...hookFurti(mondo, rt) e, dentro `if (QA)`, i tre hook di insegne — insegne(), leggibilita(d), provaLogo(schede). In piu due hook che DEVONO chiudere sui ref locali e quindi non possono stare in un modulo: ricercato: () => ({ wanted, calore: calore.current, decadimento: decadimento.current }) e invecchia: (s) => { decadimento.current += s; }. provaLogo resta PURA (non tocca il mondo, non carica niente): e la prova negativa, quella che dimostra che logoAutorizzato RESPINGE i casi cattivi, e va tenuta sotto QA perche un hook di collaudo che accende una partnership dal di fuori sarebbe il buco classico.",
+  "useFrame, struttura: `if (st.mode === 'auto') { ... } else if (st.mode === 'bici') { ... } else { ... }`. Il ramo bici: yawPrima, stepBici(rt.persona, input, dt, fisica, mondo.bounds), rt.vPersona = |esito.v|, rt.urto, rt.piega smorzata con (1 - exp(-9*dt)), runtime.frenata = input.freno || (input.indietro && esito.v > 0.5); poi le auto civili FERME sono solide (respingiDaAuto con raggio BICI.raggio, saltando rubata o vAttuale > 1.5); poi R raddrizza sul puntoStradaVicino; poi E scende (vedi precedenza, gradino 2b).",
+  "PRECEDENZA DEL TASTO E — la regola: PRIORITA FISSA A GRADINI, e la distanza decide SOLO dentro un gradino. Non 'vince il piu vicino' su tutto, perche i raggi sono di ordini diversi (una vetrina si apre da 9 m, un furto da 2,2-3,2) e perche il COSTO DELL'ERRORE e asimmetrico: un pannello aperto per sbaglio si chiude con un'altra E, un furto per sbaglio costa due stelle, una multa e magari la consegna a tempo. Chi gioca perdona un pannello di troppo, non un reato di troppo.",
+  "E gradino 1 — CHIUDI IL PANNELLO. Invariato: se st.vetrina || st.bacheca sono aperti, la E le chiude e finisce li. Incondizionato e per primo, perche con qualcosa a schermo la E deve avere una sola lettura possibile; e l'unica via d'uscita da tastiera insieme a Esc.",
+  "E gradino 2a (in 'auto') — SCENDI, con |v| < 3 e un posto libero a lato: invariato. E gradino 2b (in 'bici') — SCENDI, solo con rt.vPersona < 1.5 e !fuocoSuComando(): lasciaBici(mondo, fisica, x, z, yaw), setMode('piedi'), suonaEvento('salita'). Si scende quasi da fermi come dall'auto, e la bici resta esattamente dove l'hai lasciata, riprendibile.",
+  "E gradino 3 (in 'piedi') — LA TUA AUTO, dAuto < DIST_SALITA (2.6 m). Resta un gradino a se, SOPRA i furti e non in gara con loro per distanza: la tua auto la parcheggi spessissimo accanto ad altre auto in sosta, e se decidesse la distanza ti ritroveresti a rubare quella del vicino mentre volevi risalire sulla tua. E anche l'azione piu ripetuta della partita: deve essere l'unica lettura possibile quando sei attaccato al tuo cofano.",
+  "E gradino 4 (in 'piedi') — IL VEICOLO DA PRENDERE. const bers = occupato ? null : bersaglioFurto(mondo, rt.persona.x, rt.persona.z), che valuta i tre candidati (bici 2.2 m, auto in sosta 3.0 m, auto del traffico ferma 3.2 m) e ne restituisce UNO SOLO, il piu vicino: dentro il gradino la distanza decide, perche per chi gioca 'salire su un mezzo che non e mio' e una sola azione. Ma il gradino si attiva SOLO se bers.d < dBanco && bers.d < dBottega: in un pareggio vince sempre il pannello, mai il furto. E la ragione per cui i raggi di furto sono corti: devi essere addosso al mezzo, e davanti a una vetrina vince la vetrina.",
+  "E gradino 5 (in 'piedi') — BACHECA contro BOTTEGA, vince il piu vicino: invariato, e la regola gia scritta nel file (sotto il Pavaglione ci sono sia i bar sia la bacheca).",
+  "E gradino 6 (in 'piedi') — IL MARANZA, entro 3.4 m con cooldownDialogo scaduto. Resta ultimo perche e l'unica interazione che sa avviarsi DA SOLA: la E qui e una cortesia, non il canale principale. Cambia solo il corpo: al posto del setDialogo scritto a mano alle righe 452-461 si chiama avviaIncontroDaE(n) di maranza.ts, che mette l'NPC in stato 'chiede' e restituisce lo stesso pannello — cosi anche parlando per primo si vede il fumetto sopra la testa, e la macchina a stati ha un solo ingresso.",
+  "EFFETTO DEL FURTO (dentro il gradino 4): const e = compiFurto(bers, mondo, rt); se e -> st.setMode(e.mode); st.setVeicoloRubato(e.veicolo); st.contaFurto(e.contatore); calore.current += e.calore + (vistoDaiCarabinieri(...) ? 2 : 0); decadimento.current = -e.ritardo; si ricalcola wanted con la STESSA tabella gia usata due volte nel file (>=7 -> 3, >=4 -> 2, >=2 -> 1); st.setAvviso(e.avviso); suonaEvento('salita'). La tabella delle soglie va estratta in una funzione locale wantedDa(calore): oggi e copiata tre volte (righe 331, 522, 540) e con il furto diventerebbero quattro.",
+  "PUGNO (F): non va piu a segno all'istante del tasto. Alla pressione si arma soltanto runtime.pugno = { t: 0.42, colpito: false, bersaglio: null, molesto: false, compagni: 0 }; ogni frame runtime.pugno.t -= dt e al 55% dell'animazione (istante d'impatto) si esegue la ricerca del bersaglio che c'e gia oggi (raggio 2.4, cono frontale dot >= 0.35, il piu vicino). L'effetto passa da subisciPugno(bersaglio, runtime.npcs, dx/d, dz/d) invece dell'assegnazione diretta di stato/timer/bx/bz, e il doppio cast `colpito as unknown as {...}` (riga 496) sparisce perche runtime.npcs e finalmente tipizzato Npc[]. La battuta viene dal gruppo 'pugno' e sostituisce la riga 507 (`FRASI_STRADA.length ? ... : 'Ohi!'`, che e una condizione che non vuol dire niente). Se il bersaglio NON era molesto: st.addPunti(-5) e avviso 'Non era il caso · -5 REP'. Calore e wanted per il carabiniere entro 22 m: invariati.",
+  "FERMO DEI CARABINIERI: il blocco delle righe 341-352 esce dal ramo `auto` e diventa comune alle tre modalita — const qui = mode === 'auto' ? rt.auto : rt.persona; const vQui = mode === 'auto' ? |rt.vAuto| : rt.vPersona; stessa multa, stesse soglie (4.2 m, 2.5 m/s). Oggi, rubata una bici e scappati a piedi, la gazzella ti stava addosso all'infinito senza che succedesse mai niente. A piedi si corre a 5,2 m/s contro una soglia di 2,5: scappare funziona ancora, fermarsi no.",
+  "HINT: in 'auto' invariato; in 'bici' -> 'Premi E per scendere' sotto 1.5 m/s; in 'piedi' -> dopo il controllo dell'auto propria, se bers esiste ed e piu vicino di bottega e bacheca, hint = bers.hint con allerta = true; se incontroInCorso().attivo, hint = 'F · sganciagli un pugno · oppure corri via'. La chiamata diventa st.setHint(hint, allerta). ATTENZIONE al ref di deduplica hintPrima (riga 633): oggi confronta la sola stringa, e con l'allerta appesa un testo identico con allerta diversa non ri-scriverebbe mai lo store. Il ref deve tenere la COPPIA (testo, allerta).",
+  "CODA DEL FRAME: rt.sella += ((mode === 'bici' ? 1 : 0) - rt.sella) * (1 - exp(-9*dt)), con aggancio secco a 0 o 1 sotto 0.01 (senza il taglio il personaggio resta per sempre a 0,997 di posa). Poi i modelli: gruppoPersona.visible = mode !== 'auto' (non piu === 'piedi') e quota QUOTA_CALPESTIO + 0.16 * rt.sella; nuovo gruppoBici visible = mode === 'bici', posizionato 0,30 m avanti al ciclista lungo il suo yaw, rotation.y = -yaw, rotation.x = rt.piega. Bici e ciclista pendono attorno alla stessa linea a terra, quindi la piega li tiene insieme.",
+  "PAYLOAD DI setVetrina (righe 436-445): tre campi in piu, e uno solo per ciascuno — logo: logoAutorizzato(a), pittogramma: pittogrammaDi(a.categoria, a.mestiere), colore: '#' + identitaBottega(a.nome, a.categoria, tintaFacciata).campo.getHexString(). Il secondo argomento di pittogrammaDi e `a.mestiere` del registro (che gia unisce il campo osm della mappa e l'euristica sul nome), NON negozio.osm grezzo: cosi c'e un solo posto al mondo che decide quale simbolo tocca a una bottega.",
+  "return: <Bici ref={gruppoBici} rt={rt} /> accanto a <Car> e <Character>.",
+  "NON si tocca: il blocco dell'esplorazione e il pugno restano condizionati a mode === 'piedi' (i luoghi di Lugo si scoprono camminando, ed e la regola di sempre; e in sella non si tirano pugni). Missioni.tsx resta com'e: una tappa 'aPiedi' non si chiude in sella, bisogna scendere."
+ ],
+ "hud": [
+  "tachimetro (riga 342): {mode === 'auto' ? 'km/h' : 'a piedi'} diventa {mode === 'piedi' ? 'a piedi' : 'km/h'}. In bici i km/h hanno senso: sono quelli veri della pedalata.",
+  "hint (riga 620): si legge hintAllerta dallo store e className={'lugo-hint' + (hintAllerta ? ' lugo-hint-allerta' : '')}. E il solo segnale che il giocatore ha PRIMA di premere una E che gli costa una stella.",
+  "vetrina: nuovo blocco <div className=\"lugo-vetrina-marchio\"> dentro {vetrina && ...}, subito SOPRA .lugo-vetrina-testa. Contiene SEMPRE un <canvas className=\"lugo-vetrina-simbolo\" width={56} height={56} data-simbolo={vetrina.pittogramma} /> dipinto da un useEffect con disegnaPittogramma(ctx, vetrina.pittogramma, 28, 28, 56, '#F4EEDD', vetrina.colore); e SOLO con vetrina.partner && vetrina.livello !== 'NESSUNO' && vetrina.logo un <img className=\"lugo-vetrina-logo\" src={vetrina.logo} alt=\"\" width={56} height={56} />. Le due condizioni stanno una accanto all'altra nello stesso blocco apposta: il pittogramma e nostro e si mostra sempre, il logo e di qualcun altro e si mostra solo con la sua firma. L'alt vuoto e voluto — il nome dell'attivita e gia scritto sotto.",
+  ".lugo-vetrina-piede: il testo resta 'Attivita di Lugo · listino di fantasia, non una promozione reale' e diventa 'Attivita di Lugo · marchio usato su autorizzazione · listino di fantasia' quando e solo quando c'e un logo.",
+  "rispondi(id) (righe 182-192): per dialogo.id === 'sigaretta' e 'sigaretta-insiste' NON applica piu gli effetti direttamente (oggi fa addPunti(25) e setAvviso da solo) ma scrive `risposta.scelta = id` importato da '@/lib/lugo/maranza' e chiude il pannello; REP, avvisi e frase di risposta arrivano dall'esito del ciclo di gioco. Senza questo, pannello e mondo possono raccontare due cose diverse: l'HUD dice +25 REP e il maranza continua a insistere.",
+  "rispondi(id) per id === 'pugno': setDialogo(null) e poi stick.pugnoBtn = true con un setTimeout(() => (stick.pugnoBtn = false), 140). Riusa il ponte del pulsante ✊ che esiste gia in lib/lugo/stick.ts, invece di inventare un secondo canale per la stessa azione.",
+  "JSX del dialogo (righe 605-608): data-hud={'dialogo-opzione-' + o.id} su ogni bottone e data-hud=\"dialogo-testo\" sulla riga del testo. Oggi i bottoni non hanno nessun aggancio e Playwright non puo cliccare 'no' in modo affidabile ne confrontare il testo del pannello con quello del fumetto sopra la testa.",
+  "classe condizionale 'lugo-dialogo-insiste' sul contenitore quando dialogo.id === 'sigaretta-insiste', e 'lugo-dialogo-btn-pugno' sull'opzione pugno.",
+  "NON TOCCARE .lugo-vetrina-partner e .lugo-vetrina-promo (righe 569-574 e le regole css 861+): il collaudo li conta per nome con querySelectorAll e sono di fatto l'API della regola non negoziabile. Cambiarne il nome renderebbe muta la guardia senza che nessun test fallisca."
+ ],
+ "css": [
+  ".lugo-hint-allerta — accanto a .lugo-hint (riga 499): { color: var(--pericolo); border-color: rgba(255, 106, 92, 0.45); }. Nessun keyframe e nessun lampeggio: lampeggia gia la stella del ricercato, e due cose che pulsano insieme non ne segnalano nessuna.",
+  ".lugo-vetrina-marchio — nella sezione della vetrina, prima di .lugo-vetrina-testa: { display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.5rem }",
+  ".lugo-vetrina-simbolo — { width: 2.1rem; height: 2.1rem; border-radius: 8px; flex: 0 0 auto }",
+  ".lugo-vetrina-logo — { width: 2.1rem; height: 2.1rem; object-fit: contain; border-radius: 6px; background: rgba(255,255,255,0.9); flex: 0 0 auto }. object-fit CONTAIN e non cover: un logo autorizzato non si ritaglia, stirare o tagliare il marchio di qualcuno e peggio che non mostrarlo. Il fondo bianco al 90% perche quasi tutti i loghi sono pensati per la carta e su vetro scuro sparirebbero.",
+  ".lugo-dialogo-insiste — sul contenitore del dialogo quando il maranza sta insistendo: solo bordo e fondo appena piu caldi, statici. Serve a far capire che e la STESSA conversazione che sale di giro, non un pannello nuovo.",
+  ".lugo-dialogo-btn-pugno — la sola opzione del dialogo con colore di pericolo, per non farla premere per sbaglio al posto di 'No'."
+ ],
+ "input": [
+  "ZERO modifiche funzionali a lib/lugo/input.ts. Tutte e cinque le specifiche lo dicono, ed e la conclusione giusta: E prende e scende, E chiude, R raddrizza anche in bici, Spazio frena anche in bici, F colpisce (esiste gia alla riga 15 e il Player lo legge gia). Al pugno non manca un tasto: mancano l'animazione, un istante d'impatto e una reazione.",
+  "Shift in sella non fa nulla: la bici ha una sola velocita massima. Dare uno scatto vorrebbe dire tenere Shift premuto per sempre, che e un comando che si annulla da solo.",
+  "Unica modifica ammessa: il commento in testa al file, che oggi elenca WASD, Shift, Spazio, E/Invio e R e non nomina F. Va aggiunto F, e va detto che 'interagisci' ha una precedenza a gradini definita in Player.tsx — chi legge input.ts per capire cosa fa la E oggi non trova nessun indizio su dove guardare.",
+  "Nessun interruttore di diagnosi su una lettera della tastiera: le viste di collaudo (fronti colorati per esposizione, conteggi delle insegne, stato dell'incontro) vanno su window.__LUGO__ dietro ?qa=1. Rubare un tasto a chi gioca per una diagnosi e un prestito che non si restituisce piu.",
+  "lib/lugo/stick.ts non cambia: pugnoBtn esiste gia ed e il canale che l'HUD riusa per l'opzione 'sganciagli un pugno'. Cambia solo QUALE pulsante Joystick.tsx mostra (riga 114: la condizione passa da mode === 'auto' a mode === 'piedi', cosi in sella compare FRENO e non CORRI+PUGNO); l'useEffect che azzera i pulsanti al cambio di mode copre gia la terza modalita."
+ ],
+ "ordine": [
+  {
+   "pezzo": "0 · Misurare il budget PRIMA di spendere. Il fronte 'edifici' sostiene di aver misurato 179 draw call a Piazza Baracca sulla build in out/, cioe gia sopra il tetto di 170, e che il collaudo non se ne accorge perche misura in un punto solo. Se e vero, il margine di tutti gli altri fronti e negativo e ogni piano qui sotto e scritto su un budget che non esiste. Quindi: si porta il blocco 'costo di un fotogramma' a misurare in quattro punti (pavaglione, baracca, bar, rocca) tenendo il caso peggiore, e si legge il numero. Questa correzione va fatta comunque, indipendentemente da tutto il resto.",
+   "fileOwned": [
+    "tools/lugo/verify-lugo.mjs (solo il blocco 'costo di un fotogramma')"
+   ],
+   "dipendeDa": []
+  },
+  {
+   "pezzo": "1 · Passo condiviso, primo tempo: TIPI E FIRME. Nessun comportamento nuovo, solo le forme su cui tutti compileranno. Modalita a tre valori; i campi di store; RuntimeGioco con sella e piega; runtime con biciInSella/biciSporche/revImperfezioni/pugno e npcs finalmente tipizzato Npc[] | null; posGiocatore(mode: Modalita); StatoNpc allargato in una volta sola a 'avvicina'|'chiede'|'ritirata'|'fuga' e Npc con TUTTI i campi dei due fronti che lo toccano; la firma di stepNpcs che prende insieme il mode a tre vie e il contesto ui e restituisce l'esito incontro; le interfacce Posteggio e AutoCivile allargate; aggiungiObb che ritorna il ColliderRT. E i quattro moduli nuovi creati come STUB con la firma definitiva e un corpo che non fa nulla (bici.ts, furti.ts, maranza.ts, mestieri.ts): e questo, e solo questo, che permette poi di lavorare in parallelo senza toccarsi.",
+   "fileOwned": [
+    "lib/lugo/store.ts",
+    "lib/lugo/runtime.ts",
+    "lib/lugo/input.ts",
+    "lib/lugo/npc.ts (solo tipi e firme)",
+    "lib/lugo/veicoli.ts (solo interfacce)",
+    "lib/lugo/physics.ts (aggiungiObb ritorna il collider)",
+    "lib/lugo/bici.ts (stub)",
+    "lib/lugo/furti.ts (stub)",
+    "lib/lugo/maranza.ts (stub)",
+    "lib/lugo/mestieri.ts (stub)",
+    "lib/lugo/salvataggio.ts"
+   ],
+   "dipendeDa": [
+    "0"
+   ]
+  },
+  {
+   "pezzo": "2 · Passo condiviso, secondo tempo: ORCHESTRAZIONE. La catena della E con i sei gradini per intero (anche quelli che chiamano stub e quindi non fanno ancora niente), il ramo bici del useFrame, il fermo dei Carabinieri portato fuori dai rami, la finestra del pugno, l'hint con la coppia (testo, allerta), il payload della vetrina a tre campi, gli hook di collaudo, i modelli. Piu l'HUD, il CSS, e i tre punti a due vie che diventano a tre. Qui dentro finiscono anche Character.tsx e Npcs.tsx, che NON sono nell'elenco dei file condivisi ma di fatto lo sono: due fronti diversi li riscrivono nella stessa funzione.",
+   "fileOwned": [
+    "components/lugo/Player.tsx",
+    "components/lugo/Hud.tsx",
+    "app/lugo/lugo.css",
+    "components/lugo/Character.tsx",
+    "components/lugo/Npcs.tsx",
+    "components/lugo/Joystick.tsx",
+    "components/lugo/Minimap.tsx",
+    "lib/lugo/audio.ts"
+   ],
+   "dipendeDa": [
+    "1"
+   ]
+  },
+  {
+   "pezzo": "3 · Furti: bici, auto in sosta, auto ferma. Riempie gli stub bici.ts e furti.ts, la fisica rimuovibile, il registro memoizzato delle imperfezioni, le rastrelliere, il traffico che frena e suona, il modello della bici.",
+   "fileOwned": [
+    "lib/lugo/bici.ts",
+    "lib/lugo/furti.ts",
+    "lib/lugo/veicoli.ts",
+    "lib/lugo/physics.ts",
+    "lib/lugo/imperfezioni.ts",
+    "components/lugo/Bici.tsx",
+    "components/lugo/Veicoli.tsx",
+    "components/lugo/Imperfezioni.tsx",
+    "components/lugo/Car.tsx"
+   ],
+   "dipendeDa": [
+    "2"
+   ]
+  },
+  {
+   "pezzo": "4 · Maranza: aggancio, insistenza, fumo, fumetti, ritirata. Riempie maranza.ts e monta i tre InstancedMesh. Va DOPO <Npcs /> in World.tsx, cosi legge le posizioni dello stesso fotogramma invece di rincorrerle di uno.",
+   "fileOwned": [
+    "lib/lugo/maranza.ts",
+    "components/lugo/Maranza.tsx",
+    "components/lugo/World.tsx (solo il montaggio)"
+   ],
+   "dipendeDa": [
+    "2"
+   ]
+  },
+  {
+   "pezzo": "5 · Insegne: pittogrammi, fascia sulla cimasa vera, bandiera, tendone, vetrina. La parte di libreria (pittogrammi.ts, botteghe.ts, insegneAtlante.ts, logoAutorizzato, hashNome) ESISTE GIA nel repo: qui si fa il montaggio della geometria fusa, si tolgono le sette mesh separate della T e delle croci, e si riempie mestieri.ts con l'euristica sul nome pubblico.",
+   "fileOwned": [
+    "components/lugo/Insegne.tsx",
+    "lib/lugo/mestieri.ts",
+    "lib/lugo/attivita.ts",
+    "lib/lugo/pittogrammi.ts",
+    "lib/lugo/insegneAtlante.ts",
+    "lib/lugo/botteghe.ts"
+   ],
+   "dipendeDa": [
+    "2"
+   ]
+  },
+  {
+   "pezzo": "6 · Edifici: il lato come unita di lavoro, tetti sulla pianta vera, portici ad arco. Dichiara zero file condivisi ed e vero: non tocca ne store ne Player ne HUD. Puo partire in parallelo al pezzo 2, purche il pezzo 0 abbia gia detto quanto margine c'e.",
+   "fileOwned": [
+    "lib/lugo/fronti.ts",
+    "lib/lugo/tetti.ts",
+    "lib/lugo/modanature.ts",
+    "lib/lugo/portici.ts",
+    "lib/lugo/citygen.ts",
+    "lib/lugo/carattere.ts",
+    "lib/lugo/loadMap.ts",
+    "lib/lugo/types.ts",
+    "components/lugo/CityMeshes.tsx"
+   ],
+   "dipendeDa": [
+    "0"
+   ]
+  },
+  {
+   "pezzo": "7 · Pipeline dei dati: il campo shop grezzo, le categorie a nove secchi, le falde giuste, i nomi delle piazze. E l'unico pezzo che NON si puo collaudare qui dentro (Overpass e bloccato dal proxy e la cache in repo e un fixture da 102 elementi): si scrive, si stampa un report onesto, e la verifica arriva al primo `npm run lugo:map` con rete.",
+   "fileOwned": [
+    "tools/lugo/build-map.mjs",
+    "tools/lugo/fetch-osm.mjs"
+   ],
+   "dipendeDa": [
+    "5"
+   ]
+  },
+  {
+   "pezzo": "8 · Collaudo: ogni fronte aggiunge la sua fase come blocco autonomo in coda, guardato da `typeof L.<hook> === 'function'` come fanno gia tutte le altre. Le fasi si accendono da sole in base agli hook presenti, quindi l'ordine di arrivo non conta e nessuno rompe le milestone precedenti.",
+   "fileOwned": [
+    "tools/lugo/verify-lugo.mjs (fasi nuove, in coda)"
+   ],
+   "dipendeDa": [
+    "3",
+    "4",
+    "5",
+    "6"
+   ]
+  }
+ ],
+ "conflitti": [
+  "setHint: 'furto' vuole un secondo parametro `allerta`, 'maranza' aggiunge un hint suo senza saperlo. UNA sola firma — setHint(msg, allerta?) con default false — e i chiamanti esistenti restano validi parola per parola. Trappola non vista da nessuno dei due: il ref di deduplica hintPrima (Player riga 633) confronta la sola stringa, quindi un testo identico con allerta diversa non arriverebbe mai allo store. Il ref deve tenere la coppia.",
+  "Il payload di setVetrina in Player e conteso da due fronti: 'insegne' vuole pittogramma: pittogrammaDi(a.categoria, negozio.osm), 'ricerca' vuole passare per mestiereDi(nome, categoria, osm). Si risolve a monte, non nel Player: registroAttivita espone un campo `mestiere` che unisce il dato OSM (quando c'e) e l'euristica sul nome (quando manca), e il Player fa una sola chiamata pittogrammaDi(a.categoria, a.mestiere). Un solo posto al mondo decide quale simbolo tocca a una bottega.",
+  "stepNpcs cambia firma in due specifiche diverse e incompatibili: 'furto' porta modeAuto: boolean a mode: Modalita, 'maranza' aggiunge un contesto ui e un campo incontro all'esito. Sono la stessa riga. La firma finale si scrive una volta sola nel passo condiviso (pezzo 1); i due corpi si riempiono dopo, in branche separate.",
+  "StatoNpc e l'interfaccia Npc sono allargate da due fronti: 'maranza' aggiunge 'avvicina'|'chiede'|'ritirata' piu dodici campi, 'furto' aggiunge 'fuga' per il guidatore che scende. Vanno allargate INSIEME e in una volta, altrimenti la seconda branca trova un union type che non conosce e il ramo nuovo cade in silenzio nel ramo 'cammina' — che a 1,2 m dalla meta rimette il pedone su 'fermo'.",
+  "runtime.npcs e tipizzato { tipo; x; z } e il Player e costretto al doppio cast `colpito as unknown as {...}` (riga 496). 'maranza' lo ritipizza Npc[] | null, 'furto' ne ha bisogno per scendiEScappa. Stessa modifica, un solo proprietario: pezzo 1, con import di solo tipo cosi non nasce nessun ciclo a runtime.",
+  "Character.tsx NON e nell'elenco dei file condivisi ma lo e: 'furto' riscrive Gamba/Braccio/busto per la posa in sella (rt.sella, rt.piega) e 'maranza' riscrive Braccio e busto per il pugno (runtime.pugno). Sono le stesse tre useFrame. Va dichiarato come sesto file condiviso e assegnato al pezzo 2, con i due contributi tenuti come blocchi additivi distinti (mescola su sella per l'uno, sostituzione su curvaColpo per l'altro) e non intrecciati.",
+  "Npcs.tsx e settimo file condiviso di fatto: 'furto' cambia il bersaglio della gazzella (riga 233, oggi insegue solo chi e in auto) e 'maranza' aggiunge il contesto UI e l'applicazione dell'esito. Stesso useFrame. Pezzo 2.",
+  "I tre punti a due vie che nessuna specifica puo correggere da sola: Minimap.tsx:93 (s.mode === 'piedi' ? 190 : 260 + |rt.vAuto| * 6 — in bici userebbe lo zoom dell'auto letto su una velocita ferma), Hud.tsx:342 (direbbe 'a piedi' in sella) e Joystick.tsx:114 (mostrerebbe CORRI e PUGNO invece di FRENO). Vanno tutti e tre nello stesso passo del tipo Modalita, o restano bug silenziosi che nessun test vede.",
+  "La tabella delle soglie del wanted (calore >= 7 -> 3, >= 4 -> 2, >= 2 -> 1) e gia copiata TRE volte in Player.tsx (righe 331, 522, 540); col furto diventerebbero quattro copie della stessa regola in un file solo. Va estratta in una funzione locale wantedDa(calore) nel pezzo 2, prima che qualcuno ne aggiunga una quarta leggermente diversa.",
+  "'maranza' vuole cambiare la logica delle risposte dentro Hud.rispondi() (oggi applica +25 REP e l'avviso da solo, righe 182-192) mentre l'esito vero nascera nel ciclo di gioco. Se restassero tutte e due, pannello e mondo racconterebbero due cose diverse: l'HUD dice +25 REP e il maranza continua a insistere. L'HUD scrive `risposta.scelta` e nient'altro; REP, avvisi e battuta arrivano dall'esito.",
+  "Il budget di prestazioni e conteso da tutti e nessuno lo misura nel punto peggiore: 'insegne' promette che le draw call SCENDONO (via le sette mesh di T e croci), 'furto' dichiara +2 solo in sella, 'maranza' +3 solo a incontro in corso, 'edifici' sostiene che siamo gia a 179 a Piazza Baracca. Le tre promesse valgono zero se la quarta e vera. Per questo il pezzo 0 e primo: si misura in quattro punti, e solo dopo si decide chi puo spendere.",
+  "Il ponte HUD -> ciclo di gioco: una fusione ingenua avrebbe messo lo stato dell'incontro nello store (e' l'unico posto che l'HUD e il frame condividono davvero). Non si fa: si usa il modulo mutabile `risposta` con lo schema di stick.ts. Lo store e per lo stato lento che l'HUD mostra; una battuta ogni due secondi con un re-render React attaccato non lo e."
+ ],
+ "tagli": [
+  "@keyframes lugo-insiste (maranza): via. Lampeggia gia la stella del ricercato, e due cose che pulsano insieme non ne segnalano nessuna. La classe .lugo-dialogo-insiste resta, ma statica: bordo e fondo appena piu caldi bastano a dire che e la stessa conversazione che sale di giro.",
+  "Qualunque campo nuovo nello store per il maranza: via, e per fortuna la specifica lo dichiara gia. Il ponte e il modulo `risposta`, non lo store. Va scritto a chiare lettere perche e esattamente la cosa che una fusione distratta aggiungerebbe.",
+  "Qualunque tasto nuovo: via, tutte e cinque le specifiche sono d'accordo e hanno ragione. Nessuna delle funzioni nuove (salire in bici, rubare, scendere, chiudere il pannello, parlare, colpire) ha bisogno di una lettera in piu: cinque cose diverse sulla stessa E funzionano perche i contesti si escludono, e sei gradini di precedenza sono ancora una regola che si spiega in una riga.",
+  "Il colore autorizzato dell'insegna scritto direttamente sul fondo senza ricalcolare il testo: via. Anche quando fondo e tenda arrivano da attivita.json, il colore del TESTO si ricalcola sempre dalla luminanza relativa del fondo effettivo. Un esercente autorizza i suoi colori, non un'insegna illeggibile.",
+  "VetrinaAperta.logo alimentato da a.logo grezzo: via. Ci passa solo il ritorno di logoAutorizzato(a). E' l'unico rubinetto, e il campo dello store e il punto dove si vede che l'HUD beve da li.",
+  "La regola 'vince sempre il piu vicino' sul tasto E, come proponeva il fronte furti: via a meta. Dentro il gradino dei veicoli si', fra gradini no. I raggi vanno da 2,2 a 9 metri e il costo dell'errore e asimmetrico: un pannello di troppo si chiude con un'altra E, un furto di troppo costa due stelle e magari la consegna a tempo.",
+  "Il furto che batte la vetrina in un pareggio: via. Il gradino dei veicoli si attiva SOLO se e strettamente piu vicino di bacheca e bottega. Una moto davanti alla porta di un bar non deve trasformare l'entrata nel bar in un reato.",
+  "L'auto propria messa in gara per distanza con le auto da rubare: via. Resta un gradino fisso sopra. La tua auto la parcheggi quasi sempre accanto ad altre auto in sosta, e 'risalgo sulla mia' e l'azione piu ripetuta della partita: deve avere una sola lettura possibile.",
+  "Rinominare o toccare .lugo-vetrina-partner e .lugo-vetrina-promo: via. Il collaudo li conta con querySelectorAll e sono di fatto l'API della regola non negoziabile. Cambiarne il nome renderebbe muta la guardia senza far fallire nessun test — il modo peggiore di rompere una cosa.",
+  "Aggiungere veicoloRubato, wanted o lo stato delle auto rubate al salvataggio: via. Si salva solo il contatore furti { bici, auto }, che e un totale di sempre. Al ricaricamento si riparte dalla Rocca con la propria auto e una Lugo intera, com'e sempre stato per le posizioni.",
+  "L'hook di collaudo che potesse accendere una partnership dal di fuori: via prima ancora di nascere. provaLogo(schede) e PURA — mappa schede finte sul verdetto di logoAutorizzato, non tocca il mondo, non registra niente, non carica niente — ed e esposta solo dentro if (QA). E' la prova negativa che serve davvero (dimostra che la funzione RESPINGE i casi cattivi), non un interruttore.",
+  "Disegnare le insegne o le targhe di via con una mesh per cartello: via. 236 targhe sono 236 draw call su un margine di 14. L'unica forma ammessa e un Accumulo unico con un atlante unico. Vale identico per i semafori nuovi del fronte dati: dentro l'InstancedMesh che Arredi.tsx gia usa, mai mesh proprie.",
+  "Lasciare fisso il count dei tre InstancedMesh del maranza 'per semplificare': via. In three la draw call si salta solo con count === 0; con il count fisso si tornerebbe a tre chiamate sempre presenti e a qualche migliaio di triangoli inutili per fotogramma anche guardando la campagna."
+ ]
+}
