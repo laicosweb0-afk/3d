@@ -14,7 +14,13 @@ const OUT = join(HERE, 'cache', 'overpass-raw.json');
 
 // Bbox ~1.8×1.8 km sul centro di Lugo: Rocca, Pavaglione, Piazza Baracca,
 // stazione, anello dei viali, Parco del Tondo.
-const DEFAULT_BBOX = '44.4125,11.9010,44.4290,11.9235';
+// La PREMIUM CORE ZONE del gioco: due chilometri di raggio attorno al
+// centro di Lugo, cioè un quadrato di quattro chilometri di lato. Prima
+// erano 1,8 × 1,8 km — meno di un chilometro di raggio — e mezza città
+// restava fuori: il quartiere della stazione, il Tondo, le vie oltre il
+// canale. Due chilometri CURATI valgono più di venti chilometri vuoti, ma
+// due chilometri devono essere due chilometri.
+const DEFAULT_BBOX = '44.3945,11.8760,44.4305,11.9265';
 
 const MIRRORS = [
   'https://overpass-api.de/api/interpreter',
@@ -50,8 +56,20 @@ const QUERY = `[out:json][timeout:90];
   nwr["historic"~"^(castle|memorial|monument)$"](${B});
   nwr["amenity"="theatre"](${B});
   node["railway"="station"](${B});
-  node["amenity"~"^(cafe|bar|restaurant|pharmacy)$"](${B});
-  node["shop"](${B});
+  // LE ATTIVITÀ. Prima si prendevano solo i NODI con shop=* e quattro
+  // amenity: due terzi delle botteghe di Lugo restavano fuori, perché una
+  // bottega grande (il supermercato, la banca, l'officina) su OpenStreetMap
+  // è quasi sempre mappata come AREA, non come punto. E le categorie erano
+  // cinque, quindi quaranta insegne su sessantacinque finivano nel generico.
+  // Qui si prende tutto quello che è un'attività aperta al pubblico, nodo o
+  // area che sia, col suo tipo vero.
+  nwr["shop"](${B});
+  nwr["amenity"~"^(cafe|bar|pub|restaurant|fast_food|ice_cream|pharmacy|bank|post_office|bureau_de_change|fuel|dentist|doctors|veterinary|driving_school|library|cinema|nightclub|internet_cafe)$"](${B});
+  nwr["craft"](${B});
+  nwr["office"~"^(estate_agent|insurance|lawyer|accountant|travel_agent|company|employment_agency|architect|it|advertising_agency)$"](${B});
+  nwr["tourism"~"^(hotel|guest_house|museum|information)$"](${B});
+  nwr["leisure"~"^(fitness_centre|sports_centre)$"](${B});
+  nwr["healthcare"](${B});
   node["natural"="tree"](${B});
   node["highway"~"^(crossing|traffic_signals|bus_stop)$"](${B});
   node["amenity"="fountain"](${B});
