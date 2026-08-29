@@ -654,6 +654,20 @@ try {
   }
 
   // ── fase 6: cartoline dai landmark ───────────────────────────────────
+  // niente pannelli davanti alla città: le cartoline devono mostrare Lugo
+  await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+  await page.waitForTimeout(200);
+
+  // i luoghi che hanno una forma propria e non sono una casa come le altre
+  if ((await lugo('typeof L.landmark3d')) === 'function') {
+    const l3 = await lugo('L.landmark3d()');
+    const mancanti = Object.entries(l3)
+      .filter(([, c]) => !c)
+      .map(([k]) => k);
+    if (mancanti.length === 0) ok('landmark con forma propria', Object.keys(l3).join(', '));
+    else ko('landmark con forma propria', `disegnati come case qualunque: ${mancanti.join(', ')}`);
+  }
+
   const poiMap = await lugo('L.poi');
   if (poiMap && (await lugo('typeof L.teleport')) === 'function') {
     const inquadrature = {
@@ -661,6 +675,7 @@ try {
       rocca: [60, 45, 55],
       stazione: [45, 30, 40],
       baracca: [16, 9, 14],
+      teatro: [26, 15, 24],
     };
     for (const [id, [ox, oy, oz]] of Object.entries(inquadrature)) {
       const p = poiMap[id];
@@ -672,6 +687,26 @@ try {
       );
       await page.waitForTimeout(900);
       await page.screenshot({ path: join(SHOTS, `06-${id}.png`) });
+    }
+
+    // la facciata del teatro, vista da dove la vede chi passa in strada
+    const fronte = await lugo('typeof L.frontTeatro === "function" ? L.frontTeatro() : null');
+    if (fronte) {
+      await page.evaluate(
+        (f) =>
+          window.__LUGO__.fotocamera(
+            f.x + f.nx * 26,
+            13,
+            f.z + f.nz * 26,
+            f.x,
+            7,
+            f.z,
+            4000,
+          ),
+        fronte,
+      );
+      await page.waitForTimeout(900);
+      await page.screenshot({ path: join(SHOTS, '06-teatro-facciata.png') });
     }
     ok('cartoline dai landmark');
   }
@@ -686,16 +721,19 @@ try {
     try {
       await tel.goto(URL, { waitUntil: 'load' });
       await tel.waitForFunction(() => window.__LUGO__ && window.__LUGO__.pronto === true, null, { timeout: 60000 });
+      // Il filmato d'apertura può ancora star caricando quando la scena è
+      // già pronta: si aspetta il tasto SALTA per qualche secondo, e se non
+      // arriva si tira dritto (l'intro si chiude comunque da sola).
       const s2 = tel.locator('[data-hud="salta-intro"]');
+      await s2.waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
       if (await s2.count()) {
-        await s2.click();
+        await s2.click({ noWaitAfter: true }).catch(() => {});
         await tel.waitForTimeout(300);
       }
       const g2 = tel.locator('[data-hud="gioca"]');
-      if (await g2.count()) {
-        await g2.click();
-        await tel.waitForTimeout(900);
-      }
+      await g2.waitFor({ state: 'visible', timeout: 25000 });
+      await g2.click({ noWaitAfter: true }).catch(() => {});
+      await tel.waitForTimeout(900);
       // si scende e ci si mette davanti a una bottega
       await tel.keyboard.press('KeyE');
       await tel.waitForTimeout(600);

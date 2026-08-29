@@ -400,7 +400,7 @@ export function World() {
     <>
       <fog attach="fog" args={[LUCE.nebbia.colore, LUCE.nebbia.vicino, LUCE.nebbia.lontano]} />
       <Meteo />
-      <CityMeshes senzaLandmark={['pavaglione', 'rocca', 'stazione']} />
+      <CityMeshes senzaLandmark={['pavaglione', 'rocca', 'stazione', 'teatro']} />
       <Landmarks />
       <Props />
       <Veicoli />

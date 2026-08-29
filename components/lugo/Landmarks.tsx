@@ -8,12 +8,13 @@
 // gazzella parcheggiata. Ogni landmark è UNA mesh a vertex colors più
 // qualche insegna.
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { useMondo, type MondoLugo, type EdificioRT } from '@/lib/lugo/loadMap';
 import { Accumulo } from '@/lib/lugo/citygen';
 import { puntiVarco, vicinoAVarco, rettangoloMinimo } from '@/lib/lugo/gates';
 import { puntoStradaVicino } from '@/lib/lugo/car';
+import { infraGioco } from '@/lib/lugo/veicoli';
 import { GazzellaMesh } from './Npcs';
 
 const INTONACO = new THREE.Color('#E4CE8F'); // il "giallino" di Lugo
@@ -25,6 +26,7 @@ const BIANCO = new THREE.Color('#F4EFE3');
 const COPPI = new THREE.Color('#A05A38');
 const SOFFITTO = new THREE.Color('#EFE6D2');
 // il mattone vero della Rocca nelle foto: bruno-tabacco, non rosso acceso
+const TEATRO_MURO = new THREE.Color('#EFDFB2'); // l'intonaco chiaro del teatro
 const MATTONE = new THREE.Color('#9C7258');
 const MATTONE_CUPO = new THREE.Color('#7A5540');
 const PIETRA = new THREE.Color('#B9AF9E');
@@ -655,6 +657,215 @@ function geometriaRocca(b: EdificioRT): THREE.BufferGeometry {
 
 // ── Stazione ────────────────────────────────────────────────────────────────
 
+// ── Teatro Rossini ──────────────────────────────────────────────────────────
+// Su OpenStreetMap il teatro è un nodo dentro un edificio senza tag: finché
+// nessuno gliela dava, la sagoma veniva disegnata come una palazzina come le
+// altre, e la missione che ti manda a ritirare il pacco "al Teatro Rossini"
+// ti mandava davanti a una casa qualunque. Qui il teatro all'italiana prende
+// la forma che ha: corpo intonacato con zoccolo in pietra, facciata scandita
+// da lesene con frontone e tre portali, e dietro la torre scenica, il volume
+// alto che ospita il palco e che si riconosce da fuori in ogni teatro.
+
+function geometriaTeatro(
+  b: EdificioRT,
+  mondo: MondoLugo,
+): { geo: THREE.BufferGeometry; fronte: { x: number; z: number; nx: number; nz: number } } | null {
+  const fp = b.fp;
+  if (fp.length < 8) return null;
+  const acc = new Accumulo();
+  const [cx, cz] = centroDi(fp);
+
+  const H_ZOCCOLO = 1.15;
+  const H = 10.4;
+  const H_CORNICE = 0.55;
+  const H_TORRE = 13.8;
+
+  // Il fronte è il lato che dà sullo SPAZIO APERTO, non solo quello più
+  // vicino a una strada: la via più vicina può passare dietro, e la
+  // facciata finirebbe a un metro dal muro del vicino. Per ogni lato largo
+  // abbastanza si guarda fuori a sei, dodici e diciotto metri: vince chi
+  // ha più campo libero davanti, e a parità chi ha la strada più vicina.
+  const fisica = infraGioco(mondo).fisica;
+  let fronte: { x1: number; z1: number; x2: number; z2: number; L: number } | null = null;
+  let miglior = -Infinity;
+  for (const [x1, z1, x2, z2] of anelloSegmenti(fp)) {
+    const L = Math.hypot(x2 - x1, z2 - z1);
+    if (L < 9) continue;
+    const mx = (x1 + x2) / 2;
+    const mz = (z1 + z2) / 2;
+    let ox = -(z2 - z1) / L;
+    let oz = (x2 - x1) / L;
+    if ((mx - cx) * ox + (mz - cz) * oz < 0) {
+      ox = -ox;
+      oz = -oz;
+    }
+    let aperto = 0;
+    for (const d of [6, 12, 18]) {
+      if (fisica.cerchioLibero(mx + ox * d, mz + oz * d, 2)) aperto++;
+    }
+    const p = puntoStradaVicino(mondo, mx, mz);
+    const strada = Math.hypot(p.x - mx, p.z - mz);
+    const punti = aperto * 100 - strada + Math.min(L, 30) * 0.5;
+    if (punti > miglior) {
+      miglior = punti;
+      fronte = { x1, z1, x2, z2, L };
+    }
+  }
+  if (!fronte) return null;
+
+  // corpo: zoccolo in pietra, intonaco sopra, cornice sporgente in cima
+  for (const [x1, z1, x2, z2] of anelloSegmenti(fp)) {
+    muro(acc, x1, z1, x2, z2, 0, H_ZOCCOLO, PIETRA);
+    muro(acc, x1, z1, x2, z2, H_ZOCCOLO, H, TEATRO_MURO);
+  }
+
+  // Finestre sui fianchi. Senza, il teatro era un parallelepipedo cieco in
+  // mezzo a case tutte finestrate: si vedeva da lontano che qualcosa non
+  // andava. Il fronte le ha sue e viene saltato più sotto.
+  for (const [x1, z1, x2, z2] of anelloSegmenti(fp)) {
+    const L = Math.hypot(x2 - x1, z2 - z1);
+    if (L < 6) continue;
+    const ux = (x2 - x1) / L;
+    const uz = (z2 - z1) / L;
+    const mmx = (x1 + x2) / 2;
+    const mmz = (z1 + z2) / 2;
+    let ox = -uz;
+    let oz = ux;
+    if ((mmx - cx) * ox + (mmz - cz) * oz < 0) {
+      ox = -ox;
+      oz = -oz;
+    }
+    const ang = Math.atan2(z2 - z1, x2 - x1);
+    const quante = Math.max(1, Math.floor(L / 4.6));
+    for (let k = 0; k < quante; k++) {
+      const t = -L / 2 + (L * (k + 0.5)) / quante;
+      const wx = mmx + ux * t;
+      const wz = mmz + uz * t;
+      box(acc, wx + ox * 0.07, 3.1, wz + oz * 0.07, 1.35, 2.3, 0.18, VETRO_SCURO, ang);
+      box(acc, wx + ox * 0.11, 4.35, wz + oz * 0.11, 1.65, 0.22, 0.26, CREMA, ang);
+      box(acc, wx + ox * 0.07, 7.2, wz + oz * 0.07, 1.2, 1.8, 0.18, VETRO_SCURO, ang);
+    }
+  }
+  for (const foro of b.fori) {
+    for (const [x1, z1, x2, z2] of anelloSegmenti(foro)) {
+      muro(acc, x1, z1, x2, z2, 0, H, TEATRO_MURO);
+    }
+  }
+  piano(acc, fp, b.fori, H + H_CORNICE, COPPI);
+
+  // la cornice gira tutto intorno, appena più larga del muro
+  for (const [x1, z1, x2, z2] of anelloSegmenti(fp)) {
+    const L = Math.hypot(x2 - x1, z2 - z1) || 1;
+    const mx = (x1 + x2) / 2;
+    const mz = (z1 + z2) / 2;
+    const ang = Math.atan2(z2 - z1, x2 - x1);
+    box(acc, mx, H + H_CORNICE / 2, mz, L, H_CORNICE, 0.55, CREMA, ang);
+  }
+
+  // ── la facciata ──
+  const fx = fronte.x2 - fronte.x1;
+  const fz = fronte.z2 - fronte.z1;
+  const L = fronte.L;
+  const tx = fx / L; // lungo il fronte
+  const tz = fz / L;
+  const mx = (fronte.x1 + fronte.x2) / 2;
+  const mz = (fronte.z1 + fronte.z2) / 2;
+  // la normale che guarda FUORI: quella che si allontana dal centro
+  let nx = -tz;
+  let nz = tx;
+  if ((mx - cx) * nx + (mz - cz) * nz < 0) {
+    nx = -nx;
+    nz = -nz;
+  }
+  const ang = Math.atan2(fz, fx);
+
+  // lesene: quattro coppie che scandiscono il fronte, come nelle facciate
+  // neoclassiche dei teatri di provincia
+  const quante = Math.max(4, Math.min(7, Math.round(L / 5)));
+  for (let i = 0; i <= quante; i++) {
+    const t = -L / 2 + (L * i) / quante;
+    box(
+      acc,
+      mx + tx * t + nx * 0.16,
+      H_ZOCCOLO + (H - H_ZOCCOLO) / 2,
+      mz + tz * t + nz * 0.16,
+      0.62,
+      H - H_ZOCCOLO,
+      0.34,
+      CREMA,
+      ang,
+    );
+  }
+
+  // tre portali al piano terra e altrettante finestre alte sopra
+  for (const k of [-1, 0, 1]) {
+    const t = k * Math.min(3.6, L / 3.4);
+    box(acc, mx + tx * t + nx * 0.1, 1.75, mz + tz * t + nz * 0.1, 1.9, 3.5, 0.22, VETRO_SCURO, ang);
+    box(acc, mx + tx * t + nx * 0.1, 6.6, mz + tz * t + nz * 0.1, 1.5, 2.6, 0.2, VETRO_SCURO, ang);
+    box(acc, mx + tx * t + nx * 0.14, 8.1, mz + tz * t + nz * 0.14, 1.9, 0.28, 0.3, CREMA, ang);
+  }
+
+  // Il frontone: il timpano triangolare sopra l'ingresso, con lo spessore
+  // vero. Gli spioventi non si possono fare con una scatola — una scatola
+  // ruota solo attorno al suo asse verticale, e restava una sbarra
+  // orizzontale sospesa in mezzo al timpano: qui i due spioventi sono
+  // quadrilateri costruiti a mano fra la faccia davanti e quella dietro.
+  const semi = Math.min(L / 2, 9.5);
+  const yBase = H + H_CORNICE;
+  const yPunta = yBase + 2.9;
+  const SP = 0.34; // mezzo spessore del timpano
+  const punta = (s: number): [number, number, number] => [mx + nx * s * SP, yPunta, mz + nz * s * SP];
+  const spalla = (v: number, s: number): [number, number, number] => [
+    mx + tx * semi * v + nx * s * SP,
+    yBase,
+    mz + tz * semi * v + nz * s * SP,
+  ];
+  for (const s of [1, -1]) {
+    const [ax, ay, az] = spalla(-1, s);
+    const [bx, by, bz] = spalla(1, s);
+    const [px2, py2, pz2] = punta(s);
+    acc.tri(ax, ay, az, bx, by, bz, px2, py2, pz2, nx * s, 0, nz * s, CREMA.r, CREMA.g, CREMA.b);
+  }
+  // i due spioventi, dalla spalla alla punta
+  for (const v of [1, -1]) {
+    const a = spalla(v, 1);
+    const b = spalla(v, -1);
+    const c = punta(-1);
+    const d = punta(1);
+    // normale rivolta in su e verso l'esterno dello spiovente
+    const uy = 0.75;
+    const ux = tx * v * 0.66;
+    const uz = tz * v * 0.66;
+    acc.tri(...a, ...b, ...c, ux, uy, uz, BIANCO.r, BIANCO.g, BIANCO.b);
+    acc.tri(...a, ...c, ...d, ux, uy, uz, BIANCO.r, BIANCO.g, BIANCO.b);
+  }
+  // il cornicione alla base del timpano
+  box(acc, mx, yBase + 0.16, mz, semi * 2 + 0.5, 0.32, SP * 2 + 0.24, BIANCO, ang);
+
+  // ── la torre scenica: il volume alto del palco, dietro la facciata ──
+  // sta sull'altra metà dell'edificio, rientrata, e non esce mai dal
+  // footprint perché si misura sul rettangolo che lo contiene
+  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+  for (let i = 0; i < fp.length; i += 2) {
+    minX = Math.min(minX, fp[i]);
+    maxX = Math.max(maxX, fp[i]);
+    minZ = Math.min(minZ, fp[i + 1]);
+    maxZ = Math.max(maxZ, fp[i + 1]);
+  }
+  const lato = Math.min(maxX - minX, maxZ - minZ) * 0.52;
+  if (lato > 5) {
+    const dx = cx - mx;
+    const dz = cz - mz;
+    const dl = Math.hypot(dx, dz) || 1;
+    const px = cx + (dx / dl) * lato * 0.25;
+    const pz = cz + (dz / dl) * lato * 0.25;
+    box(acc, px, H_TORRE / 2, pz, lato * 1.25, H_TORRE, lato, TEATRO_MURO, ang);
+    box(acc, px, H_TORRE + 0.3, pz, lato * 1.35, 0.6, lato * 1.1, COPPI, ang);
+  }
+
+  return { geo: acc.build(), fronte: { x: mx + nx * 1.2, z: mz + nz * 1.2, nx, nz } };
+}
+
 function geometriaStazione(b: EdificioRT | null, mondo: MondoLugo): { geo: THREE.BufferGeometry; cx: number; cz: number } | null {
   const poi = mondo.poi.get('stazione');
   if (!b && !poi) return null;
@@ -717,7 +928,9 @@ export function Landmarks() {
     const pav = mondo.buildings.find((b) => b.landmark === 'pavaglione' && b.fori.length > 0) ?? null;
     const rocca = mondo.buildings.find((b) => b.landmark === 'rocca') ?? null;
     const staz = mondo.buildings.find((b) => b.landmark === 'stazione') ?? null;
+    const teatro = mondo.buildings.find((b) => b.landmark === 'teatro') ?? null;
     return {
+      teatro: teatro ? geometriaTeatro(teatro, mondo) : null,
       pavaglione: pav ? geometriaPavaglione(pav) : null,
       rocca: rocca ? geometriaRocca(rocca) : null,
       stazione: geometriaStazione(staz, mondo),
@@ -727,6 +940,23 @@ export function Landmarks() {
       poiTeatro: mondo.poi.get('teatro') ?? null,
     };
   }, [mondo]);
+
+  // quali landmark hanno davvero una forma propria e non sono rimasti una
+  // casa come le altre: il collaudo lo controlla a ogni giro
+  useEffect(() => {
+    const w = window as unknown as { __LUGO__?: Record<string, unknown> };
+    w.__LUGO__ = {
+      ...(w.__LUGO__ ?? {}),
+      landmark3d: () => ({
+        pavaglione: !!dati.pavaglione,
+        rocca: !!dati.rocca,
+        stazione: !!dati.stazione,
+        teatro: !!dati.teatro,
+      }),
+      // dove guarda la facciata del teatro: serve alla cartolina di collaudo
+      frontTeatro: () => dati.teatro?.fronte ?? null,
+    };
+  }, [dati]);
 
   const materiale = useMemo(() => new THREE.MeshLambertMaterial({ vertexColors: true }), []);
   const targaCaserma = useMemo(
@@ -949,15 +1179,33 @@ export function Landmarks() {
       )}
 
       {/* Teatro Rossini (1761, Bibiena): la targa sul prototipo del teatro all'italiana */}
-      {dati.poiTeatro && targaTeatro && (
-        <mesh
-          position={[dati.poiTeatro.xm, 5.6, dati.poiTeatro.zm]}
-          rotation={[0, -(dati.poiTeatro.rot ?? 0), 0]}
-        >
-          <planeGeometry args={[6.5, 1.0]} />
-          <meshBasicMaterial map={targaTeatro} side={THREE.DoubleSide} />
-        </mesh>
-      )}
+      {/* Teatro Rossini: il corpo intonacato, la facciata col frontone e la
+          torre scenica dietro. La targa sta SULLA facciata, non sospesa sul
+          nodo di OpenStreetMap come prima. */}
+      {dati.teatro && <mesh geometry={dati.teatro.geo} material={materiale} castShadow receiveShadow />}
+      {targaTeatro &&
+        (dati.teatro ? (
+          <mesh
+            position={[dati.teatro.fronte.x, 9.35, dati.teatro.fronte.z]}
+            // un piano guarda il suo +Z: per farlo guardare fuori dalla
+            // facciata l'angolo è atan2(nx, nz), non -atan2(nz, nx) — con
+            // quello la targa restava di taglio e non si leggeva
+            rotation={[0, Math.atan2(dati.teatro.fronte.nx, dati.teatro.fronte.nz), 0]}
+          >
+            <planeGeometry args={[6.5, 1.0]} />
+            <meshBasicMaterial map={targaTeatro} side={THREE.DoubleSide} />
+          </mesh>
+        ) : (
+          dati.poiTeatro && (
+            <mesh
+              position={[dati.poiTeatro.xm, 5.6, dati.poiTeatro.zm]}
+              rotation={[0, -(dati.poiTeatro.rot ?? 0), 0]}
+            >
+              <planeGeometry args={[6.5, 1.0]} />
+              <meshBasicMaterial map={targaTeatro} side={THREE.DoubleSide} />
+            </mesh>
+          )
+        ))}
 
       {/* Caserma: insegna, tricolore e gazzella parcheggiata davanti */}
       {dati.poiCaserma && (
