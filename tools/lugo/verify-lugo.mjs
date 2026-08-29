@@ -556,6 +556,38 @@ try {
           }
         }
 
+        // ── il calendario degli eventi ──────────────────────────────────
+        // Gli eventi hanno una finestra nel calendario vero, non solo
+        // nell'orologio del gioco: il mercato non c'è la domenica, il giro
+        // in bici è domenicale, le luci d'inverno non stanno accese ad
+        // agosto. Qui si interroga con date vere.
+        if ((await lugo('typeof L.eventiAllOra')) === 'function') {
+          const prove = [
+            ['domenica: niente mercato', 9, '2026-08-30', 'mercato_pavaglione', false],
+            ['domenica: c’è il raduno', 9, '2026-08-30', 'raduno_rocca', true],
+            ['sabato: c’è il mercato', 9, '2026-08-29', 'mercato_pavaglione', true],
+            ['venerdì d’agosto: si suona', 20, '2026-08-28', 'musica_baracca', true],
+            ['venerdì di dicembre: non si suona', 20, '2026-12-25', 'musica_baracca', false],
+            ['dicembre: luci accese', 18, '2026-12-25', 'luci_inverno', true],
+            ['epifania: luci ancora accese', 18, '2027-01-05', 'luci_inverno', true],
+            ['agosto: niente luci', 18, '2026-08-28', 'luci_inverno', false],
+          ];
+          const sbagliate = [];
+          for (const [nome, ora, giorno, id, atteso] of prove) {
+            const elenco = await page.evaluate(
+              ([o, g]) => window.__LUGO__.eventiAllOra(o, g),
+              [ora, giorno],
+            );
+            if (elenco.includes(id) !== atteso) sbagliate.push(nome);
+          }
+          if (sbagliate.length === 0) ok('calendario degli eventi', `${prove.length} prove`);
+          else ko('calendario degli eventi', sbagliate.join('; '));
+
+          const righe = await page.locator('[data-hud="programma"]').count();
+          if (righe) ok('programma della giornata nel diario');
+          else ko('programma della giornata nel diario', 'la sezione non c\'è');
+        }
+
         await page.screenshot({ path: join(SHOTS, '06-diario.png') });
         await page
           .locator('[data-hud="diario"] .lugo-vetrina-chiudi')

@@ -11,7 +11,7 @@ import * as THREE from 'three';
 import { useMondo } from '@/lib/lugo/loadMap';
 import { infraGioco } from '@/lib/lugo/veicoli';
 import { rettangoloMinimo } from '@/lib/lugo/gates';
-import { eventiAttivi, type EventoMondo } from '@/lib/lugo/eventi';
+import { eventiAttivi, eventiDiOggi, type EventoMondo } from '@/lib/lugo/eventi';
 import { tempo, cieloOra } from '@/lib/lugo/tempo';
 import { runtime } from '@/lib/lugo/runtime';
 import { useLugo } from '@/lib/lugo/store';
@@ -135,6 +135,28 @@ function scena(
         sx: 0.22, sy: 0.22, sz: 0.22, colore: '#FFD08A',
       });
     }
+  } else if (e.tipo === 'luci') {
+    // Le luminarie: due festoni incrociati sopra la piazza. Le lampadine
+    // stanno in alto, quindi non chiedono spazio a terra — l'unica cosa
+    // che conta è che scendano in mezzo come una catenaria vera.
+    for (const gira of [0, Math.PI / 2]) {
+      const dx = Math.cos(ang + gira);
+      const dz = Math.sin(ang + gira);
+      const N = 22;
+      for (let i = 0; i <= N; i++) {
+        const t = (i / N) * 2 - 1;
+        const sag = (1 - t * t) * 1.6;
+        out.push({
+          tipo: 'luce',
+          x: cx + dx * t * 22,
+          y: 6.4 - sag,
+          z: cz + dz * t * 22,
+          rot: ang,
+          sx: 0.2, sy: 0.2, sz: 0.2,
+          colore: i % 4 === 0 ? '#FFE6B0' : '#FFC24A',
+        });
+      }
+    }
   } else {
     // raduno di bici: una fila appoggiata, ordinata, dove c'è spazio
     const posti = postiLiberi(cx, cz, 1, libero, rnd);
@@ -155,6 +177,19 @@ function scena(
 
 export function Eventi() {
   const mondo = useMondo();
+  // hook di verifica: quali eventi cadono in una certa data e a una certa
+  // ora. Il collaudo lo interroga con date vere (una domenica, un venerdì
+  // d'agosto, Natale) e controlla che il calendario risponda giusto.
+  useEffect(() => {
+    const w = window as unknown as { __LUGO__?: Record<string, unknown> };
+    const quando = (giorno?: string) => (giorno ? new Date(giorno + 'T12:00:00') : new Date());
+    w.__LUGO__ = {
+      ...(w.__LUGO__ ?? {}),
+      eventiOggi: (giorno?: string) => eventiDiOggi(quando(giorno)).map((e) => e.id),
+      eventiAllOra: (ora: number, giorno?: string) =>
+        eventiAttivi(ora, quando(giorno)).map((e) => e.id),
+    };
+  }, []);
   const [attivi, setAttivi] = useState<EventoMondo[]>(() => eventiAttivi(tempo.ora));
   const annunciati = useRef<Set<string>>(new Set());
   const acc = useRef(0);
