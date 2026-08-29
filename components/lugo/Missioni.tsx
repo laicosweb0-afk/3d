@@ -55,7 +55,10 @@ export function Missioni() {
   }, [mondo]);
 
   useFrame((frame, dtRaw) => {
-    const dt = Math.min(dtRaw, 0.1);
+    // stesso tetto del giocatore e degli NPC (0,05): con 0,1 il conto alla
+    // rovescia correva al doppio della simulazione su un telefono lento, e
+    // una consegna a tempo diventava impossibile
+    const dt = Math.min(dtRaw, 0.05);
     const s = useLugo.getState();
     if (s.fase !== 'gioco') return;
 
@@ -77,6 +80,11 @@ export function Missioni() {
         hintPiedi.current = false;
       }
 
+      // `s` è lo snapshot preso a inizio frame: dopo setMissione continua a
+      // dire 'attiva', quindi senza questa bandiera il conto alla rovescia
+      // qui sotto girava lo stesso e la missione risultava insieme
+      // completata e fallita
+      let conclusa = false;
       const valida = t.aPiedi ? s.mode === 'piedi' : true;
       if (valida && d < raggio) {
         if (s.tappa + 1 < m.tappe.length) {
@@ -84,6 +92,7 @@ export function Missioni() {
           s.setAvviso(m.tappe[s.tappa + 1].titolo);
           suonaEvento('tappa');
         } else {
+          conclusa = true;
           s.setMissione(m.id, 'completata', s.tappa);
           s.addPunti(m.ricompensa);
           // le consegne pagano di più chi arriva prima, mancia compresa
@@ -93,16 +102,19 @@ export function Missioni() {
             const frazione = Math.max(0, tempo.current / m.tempoLimite);
             if (frazione > 0.55) euro += 8;
             else if (frazione > 0.3) euro += 4;
-            const mancia = frazione > 0.45 ? 3 + (m.id.length % 4) : 0;
+            const mancia = frazione > 0.45 ? 3 + ((m.semeMancia ?? 0) % 5) : 0;
             if (mancia > 0) {
               euro += mancia;
               extra = `MANCIA €${mancia}`;
             }
           }
           s.addDenaro(euro);
-          // solo la storia entra nel salvataggio: le consegne sono infinite
-          // e riempirebbero localStorage di id inutili
+          // Solo la storia entra nel salvataggio per id: le consegne sono
+          // infinite e riempirebbero localStorage. Ma vanno CONTATE, perché
+          // il distintivo del rider chiede otto consegne e prima leggeva
+          // l'elenco degli id — dove non entrava mai nulla.
           if (m.tipo === 'storia') s.addMissioneFatta(m.id);
+          else if (m.tipo === 'consegna') s.contaConsegna();
           s.setEsito({ titolo: m.titolo, denaro: euro, rep: m.ricompensa, extra });
           s.setTempoResiduo(null);
           suonaEvento('successo');
@@ -111,7 +123,7 @@ export function Missioni() {
       }
 
       // conto alla rovescia
-      if (m.tempoLimite) {
+      if (m.tempoLimite && !conclusa && !s.intro) {
         tempo.current -= dt;
         const arrotondato = Math.max(0, Math.ceil(tempo.current));
         if (arrotondato !== s.tempoResiduo) s.setTempoResiduo(arrotondato);

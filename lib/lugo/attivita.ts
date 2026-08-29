@@ -139,21 +139,54 @@ function normalizza(c: string | undefined): CategoriaAttivita {
   return 'servizi';
 }
 
+/**
+ * L'id di un'attività NON può essere la sua posizione nell'array: quello
+ * lo decide tools/lugo/build-map.mjs ordinando per distanza dal centro, e
+ * basta che a Lugo apra o chiuda una bottega perché tutti gli indici
+ * successivi slittino. Siccome l'id finisce nel salvataggio del giocatore
+ * (poiVisitati), il diario dichiarerebbe visitati posti mai visti. Qui si
+ * ricava invece dal nome e dalla posizione, che in OSM non cambiano.
+ */
+function idStabile(nome: string, x: number, z: number): string {
+  const chiave = `${nome}|${Math.round(x)}|${Math.round(z)}`;
+  let h = 2166136261;
+  for (let i = 0; i < chiave.length; i++) {
+    h ^= chiave.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return 'att_' + (h >>> 0).toString(36);
+}
+
 const cache = new WeakMap<MondoLugo, Attivita[]>();
 
 /** Il registro completo, costruito una volta sola per mondo. */
 export function registroAttivita(mondo: MondoLugo): Attivita[] {
   const gia = cache.get(mondo);
   if (gia) return gia;
-  const out: Attivita[] = mondo.negozi.map((n, i) => {
+  // i nomi che compaiono più di una volta (catene, filiali) non possono
+  // risolvere una scheda: l'autorizzazione di un esercente non deve mai
+  // finire addosso a un omonimo che non ha autorizzato nulla
+  const quantiConNome = new Map<string, number>();
+  for (const n of mondo.negozi) {
+    const k = n.nome || '';
+    quantiConNome.set(k, (quantiConNome.get(k) ?? 0) + 1);
+  }
+  const idUsati = new Set<string>();
+
+  const out: Attivita[] = mondo.negozi.map((n) => {
     const categoria = normalizza(n.categoria);
     const listino = LISTINI[categoria];
     const nome = n.nome || 'Attività del centro';
-    // la scheda vale solo se esiste ed è stata autorizzata: senza di essa
-    // partner resta false e promo/logo restano vuoti, per costruzione
-    const sch = schedaDi(nome);
+    // la scheda vale solo se esiste, è stata autorizzata e il nome
+    // identifica una sola attività
+    const sch = (quantiConNome.get(n.nome || '') ?? 0) === 1 ? schedaDi(nome) : undefined;
+    let id = idStabile(nome, n.x, n.z);
+    // due botteghe con lo stesso nome allo stesso metro sono impossibili in
+    // OSM, ma se capitasse non devono condividere l'identità
+    for (let k = 2; idUsati.has(id); k++) id = idStabile(nome + '#' + k, n.x, n.z);
+    idUsati.add(id);
     return {
-      id: 'att_' + i,
+      id,
       nome,
       categoria,
       x: n.x,

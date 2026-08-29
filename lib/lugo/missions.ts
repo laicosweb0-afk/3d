@@ -14,6 +14,8 @@ export interface TappaMissione {
   titolo: string;
   /** La tappa vale solo a piedi (forza la discesa). */
   aPiedi?: boolean;
+  /** Il punto va riportato sulla carreggiata più vicina (POI dentro i muri). */
+  suStrada?: boolean;
 }
 
 export interface Missione {
@@ -32,6 +34,8 @@ export interface Missione {
   denaro: number;
   /** true per le consegne: bonus in base al tempo rimasto + mancia. */
   bonusVelocita?: boolean;
+  /** Numero della consegna: fa variare la mancia. */
+  semeMancia?: number;
 }
 
 // ── La storia principale: TROVA IL TUO AMICO ────────────────────────────────
@@ -56,7 +60,7 @@ export const MISSIONI: Missione[] = [
     descrizione: 'Al Pavaglione non c’è. Il barista dice di averlo visto andare verso la Rocca.',
     frase: '“Giacomo? Sì sì, era qui prima. Ha preso un caffè ed è filato in Rocca.”',
     tappe: [
-      { poi: 'bar', titolo: 'Chiedi al bar' },
+      { poi: 'bar', titolo: 'Chiedi al bar', suStrada: true },
       { poi: 'rocca', titolo: 'Cercalo alla Rocca Estense' },
     ],
     tempoLimite: 75,
@@ -136,6 +140,8 @@ export const MISSIONI: Missione[] = [
 /** Registro delle missioni generate al volo (consegne). */
 const DINAMICHE = new Map<string, Missione>();
 let contatoreConsegne = 0;
+/** Quante missioni sono state proposte a storia finita: fa girare la rotazione. */
+let contatoreProposte = 0;
 
 function lcg(seme: number): () => number {
   let s = (seme * 2654435761) >>> 0;
@@ -170,6 +176,9 @@ export function creaConsegna(mondo: MondoLugo): Missione {
   const pDest = puntoStradaVicino(mondo, dest.x, dest.z);
   const m: Missione = {
     id: `consegna_${String(contatoreConsegne).padStart(3, '0')}`,
+    // la mancia varia con il numero della consegna: prima si usava la
+    // LUNGHEZZA dell'id, che è sempre 12, quindi la mancia era sempre €3
+    semeMancia: contatoreConsegne,
     tipo: 'consegna',
     titolo: 'Consegna per ' + (dest.nome || 'il centro'),
     descrizione: `Ritira da ${ritiro.nome || 'il bar'} e consegna prima che si freddi.`,
@@ -201,16 +210,31 @@ export function posTappa(mondo: MondoLugo, tappa: TappaMissione): { x: number; z
   if (libera) return { x: parseFloat(libera[1]), z: parseFloat(libera[2]) };
   const speciale = tappa.poi.match(/^viali-(n|e|s|o)$/);
   if (speciale) {
-    const { minX, minZ, maxX, maxZ } = mondo.bounds;
-    const cx = (minX + maxX) / 2;
-    const cz = (minZ + maxZ) / 2;
-    const r = Math.min(maxX - minX, maxZ - minZ) * 0.32;
+    // I viali sono la circonvallazione del CENTRO, non il bordo della
+    // mappa: prima il raggio veniva dai bounds (4,7 km di lato) e usciva
+    // 1482 m dal centro geometrico, mandando i quattro checkpoint in aperta
+    // campagna — 150 secondi per farne il giro erano impossibili.
+    const pav = mondo.poi.get('pavaglione');
+    const cx = pav ? pav.xm : 0;
+    const cz = pav ? pav.zm : 0;
+    const r = 380;
     const dir = { n: [0, -1], e: [1, 0], s: [0, 1], o: [-1, 0] }[speciale[1]]!;
     const p = puntoStradaVicino(mondo, cx + dir[0] * r, cz + dir[1] * r);
     return { x: p.x, z: p.z };
   }
   const poi = mondo.poi.get(tappa.poi);
-  if (poi) return { x: poi.xm, z: poi.zm };
+  if (poi) {
+    // Alcuni POI di OSM cadono DENTRO la muratura di un edificio: il bar del
+    // Pavaglione sta a 5,5 m dentro il muro esterno e a 42 m dal varco più
+    // vicino, quindi la tappa era irraggiungibile e la missione m02 non si
+    // completava mai. Le tappe che il gioco marca come "su strada" vengono
+    // riportate sulla carreggiata più vicina.
+    if (tappa.suStrada) {
+      const p = puntoStradaVicino(mondo, poi.xm, poi.zm);
+      return { x: p.x, z: p.z };
+    }
+    return { x: poi.xm, z: poi.zm };
+  }
   // POI mancante nei dati: si ripiega sul centro, meglio di un crash
   return { x: 0, z: 0 };
 }
@@ -227,9 +251,14 @@ export function prossimaMissione(
 ): Missione {
   const daFare = MISSIONI.find((m) => !missioniFatte.includes(m.id));
   if (daFare) return daFare;
-  // storia finita: si vive di consegne (e ogni 4 un classico da rigiocare)
-  if (contatoreConsegne > 0 && contatoreConsegne % 4 === 3) {
-    const idx = (contatoreConsegne / 4) | 0;
+  // Storia finita: si vive di consegne, e ogni quarta proposta è un
+  // classico da rigiocare. Il contatore delle PROPOSTE è separato da quello
+  // delle consegne: prima il ramo del rigioco non incrementava nulla,
+  // quindi la condizione restava vera per sempre e il gioco riproponeva
+  // all'infinito la stessa identica missione (m01, vai al Pavaglione).
+  contatoreProposte++;
+  if (contatoreProposte % 4 === 0) {
+    const idx = (contatoreProposte / 4 - 1) | 0;
     return MISSIONI[idx % MISSIONI.length];
   }
   return creaConsegna(mondo);
