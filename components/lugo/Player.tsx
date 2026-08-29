@@ -482,6 +482,7 @@ export function Player() {
           botteghe: dopo.poiVisitati.filter((id) => tipoDi.get(id) === 'attivita').length,
           missioniFatte: dopo.missioniFatte,
           punteggio: dopo.punteggio,
+          consegneFatte: dopo.consegneFatte,
         };
         const raggiunti = distintiviRaggiunti(stato);
         const nuovo = raggiunti.find((id) => !dopo.distintivi.includes(id));

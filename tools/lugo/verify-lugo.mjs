@@ -466,6 +466,87 @@ try {
     ok('cartoline dai landmark');
   }
 
+  // ── fase 6: telefono ──────────────────────────────────────────────────
+  // Il difetto peggiore trovato dall'audit: su telefono il pannello di una
+  // bottega finiva SOTTO il joystick e non si poteva né usare né chiudere,
+  // e il gioco restava bloccato per sempre. Qui si riproduce su uno schermo
+  // vero da telefono, in verticale e in orizzontale.
+  for (const [nome, w, h] of [['verticale', 390, 844], ['orizzontale', 844, 390]]) {
+    const tel = await browser.newPage({ viewport: { width: w, height: h }, hasTouch: true });
+    try {
+      await tel.goto(URL, { waitUntil: 'load' });
+      await tel.waitForFunction(() => window.__LUGO__ && window.__LUGO__.pronto === true, null, { timeout: 60000 });
+      const s2 = tel.locator('[data-hud="salta-intro"]');
+      if (await s2.count()) {
+        await s2.click();
+        await tel.waitForTimeout(300);
+      }
+      const g2 = tel.locator('[data-hud="gioca"]');
+      if (await g2.count()) {
+        await g2.click();
+        await tel.waitForTimeout(900);
+      }
+      // si scende e ci si mette davanti a una bottega
+      await tel.keyboard.press('KeyE');
+      await tel.waitForTimeout(600);
+      const negozi = await tel.evaluate(() => window.__LUGO__.attivita());
+      if (negozi && negozi.length) {
+        const n = negozi[0];
+        await tel.evaluate(([x, z]) => window.__LUGO__.teleport(x, z), [n.x, n.z]);
+        await tel.waitForTimeout(600);
+        await tel.keyboard.press('KeyE');
+        await tel.waitForTimeout(700);
+      }
+      const aperta = await tel.locator('[data-hud="vetrina"]').count();
+      if (aperta) {
+        // il click deve arrivare al tasto, non essere intercettato dal
+        // joystick: si usa un click vero, senza forzature
+        // Due controlli distinti, perché il difetto era di impilamento:
+        // 1) sopra il tasto non c'è nient'altro (era il joystick a coprirlo);
+        // 2) un click del mouse vero, alle coordinate del tasto, chiude.
+        // Si usa mouse.click e non locator.click perché quest'ultimo resta
+        // appeso ad aspettare una navigazione che in un gioco non arriva.
+        const sopra = await tel.evaluate(() => {
+          const b = document.querySelector('[data-hud="vetrina"] .lugo-vetrina-chiudi');
+          if (!b) return null;
+          const r = b.getBoundingClientRect();
+          const cx = r.left + r.width / 2;
+          const cy = r.top + r.height / 2;
+          const e = document.elementFromPoint(cx, cy);
+          return { libero: Boolean(e && b.contains(e)), copertoDa: e ? e.className || e.tagName : null, cx, cy };
+        });
+        if (sopra && sopra.libero) ok(`telefono ${nome}: il tasto di chiusura è cliccabile`);
+        else ko(`telefono ${nome}: il tasto di chiusura è cliccabile`, `coperto da ${sopra ? sopra.copertoDa : '?'}`);
+        if (sopra) await tel.mouse.click(sopra.cx, sopra.cy);
+        await tel.waitForTimeout(500);
+        const ancora = await tel.locator('[data-hud="vetrina"]').count();
+        if (ancora === 0) ok(`telefono ${nome}: la vetrina si chiude`);
+        else ko(`telefono ${nome}: la vetrina si chiude`, 'il pannello resta a schermo');
+      } else {
+        ok(`telefono ${nome}: nessuna vetrina da chiudere`);
+      }
+      // nessun comando deve uscire dallo schermo
+      const fuori = await tel.evaluate(() => {
+        const nomi = ['.lugo-comandi', '.lugo-status', '.lugo-tachimetro', '.lugo-minimappa-box'];
+        const male = [];
+        for (const sel of nomi) {
+          const el = document.querySelector(sel);
+          if (!el) continue;
+          const r = el.getBoundingClientRect();
+          if (r.top < -1 || r.left < -1 || r.bottom > innerHeight + 1 || r.right > innerWidth + 1) {
+            male.push(`${sel} ${Math.round(r.top)},${Math.round(r.left)},${Math.round(r.bottom)},${Math.round(r.right)}`);
+          }
+        }
+        return male;
+      });
+      if (!fuori.length) ok(`telefono ${nome}: comandi dentro lo schermo`);
+      else ko(`telefono ${nome}: comandi dentro lo schermo`, fuori.join(' | '));
+      await tel.screenshot({ path: join(SHOTS, `07-telefono-${nome}.png`) });
+    } finally {
+      await tel.close();
+    }
+  }
+
   // ── errori di pagina ──────────────────────────────────────────────────
   const gravi = errori.filter((e) => !e.includes('favicon'));
   if (gravi.length) ko('zero errori console', gravi.slice(0, 5).join(' | '));

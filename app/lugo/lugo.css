@@ -1228,3 +1228,13 @@
     transform-origin: bottom right;
   }
 }
+
+/* Mentre un pannello modale è aperto il joystick si spegne: era già sotto
+   per z-index, ma restava sensibile al dito accanto al pannello e si
+   camminava via dalla bottega mentre si stava comprando. */
+.lugo-root:has(.lugo-vetrina) .lugo-comandi,
+.lugo-root:has(.lugo-dialogo) .lugo-comandi,
+.lugo-root:has(.lugo-diario) .lugo-comandi {
+  opacity: 0.25;
+  pointer-events: none;
+}

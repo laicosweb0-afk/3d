@@ -38,12 +38,19 @@ interface Cartello {
   /** Direzione del muro (unità). */
   ex: number;
   ez: number;
-  riga: number;
+  /**
+   * Indice del negozio in `mondo.negozi`. Serve perché `trovaMuri` scarta
+   * chi non trova un muro entro 9 m e restituisce un array PIÙ CORTO:
+   * indicizzare `mondo.negozi` con la posizione nel cartello faceva
+   * scrivere sul cartello il nome di un'altra bottega, dalla 43ª in poi.
+   */
+  negozio: number;
 }
 
 function trovaMuri(mondo: MondoLugo): Cartello[] {
   const out: Cartello[] = [];
-  for (const negozio of mondo.negozi) {
+  for (let indice = 0; indice < mondo.negozi.length; indice++) {
+    const negozio = mondo.negozi[indice];
     let best: Cartello | null = null;
     let bestD = 9;
     for (const b of mondo.buildings) {
@@ -84,21 +91,24 @@ function trovaMuri(mondo: MondoLugo): Cartello[] {
           nz = -nz;
         }
         bestD = d;
-        best = { x: qx, z: qz, nx, nz, ex: dx / L, ez: dz / L, riga: 0 };
+        best = { x: qx, z: qz, nx, nz, ex: dx / L, ez: dz / L, negozio: indice };
       }
     }
-    if (best) {
-      best.riga = out.length;
-      out.push(best);
-    }
+    if (best) out.push(best);
   }
   return out;
 }
 
-export function Insegne() {
-  const mondo = useMondo();
+interface DatiInsegne {
+  cartelli: Cartello[];
+  atlas: THREE.CanvasTexture;
+  geo: THREE.BufferGeometry;
+}
 
-  const dati = useMemo(() => {
+function costruisciInsegne(mondo: MondoLugo): DatiInsegne | null {
+  const gia = cacheInsegne.get(mondo);
+  if (gia !== undefined) return gia;
+  const fatto = (() => {
     if (!mondo.negozi.length || typeof document === 'undefined') return null;
     const cartelli = trovaMuri(mondo);
     if (!cartelli.length) return null;
@@ -116,7 +126,7 @@ export function Insegne() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     cartelli.forEach((c, i) => {
-      const neg = mondo.negozi[i];
+      const neg = mondo.negozi[c.negozio];
       const nome = neg?.nome ?? '';
       const id = identita(nome, neg?.categoria ?? 'servizi');
       const col = Math.floor(i / righePerCol);
@@ -170,7 +180,23 @@ export function Insegne() {
     geo.computeVertexNormals();
 
     return { cartelli, atlas, geo };
-  }, [mondo]);
+  })();
+  cacheInsegne.set(mondo, fatto);
+  return fatto;
+}
+
+/**
+ * L'atlante delle insegne pesa 16 MB di canvas e va costruito UNA volta.
+ * Il `useMemo` non basta: questo componente si sospende con `use()` e React
+ * butta via il tentativo sospeso, `useMemo` compreso. La cache per mondo è
+ * lo stesso rimedio già usato da veicoli.ts, attivita.ts e carattere.ts.
+ */
+const cacheInsegne = new WeakMap<MondoLugo, DatiInsegne | null>();
+
+export function Insegne() {
+  const mondo = useMondo();
+
+  const dati = useMemo(() => costruisciInsegne(mondo), [mondo]);
 
   const tende = useRef<THREE.InstancedMesh>(null);
   const vetrine = useRef<THREE.InstancedMesh>(null);
@@ -189,7 +215,8 @@ export function Insegne() {
       q.setFromEuler(e);
       m.compose(new THREE.Vector3(c.x + c.nx * 0.55, 2.5, c.z + c.nz * 0.55), q, uno);
       tende.current!.setMatrixAt(i, m);
-      tende.current!.setColorAt(i, col.set(identita(mondo.negozi[i]?.nome ?? '', mondo.negozi[i]?.categoria ?? 'servizi').tenda));
+      const suo = mondo.negozi[c.negozio];
+      tende.current!.setColorAt(i, col.set(identita(suo?.nome ?? '', suo?.categoria ?? 'servizi').tenda));
       // vetrina e porta del negozio, sotto l'insegna
       e.set(0, -angolo, 0, 'YXZ');
       q.setFromEuler(e);
@@ -234,7 +261,7 @@ export function Insegne() {
       </instancedMesh>
 
       {dati.cartelli.map((c, i) => {
-        const cat = mondo.negozi[i]?.categoria;
+        const cat = mondo.negozi[c.negozio]?.categoria;
         if (cat === 'tabacchi' && targaT) {
           return (
             <mesh

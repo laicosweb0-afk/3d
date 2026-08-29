@@ -13,6 +13,8 @@ export interface StatoProgresso {
   botteghe: number;
   /** Missioni completate almeno una volta. */
   missioniFatte: readonly string[];
+  /** Consegne portate a termine (le consegne non entrano in missioniFatte). */
+  consegneFatte: number;
   /** Reputazione accumulata. */
   punteggio: number;
 }
@@ -61,7 +63,7 @@ export const DISTINTIVI: readonly Distintivo[] = [
     nome: 'Rider di Lugo',
     testo: 'Porta a termine 8 consegne',
     meta: 8,
-    progresso: (s) => s.missioniFatte.filter((m) => m.startsWith('cons')).length,
+    progresso: (s) => s.consegneFatte,
   },
   {
     id: 'reputazione',

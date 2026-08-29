@@ -59,6 +59,7 @@ export function Hud() {
   const diario = useLugo((s) => s.diario);
   const setDiario = useLugo((s) => s.setDiario);
   const missioniFatte = useLugo((s) => s.missioniFatte);
+  const consegneFatte = useLugo((s) => s.consegneFatte);
   const mondo = useMondo();
 
   // l'ora di gioco, aggiornata due volte al secondo (basta e avanza)
@@ -256,6 +257,7 @@ export function Hud() {
                 botteghe: poiVisitati.filter((id) => tipoDi.get(id) === 'attivita').length,
                 missioniFatte,
                 punteggio,
+                consegneFatte,
               };
               const p = Math.min(d.meta, d.progresso(stato));
               const fatto = distintivi.includes(d.id);
