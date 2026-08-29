@@ -94,6 +94,15 @@ export function Missioni() {
       },
       punteggio: () => useLugo.getState().punteggio,
       statoMissione: () => useLugo.getState().statoMissione,
+      // chiude tutti i pannelli: serve alle cartoline del collaudo, che
+      // altrimenti fotografano la città dietro una vetrina aperta
+      chiudiPannelli: () => {
+        const s = useLugo.getState();
+        s.setVetrina(null);
+        s.setDiario(false);
+        s.setGuardaroba(false);
+        s.setDialogo(null);
+      },
       // gli incarichi del giorno e della settimana, col progresso vero
       incarichi: () => {
         const s = useLugo.getState();

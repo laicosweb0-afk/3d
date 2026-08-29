@@ -76,14 +76,44 @@ function creaParcheggi(mondo: MondoLugo, fisica: MondoFisico): Posteggio[] {
   return out;
 }
 
+/** Distanza dal centro storico (l'origine della mappa è la Rocca). */
+function distanzaDalCentro(pts: Float32Array): number {
+  const i = (Math.floor(pts.length / 4) * 2) | 0;
+  return Math.hypot(pts[i], pts[i + 1]);
+}
+
 function creaTraffico(mondo: MondoLugo, quante: number): AutoCivile[] {
   const seme = { s: 777001 };
-  const candidate = mondo.roads
+  const strade = mondo.roads
     .filter((r) => (r.classe === 'secondaria' || r.classe === 'residenziale') && r.pts.length >= 6)
-    .map((r) => ({ r, l: lunghezzaStrada(r) }))
+    .map((r) => ({ r, l: lunghezzaStrada(r), d: distanzaDalCentro(r.pts) }));
+
+  // Le strade più lunghe di Lugo sono tutte di cintura: scegliendo solo
+  // quelle, il traffico girava in periferia e il centro restava deserto.
+  // Metà delle auto nasce quindi vicino al centro, su vie più corte.
+  const lunghe = strade
     .filter((c) => c.l > 260)
     .sort((a, b) => b.l - a.l)
-    .slice(1, 1 + quante * 2); // la più lunga resta alla gazzella
+    .slice(1); // la più lunga resta alla gazzella
+  const centrali = strade
+    .filter((c) => c.d < 430 && c.l > 90)
+    .sort((a, b) => b.l - a.l);
+
+  const inCentro = Math.ceil(quante / 2);
+  const candidate: { r: StradaRT; l: number }[] = [];
+  const prese = new Set<Float32Array>();
+  const aggiungi = (elenco: typeof strade, massimo: number) => {
+    for (const c of elenco) {
+      if (candidate.length >= massimo) break;
+      if (prese.has(c.r.pts)) continue;
+      prese.add(c.r.pts);
+      candidate.push(c);
+    }
+  };
+  aggiungi(centrali, inCentro);
+  aggiungi(lunghe, quante);
+  aggiungi(centrali, quante);
+
   const out: AutoCivile[] = [];
   for (let i = 0; i < quante && i < candidate.length; i++) {
     const c = candidate[i];
@@ -151,7 +181,7 @@ export function infraGioco(mondo: MondoLugo): InfraGioco {
   if (!infra) {
     const fisica = new MondoFisico(mondo);
     const parcheggi = creaParcheggi(mondo, fisica);
-    const traffico = creaTraffico(mondo, 6);
+    const traffico = creaTraffico(mondo, 9);
     infra = { fisica, parcheggi, traffico };
     cache.set(mondo, infra);
   }

@@ -188,6 +188,14 @@ async function carica(): Promise<MondoLugo> {
   const poi = new Map<string, PoiMap & { xm: number; zm: number }>();
   for (const p of raw.poi) poi.set(p.id, { ...p, xm: p.x * M, zm: p.z * M });
 
+  // Su OpenStreetMap un monumento può essere un NODO dentro un edificio che
+  // non ha nessun tag: il POI c'è, ma nessuna sagoma porta il suo nome, e il
+  // luogo finisce disegnato come una casa qualunque. È così che il Teatro
+  // Rossini era una palazzina come le altre. Qui il nodo adotta l'edificio
+  // che lo contiene (o il più vicino a pochi metri), una volta sola, al
+  // caricamento: da lì in poi il landmark esiste come per la Rocca.
+  adottaEdifici(buildings, poi, ['teatro']);
+
   return {
     bounds: {
       minX: raw.bounds[0] * M,
@@ -209,6 +217,61 @@ async function carica(): Promise<MondoLugo> {
     negozi: (raw.negozi ?? []).map((s) => ({ nome: s.n, categoria: s.c ?? 'negozio', x: s.x * M, z: s.z * M })),
     arredi: (raw.arredi ?? []).map((a) => ({ tipo: a.t, x: a.x * M, z: a.z * M })),
   };
+}
+
+/** true se il punto sta dentro l'anello (ray casting). */
+function dentroAnello(fp: Float32Array, x: number, z: number): boolean {
+  let dentro = false;
+  const n = fp.length / 2;
+  for (let i = 0, j = n - 1; i < n; j = i++) {
+    const xi = fp[i * 2], zi = fp[i * 2 + 1];
+    const xj = fp[j * 2], zj = fp[j * 2 + 1];
+    if (zi > z !== zj > z && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) dentro = !dentro;
+  }
+  return dentro;
+}
+
+/** Distanza dal centro del footprint: serve solo a scegliere il più vicino. */
+function distanzaDalCentro(fp: Float32Array, x: number, z: number): number {
+  let cx = 0, cz = 0;
+  const n = fp.length / 2;
+  for (let i = 0; i < n; i++) {
+    cx += fp[i * 2];
+    cz += fp[i * 2 + 1];
+  }
+  return Math.hypot(cx / n - x, cz / n - z);
+}
+
+/**
+ * Dà il landmark del POI all'edificio che lo ospita, quando nessun edificio
+ * ce l'ha già. Prima cerca chi CONTIENE il punto; se nessuno lo contiene,
+ * prende il più vicino entro trenta metri — oltre non è più casa sua.
+ */
+function adottaEdifici(
+  buildings: EdificioRT[],
+  poi: Map<string, PoiMap & { xm: number; zm: number }>,
+  ids: string[],
+): void {
+  for (const id of ids) {
+    const p = poi.get(id);
+    if (!p) continue;
+    if (buildings.some((b) => b.landmark === id)) continue;
+    let scelto: EdificioRT | null = null;
+    let distanza = 30;
+    for (const b of buildings) {
+      if (b.landmark) continue;
+      if (dentroAnello(b.fp, p.xm, p.zm)) {
+        scelto = b;
+        break;
+      }
+      const d = distanzaDalCentro(b.fp, p.xm, p.zm);
+      if (d < distanza) {
+        distanza = d;
+        scelto = b;
+      }
+    }
+    if (scelto) scelto.landmark = id;
+  }
 }
 
 let promessa: Promise<MondoLugo> | null = null;
