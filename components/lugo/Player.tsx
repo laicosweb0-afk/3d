@@ -15,6 +15,7 @@ import { stepPersona, PERSONA } from '@/lib/lugo/character';
 import type { StatoInput } from '@/lib/lugo/input';
 import { conStick } from '@/lib/lugo/stick';
 import { attivitaVicina, registroAttivita } from '@/lib/lugo/attivita';
+import { bachecaVicina, offerteBacheca } from '@/lib/lugo/bacheche';
 import { poiDaScoprire, puntiInteresse } from '@/lib/lugo/poi';
 import { DISTINTIVI, distintiviRaggiunti } from '@/lib/lugo/distintivi';
 import { FRASI_STRADA } from '@/lib/lugo/npc';
@@ -161,6 +162,8 @@ export function Player() {
   const strada = useRef(0);
   const ultimoPunto = useRef<[number, number]>([0, 0]);
   const orologioIncarichi = useRef(5);
+  // quante volte è già stata aperta una bacheca: fa cambiare le proposte
+  const giroBacheca = useRef(0);
   const scopertaTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cooldownPugno = useRef(0);
   const ambienteAcc = useRef(0);
@@ -358,10 +361,46 @@ export function Player() {
       cooldownDialogo.current -= dt;
       const dAuto = Math.hypot(rt.persona.x - rt.auto.x, rt.persona.z - rt.auto.z);
       if (input.interagisci && !interagiscePrima.current) {
-        const bottega = st.vetrina || st.dialogo ? null : attivitaVicina(mondo, rt.persona.x, rt.persona.z, 9);
-        if (dAuto < DIST_SALITA) {
+        // Con un pannello aperto la E era muta: si restava davanti alla
+        // vetrina o alla bacheca senza poterle chiudere da tastiera. Ora la
+        // stessa E che le apre le richiude.
+        const daChiudere = Boolean(st.vetrina || st.bacheca);
+        if (daChiudere) {
+          st.setVetrina(null);
+          st.setBacheca(null);
+        }
+        const occupato = daChiudere || st.dialogo;
+        const bottega = occupato ? null : attivitaVicina(mondo, rt.persona.x, rt.persona.z, 9);
+        const banco = occupato ? null : bachecaVicina(mondo, rt.persona.x, rt.persona.z);
+        // Sotto il Pavaglione ci sono sia i bar sia la bacheca: vince chi è
+        // più vicino. Con la sola precedenza fissa, davanti alla vetrina di
+        // un bar del centro si apriva l'elenco dei lavori.
+        const dBottega = bottega ? Math.hypot(bottega.x - rt.persona.x, bottega.z - rt.persona.z) : Infinity;
+        const dBanco = banco ? Math.hypot(banco.x - rt.persona.x, banco.z - rt.persona.z) : Infinity;
+        if (daChiudere) {
+          // la E ha già fatto il suo: ha chiuso il pannello
+        } else if (dAuto < DIST_SALITA) {
           st.setMode('auto');
           suonaEvento('salita');
+        } else if (banco && dBanco < dBottega) {
+          const giro = giroBacheca.current++;
+          st.setBacheca({
+            id: banco.bacheca.id,
+            nome: banco.bacheca.nome,
+            sottotitolo: banco.bacheca.sottotitolo,
+            offerte: offerteBacheca(mondo, banco.bacheca.id, st.livello, giro).map((m) => ({
+              id: m.id,
+              titolo: m.titolo,
+              descrizione: m.descrizione,
+              obiettivo: m.tappe[0].titolo,
+              categoria: m.categoria ?? m.tipo,
+              difficolta: m.difficolta ?? 'facile',
+              ...(m.tempoLimite ? { tempoLimite: m.tempoLimite } : {}),
+              rep: m.ricompensa,
+              denaro: m.denaro,
+            })),
+          });
+          suonaEvento('tappa');
         } else if (bottega) {
           st.setVetrina({
             id: bottega.id,
@@ -541,9 +580,13 @@ export function Player() {
       else if (st.mode === 'piedi') {
         const d = Math.hypot(rt.persona.x - rt.auto.x, rt.persona.z - rt.auto.z);
         if (d < DIST_SALITA) hint = 'Premi E per salire in auto';
-        else if (!st.vetrina && !st.dialogo) {
+        else if (!st.vetrina && !st.dialogo && !st.bacheca) {
           const bottega = attivitaVicina(mondo, rt.persona.x, rt.persona.z, 9);
-          if (bottega) hint = `Premi E · ${bottega.nome}`;
+          const banco = bachecaVicina(mondo, rt.persona.x, rt.persona.z);
+          const dB = bottega ? Math.hypot(bottega.x - rt.persona.x, bottega.z - rt.persona.z) : Infinity;
+          const dK = banco ? Math.hypot(banco.x - rt.persona.x, banco.z - rt.persona.z) : Infinity;
+          if (banco && dK < dB) hint = `Premi E · lavori · ${banco.bacheca.nome}`;
+          else if (bottega) hint = `Premi E · ${bottega.nome}`;
         }
         if (!hint && !st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
           for (const n of runtime.npcs) {

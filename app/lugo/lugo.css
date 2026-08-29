@@ -1114,6 +1114,108 @@
   color: var(--accento);
 }
 
+/* ── La bacheca dei lavori ──────────────────────────────────────────── */
+
+.lugo-bacheca {
+  max-width: min(30rem, 92vw);
+}
+
+.lugo-bacheca-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.lugo-offerta {
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--bordo);
+  border-radius: calc(var(--raggio) * 0.6);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.lugo-offerta-testa {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.lugo-offerta-titolo {
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.lugo-offerta-diff {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.lugo-diff-facile {
+  color: #9bd98f;
+  background: rgba(155, 217, 143, 0.14);
+}
+
+.lugo-diff-media {
+  color: var(--accento);
+  background: rgba(242, 180, 25, 0.14);
+}
+
+.lugo-diff-tosta {
+  color: #f09a86;
+  background: rgba(240, 154, 134, 0.14);
+}
+
+.lugo-offerta-testo {
+  margin: 0.25rem 0 0.2rem;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--muto);
+}
+
+.lugo-offerta-obiettivo {
+  font-size: 0.72rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.lugo-offerta-piede {
+  margin-top: 0.4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.lugo-offerta-premi {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accento);
+  font-variant-numeric: tabular-nums;
+}
+
+.lugo-offerta-btn {
+  padding: 0.3rem 0.75rem;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #241a10;
+  background: linear-gradient(180deg, #ffd08a, var(--accento));
+  cursor: pointer;
+}
+
+.lugo-offerta-btn:active {
+  transform: translateY(1px);
+}
+
 /* ── Gli incarichi del giorno e della settimana ─────────────────────── */
 
 .lugo-incarichi {

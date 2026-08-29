@@ -15,9 +15,11 @@ import {
   posTappa,
   prossimaMissione,
   registraAttivitaConMissioni,
+  storiaFinita,
   MISSIONI,
 } from '@/lib/lugo/missions';
 import { registroAttivita } from '@/lib/lugo/attivita';
+import { bachecaVicina, postiBacheca } from '@/lib/lugo/bacheche';
 import {
   chiaveGiorno,
   chiaveSettimana,
@@ -45,6 +47,12 @@ export function Missioni() {
   // quanti punti erano già scoperti quando è cominciata la tappa corrente:
   // gli obiettivi di esplorazione contano da lì in avanti
   const baseScoperte = useRef(-1);
+  // l'ultima missione che questa macchina ha visto partire: serve a
+  // riconoscere quelle accettate DA FUORI (la bacheca dei lavori), che
+  // altrimenti partirebbero senza conto alla rovescia
+  const avvioVisto = useRef(-1);
+  // l'invito alla bacheca si dice una volta, non ogni sei secondi
+  const invito = useRef(false);
   const chiaveTappa = useRef('');
 
   // Le attività vere di Lugo diventano posti dove si va a fare qualcosa: il
@@ -94,6 +102,10 @@ export function Missioni() {
       },
       punteggio: () => useLugo.getState().punteggio,
       statoMissione: () => useLugo.getState().statoMissione,
+      tempoResiduo: () => useLugo.getState().tempoResiduo,
+      // dove stanno davvero le bacheche, dopo lo spostamento sul primo
+      // punto libero: il collaudo controlla che siano raggiungibili
+      bacheche: () => postiBacheca(mondo).map((p) => ({ id: p.bacheca.id, x: p.x, z: p.z })),
       // chiude tutti i pannelli: serve alle cartoline del collaudo, che
       // altrimenti fotografano la città dietro una vetrina aperta
       chiudiPannelli: () => {
@@ -155,6 +167,13 @@ export function Missioni() {
 
     if (s.statoMissione === 'attiva' && s.missioneId) {
       const m = missioneById(s.missioneId)!;
+      // una missione accettata alla bacheca parte da fuori di qui: il conto
+      // alla rovescia va caricato adesso, o resterebbe a zero e la missione
+      // fallirebbe al primo fotogramma
+      if (avvioVisto.current !== s.avvii) {
+        avvioVisto.current = s.avvii;
+        tempo.current = m.tempoLimite ?? 0;
+      }
       const t = m.tappe[s.tappa];
       const target = posTappa(mondo, t);
       const g = posGiocatore(s.mode);
@@ -248,6 +267,21 @@ export function Missioni() {
       // catena: idle → prima missione; completata → prossima; fallita →
       // retry per la storia, consegna nuova per le consegne
       attesa.current -= dt;
+      // Finita la storia, le missioni non piovono più dal cielo: si va a
+      // prenderle. Il Pavaglione, la Rocca, la stazione e piazza Baracca
+      // hanno la loro bacheca, e il segnalino della città ti porta lì.
+      if (attesa.current <= 0 && storiaFinita(s.missioniFatte)) {
+        attesa.current = 6;
+        if (!s.bacheca && !s.intro) {
+          const g = posGiocatore(s.mode);
+          const banco = bachecaVicina(mondo, g.x, g.z, 9999);
+          if (banco && !invito.current) {
+            invito.current = true;
+            s.setAvviso(`Cerca lavoro: passa da ${banco.bacheca.nome}`);
+          }
+        }
+        return;
+      }
       if (attesa.current <= 0) {
         const fallitaStoria =
           s.statoMissione === 'fallita' && s.missioneId && missioneById(s.missioneId)?.tipo === 'storia';
@@ -255,6 +289,7 @@ export function Missioni() {
           ? missioneById(s.missioneId!)!
           : prossimaMissione(mondo, s.missioneId, s.missioniFatte, s.livello);
         s.setMissione(m.id, 'attiva', 0);
+        avvioVisto.current = useLugo.getState().avvii;
         tempo.current = m.tempoLimite ?? 0;
         s.setTempoResiduo(m.tempoLimite ?? null);
         s.setIntro({
@@ -267,13 +302,22 @@ export function Missioni() {
       }
     }
 
-    // marker del checkpoint
+    // Il segnalino: sulla tappa quando c'è una missione, altrimenti — a
+    // storia finita — sulla bacheca più vicina, così non si resta mai a
+    // girare per Lugo senza sapere dove andare.
     if (marker.current) {
       const attiva = s.statoMissione === 'attiva' && s.missioneId;
-      marker.current.visible = Boolean(attiva);
+      let target: { x: number; z: number } | null = null;
       if (attiva) {
         const m = missioneById(s.missioneId!)!;
-        const target = posTappa(mondo, m.tappe[s.tappa]);
+        target = posTappa(mondo, m.tappe[s.tappa]);
+      } else if (storiaFinita(s.missioniFatte)) {
+        const g = posGiocatore(s.mode);
+        const banco = bachecaVicina(mondo, g.x, g.z, 9999);
+        if (banco) target = { x: banco.x, z: banco.z };
+      }
+      marker.current.visible = target !== null;
+      if (target) {
         marker.current.position.set(target.x, 0, target.z);
         const pulsa = 1 + Math.sin(frame.clock.elapsedTime * 3.5) * 0.12;
         if (anello.current) anello.current.scale.setScalar(pulsa);

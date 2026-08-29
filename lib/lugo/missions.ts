@@ -487,6 +487,11 @@ export function posTappa(mondo: MondoLugo, tappa: TappaMissione): { x: number; z
  * missione di storia; poi la città vive di consegne, con ogni tanto una
  * missione di storia rigiocabile per la reputazione.
  */
+/** true quando ogni missione scritta a mano è già stata portata a casa. */
+export function storiaFinita(missioniFatte: string[]): boolean {
+  return MISSIONI.every((m) => missioniFatte.includes(m.id));
+}
+
 export function prossimaMissione(
   mondo: MondoLugo,
   idCorrente: string | null,
