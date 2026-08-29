@@ -7,6 +7,8 @@
 // ciò che l'HUD deve mostrare, a bassa frequenza.
 
 import { create } from 'zustand';
+import { AVATAR_INIZIALE, type Avatar } from './avatar';
+import { livelloDaRep } from './progressione';
 
 export type QualitaTier = 'alta' | 'media' | 'bassa';
 export type Modalita = 'auto' | 'piedi';
@@ -106,6 +108,14 @@ interface LugoState {
   diario: boolean;
   /** Indice del vestito indossato (si compra nei negozi). */
   outfit: number;
+  /** Il look del protagonista, pezzo per pezzo (lib/lugo/avatar.ts). */
+  avatar: Avatar;
+  /** Gli id dei capi acquistati: "top:giubbotto", "scarpe:alte"… */
+  capi: string[];
+  /** Livello raggiunto, ricavato dalla reputazione. */
+  livello: number;
+  /** Consegne portate a termine: alimenta distintivi e giornaliere. */
+  consegneFatte: number;
   /** Messaggio transitorio a centro schermo (esiti, tappe). */
   avviso: string | null;
   /** Suggerimento contestuale persistente ("Premi E…"). */
@@ -138,6 +148,11 @@ interface LugoState {
   setScoperta: (s: Scoperta | null) => void;
   setDiario: (aperto: boolean) => void;
   setOutfit: (i: number) => void;
+  /** Cambia un pezzo del look; il resto resta com'è. */
+  setAvatar: (patch: Partial<Avatar>) => void;
+  /** Registra un capo acquistato. */
+  compraCapo: (id: string) => void;
+  contaConsegna: () => void;
   setAvviso: (msg: string | null) => void;
   setHint: (msg: string | null) => void;
   setVia: (nome: string | null) => void;
@@ -164,6 +179,10 @@ export const useLugo = create<LugoState>((set, get) => ({
   esito: null,
   dialogo: null,
   vetrina: null,
+  avatar: { ...AVATAR_INIZIALE },
+  capi: [],
+  livello: 1,
+  consegneFatte: 0,
   poiVisitati: [],
   distintivi: [],
   scoperta: null,
@@ -182,7 +201,13 @@ export const useLugo = create<LugoState>((set, get) => ({
   setVolume: (canale, v) =>
     set((s) => ({ volumi: { ...s.volumi, [canale]: Math.max(0, Math.min(1, v)) } })),
   setKmh: (kmh) => set({ kmh }),
-  addPunti: (v) => set((s) => ({ punteggio: s.punteggio + v })),
+  addPunti: (v) =>
+    set((s) => {
+      const punteggio = s.punteggio + v;
+      // il livello NON è uno stato indipendente: è la lettura della
+      // reputazione secondo la tabella in lib/lugo/progressione.ts
+      return { punteggio, livello: livelloDaRep(punteggio).n };
+    }),
   addDenaro: (v) => set((s) => ({ denaro: Math.max(0, Math.round((s.denaro + v) * 100) / 100) })),
   setWanted: (wanted) => set({ wanted: Math.max(0, Math.min(3, wanted)) }),
   setMissione: (missioneId, statoMissione, tappa = 0) => set({ missioneId, statoMissione, tappa }),
@@ -202,6 +227,9 @@ export const useLugo = create<LugoState>((set, get) => ({
   setScoperta: (scoperta) => set({ scoperta }),
   setDiario: (diario) => set({ diario }),
   setOutfit: (outfit) => set({ outfit }),
+  setAvatar: (patch) => set((s) => ({ avatar: { ...s.avatar, ...patch } })),
+  compraCapo: (id) => set((s) => (s.capi.includes(id) ? {} : { capi: [...s.capi, id] })),
+  contaConsegna: () => set((s) => ({ consegneFatte: s.consegneFatte + 1 })),
   setAvviso: (avviso) => set({ avviso }),
   setHint: (hint) => set({ hint }),
   setVia: (via) => set({ via }),

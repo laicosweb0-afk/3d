@@ -10,6 +10,21 @@ import { TINTE_AUTO } from '@/lib/lugo/palette';
 import { CARROZZERIE } from '@/lib/lugo/carrozzerie';
 import { setAudioAttivo, setVolumi } from '@/lib/lugo/audio';
 
+/** Lo stemma LC dello scudo esagonale, in SVG: nitido a ogni dimensione. */
+export function Stemma({ classe = 'lugo-stemma' }: { classe?: string }) {
+  const punti = Array.from({ length: 6 }, (_, i) => {
+    const a = (Math.PI / 3) * i - Math.PI / 2;
+    return `${(50 + Math.cos(a) * 46).toFixed(1)},${(50 + Math.sin(a) * 48).toFixed(1)}`;
+  }).join(' ');
+  return (
+    <svg className={classe} viewBox="0 0 100 100" aria-hidden="true">
+      <polygon className="lugo-stemma-scudo" points={punti} />
+      <path className="lugo-stemma-segno" d="M32 28 L32 68 L56 68" strokeLinecap="butt" />
+      <path className="lugo-stemma-segno" d="M74 34 A22 22 0 1 0 74 64" strokeLinecap="butt" />
+    </svg>
+  );
+}
+
 const COMANDI: [string, string][] = [
   ['W A S D / Frecce', 'guida e cammina'],
   ['E / Invio', 'scendi, sali, parla'],
@@ -46,8 +61,13 @@ export function StartScreen() {
       <div className="lugo-start-scrim" />
       <div className="lugo-start-inner">
         <header className="lugo-start-testata">
-          <h1 className="lugo-start-titolo">LUGO</h1>
-          <p className="lugo-start-sotto">UN OPEN WORLD ROMAGNOLO</p>
+          <div className="lugo-marchio">
+            <h1 className="lugo-marchio-riga lugo-marchio-lugo">LUGO</h1>
+            <div className="lugo-marchio-riga lugo-marchio-city">CITY</div>
+            <p className="lugo-marchio-claim">
+              La tua città. <b>Il tuo gioco.</b>
+            </p>
+          </div>
         </header>
 
         <div className="lugo-start-blocco">

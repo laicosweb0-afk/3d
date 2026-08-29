@@ -118,49 +118,54 @@ function Sole({
   );
 }
 
-/** Nuvole bianche low-poly sparse, ferme nel cielo come nelle viste aeree. */
+/**
+ * Le nuvole di LUGO CITY: cubi bianchi, come nella key art e nel video di
+ * apertura. Ogni nuvola è un grappolo di mattoni allineati alla griglia,
+ * non una bolla sfumata: è quello che dà al cielo l'aria del gioco.
+ */
 function Nuvole() {
   const mesh = useRef<THREE.InstancedMesh>(null);
   const pose = useMemo(() => {
     // LCG deterministico: stesso cielo a ogni avvio
-    let s = 20250827;
+    let s = 20260828;
     const rnd = () => {
       s = (s * 1664525 + 1013904223) >>> 0;
       return s / 4294967296;
     };
-    const out: { x: number; y: number; z: number; sx: number; sy: number; sz: number; rot: number }[] = [];
-    for (let c = 0; c < 14; c++) {
+    const out: { x: number; y: number; z: number; l: number }[] = [];
+    // grappoli a gradoni: un corpo largo, una seconda fila più corta sopra
+    for (let c = 0; c < 22; c++) {
       const a = rnd() * Math.PI * 2;
-      const d = 350 + rnd() * 900;
+      const d = 260 + rnd() * 820;
       const cx = Math.cos(a) * d;
       const cz = Math.sin(a) * d;
-      const cy = 330 + rnd() * 130;
-      const puffi = 3 + Math.floor(rnd() * 3);
-      for (let k = 0; k < puffi; k++) {
-        out.push({
-          x: cx + (rnd() - 0.5) * 110,
-          y: cy + (rnd() - 0.5) * 16,
-          z: cz + (rnd() - 0.5) * 70,
-          sx: 34 + rnd() * 46,
-          sy: 10 + rnd() * 9,
-          sz: 22 + rnd() * 26,
-          rot: rnd() * Math.PI,
-        });
+      const cy = 300 + rnd() * 150;
+      const lato = 26 + rnd() * 18;
+      const larg = 3 + Math.floor(rnd() * 4);
+      const prof = 2 + Math.floor(rnd() * 3);
+      for (let i = 0; i < larg; i++) {
+        for (let k = 0; k < prof; k++) {
+          if (rnd() < 0.22) continue; // il bordo frastagliato dei mattoncini
+          out.push({ x: cx + i * lato, y: cy, z: cz + k * lato, l: lato });
+        }
+      }
+      // il secondo piano, rientrato: dà lo scalino tipico della nuvola voxel
+      const larg2 = Math.max(1, larg - 1);
+      for (let i = 0; i < larg2; i++) {
+        if (rnd() < 0.34) continue;
+        const k = Math.floor(rnd() * Math.max(1, prof - 1));
+        out.push({ x: cx + (i + 0.5) * lato, y: cy + lato * 0.86, z: cz + (k + 0.5) * lato, l: lato * 0.9 });
       }
     }
-    // i cirri: veli sottili e allungati come pennellate, anche sopra il
-    // centro, così riempiono il cielo pure in vista bassa
-    for (let c = 0; c < 16; c++) {
+    // i cubetti sparsi in quota, come nella key art
+    for (let c = 0; c < 30; c++) {
       const a = rnd() * Math.PI * 2;
-      const d = 100 + rnd() * 700;
+      const d = 120 + rnd() * 900;
       out.push({
         x: Math.cos(a) * d,
-        y: 340 + rnd() * 160,
+        y: 240 + rnd() * 240,
         z: Math.sin(a) * d,
-        sx: 220 + rnd() * 260,
-        sy: 5 + rnd() * 3,
-        sz: 30 + rnd() * 34,
-        rot: rnd() * Math.PI,
+        l: 8 + rnd() * 14,
       });
     }
     return out;
@@ -171,10 +176,9 @@ function Nuvole() {
     if (!im) return;
     const m = new THREE.Matrix4();
     const q = new THREE.Quaternion();
-    const su = new THREE.Vector3(0, 1, 0);
+    const v = new THREE.Vector3();
     pose.forEach((p, i) => {
-      q.setFromAxisAngle(su, p.rot);
-      m.compose(new THREE.Vector3(p.x, p.y, p.z), q, new THREE.Vector3(p.sx, p.sy, p.sz));
+      m.compose(v.set(p.x, p.y, p.z), q, new THREE.Vector3(p.l, p.l * 0.72, p.l));
       im.setMatrixAt(i, m);
     });
     im.count = pose.length;
@@ -183,11 +187,12 @@ function Nuvole() {
 
   return (
     <instancedMesh ref={mesh} args={[undefined, undefined, Math.max(1, pose.length)]} frustumCulled={false}>
-      <icosahedronGeometry args={[1, 1]} />
-      <meshBasicMaterial color="#F8FBFE" fog={false} transparent opacity={0.72} depthWrite={false} />
+      <boxGeometry args={[1, 1, 1]} />
+      <meshLambertMaterial color="#FBFDFF" emissive="#DCE8F4" emissiveIntensity={0.35} fog={false} />
     </instancedMesh>
   );
 }
+
 
 /**
  * Il regista del cielo: fa scorrere l'orologio e aggiorna in un colpo solo

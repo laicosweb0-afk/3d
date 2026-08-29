@@ -7,6 +7,9 @@
 // senza salvare, mai un crash.
 
 import { useLugo } from './store';
+import { TINTE_AUTO } from './palette';
+import { CARROZZERIE } from './carrozzerie';
+import { DISTINTIVI } from './distintivi';
 
 const CHIAVE = 'lugo-salvataggio-v1';
 
@@ -23,29 +26,62 @@ export interface Salvataggio {
   volumi: { effetti: number; voce: number; ambiente: number; musica: number };
 }
 
+// Gli id dei distintivi cambiano fra una versione e l'altra: tenerne uno
+// che non esiste più non è innocuo, perché chi ripara la lista a runtime
+// confronta solo le LUNGHEZZE. Con lo stesso numero di id spuri e di badge
+// davvero raggiunti la differenza non si vede e il diario resta sbagliato
+// per sempre: meglio buttare qui ciò che non riconosciamo, così il
+// conteggio non torna e la riparazione scatta.
+const ID_DISTINTIVI = new Set(DISTINTIVI.map((d) => d.id));
+
+// Tinta, carrozzeria e outfit sono INDICI, e finiscono dritti in
+// TINTE_AUTO[i % len] dentro il corpo dei componenti. In JavaScript il
+// resto tiene il segno del dividendo: (-1) % 3 fa -1, non 2, e NaN % 3 fa
+// NaN. Un indice fuori scala non "gira" quindi ma indicizza undefined, e
+// l'accesso al colore lancia a ogni render. Qui l'indice viene riportato
+// davvero dentro la lista una volta per tutte; se è inservibile si
+// restituisce undefined e resta il default dello store.
+function indiceValido(v: unknown, quanti: number): number | undefined {
+  if (typeof v !== 'number' || !isFinite(v)) return undefined;
+  const i = Math.trunc(v) % quanti;
+  return i < 0 ? i + quanti : i;
+}
+
+// I volumi salvati non passano da setVolume (che clampa): lo store viene
+// scritto di forza e da lì finiscono nel mixer. Il clamp va rifatto qui,
+// e un canale mancante o illeggibile torna al default del gioco invece di
+// azzerarsi in silenzio lasciando il gioco muto.
+function volumeValido(v: unknown, predefinito: number): number {
+  if (typeof v !== 'number' || !isFinite(v)) return predefinito;
+  return Math.max(0, Math.min(1, v));
+}
+
 export function caricaSalvataggio(): Partial<Salvataggio> | null {
   try {
     const grezzo = window.localStorage.getItem(CHIAVE);
     if (!grezzo) return null;
     const dati = JSON.parse(grezzo) as Partial<Salvataggio>;
     if (typeof dati !== 'object' || dati === null) return null;
+    const predefiniti = useLugo.getInitialState().volumi;
     return {
       denaro: typeof dati.denaro === 'number' && isFinite(dati.denaro) ? Math.max(0, dati.denaro) : undefined,
       punteggio: typeof dati.punteggio === 'number' && isFinite(dati.punteggio) ? Math.max(0, dati.punteggio) : undefined,
       missioniFatte: Array.isArray(dati.missioniFatte) ? dati.missioniFatte.filter((x) => typeof x === 'string').slice(0, 200) : undefined,
-      tintaAuto: typeof dati.tintaAuto === 'number' ? dati.tintaAuto : undefined,
-      modelloAuto: typeof dati.modelloAuto === 'number' ? dati.modelloAuto : undefined,
+      tintaAuto: indiceValido(dati.tintaAuto, TINTE_AUTO.length),
+      modelloAuto: indiceValido(dati.modelloAuto, CARROZZERIE.length),
       audioOn: typeof dati.audioOn === 'boolean' ? dati.audioOn : undefined,
-      outfit: typeof dati.outfit === 'number' ? dati.outfit : undefined,
+      outfit: typeof dati.outfit === 'number' && isFinite(dati.outfit) ? Math.max(0, Math.trunc(dati.outfit)) : undefined,
       poiVisitati: Array.isArray(dati.poiVisitati) ? dati.poiVisitati.filter((x) => typeof x === 'string').slice(0, 400) : undefined,
-      distintivi: Array.isArray(dati.distintivi) ? dati.distintivi.filter((x) => typeof x === 'string').slice(0, 60) : undefined,
+      distintivi: Array.isArray(dati.distintivi)
+        ? dati.distintivi.filter((x) => typeof x === 'string' && ID_DISTINTIVI.has(x)).slice(0, 60)
+        : undefined,
       volumi:
         dati.volumi && typeof dati.volumi === 'object'
           ? {
-              effetti: Number(dati.volumi.effetti) || 0,
-              voce: Number(dati.volumi.voce) || 0,
-              ambiente: Number(dati.volumi.ambiente) || 0,
-              musica: Number(dati.volumi.musica) || 0,
+              effetti: volumeValido(dati.volumi.effetti, predefiniti.effetti),
+              voce: volumeValido(dati.volumi.voce, predefiniti.voce),
+              ambiente: volumeValido(dati.volumi.ambiente, predefiniti.ambiente),
+              musica: volumeValido(dati.volumi.musica, predefiniti.musica),
             }
           : undefined,
     };

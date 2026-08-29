@@ -24,6 +24,7 @@ import { cieloOra, tempo } from '@/lib/lugo/tempo';
 import { useLugo } from '@/lib/lugo/store';
 import { Car } from './Car';
 import { Character } from './Character';
+import { QUOTA_CALPESTIO } from '@/lib/lugo/citygen';
 
 export type { RuntimeGioco };
 
@@ -530,12 +531,12 @@ export function Player() {
 
     // modelli
     if (gruppoAuto.current) {
-      gruppoAuto.current.position.set(rt.auto.x, 0, rt.auto.z);
+      gruppoAuto.current.position.set(rt.auto.x, QUOTA_CALPESTIO, rt.auto.z);
       gruppoAuto.current.rotation.y = -rt.auto.yaw;
     }
     if (gruppoPersona.current) {
       gruppoPersona.current.visible = st.mode === 'piedi';
-      gruppoPersona.current.position.set(rt.persona.x, 0, rt.persona.z);
+      gruppoPersona.current.position.set(rt.persona.x, QUOTA_CALPESTIO, rt.persona.z);
       gruppoPersona.current.rotation.y = -rt.persona.yaw;
     }
 
