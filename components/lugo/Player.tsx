@@ -33,10 +33,14 @@ const RAGGIO_RUOTA = 0.3;
 const DIST_SALITA = 2.6;
 
 function ChaseCamera({ rt }: { rt: RuntimeGioco }) {
+  const mondo = useMondo();
+  const fisica = useMemo(() => infraGioco(mondo).fisica, [mondo]);
   const desiderata = useMemo(() => new THREE.Vector3(), []);
   const mira = useMemo(() => new THREE.Vector3(), []);
   const avviata = useRef(false);
   const scossa = useRef(0);
+  // quanto è arretrata la camera adesso: nei vicoli si accorcia da sola
+  const distanzaViva = useRef(0);
 
   useFrame(({ camera, clock }, dtRaw) => {
     const dt = Math.min(dtRaw, 0.05);
@@ -86,7 +90,31 @@ function ChaseCamera({ rt }: { rt: RuntimeGioco }) {
 
     const dist = mode === 'auto' ? 8.5 : 4.2;
     const alt = mode === 'auto' ? 3.4 : 2.1;
-    desiderata.set(t.x - dirX * dist, alt, t.z - dirZ * dist);
+
+    // La camera non attraversa i muri. Nelle vie strette di Lugo, e appena
+    // ci si accosta a una facciata, il punto dietro le spalle finiva DENTRO
+    // un edificio e si vedeva l'interno delle case. Qui si prova ad
+    // arretrare quanto si vorrebbe e, se là dietro c'è un muro, ci si
+    // avvicina finché non si trova aria.
+    let libera = dist;
+    for (const f of [1, 0.82, 0.66, 0.5, 0.36, 0.24]) {
+      const px = t.x - dirX * dist * f;
+      const pz = t.z - dirZ * dist * f;
+      if (fisica.cerchioLibero(px, pz, 0.45)) {
+        libera = dist * f;
+        break;
+      }
+      libera = dist * f;
+    }
+    // rientra subito (o si vede il muro), torna indietro con calma
+    if (!avviata.current) distanzaViva.current = libera;
+    else if (libera < distanzaViva.current) distanzaViva.current = libera;
+    else distanzaViva.current += (libera - distanzaViva.current) * (1 - Math.exp(-2.2 * dt));
+
+    const d = distanzaViva.current;
+    // avvicinandosi si abbassa anche lo sguardo, o si finisce sui tetti
+    const altViva = alt * (0.55 + 0.45 * (d / dist));
+    desiderata.set(t.x - dirX * d, altViva, t.z - dirZ * d);
 
     if (!avviata.current) {
       camera.position.copy(desiderata);
