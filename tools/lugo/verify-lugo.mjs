@@ -93,13 +93,16 @@ try {
 
   // ── fase 2: guida ─────────────────────────────────────────────────────
   if ((await lugo('typeof L.pos')) === 'function') {
+    // L'auto parte da ferma e la scena, in headless, gira molto più piano
+    // del tempo reale: la finestra è larga apposta, così il collaudo misura
+    // se l'auto si muove e non quanto è veloce il computer che la simula.
     const p0 = await lugo('L.pos()');
     await page.keyboard.down('ArrowUp');
-    await page.waitForTimeout(4200);
+    await page.waitForTimeout(7000);
     await page.keyboard.up('ArrowUp');
     const p1 = await lugo('L.pos()');
     const d = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
-    if (d > 2) ok('auto si muove', `${d.toFixed(1)} m in 4.2 s`);
+    if (d > 2) ok('auto si muove', `${d.toFixed(1)} m in 7 s`);
     else ko('auto si muove', `spostamento ${d.toFixed(2)} m`);
     await page.screenshot({ path: join(SHOTS, '02-guida.png') });
 
@@ -417,7 +420,10 @@ try {
           const soldiDopo = await lugo('L.denaro()');
           if (soldiDopo !== soldiPrima) ok('acquisto in bottega', `${soldiPrima} → ${soldiDopo}`);
         }
-        await page.locator('[data-hud="vetrina"] .lugo-vetrina-chiudi').click();
+        await page
+          .locator('[data-hud="vetrina"] .lugo-vetrina-chiudi')
+          .click({ noWaitAfter: true })
+          .catch(() => {});
         await page.waitForTimeout(300);
       } else {
         ko('vetrina attività', 'la vetrina non si è aperta');
@@ -437,14 +443,24 @@ try {
         } else {
           ko('esplorazione a piedi', 'nessun punto di interesse registrato');
         }
-        // il diario si apre e mostra il conteggio
+        // Il diario si apre e mostra il conteggio. La scoperta però continua
+        // mentre il pannello si apre: si legge lo stato PRIMA e DOPO il
+        // numero a schermo, e il diario è giusto se sta fra i due — un punto
+        // scoperto nel frattempo non è un errore del diario.
         await page.click('[data-hud="diario-apri"]');
         await page.waitForTimeout(500);
+        const primaDelDiario = (await lugo('L.esplorazione()')).visitati;
         const conta = Number(await page.textContent('[data-hud="diario-poi"]'));
-        if (conta === dopo.visitati) ok('diario dell\'esplorazione', `${conta} luoghi`);
-        else ko('diario dell\'esplorazione', `il diario dice ${conta}, lo stato ${dopo.visitati}`);
+        const dopoIlDiario = (await lugo('L.esplorazione()')).visitati;
+        const min = Math.min(primaDelDiario, dopoIlDiario);
+        const max = Math.max(primaDelDiario, dopoIlDiario);
+        if (conta >= min && conta <= max) ok('diario dell\'esplorazione', `${conta} luoghi`);
+        else ko('diario dell\'esplorazione', `il diario dice ${conta}, lo stato ${min}–${max}`);
         await page.screenshot({ path: join(SHOTS, '06-diario.png') });
-        await page.locator('[data-hud="diario"] .lugo-vetrina-chiudi').click();
+        await page
+          .locator('[data-hud="diario"] .lugo-vetrina-chiudi')
+          .click({ noWaitAfter: true })
+          .catch(() => {});
         await page.waitForTimeout(300);
         // regola non negoziabile: nessuna attività risulta partner, e nessuna
         // promozione o logo compare senza autorizzazione dell'esercente
@@ -452,12 +468,22 @@ try {
         const dichiarazioni = await page.evaluate(
           () => document.querySelectorAll('.lugo-vetrina-promo, .lugo-vetrina-partner').length,
         );
-        if (aut.partner === 0 && aut.promo === 0 && aut.logo === 0 && dichiarazioni === 0) {
-          ok('nessuna partnership dichiarata', '0 partner, 0 promo, 0 loghi');
+        const targhette = await page.evaluate(
+          () => document.querySelectorAll('.lugo-vetrina-partner').length,
+        );
+        if (
+          aut.partner === 0 &&
+          aut.promo === 0 &&
+          aut.logo === 0 &&
+          (aut.livelli ?? 0) === 0 &&
+          dichiarazioni === 0 &&
+          targhette === 0
+        ) {
+          ok('nessuna partnership dichiarata', '0 partner, 0 promo, 0 loghi, 0 livelli');
         } else {
           ko(
             'nessuna partnership dichiarata',
-            `partner ${aut.partner}, promo ${aut.promo}, loghi ${aut.logo}`,
+            `partner ${aut.partner}, promo ${aut.promo}, loghi ${aut.logo}, livelli ${aut.livelli ?? 0}`,
           );
         }
       }
@@ -499,6 +525,49 @@ try {
     const hud = await page.locator('[data-hud="missione"]').count();
     if (hud) ok('HUD missione presente');
     await page.screenshot({ path: join(SHOTS, '04-missione.png') });
+  }
+
+  // ── fase 4b: le missioni che nascono dalle attività vere ──────────────
+  // Un'attività di Lugo non deve essere solo un cartello: deve poter essere
+  // il posto dove una missione ti manda. Qui si controlla che il registro
+  // arrivi alle missioni, che la missione si generi e che si possa chiudere.
+  if ((await lugo('typeof L.missioneAttivita')) === 'function') {
+    const quante = await lugo('L.attivitaConMissioni()');
+    if (quante > 0) ok('attività che ospitano missioni', String(quante));
+    else ko('attività che ospitano missioni', 'il registro non è mai arrivato alle missioni');
+
+    const esito = await page.evaluate(async () => {
+      const L = window.__LUGO__;
+      const scheda = L.missioneAttivita(0);
+      if (!scheda) return { scheda: null };
+      const prima = { rep: L.punteggio(), euro: L.denaro() };
+      L.avviaMissione(scheda.id);
+      const t = L.tappaCorrente();
+      if (!t) return { scheda, tappa: null };
+      L.teleport(t.x, t.z);
+      await new Promise((r) => setTimeout(r, 1600));
+      return {
+        scheda,
+        tappa: t,
+        prima,
+        dopo: { rep: L.punteggio(), euro: L.denaro() },
+        stato: L.statoMissione(),
+      };
+    });
+    if (!esito.scheda) {
+      ko('missione di attività', 'nessuna attività registrata');
+    } else if (!esito.scheda.attivitaId) {
+      ko('missione di attività', 'la missione non è legata a nessuna attività');
+    } else if (esito.dopo && esito.dopo.rep > esito.prima.rep && esito.dopo.euro > esito.prima.euro) {
+      ok(
+        'missione di attività',
+        `${esito.scheda.titolo} · +${esito.dopo.rep - esito.prima.rep} REP · +€${
+          esito.dopo.euro - esito.prima.euro
+        }`,
+      );
+    } else {
+      ko('missione di attività', JSON.stringify(esito));
+    }
   }
 
   // ── fase 5: NPC ───────────────────────────────────────────────────────

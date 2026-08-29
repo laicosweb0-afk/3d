@@ -188,6 +188,9 @@ export function Player() {
           partner: tutte.filter((a) => a.partner).length,
           promo: tutte.filter((a) => a.promo).length,
           logo: tutte.filter((a) => a.logo).length,
+          // nessun livello di presenza può salire sopra NESSUNO senza
+          // l'autorizzazione dell'esercente
+          livelli: tutte.filter((a) => a.livelloPartner !== 'NESSUNO').length,
         };
       },
       mode: () => useLugo.getState().mode,
@@ -362,6 +365,7 @@ export function Player() {
             categoria: bottega.categoria,
             descrizione: bottega.descrizione,
             partner: bottega.partner,
+            livello: bottega.livelloPartner,
             promo: bottega.promo,
             articoli: bottega.articoli,
           });

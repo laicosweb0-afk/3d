@@ -355,6 +355,12 @@ export function Hud() {
             </button>
           </div>
           <div className="lugo-vetrina-desc">{vetrina.descrizione}</div>
+          {/* La dicitura di partner compare SOLO se l'esercente l'ha
+              autorizzata nel file dei dati: senza autorizzazione il livello
+              resta 'NESSUNO' e qui non si scrive niente. */}
+          {vetrina.partner && vetrina.livello !== 'NESSUNO' && (
+            <div className="lugo-vetrina-partner">ATTIVITÀ PARTNER</div>
+          )}
           {vetrina.partner && vetrina.promo && (
             <div className="lugo-vetrina-promo">{vetrina.promo}</div>
           )}

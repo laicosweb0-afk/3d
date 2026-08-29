@@ -21,8 +21,20 @@ import type { MondoLugo } from './loadMap';
  * il motore. Finché il file è vuoto — e di serie lo è — il gioco mostra
  * solo nome e categoria, e nessuna attività risulta partner.
  */
+/**
+ * Il livello di presenza di un'attività dentro Lugo City. NESSUNO è il
+ * default e non richiede nulla: l'attività esiste con nome e categoria,
+ * come già pubblici su OpenStreetMap. Gli altri livelli descrivono cosa
+ * l'esercente ha AUTORIZZATO, e si attivano solo dal file dei dati.
+ */
+export type LivelloPartner = 'NESSUNO' | 'BASE' | 'BOTTEGA' | 'PREMIUM';
+
+const LIVELLI_PARTNER: readonly LivelloPartner[] = ['NESSUNO', 'BASE', 'BOTTEGA', 'PREMIUM'];
+
 export interface SchedaAttivita {
   descrizione?: string;
+  /** Livello autorizzato: NESSUNO se assente. */
+  livello?: LivelloPartner;
   insegna?: { fondo?: string; testo?: string; tenda?: string };
   partner?: boolean;
   promo?: string | null;
@@ -79,6 +91,15 @@ export interface Attivita {
   articoli: ArticoloAttivita[];
   /** true solo per attività che hanno dato autorizzazione scritta. */
   partner: boolean;
+  /**
+   * Quanto l'attività è presente nel gioco. Sale SOLO con l'autorizzazione
+   * dell'esercente, scritta in public/lugo/attivita.json:
+   *  - NESSUNO: nome e categoria, niente altro (è il default di tutte);
+   *  - BASE: più la riga di presentazione e i colori dell'insegna;
+   *  - BOTTEGA: più una missione dedicata e la sua ricompensa;
+   *  - PREMIUM: più eventi e contenuti su misura.
+   */
+  livelloPartner: LivelloPartner;
   /** Promo autorizzata dall'esercente; null finché non c'è accordo. */
   promo: string | null;
   /** Logo autorizzato; null finché non c'è accordo. */
@@ -185,6 +206,12 @@ export function registroAttivita(mondo: MondoLugo): Attivita[] {
     // OSM, ma se capitasse non devono condividere l'identità
     for (let k = 2; idUsati.has(id); k++) id = idStabile(nome + '#' + k, n.x, n.z);
     idUsati.add(id);
+    // il livello vale solo con l'autorizzazione: senza `partner: true` resta
+    // NESSUNO qualunque cosa dica il file dei dati
+    const livello: LivelloPartner =
+      sch?.partner === true && sch.livello && LIVELLI_PARTNER.includes(sch.livello)
+        ? sch.livello
+        : 'NESSUNO';
     return {
       id,
       nome,
@@ -194,12 +221,20 @@ export function registroAttivita(mondo: MondoLugo): Attivita[] {
       descrizione: sch?.descrizione || listino.desc,
       articoli: listino.articoli,
       partner: sch?.partner === true,
+      livelloPartner: livello,
       promo: sch?.partner === true ? (sch.promo ?? null) : null,
       logo: sch?.partner === true ? (sch.logo ?? null) : null,
       sito: sch?.sito ?? null,
       insegna: sch?.insegna,
-      missioni: categoria === 'bar' || categoria === 'cibo',
-      eventi: false,
+      // bar e locali ospitano missioni perché è la loro natura; le altre
+      // categorie solo se l'esercente ha autorizzato quel livello
+      missioni:
+        categoria === 'bar' ||
+        categoria === 'cibo' ||
+        livello === 'BOTTEGA' ||
+        livello === 'PREMIUM',
+      // gli eventi su misura sono l'ultimo gradino, e sono sempre concordati
+      eventi: livello === 'PREMIUM',
     };
   });
   cache.set(mondo, out);

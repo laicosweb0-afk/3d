@@ -4,8 +4,13 @@
   "schema": {
     "chiave": "il nome esatto dell'attivita' come compare su OpenStreetMap",
     "descrizione": "una riga di presentazione, scritta o approvata dall'esercente",
-    "insegna": { "fondo": "#RRGGBB", "testo": "#RRGGBB", "tenda": "#RRGGBB" },
+    "insegna": {
+      "fondo": "#RRGGBB",
+      "testo": "#RRGGBB",
+      "tenda": "#RRGGBB"
+    },
     "partner": "true solo con autorizzazione scritta",
+    "livello": "NESSUNO | BASE | BOTTEGA | PREMIUM. Vale solo con partner true; senza autorizzazione il gioco lo tiene a NESSUNO. NESSUNO: nome e categoria da OpenStreetMap, niente altro. BASE: piu' la riga di presentazione e i colori dell'insegna. BOTTEGA: piu' una missione dedicata all'attivita'. PREMIUM: piu' eventi e contenuti concordati.",
     "promo": "testo della promozione autorizzata, altrimenti null",
     "logo": "percorso di un'immagine autorizzata sotto /lugo/insegne/, altrimenti null",
     "banner": "percorso di un banner autorizzato, altrimenti null",
@@ -14,8 +19,13 @@
   "esempio": {
     "Nome Attivita Di Esempio": {
       "descrizione": "Una riga di presentazione.",
-      "insegna": { "fondo": "#2A3550", "testo": "#F2E9D8", "tenda": "#8A3A30" },
+      "insegna": {
+        "fondo": "#2A3550",
+        "testo": "#F2E9D8",
+        "tenda": "#8A3A30"
+      },
       "partner": false,
+      "livello": "NESSUNO",
       "promo": null,
       "logo": null,
       "banner": null,
