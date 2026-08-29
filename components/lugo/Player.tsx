@@ -12,7 +12,7 @@ import { useMondo } from '@/lib/lugo/loadMap';
 import { infraGioco } from '@/lib/lugo/veicoli';
 import { stepAuto, puntoStradaVicino, viaVicina } from '@/lib/lugo/car';
 import { stepPersona, PERSONA } from '@/lib/lugo/character';
-import type { StatoInput } from '@/lib/lugo/input';
+import { fuocoSuComando, type StatoInput } from '@/lib/lugo/input';
 import { conStick } from '@/lib/lugo/stick';
 import { attivitaVicina, registroAttivita } from '@/lib/lugo/attivita';
 import { bachecaVicina, offerteBacheca } from '@/lib/lugo/bacheche';
@@ -388,7 +388,10 @@ export function Player() {
       // salita: vicino all'auto. Altrimenti, E parla col maranza vicino.
       cooldownDialogo.current -= dt;
       const dAuto = Math.hypot(rt.persona.x - rt.auto.x, rt.persona.z - rt.auto.z);
-      if (input.interagisci && !interagiscePrima.current) {
+      // Invio è insieme «interagisci» nel gioco e «premi il bottone» nel
+      // browser: con il fuoco su un tasto dello schermo faceva tutte e due
+      // le cose, e si scendeva dall'auto accettando un lavoro.
+      if (input.interagisci && !interagiscePrima.current && !fuocoSuComando()) {
         // Con un pannello aperto la E era muta: si restava davanti alla
         // vetrina o alla bacheca senza poterle chiudere da tastiera. Ora la
         // stessa E che le apre le richiude.

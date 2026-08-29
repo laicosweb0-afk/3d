@@ -16,6 +16,22 @@ export const CONTROLLI: { name: string; keys: string[] }[] = [
   { name: 'colpisci', keys: ['KeyF'] },
 ];
 
+/**
+ * true se l'evento (o il fuoco) è su un comando dello schermo: un bottone,
+ * un link, un campo. Lì la tastiera appartiene alla pagina, non al gioco —
+ * Spazio preme il bottone, Invio pure, e il gioco sta a guardare.
+ */
+export function suUnComando(bersaglio: EventTarget | null): boolean {
+  const el = bersaglio as HTMLElement | null;
+  if (!el || typeof el.closest !== 'function') return false;
+  return Boolean(el.closest('button, a[href], input, select, textarea, [contenteditable="true"]'));
+}
+
+/** true se il fuoco della tastiera è su un comando dello schermo. */
+export function fuocoSuComando(): boolean {
+  return typeof document !== 'undefined' && suUnComando(document.activeElement);
+}
+
 export interface StatoInput {
   /**
    * Assi analogici normalizzati, l'UNICA sorgente di verità per il

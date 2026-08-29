@@ -754,6 +754,37 @@ try {
     ko('bacheca dei lavori', 'nessuna bacheca si è aperta');
   }
 
+  // ── fase 4d: la tastiera sui comandi dello schermo ────────────────────
+  // Lo Spazio è il freno a mano nel gioco, ma su un bottone col fuoco deve
+  // premere il bottone; l'Invio è «interagisci», ma su un bottone col fuoco
+  // deve fare solo quello che fa il bottone.
+  await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+  await page.waitForTimeout(200);
+  if (await page.locator('[data-hud="diario-apri"]').count()) {
+    await page.focus('[data-hud="diario-apri"]');
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(400);
+    if (await page.locator('[data-hud="diario"]').count()) {
+      ok('lo Spazio preme il bottone col fuoco');
+    } else {
+      ko('lo Spazio preme il bottone col fuoco', 'il diario non si è aperto');
+    }
+
+    const modePrima = await lugo('L.mode()');
+    await page.focus('[data-hud="diario-apri"]');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(400);
+    const modeDopo = await lugo('L.mode()');
+    if (modeDopo === modePrima) {
+      ok("l'Invio su un bottone non comanda il gioco");
+    } else {
+      ko("l'Invio su un bottone non comanda il gioco", `da ${modePrima} a ${modeDopo}`);
+    }
+    await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+    await page.evaluate(() => document.activeElement instanceof HTMLElement && document.activeElement.blur());
+    await page.waitForTimeout(200);
+  }
+
   // ── fase 5: NPC ───────────────────────────────────────────────────────
   const npc = await lugo('typeof L.npcCount === "function" ? L.npcCount() : undefined');
   if (npc !== undefined) {

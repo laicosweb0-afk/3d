@@ -11,7 +11,7 @@ import { Hud } from './Hud';
 import { Joystick } from './Joystick';
 import { StartScreen } from './StartScreen';
 import { Intro, introGiaVista } from './Intro';
-import { CONTROLLI } from '@/lib/lugo/input';
+import { CONTROLLI, suUnComando } from '@/lib/lugo/input';
 import { useLugo } from '@/lib/lugo/store';
 import { avviaSalvataggio } from '@/lib/lugo/salvataggio';
 import { setVolumi } from '@/lib/lugo/audio';
@@ -30,14 +30,31 @@ export function LugoApp() {
     avviaSalvataggio();
     // i volumi salvati entrano subito nel mixer
     setVolumi(useLugo.getState().volumi);
-    // le frecce non devono scrollare la pagina
+    // Le frecce non devono scrollare la pagina. Ma se il fuoco è su un
+    // tasto dello schermo, lo Spazio deve premerlo: bloccandolo sempre,
+    // chi gioca da tastiera non poteva attivare GIOCA, ACCETTA o RISCUOTI
+    // con la barra spaziatrice — il modo in cui si preme un bottone da
+    // che esistono i browser.
     const blocca = (e: KeyboardEvent) => {
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
-        e.preventDefault();
-      }
+      if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) return;
+      if (suUnComando(e.target)) return;
+      e.preventDefault();
+    };
+    // Dopo un click col dito o col mouse il bottone resta col fuoco, e la
+    // barra spaziatrice — che nel gioco è il freno a mano — lo ripremeva.
+    // Un click da tastiera arriva con detail 0: quello lascia il fuoco
+    // dov'è, perché a chi naviga da tastiera serve.
+    const sfoca = (e: MouseEvent) => {
+      if (e.detail === 0) return;
+      const bottone = (e.target as HTMLElement | null)?.closest?.('button');
+      if (bottone) bottone.blur();
     };
     window.addEventListener('keydown', blocca);
-    return () => window.removeEventListener('keydown', blocca);
+    window.addEventListener('click', sfoca);
+    return () => {
+      window.removeEventListener('keydown', blocca);
+      window.removeEventListener('click', sfoca);
+    };
   }, []);
 
   return (
