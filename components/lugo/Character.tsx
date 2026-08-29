@@ -46,6 +46,69 @@ const Q = {
 const cosciaLen = Q.anca - Q.ginocchio; // 0.40
 const stincoLen = Q.ginocchio - Q.caviglia; // 0.41
 
+/**
+ * Un pezzo del corpo, come dato: posizione, misure, colore.
+ *
+ * Fondere i pezzi che non si muovono l'uno rispetto all'altro NON è un
+ * vezzo: il protagonista è fatto di una trentina di scatolette, e finché
+ * ognuna era una mesh a sé costava una trentina di chiamate di disegno —
+ * più di tutti i veicoli di Lugo messi insieme, e sempre a schermo mentre
+ * si cammina. La testa e il busto non cambiano forma da soli: si fondono
+ * una volta e diventano una mesh ciascuno.
+ */
+export interface Pezzo {
+  p: [number, number, number];
+  s: [number, number, number];
+  col: string;
+}
+
+function fondiPezzi(pezzi: Pezzo[]): THREE.BufferGeometry {
+  const pos: number[] = [];
+  const nor: number[] = [];
+  const col: number[] = [];
+  const idx: number[] = [];
+  const c = new THREE.Color();
+  const FACCE: [number, number, number][][] = [
+    [[1, 1, 1], [1, -1, 1], [1, -1, -1], [1, 1, -1]],
+    [[-1, 1, -1], [-1, -1, -1], [-1, -1, 1], [-1, 1, 1]],
+    [[-1, 1, -1], [-1, 1, 1], [1, 1, 1], [1, 1, -1]],
+    [[-1, -1, 1], [-1, -1, -1], [1, -1, -1], [1, -1, 1]],
+    [[-1, 1, 1], [-1, -1, 1], [1, -1, 1], [1, 1, 1]],
+    [[1, 1, -1], [1, -1, -1], [-1, -1, -1], [-1, 1, -1]],
+  ];
+  const NORMALI: [number, number, number][] = [
+    [1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1],
+  ];
+  for (const z of pezzi) {
+    c.set(z.col);
+    for (let f = 0; f < 6; f++) {
+      const base = pos.length / 3;
+      for (const [ux, uy, uz] of FACCE[f]) {
+        pos.push(z.p[0] + (ux * z.s[0]) / 2, z.p[1] + (uy * z.s[1]) / 2, z.p[2] + (uz * z.s[2]) / 2);
+        nor.push(...NORMALI[f]);
+        col.push(c.r, c.g, c.b);
+      }
+      idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  geo.setIndex(idx);
+  return geo;
+}
+
+/** Una mesh sola per un gruppo di pezzi rigidi. */
+function Fuso({ pezzi, ombra = true }: { pezzi: Pezzo[]; ombra?: boolean }) {
+  const geo = useMemo(() => fondiPezzi(pezzi), [pezzi]);
+  return (
+    <mesh geometry={geo} castShadow={ombra}>
+      <meshLambertMaterial vertexColors />
+    </mesh>
+  );
+}
+
 /** Un mattone del corpo: scatola con posizione, misure e colore. */
 function Blocco({
   p,
@@ -173,43 +236,34 @@ function Braccio({
   );
 }
 
-function Capelli({ stile, col, sottoCappello }: { stile: string; col: string; sottoCappello: boolean }) {
+function pezziCapelli(stile: string, col: string, sottoCappello: boolean): Pezzo[] {
   const y = Q.testa;
   const h = Q.testaAlt;
-  if (stile === 'rasato') {
-    return <Blocco p={[0, y + h * 0.34, 0]} s={[0.245, 0.05, 0.245]} col={col} ombra={false} />;
-  }
+  if (stile === 'rasato') return [{ p: [0, y + h * 0.34, 0], s: [0.245, 0.05, 0.245], col }];
   // sotto il cappellino resta solo la nuca e le basette
   if (sottoCappello) {
-    return (
-      <>
-        <Blocco p={[-0.115, y + 0.01, 0]} s={[0.05, 0.19, 0.235]} col={col} ombra={false} />
-        <Blocco p={[0, y - 0.02, 0.115]} s={[0.2, 0.14, 0.05]} col={col} ombra={false} />
-        <Blocco p={[0, y - 0.02, -0.115]} s={[0.2, 0.14, 0.05]} col={col} ombra={false} />
-      </>
-    );
+    return [
+      { p: [-0.115, y + 0.01, 0], s: [0.05, 0.19, 0.235], col },
+      { p: [0, y - 0.02, 0.115], s: [0.2, 0.14, 0.05], col },
+      { p: [0, y - 0.02, -0.115], s: [0.2, 0.14, 0.05], col },
+    ];
   }
   const alto = stile === 'medi' ? 0.13 : stile === 'ricci' ? 0.12 : 0.085;
-  return (
-    <>
-      <Blocco p={[0, y + h / 2 - alto / 2 + 0.02, 0]} s={[0.25, alto, 0.25]} col={col} ombra={false} />
-      <Blocco p={[-0.115, y + 0.02, 0]} s={[0.045, 0.2, 0.24]} col={col} ombra={false} />
-      {stile === 'crop' && <Blocco p={[0.115, y + h / 2 - 0.01, 0]} s={[0.06, 0.07, 0.22]} col={col} ombra={false} />}
-      {stile === 'ricci' && (
-        <>
-          <Blocco p={[0.06, y + h / 2 + 0.05, 0.09]} s={[0.1, 0.09, 0.1]} col={col} ombra={false} />
-          <Blocco p={[-0.02, y + h / 2 + 0.06, -0.08]} s={[0.11, 0.09, 0.11]} col={col} ombra={false} />
-        </>
-      )}
-      {stile === 'medi' && (
-        <>
-          <Blocco p={[-0.09, y - 0.09, 0.1]} s={[0.09, 0.1, 0.05]} col={col} ombra={false} />
-          <Blocco p={[-0.09, y - 0.09, -0.1]} s={[0.09, 0.1, 0.05]} col={col} ombra={false} />
-        </>
-      )}
-      {stile === 'fade' && <Blocco p={[0, y - 0.05, 0]} s={[0.248, 0.06, 0.248]} col="#1A1512" ombra={false} />}
-    </>
-  );
+  const out: Pezzo[] = [
+    { p: [0, y + h / 2 - alto / 2 + 0.02, 0], s: [0.25, alto, 0.25], col },
+    { p: [-0.115, y + 0.02, 0], s: [0.045, 0.2, 0.24], col },
+  ];
+  if (stile === 'crop') out.push({ p: [0.115, y + h / 2 - 0.01, 0], s: [0.06, 0.07, 0.22], col });
+  if (stile === 'ricci') {
+    out.push({ p: [0.06, y + h / 2 + 0.05, 0.09], s: [0.1, 0.09, 0.1], col });
+    out.push({ p: [-0.02, y + h / 2 + 0.06, -0.08], s: [0.11, 0.09, 0.11], col });
+  }
+  if (stile === 'medi') {
+    out.push({ p: [-0.09, y - 0.09, 0.1], s: [0.09, 0.1, 0.05], col });
+    out.push({ p: [-0.09, y - 0.09, -0.1], s: [0.09, 0.1, 0.05], col });
+  }
+  if (stile === 'fade') out.push({ p: [0, y - 0.05, 0], s: [0.248, 0.06, 0.248], col: '#1A1512' });
+  return out;
 }
 
 export const Character = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function Character({ rt }, ref) {
@@ -226,6 +280,64 @@ export const Character = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function 
   const colCappello = tintaDi('copricapo', avatar.copricapo, avatar.copricapoTinta);
   const conCappello = avatar.copricapo === 'cappellino';
   const conCuffia = avatar.copricapo === 'cuffia';
+
+  // I pezzi rigidi, radunati una volta per look. Cambiano solo quando
+  // cambia il guardaroba, non a ogni fotogramma.
+  const pezziTesta = useMemo<Pezzo[]>(() => {
+    const out: Pezzo[] = [
+      { p: [0, Q.testa, 0], s: [0.235, Q.testaAlt, 0.24], col: colPelle },
+      // occhi e sopracciglia: bastano quattro pixel per dare uno sguardo
+      { p: [0.119, Q.testa + 0.035, 0.06], s: [0.006, 0.035, 0.045], col: '#241C16' },
+      { p: [0.119, Q.testa + 0.035, -0.06], s: [0.006, 0.035, 0.045], col: '#241C16' },
+      { p: [0.119, Q.testa + 0.075, 0.062], s: [0.006, 0.016, 0.055], col: colCapelli },
+      { p: [0.119, Q.testa + 0.075, -0.062], s: [0.006, 0.016, 0.055], col: colCapelli },
+    ];
+    if (avatar.accessorio === 'occhiali') {
+      out.push({ p: [0.124, Q.testa + 0.04, 0], s: [0.012, 0.055, 0.235], col: '#14161C' });
+    }
+    out.push(...pezziCapelli(avatar.capelli, colCapelli, conCappello || conCuffia));
+    if (conCappello) {
+      out.push({ p: [0, Q.testa + Q.testaAlt / 2 + 0.04, 0], s: [0.26, 0.12, 0.26], col: colCappello });
+      // la visiera sporge davanti e ha spessore: di fronte, senza, si vede
+      // solo un filo e il cappellino sembra una cuffia
+      out.push({ p: [0.2, Q.testa + Q.testaAlt / 2 - 0.005, 0], s: [0.2, 0.05, 0.25], col: colCappello });
+      out.push({ p: [0.2, Q.testa + Q.testaAlt / 2 - 0.032, 0], s: [0.19, 0.012, 0.24], col: '#0E0F13' });
+    }
+    if (conCuffia) {
+      out.push({ p: [0, Q.testa + Q.testaAlt / 2 + 0.025, 0], s: [0.26, 0.13, 0.26], col: colCappello });
+      out.push({ p: [0, Q.testa + 0.07, 0], s: [0.265, 0.06, 0.265], col: colCappello });
+    }
+    return out;
+  }, [avatar.accessorio, avatar.capelli, colPelle, colCapelli, colCappello, conCappello, conCuffia]);
+
+  const pezziBusto = useMemo<Pezzo[]>(() => {
+    const out: Pezzo[] = [
+      { p: [0, Q.anca + 0.07, 0], s: [0.27, 0.16, Q.larghFianchi], col: colPant },
+      // torso: spalle più larghe dei fianchi
+      { p: [0, (Q.vita + Q.spalla) / 2 + 0.02, 0], s: [Q.profTorso, Q.spalla - Q.vita + 0.1, Q.larghSpalle - 0.06], col: colTop },
+      { p: [0, Q.spalla - 0.03, 0], s: [Q.profTorso - 0.01, 0.16, Q.larghSpalle], col: colTop },
+    ];
+    if (avatar.top === 'giubbotto') {
+      out.push({ p: [0.14, Q.spalla - 0.06, 0], s: [0.035, 0.2, Q.larghSpalle - 0.08], col: '#EDE7DA' });
+    }
+    if (avatar.top === 'tuta') {
+      out.push({ p: [0, Q.spalla - 0.16, 0.215], s: [Q.profTorso - 0.02, 0.5, 0.03], col: '#EDE7DA' });
+      out.push({ p: [0, Q.spalla - 0.16, -0.215], s: [Q.profTorso - 0.02, 0.5, 0.03], col: '#EDE7DA' });
+    }
+    // il cappuccio della felpa, calato sulle spalle
+    if (avatar.top === 'felpa') {
+      out.push({ p: [-0.1, Q.spalla + 0.02, 0], s: [0.13, 0.2, 0.34], col: colTop });
+      out.push({ p: [-0.13, Q.spalla - 0.14, 0], s: [0.09, 0.16, 0.3], col: colTop });
+    }
+    if (avatar.accessorio === 'zaino') {
+      out.push({ p: [-0.2, Q.spalla - 0.2, 0], s: [0.13, 0.36, 0.3], col: '#2F3540' });
+      out.push({ p: [-0.27, Q.spalla - 0.24, 0], s: [0.03, 0.12, 0.22], col: '#C0392B' });
+    }
+    if (avatar.accessorio === 'catenina') {
+      out.push({ p: [0.11, Q.collo - 0.06, 0], s: [0.05, 0.09, 0.14], col: '#E8C86A' });
+    }
+    return out;
+  }, [avatar.top, avatar.accessorio, colTop, colPant]);
 
   // lo stemma LC sulla schiena della felpa, come nella key art
   const stemma = useMemo(() => {
@@ -272,42 +384,15 @@ export const Character = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function 
         {/* tutto ciò che sta sopra la vita ruota attorno alla vita */}
         <group position={[0, Q.vita, 0]} ref={busto}>
           <group position={[0, -Q.vita, 0]}>
-            {/* bacino */}
-            <Blocco p={[0, Q.anca + 0.07, 0]} s={[0.27, 0.16, Q.larghFianchi]} col={colPant} />
-            {/* torso: spalle più larghe dei fianchi */}
-            <Blocco p={[0, (Q.vita + Q.spalla) / 2 + 0.02, 0]} s={[Q.profTorso, Q.spalla - Q.vita + 0.1, Q.larghSpalle - 0.06]} col={colTop} />
-            <Blocco p={[0, Q.spalla - 0.03, 0]} s={[Q.profTorso - 0.01, 0.16, Q.larghSpalle]} col={colTop} />
-            {avatar.top === 'giubbotto' && (
-              <Blocco p={[0.14, Q.spalla - 0.06, 0]} s={[0.035, 0.2, Q.larghSpalle - 0.08]} col="#EDE7DA" ombra={false} />
-            )}
-            {avatar.top === 'tuta' && (
-              <>
-                <Blocco p={[0, Q.spalla - 0.16, 0.215]} s={[Q.profTorso - 0.02, 0.5, 0.03]} col="#EDE7DA" ombra={false} />
-                <Blocco p={[0, Q.spalla - 0.16, -0.215]} s={[Q.profTorso - 0.02, 0.5, 0.03]} col="#EDE7DA" ombra={false} />
-              </>
-            )}
-            {/* il cappuccio della felpa, calato sulle spalle */}
-            {avatar.top === 'felpa' && (
-              <>
-                <Blocco p={[-0.1, Q.spalla + 0.02, 0]} s={[0.13, 0.2, 0.34]} col={colTop} />
-                <Blocco p={[-0.13, Q.spalla - 0.14, 0]} s={[0.09, 0.16, 0.3]} col={colTop} ombra={false} />
-              </>
-            )}
+            {/* bacino, torso, cappuccio, zaino: pezzi che non si muovono
+                l'uno rispetto all'altro, quindi una mesh sola */}
+            <Fuso pezzi={pezziBusto} />
             {/* lo stemma LC sulla schiena */}
             {stemma && (
               <mesh position={[-0.152, Q.spalla - 0.24, 0]} rotation={[0, -Math.PI / 2, 0]}>
                 <planeGeometry args={[0.19, 0.19]} />
                 <meshLambertMaterial map={stemma} transparent />
               </mesh>
-            )}
-            {avatar.accessorio === 'zaino' && (
-              <>
-                <Blocco p={[-0.2, Q.spalla - 0.2, 0]} s={[0.13, 0.36, 0.3]} col="#2F3540" />
-                <Blocco p={[-0.27, Q.spalla - 0.24, 0]} s={[0.03, 0.12, 0.22]} col="#C0392B" ombra={false} />
-              </>
-            )}
-            {avatar.accessorio === 'catenina' && (
-              <Blocco p={[0.11, Q.collo - 0.06, 0]} s={[0.05, 0.09, 0.14]} col="#E8C86A" ombra={false} />
             )}
 
             <Braccio z={0.29} fase={Math.PI} rt={rt} top={avatar.top} colTop={colTop} colPelle={colPelle} orologio={avatar.accessorio === 'orologio'} />
@@ -317,32 +402,7 @@ export const Character = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function 
             <Blocco p={[0, Q.collo + 0.02, 0]} s={[0.115, 0.09, 0.125]} col={colPelle} ombra={false} />
             <group position={[0, Q.testa, 0]} ref={testa}>
               <group position={[0, -Q.testa, 0]}>
-                <Blocco p={[0, Q.testa, 0]} s={[0.235, Q.testaAlt, 0.24]} col={colPelle} />
-                {/* occhi e sopracciglia: bastano quattro pixel per dare uno sguardo */}
-                <Blocco p={[0.119, Q.testa + 0.035, 0.06]} s={[0.006, 0.035, 0.045]} col="#241C16" ombra={false} />
-                <Blocco p={[0.119, Q.testa + 0.035, -0.06]} s={[0.006, 0.035, 0.045]} col="#241C16" ombra={false} />
-                <Blocco p={[0.119, Q.testa + 0.075, 0.062]} s={[0.006, 0.016, 0.055]} col={colCapelli} ombra={false} />
-                <Blocco p={[0.119, Q.testa + 0.075, -0.062]} s={[0.006, 0.016, 0.055]} col={colCapelli} ombra={false} />
-                {avatar.accessorio === 'occhiali' && (
-                  <Blocco p={[0.124, Q.testa + 0.04, 0]} s={[0.012, 0.055, 0.235]} col="#14161C" ombra={false} />
-                )}
-                <Capelli stile={avatar.capelli} col={colCapelli} sottoCappello={conCappello || conCuffia} />
-                {conCappello && (
-                  <>
-                    <Blocco p={[0, Q.testa + Q.testaAlt / 2 + 0.04, 0]} s={[0.26, 0.12, 0.26]} col={colCappello} />
-                    {/* la visiera: sporge davanti e ha spessore, altrimenti
-                        di fronte si vede solo un filo e il cappellino
-                        sembra una cuffia */}
-                    <Blocco p={[0.2, Q.testa + Q.testaAlt / 2 - 0.005, 0]} s={[0.2, 0.05, 0.25]} col={colCappello} />
-                    <Blocco p={[0.2, Q.testa + Q.testaAlt / 2 - 0.032, 0]} s={[0.19, 0.012, 0.24]} col="#0E0F13" ombra={false} />
-                  </>
-                )}
-                {conCuffia && (
-                  <>
-                    <Blocco p={[0, Q.testa + Q.testaAlt / 2 + 0.025, 0]} s={[0.26, 0.13, 0.26]} col={colCappello} />
-                    <Blocco p={[0, Q.testa + 0.07, 0]} s={[0.265, 0.06, 0.265]} col={colCappello} ombra={false} />
-                  </>
-                )}
+                <Fuso pezzi={pezziTesta} />
               </group>
             </group>
           </group>

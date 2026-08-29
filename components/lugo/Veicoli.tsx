@@ -15,38 +15,6 @@ import { useLugo } from '@/lib/lugo/store';
 const VETRO = '#2E3A4E';
 const SOTTO = '#232128';
 
-function AutoInGiro({ auto }: { auto: AutoCivile }) {
-  const gruppo = useRef<THREE.Group>(null);
-  useFrame((_, dtRaw) => {
-    const dt = Math.min(dtRaw, 0.05);
-    if (useLugo.getState().fase === 'gioco') stepAutoCivile(auto, dt);
-    if (gruppo.current) {
-      gruppo.current.position.set(auto.x, 0, auto.z);
-      gruppo.current.rotation.y = -auto.yaw;
-    }
-  });
-  return (
-    <group ref={gruppo}>
-      <mesh position={[0, 0.52, 0]} castShadow>
-        <boxGeometry args={[3.5, 0.52, 1.56]} />
-        <meshLambertMaterial color={auto.colore} />
-      </mesh>
-      <mesh position={[-0.15, 1.05, 0]} castShadow>
-        <boxGeometry args={[1.9, 0.55, 1.44]} />
-        <meshLambertMaterial color={VETRO} />
-      </mesh>
-      <mesh position={[0, 0.24, 0]}>
-        <boxGeometry args={[3.3, 0.28, 1.5]} />
-        <meshLambertMaterial color={SOTTO} />
-      </mesh>
-      <mesh position={[1.76, 0.55, 0]}>
-        <boxGeometry args={[0.05, 0.14, 1.1]} />
-        <meshLambertMaterial color="#FFF3C8" emissive="#FFE9A8" emissiveIntensity={1.2} />
-      </mesh>
-    </group>
-  );
-}
-
 export function Veicoli() {
   const mondo = useMondo();
   const infra = useMemo(() => infraGioco(mondo), [mondo]);
@@ -91,12 +59,50 @@ export function Veicoli() {
   const abitacolo = useRef<THREE.InstancedMesh>(null);
   const sotto = useRef<THREE.InstancedMesh>(null);
 
+  const fari = useRef<THREE.InstancedMesh>(null);
+
+  // Le auto che girano stanno nelle STESSE instanced di quelle in sosta.
+  // Prima ognuna era un gruppetto di quattro mesh sue: nove auto facevano
+  // trentasei chiamate di disegno, e a piazza Baracca — dove si vede mezzo
+  // centro insieme — il conto sfondava il tetto senza che nessuno se ne
+  // accorgesse, perché il collaudo misurava in un punto solo.
+  useFrame((_, dtRaw) => {
+    const dt = Math.min(dtRaw, 0.05);
+    const gioca = useLugo.getState().fase === 'gioco';
+    const base = infra.parcheggi.length;
+    const m = new THREE.Matrix4();
+    const q = new THREE.Quaternion();
+    const su = new THREE.Vector3(0, 1, 0);
+    const uno = new THREE.Vector3(1, 1, 1);
+    infra.traffico.forEach((a, i) => {
+      if (gioca) stepAutoCivile(a, dt);
+      q.setFromAxisAngle(su, -a.yaw);
+      const c = Math.cos(a.yaw);
+      const s2 = Math.sin(a.yaw);
+      m.compose(new THREE.Vector3(a.x, 0.5, a.z), q, uno);
+      scocca.current?.setMatrixAt(base + i, m);
+      m.compose(new THREE.Vector3(a.x - c * 0.15, 1.02, a.z - s2 * 0.15), q, uno);
+      abitacolo.current?.setMatrixAt(base + i, m);
+      m.compose(new THREE.Vector3(a.x, 0.22, a.z), q, uno);
+      sotto.current?.setMatrixAt(base + i, m);
+      m.compose(new THREE.Vector3(a.x + c * 1.76, 0.55, a.z + s2 * 1.76), q, uno);
+      fari.current?.setMatrixAt(i, m);
+    });
+    for (const ref of [scocca, abitacolo, sotto, fari]) {
+      if (ref.current) ref.current.instanceMatrix.needsUpdate = true;
+    }
+  });
+
   useLayoutEffect(() => {
     const m = new THREE.Matrix4();
     const q = new THREE.Quaternion();
     const su = new THREE.Vector3(0, 1, 0);
     const uno = new THREE.Vector3(1, 1, 1);
     const c = new THREE.Color();
+    infra.traffico.forEach((a, i) => {
+      scocca.current?.setColorAt(infra.parcheggi.length + i, c.set(a.colore));
+    });
+    if (fari.current) fari.current.count = infra.traffico.length;
     infra.parcheggi.forEach((p, i) => {
       q.setFromAxisAngle(su, -p.yaw);
       m.compose(new THREE.Vector3(p.x, 0.5, p.z), q, uno);
@@ -109,17 +115,17 @@ export function Veicoli() {
     });
     for (const ref of [scocca, abitacolo, sotto]) {
       if (ref.current) {
-        ref.current.count = infra.parcheggi.length;
+        ref.current.count = infra.parcheggi.length + infra.traffico.length;
         ref.current.instanceMatrix.needsUpdate = true;
         if (ref.current.instanceColor) ref.current.instanceColor.needsUpdate = true;
       }
     }
   }, [infra]);
 
-  const max = Math.max(1, infra.parcheggi.length);
+  const max = Math.max(1, infra.parcheggi.length + infra.traffico.length);
 
   return (
-    <group>
+    <group name="veicoli">
       {strisceBlu && (
         <mesh geometry={strisceBlu}>
           <meshLambertMaterial vertexColors />
@@ -137,9 +143,14 @@ export function Veicoli() {
         <boxGeometry args={[3.3, 0.26, 1.5]} />
         <meshLambertMaterial color={SOTTO} />
       </instancedMesh>
-      {infra.traffico.map((a, i) => (
-        <AutoInGiro key={i} auto={a} />
-      ))}
+      <instancedMesh
+        ref={fari}
+        args={[undefined, undefined, Math.max(1, infra.traffico.length)]}
+        frustumCulled={false}
+      >
+        <boxGeometry args={[0.05, 0.14, 1.1]} />
+        <meshLambertMaterial color="#FFF3C8" emissive="#FFE9A8" emissiveIntensity={1.2} />
+      </instancedMesh>
     </group>
   );
 }

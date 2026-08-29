@@ -345,6 +345,44 @@ function HookVerifica() {
         texture: gl.info.memory.textures,
         geometrie: gl.info.memory.geometries,
       }),
+      // Accende e spegne un gruppo della scena per nome: misurando prima e
+      // dopo si sa QUANTE chiamate costa davvero, invece di contarne le mesh
+      // e sperare che il frustum le scarti tutte.
+      accendi: (nome: string, acceso: boolean) => {
+        let trovato = 0;
+        scenaGlobale.traverse((o: THREE.Object3D) => {
+          if (o.name === nome) {
+            o.visible = acceso;
+            trovato++;
+          }
+        });
+        return trovato;
+      },
+      // Chi si mangia le chiamate di disegno. Serve a non tirare a indovinare
+      // quando il conto sfora: si guarda dove si spende, non dove si crede.
+      spesa: () => {
+        const conto = new Map<string, { n: number; tri: number }>();
+        scenaGlobale.traverse((o: THREE.Object3D) => {
+          const m = o as THREE.Mesh & { isMesh?: boolean; count?: number };
+          if (!m.isMesh || !m.visible) return;
+          let p: THREE.Object3D | null = o;
+          let etichetta = o.name || o.type;
+          while (p) {
+            if (p.name) etichetta = p.name;
+            p = p.parent;
+          }
+          const g = m.geometry as THREE.BufferGeometry | undefined;
+          const idx = g?.getIndex();
+          const tri = ((idx ? idx.count : (g?.getAttribute('position')?.count ?? 0)) / 3) * (m.count ?? 1);
+          const v = conto.get(etichetta) ?? { n: 0, tri: 0 };
+          v.n++;
+          v.tri += tri;
+          conto.set(etichetta, v);
+        });
+        return [...conto.entries()]
+          .map(([nome, v]) => ({ nome, mesh: v.n, tri: Math.round(v.tri) }))
+          .sort((a, b) => b.mesh - a.mesh);
+      },
       // stato dell'esplorazione, per il collaudo
       esplorazione: () => {
         const st = useLugo.getState();

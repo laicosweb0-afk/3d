@@ -262,7 +262,7 @@ export function Arredi() {
   const maxB = Math.max(1, dati.bus.length);
 
   return (
-    <group>
+    <group name="arredi">
       {dati.fusa && (
         <mesh geometry={dati.fusa}>
           <meshLambertMaterial vertexColors />

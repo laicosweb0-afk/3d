@@ -289,7 +289,7 @@ export function Props() {
   }, [alberi, lampioni]);
 
   return (
-    <group>
+    <group name="props">
       {/* Alberi a blocchi, come nella key art: fusto squadrato e chioma
           cubica. Il voxel costa anche meno del cono e dell'icosaedro. */}
       <instancedMesh ref={tronchi} args={[undefined, undefined, MAX_ALBERI]} frustumCulled={false}>
