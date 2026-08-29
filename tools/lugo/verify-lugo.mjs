@@ -311,6 +311,47 @@ try {
       }
 
       await page.evaluate(() => window.__LUGO__.tempoScorre(true));
+      // ── fase 3c-bis: la catena d'ingresso ──────────────────────────────
+      // Le cinque missioni dell'MVP devono chiudersi davvero e pagare i
+      // valori dichiarati: una tappa che punta dentro un muro le blocca
+      // per sempre, ed è successo con il bar e con il teatro.
+      if ((await lugo('typeof L.avviaMissione')) === 'function') {
+        const attesi = {
+          mvp1: [100, 50],
+          mvp2: [150, 50],
+          mvp3: [350, 100],
+          mvp4: [500, 250],
+          mvp5: [1000, 500],
+        };
+        let chiuse = 0;
+        for (const id of Object.keys(attesi)) {
+          const e0 = await lugo('L.denaro()');
+          if (!(await page.evaluate((m) => window.__LUGO__.avviaMissione(m), id))) continue;
+          if (id === 'mvp4') {
+            const att = await lugo('L.attivita()');
+            for (const a of att.slice(0, 14)) {
+              await page.evaluate(([x, z]) => window.__LUGO__.teleport(x, z), [a.x, a.z]);
+              await page.waitForTimeout(600);
+              if ((await lugo('L.statoMissione()')) !== 'attiva') break;
+            }
+          }
+          for (let giro = 0; giro < 10; giro++) {
+            if ((await lugo('L.statoMissione()')) !== 'attiva') break;
+            const t = await lugo('L.tappaCorrente()');
+            if (!t) break;
+            await page.evaluate(([x, z]) => window.__LUGO__.teleport(x, z), [t.x, t.z]);
+            await page.waitForTimeout(850);
+          }
+          const stato = await lugo('L.statoMissione()');
+          const guadagno = (await lugo('L.denaro()')) - e0;
+          if (stato === 'completata' && Math.round(guadagno) === attesi[id][0]) chiuse++;
+          else ko(`missione ${id}`, `stato ${stato}, +€${Math.round(guadagno)} invece di ${attesi[id][0]}`);
+        }
+        if (chiuse === Object.keys(attesi).length) {
+          ok('catena d\'ingresso', `${chiuse} missioni completate coi premi giusti`);
+        }
+      }
+
       // ── fase 3d: livello e guardaroba ──────────────────────────────────
       const liv = await page.locator('[data-hud="livello"]').count();
       if (liv) ok('livello nell\'HUD', (await page.textContent('[data-hud="livello"]')) ?? '');
