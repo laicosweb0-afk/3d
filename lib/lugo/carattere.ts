@@ -63,7 +63,7 @@ export interface Carattere {
 // ── caso deterministico ─────────────────────────────────────────────────────
 
 /** Hash intero → [0,1): estrazioni indipendenti dallo stesso seme. */
-function estrai(seme: number, k: number): number {
+export function estrai(seme: number, k: number): number {
   let x = (seme ^ Math.imul(k + 1, 0x9e3779b1)) >>> 0;
   x = Math.imul(x ^ (x >>> 16), 0x85ebca6b) >>> 0;
   x = Math.imul(x ^ (x >>> 13), 0xc2b2ae35) >>> 0;

@@ -65,6 +65,14 @@ export interface NegozioRT {
   categoria: string;
   x: number;
   z: number;
+  /**
+   * Il valore grezzo di shop=* o amenity=* da OpenStreetMap, quando la
+   * mappa lo porta. È un dato pubblico, e serve a scegliere il simbolo di
+   * mestiere: la categoria del gioco schiaccia due terzi delle botteghe in
+   * "negozio", e senza questo campo mezza Lugo porterebbe lo stesso
+   * sacchetto sull'insegna.
+   */
+  osm?: string;
 }
 
 export interface ArredoRT {
@@ -214,7 +222,13 @@ async function carica(): Promise<MondoLugo> {
     aree: raw.aree.map((a) => ({ kind: a.kind, poly: toMeters(a.poly) })),
     rail: raw.rail.map(toMeters),
     poi,
-    negozi: (raw.negozi ?? []).map((s) => ({ nome: s.n, categoria: s.c ?? 'negozio', x: s.x * M, z: s.z * M })),
+    negozi: (raw.negozi ?? []).map((s) => ({
+      nome: s.n,
+      categoria: s.c ?? 'negozio',
+      x: s.x * M,
+      z: s.z * M,
+      ...(s.s ? { osm: s.s } : {}),
+    })),
     arredi: (raw.arredi ?? []).map((a) => ({ tipo: a.t, x: a.x * M, z: a.z * M })),
   };
 }

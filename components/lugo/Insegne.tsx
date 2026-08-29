@@ -1,320 +1,358 @@
 'use client';
 
-// Le insegne delle botteghe vere di Lugo (nomi da OpenStreetMap): un unico
-// atlas CanvasTexture con tutti i nomi, un'unica mesh coi cartelli
-// agganciati al muro più vicino, e le tende da sole instanziate sotto.
+// Le insegne delle botteghe vere di Lugo. Questo file non decide più niente:
+// il muro giusto lo dà botteghe.ts, i colori e l'atlante li dà
+// insegneAtlante.ts, i simboli li dà pittogrammi.ts. Qui si monta la
+// geometria, e basta.
+//
+// Prima una bottega era una striscia scura larga 3,4 metri con sopra ventisei
+// pixel di testo, appesa a quota fissa: da venti metri il nome era già
+// illeggibile, e da lontano non si distingueva una farmacia da una merceria.
+// Adesso ogni bottega ha tre cose che si leggono a tre distanze diverse:
+//   • la FASCIA col nome, sulla cimasa vera del suo muro — fino a ~30 m;
+//   • il TENDONE a righe, che è il secondo segnale di una via italiana;
+//   • l'INSEGNA A BANDIERA col simbolo di mestiere, perpendicolare al muro,
+//     che si legge camminando lungo la via e resta una macchia di colore
+//     riconoscibile anche a cento metri.
+// Tutto dentro un solo atlante e due sole chiamate di disegno.
 
-import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useMondo, type MondoLugo } from '@/lib/lugo/loadMap';
-import { COLORE_CATEGORIA, schedaDi, type CategoriaAttivita } from '@/lib/lugo/attivita';
+import { logoAutorizzato, registroAttivita, type CategoriaAttivita } from '@/lib/lugo/attivita';
+import { caratteriCitta } from '@/lib/lugo/carattere';
+import { frontiBotteghe, type FronteBottega } from '@/lib/lugo/botteghe';
+import { pittogrammaDi, PITTOGRAMMI_NON_TINTI } from '@/lib/lugo/pittogrammi';
+import {
+  costruisciAtlante,
+  identitaBottega,
+  MISURE,
+  type Atlante,
+  type DatiBottega,
+} from '@/lib/lugo/insegneAtlante';
+import { useLugo } from '@/lib/lugo/store';
 
-/**
- * L'identità visiva di una bottega: fondo dell'insegna, colore del testo e
- * tenda da sole. Di serie discende dalla CATEGORIA (bar, farmacia,
- * tabaccheria…), che è un dato pubblico di OpenStreetMap. Se l'esercente ha
- * autorizzato colori suoi, `public/lugo/attivita.json` li sostituisce: mai
- * un logo o un marchio senza il suo consenso.
- */
-function identita(nome: string, categoria: string): { fondo: string; testo: string; tenda: string } {
-  const cat = (COLORE_CATEGORIA[categoria as CategoriaAttivita] ? categoria : 'servizi') as CategoriaAttivita;
-  const base = new THREE.Color(COLORE_CATEGORIA[cat]);
-  // il fondo dell'insegna: la tinta di categoria, scurita da cartello
-  const fondo = base.clone().multiplyScalar(0.3).offsetHSL(0, -0.12, 0);
-  const tenda = base.clone().multiplyScalar(0.62);
-  const sch = schedaDi(nome)?.insegna;
-  return {
-    fondo: sch?.fondo ?? '#' + fondo.getHexString(),
-    testo: sch?.testo ?? '#F2EAD8',
-    tenda: sch?.tenda ?? '#' + tenda.getHexString(),
-  };
-}
-
-interface Cartello {
-  x: number;
-  z: number;
-  nx: number;
-  nz: number;
-  /** Direzione del muro (unità). */
-  ex: number;
-  ez: number;
-  /**
-   * Indice del negozio in `mondo.negozi`. Serve perché `trovaMuri` scarta
-   * chi non trova un muro entro 9 m e restituisce un array PIÙ CORTO:
-   * indicizzare `mondo.negozi` con la posizione nel cartello faceva
-   * scrivere sul cartello il nome di un'altra bottega, dalla 43ª in poi.
-   */
-  negozio: number;
-}
-
-function trovaMuri(mondo: MondoLugo): Cartello[] {
-  const out: Cartello[] = [];
-  for (let indice = 0; indice < mondo.negozi.length; indice++) {
-    const negozio = mondo.negozi[indice];
-    let best: Cartello | null = null;
-    let bestD = 9;
-    for (const b of mondo.buildings) {
-      const c = b.collider;
-      if (
-        negozio.x < c.minX - 10 || negozio.x > c.maxX + 10 ||
-        negozio.z < c.minZ - 10 || negozio.z > c.maxZ + 10
-      ) {
-        continue;
-      }
-      const fp = b.fp;
-      const n = fp.length / 2;
-      let cx = 0, cz = 0;
-      for (let i = 0; i < n; i++) {
-        cx += fp[i * 2];
-        cz += fp[i * 2 + 1];
-      }
-      cx /= n;
-      cz /= n;
-      for (let i = 0; i < n; i++) {
-        const j = (i + 1) % n;
-        const x1 = fp[i * 2], z1 = fp[i * 2 + 1];
-        const x2 = fp[j * 2], z2 = fp[j * 2 + 1];
-        const dx = x2 - x1;
-        const dz = z2 - z1;
-        const L2 = dx * dx + dz * dz;
-        if (L2 < 16) continue;
-        const t = Math.max(0.12, Math.min(0.88, ((negozio.x - x1) * dx + (negozio.z - z1) * dz) / L2));
-        const qx = x1 + dx * t;
-        const qz = z1 + dz * t;
-        const d = Math.hypot(negozio.x - qx, negozio.z - qz);
-        if (d >= bestD) continue;
-        const L = Math.sqrt(L2);
-        let nx = dz / L;
-        let nz = -dx / L;
-        if (nx * (qx - cx) + nz * (qz - cz) < 0) {
-          nx = -nx;
-          nz = -nz;
-        }
-        bestD = d;
-        best = { x: qx, z: qz, nx, nz, ex: dx / L, ez: dz / L, negozio: indice };
-      }
-    }
-    if (best) out.push(best);
-  }
-  return out;
-}
+const FERRO = new THREE.Color('#3A3A38');
+const BIANCO = new THREE.Color('#FFFFFF');
+const TINTA_MURO_ORFANO = new THREE.Color('#E3C878');
 
 interface DatiInsegne {
-  cartelli: Cartello[];
-  atlas: THREE.CanvasTexture;
+  fronti: FronteBottega[];
+  botteghe: DatiBottega[];
+  atlante: Atlante;
   geo: THREE.BufferGeometry;
 }
 
-function costruisciInsegne(mondo: MondoLugo): DatiInsegne | null {
-  const gia = cacheInsegne.get(mondo);
-  if (gia !== undefined) return gia;
-  const fatto = (() => {
-    if (!mondo.negozi.length || typeof document === 'undefined') return null;
-    const cartelli = trovaMuri(mondo);
-    if (!cartelli.length) return null;
-
-    // atlas dei nomi: una riga per insegna, su più colonne se sono tante
-    const RIGA = 44;
-    const colonne = Math.max(1, Math.ceil((cartelli.length * RIGA) / 8192));
-    const righePerCol = Math.ceil(cartelli.length / colonne);
-    const canvas = document.createElement('canvas');
-    canvas.width = 512 * colonne;
-    canvas.height = Math.min(8192, Math.max(64, 2 ** Math.ceil(Math.log2(righePerCol * RIGA))));
-    const ctx = canvas.getContext('2d')!;
-    ctx.fillStyle = '#2A2430';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    cartelli.forEach((c, i) => {
-      const neg = mondo.negozi[c.negozio];
-      const nome = neg?.nome ?? '';
-      const id = identita(nome, neg?.categoria ?? 'servizi');
-      const col = Math.floor(i / righePerCol);
-      const riga = i % righePerCol;
-      ctx.fillStyle = id.fondo;
-      ctx.fillRect(col * 512, riga * RIGA + 2, 512, RIGA - 4);
-      // filetto di categoria: due botteghe vicine non hanno la stessa insegna
-      ctx.fillStyle = COLORE_CATEGORIA[(neg?.categoria ?? 'servizi') as CategoriaAttivita] ?? '#8A8A96';
-      ctx.fillRect(col * 512, riga * RIGA + RIGA - 6, 512, 3);
-      ctx.fillStyle = id.testo;
-      ctx.font = 'bold 26px ui-sans-serif, system-ui, sans-serif';
-      ctx.fillText(nome.toUpperCase().slice(0, 24), col * 512 + 256, riga * RIGA + RIGA / 2 - 1);
-    });
-    const atlas = new THREE.CanvasTexture(canvas);
-    atlas.anisotropy = 4;
-
-    // una sola geometria con tutti i cartelli
-    const pos: number[] = [];
-    const uv: number[] = [];
-    const idx: number[] = [];
-    cartelli.forEach((c, i) => {
-      const cxp = c.x + c.nx * 0.09;
-      const czp = c.z + c.nz * 0.09;
-      // la tangente si ricava dalla normale del muro, così la faccia con il
-      // testo è SEMPRE quella rivolta alla strada (prima metà delle insegne
-      // si leggeva allo specchio)
-      const hx = c.nz * 1.7;
-      const hz = -c.nx * 1.7;
-      const y0 = 2.75;
-      const y1 = 3.3;
-      const base = pos.length / 3;
-      pos.push(
-        cxp - hx, y0, czp - hz,
-        cxp + hx, y0, czp + hz,
-        cxp + hx, y1, czp + hz,
-        cxp - hx, y1, czp - hz,
-      );
-      const col = Math.floor(i / righePerCol);
-      const riga = i % righePerCol;
-      const u0 = col / colonne;
-      const u1 = (col + 1) / colonne;
-      const v0 = 1 - ((riga + 1) * RIGA) / canvas.height;
-      const v1 = 1 - (riga * RIGA) / canvas.height;
-      uv.push(u0, v0, u1, v0, u1, v1, u0, v1);
-      idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
-    });
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-    geo.setIndex(idx);
-    geo.computeVertexNormals();
-
-    return { cartelli, atlas, geo };
-  })();
-  cacheInsegne.set(mondo, fatto);
-  return fatto;
-}
-
 /**
- * L'atlante delle insegne pesa 16 MB di canvas e va costruito UNA volta.
- * Il `useMemo` non basta: questo componente si sospende con `use()` e React
+ * L'atlante pesa parecchi megabyte di canvas e va costruito UNA volta. Il
+ * `useMemo` non basta: questo componente si sospende con `use()` e React
  * butta via il tentativo sospeso, `useMemo` compreso. La cache per mondo è
  * lo stesso rimedio già usato da veicoli.ts, attivita.ts e carattere.ts.
  */
 const cacheInsegne = new WeakMap<MondoLugo, DatiInsegne | null>();
 
+/** Un quadrilatero: quattro angoli in senso antiorario visti dalla faccia. */
+function quad(
+  pos: number[],
+  uv: number[],
+  col: number[],
+  idx: number[],
+  a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3, d: THREE.Vector3,
+  u0: number, v0: number, u1: number, v1: number,
+  tinta: THREE.Color,
+) {
+  const base = pos.length / 3;
+  for (const p of [a, b, c, d]) pos.push(p.x, p.y, p.z);
+  uv.push(u0, v0, u1, v0, u1, v1, u0, v1);
+  for (let i = 0; i < 4; i++) col.push(tinta.r, tinta.g, tinta.b);
+  idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
+}
+
+function costruisciInsegne(mondo: MondoLugo, ridotto: boolean): DatiInsegne | null {
+  const gia = cacheInsegne.get(mondo);
+  if (gia !== undefined) return gia;
+  const fatto = (() => {
+    if (!mondo.negozi.length || typeof document === 'undefined') return null;
+    const fronti = frontiBotteghe(mondo);
+    if (!fronti.length) return null;
+    const caratteri = caratteriCitta(mondo);
+    const registro = registroAttivita(mondo);
+
+    // Si passa per il registro e non per schedaDi(): il registro applica già
+    // la guardia sugli omonimi, e senza quella due filiali con lo stesso
+    // nome si prenderebbero tutte e due l'autorizzazione di una sola.
+    const botteghe: DatiBottega[] = fronti.map((f) => {
+      const neg = mondo.negozi[f.negozio];
+      const att = registro[f.negozio];
+      const k = f.edificio ? caratteri.get(f.edificio) : undefined;
+      const facciata = k ? new THREE.Color(k.tinta) : TINTA_MURO_ORFANO;
+      const categoria = (att?.categoria ?? 'servizi') as CategoriaAttivita;
+      const nome = att?.nome ?? neg?.nome ?? 'Bottega';
+      return {
+        nome,
+        categoria,
+        pittogramma: pittogrammaDi(neg?.categoria ?? categoria, neg?.osm),
+        identita: identitaBottega(nome, categoria, facciata, att?.insegna),
+        larghezza: f.larghezza,
+        logo: att ? logoAutorizzato(att) : null,
+      };
+    });
+
+    const atlante = costruisciAtlante(botteghe, ridotto);
+
+    const pos: number[] = [];
+    const uv: number[] = [];
+    const col: number[] = [];
+    const idx: number[] = [];
+    const P = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
+    const bianco = atlante.uvBianco();
+
+    fronti.forEach((f, i) => {
+      const b = botteghe[i];
+      // la tangente si ricava dalla NORMALE del muro: è quello che tiene il
+      // testo dal verso giusto. Il bug delle insegne allo specchio è già
+      // stato pagato una volta, non lo si ripaga.
+      const tx = f.nz;
+      const tz = -f.nx;
+      const hw = Math.min(f.larghezza - 0.35, 6.4) / 2;
+      if (hw < 0.4) return;
+      const ox = f.nx * MISURE.offsetFascia;
+      const oz = f.nz * MISURE.offsetFascia;
+      const y0 = f.yCimasa + 0.02;
+      const y1 = y0 + MISURE.bandaH;
+
+      // 1. la fascia col nome, sulla cimasa vera
+      const ub = atlante.uvBanda(i);
+      quad(
+        pos, uv, col, idx,
+        P(f.x - tx * hw + ox, y0, f.z - tz * hw + oz),
+        P(f.x + tx * hw + ox, y0, f.z + tz * hw + oz),
+        P(f.x + tx * hw + ox, y1, f.z + tz * hw + oz),
+        P(f.x - tx * hw + ox, y1, f.z - tz * hw + oz),
+        ub.u0, ub.v0, ub.u1, ub.v1, BIANCO,
+      );
+
+      // 2. l'insegna a bandiera, perpendicolare al muro
+      const yB = Math.min(f.yCimasa + 1.52, f.hTerra + 1.30);
+      const centro = MISURE.sportoBandiera - MISURE.bandieraW / 2;
+      const cxB = f.x + f.nx * centro;
+      const czB = f.z + f.nz * centro;
+      const us = atlante.uvSimbolo(b.pittogramma);
+      const tinta = PITTOGRAMMI_NON_TINTI.has(b.pittogramma) ? BIANCO : b.identita.campo;
+
+      // le due facce si scrivono a mano con le UV scambiate: chi cammina nel
+      // verso opposto non deve vedere le forbici allo specchio
+      for (const s of [1, -1]) {
+        const dx = f.nx;
+        const dz = f.nz;
+        const sx = tx * s * 0.03;
+        const sz = tz * s * 0.03;
+        // la piastra chiara, che stacca il pannello da una facciata dello
+        // stesso tono: è la ragione per cui i cartelli stradali hanno il
+        // bordo bianco
+        const hp = MISURE.piastraW / 2;
+        const vp = MISURE.piastraH / 2;
+        const uA = s > 0 ? bianco.u0 : bianco.u1;
+        const uB2 = s > 0 ? bianco.u1 : bianco.u0;
+        quad(
+          pos, uv, col, idx,
+          P(cxB - dx * hp + sx, yB - vp, czB - dz * hp + sz),
+          P(cxB + dx * hp + sx, yB - vp, czB + dz * hp + sz),
+          P(cxB + dx * hp + sx, yB + vp, czB + dz * hp + sz),
+          P(cxB - dx * hp + sx, yB + vp, czB - dz * hp + sz),
+          uA, bianco.v0, uB2, bianco.v1, b.identita.cornice,
+        );
+        const hq = MISURE.bandieraW / 2;
+        const vq = MISURE.bandieraH / 2;
+        const q0 = s > 0 ? us.u0 : us.u1;
+        const q1 = s > 0 ? us.u1 : us.u0;
+        const e = s * 0.05;
+        quad(
+          pos, uv, col, idx,
+          P(cxB - dx * hq + tx * e, yB - vq, czB - dz * hq + tz * e),
+          P(cxB + dx * hq + tx * e, yB - vq, czB + dz * hq + tz * e),
+          P(cxB + dx * hq + tx * e, yB + vq, czB + dz * hq + tz * e),
+          P(cxB - dx * hq + tx * e, yB + vq, czB - dz * hq + tz * e),
+          q0, us.v0, q1, us.v1, tinta,
+        );
+      }
+
+      // 3. la mensola di ferro che regge la bandiera
+      const braccio = MISURE.sportoBandiera;
+      for (const s of [1, -1]) {
+        const e = s * 0.02;
+        quad(
+          pos, uv, col, idx,
+          P(f.x + tx * e, yB + MISURE.piastraH / 2, f.z + tz * e),
+          P(f.x + f.nx * braccio + tx * e, yB + MISURE.piastraH / 2, f.z + f.nz * braccio + tz * e),
+          P(f.x + f.nx * braccio + tx * e, yB + MISURE.piastraH / 2 + 0.06, f.z + f.nz * braccio + tz * e),
+          P(f.x + tx * e, yB + MISURE.piastraH / 2 + 0.06, f.z + tz * e),
+          bianco.u0, bianco.v0, bianco.u1, bianco.v1, FERRO,
+        );
+      }
+    });
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    geo.setIndex(idx);
+    geo.computeVertexNormals();
+
+    return { fronti, botteghe, atlante, geo };
+  })();
+  cacheInsegne.set(mondo, fatto);
+  return fatto;
+}
+
+/** Il tendone: falda inclinata, due fianchi, e la mantovana che pende. */
+function geometriaTenda(atlante: Atlante): THREE.BufferGeometry {
+  const pos: number[] = [];
+  const uv: number[] = [];
+  const idx: number[] = [];
+  const righe = atlante.uvRighe();
+  const S = MISURE.sportoTenda;
+  const C = MISURE.tendaCaduta;
+  const M = MISURE.mantovanaH;
+  // falda: dal muro (z=0, y=0) all'esterno (z=S, y=-C)
+  const push = (
+    a: [number, number, number], b: [number, number, number],
+    c: [number, number, number], d: [number, number, number],
+    u0: number, v0: number, u1: number, v1: number,
+  ) => {
+    const base = pos.length / 3;
+    for (const p of [a, b, c, d]) pos.push(p[0], p[1], p[2]);
+    uv.push(u0, v0, u1, v0, u1, v1, u0, v1);
+    idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
+  };
+  // L'ordine dei vertici NON è un dettaglio: la normale che ne esce decide
+  // da che parte il sole illumina la tela. Col giro sbagliato la normale
+  // guarda in giù e il tendone resta nero anche a mezzogiorno.
+  push([-0.5, 0, 0], [-0.5, -C, S], [0.5, -C, S], [0.5, 0, 0], righe.u0, righe.v1, righe.u1, righe.v0);
+  // mantovana: pende dall'orlo esterno, e guarda la strada
+  push([-0.5, -C, S], [-0.5, -C - M, S], [0.5, -C - M, S], [0.5, -C, S], righe.u0, righe.v0, righe.u1, righe.v1);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  return geo;
+}
+
 export function Insegne() {
   const mondo = useMondo();
-
-  const dati = useMemo(() => costruisciInsegne(mondo), [mondo]);
-
+  const qualita = useLugo((s) => s.qualita);
+  const dati = useMemo(() => costruisciInsegne(mondo, qualita === 'bassa'), [mondo, qualita]);
   const tende = useRef<THREE.InstancedMesh>(null);
-  const vetrine = useRef<THREE.InstancedMesh>(null);
-  const porte = useRef<THREE.InstancedMesh>(null);
+  const geoTenda = useMemo(() => (dati ? geometriaTenda(dati.atlante) : null), [dati]);
+
+  // i loghi autorizzati entrano DENTRO l'atlante, dopo: nessuna texture in
+  // più, e se un file manca resta il pittogramma al suo posto
+  useEffect(() => {
+    if (!dati) return;
+    void dati.atlante.applicaLoghi(dati.botteghe);
+  }, [dati]);
+
+  // hook di collaudo: quante insegne, dove, e soprattutto quanti loghi sono
+  // finiti a schermo — che deve essere zero finché nessuno ha autorizzato
+  useEffect(() => {
+    const w = window as unknown as { __LUGO__?: Record<string, unknown> };
+    w.__LUGO__ = {
+      ...(w.__LUGO__ ?? {}),
+      insegne: () => {
+        if (!dati) return null;
+        // due fronti sullo stesso lato dello stesso edificio non devono
+        // accavallarsi: è quello che succedeva con tre botteghe sotto lo
+        // stesso portico, larghe 3,4 m fisse e centrate sul nodo
+        const perLato = new Map<object, Map<number, [number, number][]>>();
+        let sovrapposte = 0;
+        for (const f of dati.fronti) {
+          if (!f.edificio || f.lato < 0) continue;
+          let lati = perLato.get(f.edificio);
+          if (!lati) {
+            lati = new Map();
+            perLato.set(f.edificio, lati);
+          }
+          const g = lati.get(f.lato) ?? [];
+          for (const [a, b] of g) if (f.t0 < b - 1e-6 && a < f.t1 - 1e-6) sovrapposte++;
+          g.push([f.t0, f.t1]);
+          lati.set(f.lato, g);
+        }
+        return {
+          cartelli: dati.fronti.length,
+          bandiere: dati.fronti.filter((f) => f.larghezza >= 1.15).length,
+          senzaMuro: dati.fronti.filter((f) => !f.edificio).length,
+          sovrapposte,
+          loghi: dati.botteghe.filter((b) => b.logo).length,
+          simboli: dati.botteghe.reduce<Record<string, number>>((acc, b) => {
+            acc[b.pittogramma] = (acc[b.pittogramma] ?? 0) + 1;
+            return acc;
+          }, {}),
+          atlante: { w: dati.atlante.lato, h: dati.atlante.lato, slot: dati.atlante.slot },
+        };
+      },
+      // dove sta una bottega e da che parte guarda la sua insegna: serve
+      // alle cartoline del collaudo
+      bottega: (i = 0) => {
+        if (!dati || !dati.fronti.length) return null;
+        const f = dati.fronti[i % dati.fronti.length];
+        const b = dati.botteghe[i % dati.botteghe.length];
+        return {
+          nome: b.nome,
+          simbolo: b.pittogramma,
+          x: f.x, z: f.z, nx: f.nx, nz: f.nz,
+          y: f.yCimasa,
+          larghezza: f.larghezza,
+        };
+      },
+    };
+  }, [dati]);
 
   useLayoutEffect(() => {
     if (!dati || !tende.current) return;
     const m = new THREE.Matrix4();
     const q = new THREE.Quaternion();
     const e = new THREE.Euler();
-    const col = new THREE.Color();
-    const uno = new THREE.Vector3(1, 1, 1);
-    dati.cartelli.forEach((c, i) => {
-      const angolo = Math.atan2(c.ez, c.ex);
-      e.set(-0.45, -angolo, 0, 'YXZ');
+    const s = new THREE.Vector3();
+    const p = new THREE.Vector3();
+    dati.fronti.forEach((f, i) => {
+      const larga = Math.max(1.2, Math.min(f.larghezza - 0.5, 4.6));
+      // la tenda guarda fuori dal muro: il suo +Z locale va sulla normale
+      e.set(0, Math.atan2(f.nx, f.nz), 0, 'YXZ');
       q.setFromEuler(e);
-      m.compose(new THREE.Vector3(c.x + c.nx * 0.55, 2.5, c.z + c.nz * 0.55), q, uno);
+      s.set(larga, 1, 1);
+      p.set(f.x + f.nx * 0.06, f.yCimasa - 0.06, f.z + f.nz * 0.06);
+      m.compose(p, q, s);
       tende.current!.setMatrixAt(i, m);
-      const suo = mondo.negozi[c.negozio];
-      tende.current!.setColorAt(i, col.set(identita(suo?.nome ?? '', suo?.categoria ?? 'servizi').tenda));
-      // vetrina e porta del negozio, sotto l'insegna
-      e.set(0, -angolo, 0, 'YXZ');
-      q.setFromEuler(e);
-      m.compose(new THREE.Vector3(c.x + c.nx * 0.07 - c.ex * 0.5, 1.1, c.z + c.nz * 0.07 - c.ez * 0.5), q, uno);
-      vetrine.current?.setMatrixAt(i, m);
-      m.compose(new THREE.Vector3(c.x + c.nx * 0.07 + c.ex * 1.15, 1.1, c.z + c.nz * 0.07 + c.ez * 1.15), q, uno);
-      porte.current?.setMatrixAt(i, m);
+      tende.current!.setColorAt(i, dati.botteghe[i].identita.tenda);
     });
-    for (const ref of [tende, vetrine, porte]) {
-      if (ref.current) {
-        ref.current.count = dati.cartelli.length;
-        ref.current.instanceMatrix.needsUpdate = true;
-        if (ref.current.instanceColor) ref.current.instanceColor.needsUpdate = true;
-      }
-    }
-  }, [dati]);
+    tende.current.count = dati.fronti.length;
+    tende.current.instanceMatrix.needsUpdate = true;
+    if (tende.current.instanceColor) tende.current.instanceColor.needsUpdate = true;
+  }, [dati, geoTenda]);
 
-  // le insegne di categoria a bandiera: la T dei tabacchi, la croce verde
-  const targaT = useMemo(
-    () => (typeof document !== 'undefined' ? usaTargaT() : null),
-    [],
-  );
-
-  if (!dati) return null;
+  if (!dati || !geoTenda) return null;
 
   return (
     <group>
-      <mesh geometry={dati.geo}>
-        <meshBasicMaterial map={dati.atlas} side={THREE.DoubleSide} />
+      {/* Tutte le insegne di Lugo, fasce e bandiere comprese, in una sola
+          chiamata di disegno. Il materiale è "basic" di proposito: un'insegna
+          commerciale è illuminata, e a piena luminosità si legge di notte
+          come di giorno senza costare un lume. */}
+      <mesh geometry={dati.geo} frustumCulled={false}>
+        <meshBasicMaterial map={dati.atlante.tex} vertexColors side={THREE.DoubleSide} />
       </mesh>
-      <instancedMesh ref={tende} args={[undefined, undefined, Math.max(1, dati.cartelli.length)]} frustumCulled={false}>
-        <boxGeometry args={[3.0, 0.05, 1.0]} />
-        <meshLambertMaterial />
+      <instancedMesh
+        ref={tende}
+        args={[geoTenda, undefined, Math.max(1, dati.fronti.length)]}
+        frustumCulled={false}
+        castShadow
+      >
+        {/* niente vertexColors: il colore di ogni tenda arriva da
+            setColorAt, e chiedere anche gli attributi di vertice — che
+            questa geometria non ha — lasciava tutti i tendoni neri */}
+        <meshLambertMaterial map={dati.atlante.tex} side={THREE.DoubleSide} />
       </instancedMesh>
-      <instancedMesh ref={vetrine} args={[undefined, undefined, Math.max(1, dati.cartelli.length)]} frustumCulled={false}>
-        <boxGeometry args={[1.9, 2.0, 0.06]} />
-        <meshLambertMaterial color="#27313E" emissive="#4E4230" emissiveIntensity={0.35} />
-      </instancedMesh>
-      <instancedMesh ref={porte} args={[undefined, undefined, Math.max(1, dati.cartelli.length)]} frustumCulled={false}>
-        <boxGeometry args={[0.95, 2.2, 0.06]} />
-        <meshLambertMaterial color="#2A1E14" />
-      </instancedMesh>
-
-      {dati.cartelli.map((c, i) => {
-        const cat = mondo.negozi[c.negozio]?.categoria;
-        if (cat === 'tabacchi' && targaT) {
-          return (
-            <mesh
-              key={'t' + i}
-              position={[c.x + c.nx * 0.55, 3.7, c.z + c.nz * 0.55]}
-              rotation={[0, Math.atan2(c.ex, c.ez), 0]}
-            >
-              <planeGeometry args={[0.6, 0.7]} />
-              <meshBasicMaterial map={targaT} side={THREE.DoubleSide} />
-            </mesh>
-          );
-        }
-        if (cat === 'farmacia') {
-          return (
-            <group
-              key={'f' + i}
-              position={[c.x + c.nx * 0.55, 3.7, c.z + c.nz * 0.55]}
-              rotation={[0, Math.atan2(c.ex, c.ez), 0]}
-            >
-              <mesh>
-                <boxGeometry args={[0.75, 0.24, 0.06]} />
-                <meshLambertMaterial color="#1E8A46" emissive="#2ECC6E" emissiveIntensity={1.4} />
-              </mesh>
-              <mesh>
-                <boxGeometry args={[0.24, 0.75, 0.06]} />
-                <meshLambertMaterial color="#1E8A46" emissive="#2ECC6E" emissiveIntensity={1.4} />
-              </mesh>
-            </group>
-          );
-        }
-        return null;
-      })}
     </group>
   );
-}
-
-/** La targa dei tabacchi: T bianca in campo nero, come dal vivo. */
-function usaTargaT(): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 96;
-  canvas.height = 112;
-  const ctx = canvas.getContext('2d')!;
-  ctx.fillStyle = '#14161C';
-  ctx.fillRect(0, 0, 96, 112);
-  ctx.strokeStyle = '#E8E2D2';
-  ctx.lineWidth = 4;
-  ctx.strokeRect(5, 5, 86, 102);
-  ctx.fillStyle = '#F0EADA';
-  ctx.font = 'bold 72px Georgia, serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('T', 48, 58);
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.anisotropy = 4;
-  return tex;
 }
