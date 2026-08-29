@@ -5,6 +5,7 @@
 import type { StatoAuto } from './car';
 import type { StatoPersona } from './character';
 import type { Npc } from './npc';
+import type { Modalita } from './store';
 
 export interface RuntimeGioco {
   auto: StatoAuto;
@@ -18,6 +19,15 @@ export interface RuntimeGioco {
   cameraYaw: number;
   /** Modulo dell'ultimo urto (m/s), per audio/feedback. */
   urto: number;
+  /**
+   * Quanto si è "in sella": 0 a piedi, 1 in bici, con la rampa in mezzo.
+   * Sta qui e non nello store perché cambia a ogni fotogramma come
+   * faseRuote, e perché è un numero continuo: la posa del ciclista si
+   * MESCOLA con quella del camminatore invece di sostituirla di scatto.
+   */
+  sella: number;
+  /** Inclinazione in curva della bici e di chi ci sta sopra (rad). */
+  piega: number;
 }
 
 export const runtime: {
@@ -48,6 +58,24 @@ export const runtime: {
   frenata: boolean;
   /** Gli assi di movimento dell'ultimo frame (li legge la camera). */
   assi: { ax: number; az: number };
+  /**
+   * L'indice, dentro la lista delle imperfezioni, della bici che si sta
+   * guidando (−1 = nessuna). La bici in sella È quella che era appoggiata
+   * al muro: non se ne crea una nuova, si toglie quella dal muro.
+   */
+  biciInSella: number;
+  /**
+   * Gli indici delle bici da ridisegnare, che chi disegna svuota appena le
+   * ha riscritte. Prendere o posare una bici deve costare sei matrici, non
+   * un ri-render dell'intera città.
+   */
+  biciSporche: number[];
+  /**
+   * Contatore di revisione delle imperfezioni: un intero confrontato una
+   * volta per fotogramma è gratis, e non fa passare da React niente che
+   * cambia in mezzo al gioco.
+   */
+  revImperfezioni: number;
 } = {
   rt: null,
   gazzella: null,
@@ -57,10 +85,17 @@ export const runtime: {
   caccia: false,
   frenata: false,
   assi: { ax: 0, az: 0 },
+  biciInSella: -1,
+  biciSporche: [],
+  revImperfezioni: 0,
 };
 
-/** Posizione del giocatore attivo (auto o persona) secondo la modalità. */
-export function posGiocatore(mode: 'auto' | 'piedi'): { x: number; z: number; yaw: number } {
+/**
+ * Posizione del giocatore attivo secondo la modalità. La bici VIVE su
+ * rt.persona: è la scelta che fa funzionare da sola metà del gioco
+ * (camera, minimappa, missioni, eventi, nome della via) senza toccarla.
+ */
+export function posGiocatore(mode: Modalita): { x: number; z: number; yaw: number } {
   const rt = runtime.rt;
   if (!rt) return { x: 0, z: 0, yaw: 0 };
   const t = mode === 'auto' ? rt.auto : rt.persona;

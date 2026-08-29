@@ -508,6 +508,14 @@
   white-space: nowrap;
 }
 
+/* Il suggerimento che costa una stella: rosso e riconoscibile a colpo
+   d'occhio. Nessun keyframe e nessun lampeggio — lampeggia già la stella
+   del ricercato, e due cose che pulsano insieme non ne segnalano nessuna. */
+.lugo-hint-allerta {
+  color: var(--pericolo);
+  border-color: rgba(255, 106, 92, 0.45);
+}
+
 /* ── schede cinematografiche di missione ──────────────────────────────── */
 
 .lugo-scheda {

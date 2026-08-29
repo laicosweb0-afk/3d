@@ -158,11 +158,22 @@ function Gamba({
     const corsa = Math.min(1, Math.max(0, (rt.vPersona - 2.6) / 2.6));
     // ampiezza del passo: legata alla falcata vera, così i piedi non strisciano
     const ampiezza = (0.5 + corsa * 0.28) * v;
-    anca.current.rotation.z = Math.sin(rt.persona.fase + fase) * ampiezza;
+    const camminata = Math.sin(rt.persona.fase + fase) * ampiezza;
+    // In sella la gamba non cammina, pedala. Col modello rivolto a +X un
+    // angolo POSITIVO su un arto che pende porta il piede in AVANTI: 0,62
+    // rad mettono le cosce sui pedali, e il ginocchio resta piegato
+    // all'indietro (negativo) come già fa camminando. La fase è la stessa
+    // di sempre, solo che ora avanza a 1,15 rad/m invece di 3,5: si pedala
+    // a 88 giri al minuto senza nessun contatore nuovo.
+    const sella = rt.sella;
+    const pedalata = 0.62 + Math.sin(rt.persona.fase + fase) * 0.3;
+    anca.current.rotation.z = camminata * (1 - sella) + pedalata * sella;
     if (ginocchio.current) {
       // il ginocchio va all'indietro, verso il tallone: angolo NEGATIVO
       const piega = Math.max(0, -Math.sin(rt.persona.fase + fase - 0.5));
-      ginocchio.current.rotation.z = -piega * (0.7 + corsa * 0.6) * v;
+      const camminaGin = -piega * (0.7 + corsa * 0.6) * v;
+      const pedalaGin = -(0.95 + Math.sin(rt.persona.fase + fase + 1.9) * 0.45);
+      ginocchio.current.rotation.z = camminaGin * (1 - sella) + pedalaGin * sella;
     }
   });
 
@@ -269,10 +280,18 @@ function Braccio({
       if (gomito.current) gomito.current.rotation.z = gomitoZ;
       return;
     }
-    spalla.current.rotation.z = Math.sin(rt.persona.fase + fase) * (0.42 + corsa * 0.34) * v;
+    // Le mani vanno sul manubrio e ci restano: senza la mescola su rt.sella
+    // le braccia continuavano a dondolare mentre si pedalava, e la bici
+    // sembrava passare sotto uno che cammina nel vuoto.
+    const sella = rt.sella;
+    const camminata = Math.sin(rt.persona.fase + fase) * (0.42 + corsa * 0.34) * v;
+    spalla.current.rotation.z = camminata * (1 - sella) + 1.05 * sella;
     // in corsa il gomito resta piegato, da vero podista; il braccio si
     // piega all'indietro, quindi negativo
-    if (gomito.current) gomito.current.rotation.z = -(0.14 + corsa * 1.05) - (1 - v) * 0.06;
+    if (gomito.current) {
+      const camminaGomito = -(0.14 + corsa * 1.05) - (1 - v) * 0.06;
+      gomito.current.rotation.z = camminaGomito * (1 - sella) + -0.2 * sella;
+    }
   });
 
   return (
@@ -405,13 +424,19 @@ export const Character = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function 
     const corsa = Math.min(1, Math.max(0, (rt.vPersona - 2.6) / 2.6));
     const t = clock.elapsedTime;
 
+    // in sella non si rimbalza a ogni passo e non si sposta il peso da un
+    // piede all'altro: si pende con la bici, tutti e due attorno alla
+    // stessa linea a terra (rotation.x positivo = verso destra, come il
+    // rollio dell'auto)
+    const sella = rt.sella;
     // il corpo intero sale e scende col passo; da fermo respira appena
     if (corpo.current) {
       const rimbalzo = Math.abs(Math.sin(rt.persona.fase)) * 0.045 * v;
       const respiro = (1 - v) * Math.sin(t * 1.5) * 0.008;
-      corpo.current.position.y = rimbalzo + respiro;
+      corpo.current.position.y = (rimbalzo + respiro) * (1 - sella);
       // da fermo il peso si sposta piano da un piede all'altro
-      corpo.current.rotation.x = (1 - v) * Math.sin(t * 0.8) * 0.035;
+      corpo.current.rotation.x =
+        (1 - v) * Math.sin(t * 0.8) * 0.035 * (1 - sella) + rt.piega * sella;
     }
     // il busto ruota attorno alla VITA, non attorno ai piedi: correndo si
     // sporge in avanti (angolo negativo col modello rivolto a +X)
@@ -424,13 +449,19 @@ export const Character = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function 
       // sale e ridiscende lungo il colpo: la torsione accompagna il braccio
       // e si scioglie insieme a lui
       const curvaColpo = Math.sin(colpo * Math.PI);
-      busto.current.rotation.z = -corsa * 0.26 - v * 0.05 - 0.12 * curvaColpo;
-      busto.current.rotation.x = Math.sin(rt.persona.fase) * 0.035 * v;
+      // in sella ci si sporge sul manubrio: −0,5 rad di busto, che è più
+      // della corsa. Il termine del pugno resta dentro la parte "a piedi"
+      // e non si somma alla posa del ciclista, perché in sella un pugno
+      // non si tira (il Player lo condiziona a mode === 'piedi')
+      const aPiedi = -corsa * 0.26 - v * 0.05 - 0.12 * curvaColpo;
+      busto.current.rotation.z = aPiedi * (1 - sella) + -0.5 * sella;
+      busto.current.rotation.x = Math.sin(rt.persona.fase) * 0.035 * v * (1 - sella);
       busto.current.rotation.y = -0.26 * curvaColpo;
     }
-    // la testa resta più dritta del busto e ondeggia appena
+    // la testa resta più dritta del busto e ondeggia appena; in sella si
+    // rialza sulla strada invece di seguire il busto piegato in avanti
     if (testa.current) {
-      testa.current.rotation.z = corsa * 0.2;
+      testa.current.rotation.z = corsa * 0.2 * (1 - sella) + 0.42 * sella;
       testa.current.rotation.y = (1 - v) * Math.sin(t * 0.55) * 0.12;
     }
   });

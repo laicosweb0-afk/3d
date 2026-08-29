@@ -25,7 +25,7 @@ import { runtime } from '@/lib/lugo/runtime';
 import { useLugo } from '@/lib/lugo/store';
 import { LUCE, PALETTE } from '@/lib/lugo/palette';
 import { caratteriCitta } from '@/lib/lugo/carattere';
-import { imperfezioniCitta } from '@/lib/lugo/imperfezioni';
+import { imperfezioni } from '@/lib/lugo/imperfezioni';
 import { puntiInteresse } from '@/lib/lugo/poi';
 import { infraGioco } from '@/lib/lugo/veicoli';
 import { passaTempo, tempo } from '@/lib/lugo/tempo';
@@ -418,7 +418,7 @@ function HookVerifica() {
           zone: conta((c) => c.zona),
           botteghe: k.filter((c) => c.bottega).length,
           tinteDistinte: new Set(k.map((c) => c.tinta.getHexString())).size,
-          imperfezioni: imperfezioniCitta(mondo, infraGioco(mondo).fisica).length,
+          imperfezioni: imperfezioni(mondo, infraGioco(mondo).fisica).length,
         };
       },
       // orologio pilotabile: serve alle cartoline notturne della verifica

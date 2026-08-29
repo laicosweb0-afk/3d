@@ -17,7 +17,7 @@ import {
   stepGazzella,
   type Npc,
 } from '@/lib/lugo/npc';
-import { runtime } from '@/lib/lugo/runtime';
+import { runtime, posGiocatore } from '@/lib/lugo/runtime';
 import {
   stepIncontro,
   incontroInCorso,
@@ -233,7 +233,7 @@ export function Npcs() {
     if (!rt || !p.torso) return;
 
     if (st.fase === 'gioco') {
-      const esito = stepNpcs(npcs, dt, mondo, fisica, rt, st.mode === 'auto');
+      const esito = stepNpcs(npcs, dt, mondo, fisica, rt, st.mode);
       if (esito.frase && frame.clock.elapsedTime - ultimaFrase.current > 9) {
         ultimaFrase.current = frame.clock.elapsedTime;
         st.setAvviso(esito.frase);
@@ -363,8 +363,12 @@ export function Npcs() {
     // gazzella di pattuglia (o d'inseguimento, se sei ricercato)
     if (gazzella && gruppoGazzella.current) {
       if (st.fase === 'gioco') {
-        const bersaglio =
-          runtime.caccia && st.mode === 'auto' ? { x: rt.auto.x, z: rt.auto.z } : undefined;
+        // La gazzella insegue CHIUNQUE sia ricercato, non solo chi è in
+        // auto: rubata una bici e scappati a piedi, prima i Carabinieri non
+        // partivano mai e la stella restava accesa senza che succedesse
+        // niente. Il fermo, col suo controllo di velocità, sta nel Player.
+        const g = posGiocatore(st.mode);
+        const bersaglio = runtime.caccia ? { x: g.x, z: g.z } : undefined;
         stepGazzella(gazzella, dt, bersaglio);
       }
       gruppoGazzella.current.position.set(gazzella.x, 0, gazzella.z);

@@ -111,7 +111,10 @@ export function Joystick() {
         >
           E
         </button>
-        {mode === 'auto' ? (
+        {/* in sella si frena, non si corre e non si tira un pugno: il
+            pulsante a schermo si sceglie su 'piedi' e non su 'auto', o in
+            bici comparirebbero CORRI e ✊ */}
+        {mode !== 'piedi' ? (
           <button
             type="button"
             className="lugo-pulsante"

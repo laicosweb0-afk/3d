@@ -1158,6 +1158,253 @@ try {
     }
   }
 
+  // ── fase 3e: la bici si prende, si pedala e si lascia ────────────────
+  // Tre furti, tre fasi, e ognuna si accende da sola in base al proprio
+  // hook: prima che il codice del furto esistesse questo blocco non c'era,
+  // e quando c'è non tocca niente di quello che viene prima.
+  if ((await lugo('typeof L.biciVicina')) === 'function') {
+    // si scende, se si sta guidando: una bici si prende a piedi
+    for (let i = 0; i < 4 && (await lugo('L.mode()')) !== 'piedi'; i++) {
+      await page.keyboard.down('Space');
+      await page.waitForTimeout(1200);
+      await page.keyboard.up('Space');
+      await page.keyboard.press('KeyE');
+      await page.waitForTimeout(600);
+    }
+    await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+    const libere0 = (await lugo('L.bici()')).libere;
+    const b = await lugo('L.biciVicina()');
+    if (!b) {
+      ko('la bici si prende', 'nessuna bici libera in tutta Lugo');
+    } else {
+      await page.evaluate((q) => window.__LUGO__.teleport(q.x, q.z), b);
+      await page.waitForTimeout(900);
+      // il costo del fotogramma A PIEDI, qui davanti alla bici: è il
+      // termine di paragone dell'unica cosa che la bici aggiunge
+      const rPiedi = await lugo('L.render()');
+      await page.keyboard.press('KeyE');
+      await page.waitForTimeout(600);
+      const modeBici = await lugo('L.mode()');
+      if (modeBici === 'bici') ok('la bici si prende', `#${b.i} al muro`);
+      else ko('la bici si prende', `mode=${modeBici}, qui c'è ${JSON.stringify(await lugo('L.furtoQui()'))}`);
+
+      const dopoPresa = (await lugo('L.bici()')).libere;
+      if (dopoPresa === libere0 - 1) ok('la bici sparisce dal muro', `${libere0} → ${dopoPresa}`);
+      else ko('la bici sparisce dal muro', `${libere0} → ${dopoPresa}`);
+
+      // Le due draw call della bici esistono solo in sella, quindi si
+      // misura la DIFFERENZA nello stesso identico punto: il numero
+      // assoluto dipende da dove è appoggiata la bici, e confrontare un
+      // vicolo con piazza Baracca non direbbe niente di questa modifica.
+      const rBici = await lugo('L.render()');
+      if (rBici.triangoli < 700_000 && rBici.chiamate - rPiedi.chiamate <= 2) {
+        ok('la bici in sella costa due chiamate', `${rPiedi.chiamate} → ${rBici.chiamate} draw call`);
+      } else {
+        ko('la bici in sella costa due chiamate', `${rPiedi.chiamate} → ${rBici.chiamate} draw call, ${(rBici.triangoli / 1000).toFixed(0)}k triangoli`);
+      }
+
+      // R raddrizza anche in bici, e qui serve davvero: la bici era
+      // appoggiata a un muro, e chi ci sale si ritrova col manubrio contro
+      // la facciata. Una pedalata misurata contro un muro non misura la
+      // bici, misura il muro.
+      await page.keyboard.press('KeyR');
+      await page.waitForTimeout(900);
+
+      // La finestra è a tempo di GIOCO, non di orologio: in headless il
+      // rasterizzatore software fa pochi fotogrammi, e quattro secondi veri
+      // possono essere mezzo secondo di mondo. Si aspetta che i metri
+      // arrivino, con un tetto.
+      const p0 = await lugo('L.pos()');
+      await page.keyboard.down('ArrowUp');
+      let metri = 0;
+      for (let i = 0; i < 40 && metri <= 4; i++) {
+        await page.waitForTimeout(500);
+        const p1 = await lugo('L.pos()');
+        metri = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
+      }
+      await page.keyboard.up('ArrowUp');
+      if (metri > 4) ok('si pedala', `${metri.toFixed(1)} m`);
+      else ko('si pedala', `spostamento ${metri.toFixed(2)} m`);
+      await page.screenshot({ path: join(SHOTS, '09-bici.png') });
+
+      // si scende quasi da fermi, come dall'auto
+      await page.keyboard.down('Space');
+      await page.waitForTimeout(1500);
+      await page.keyboard.up('Space');
+      await page.keyboard.press('KeyE');
+      await page.waitForTimeout(700);
+      const modeGiu = await lugo('L.mode()');
+      const libereDopo = (await lugo('L.bici()')).libere;
+      const qui = await lugo('L.pos()');
+      const laBici = await lugo('L.biciVicina()');
+      const vicina = laBici ? Math.hypot(laBici.x - qui[0], laBici.z - qui[1]) : Infinity;
+      if (modeGiu === 'piedi' && libereDopo === libere0 && vicina < 3) {
+        ok('la bici resta dove l’hai lasciata', `a ${vicina.toFixed(1)} m`);
+      } else {
+        ko('la bici resta dove l’hai lasciata', `mode=${modeGiu}, libere ${libereDopo}/${libere0}, a ${vicina.toFixed(1)} m`);
+      }
+
+      // un furto si vede, e poi passa
+      const caldo = await lugo('L.ricercato()');
+      if (caldo.wanted >= 1) ok('un furto si vede', `${caldo.wanted} stella/e, calore ${caldo.calore}`);
+      else ko('un furto si vede', JSON.stringify(caldo));
+      for (let i = 0; i < 4 && (await lugo('L.ricercato()')).wanted > 0; i++) {
+        await page.evaluate(() => window.__LUGO__.invecchia(25));
+        await page.waitForTimeout(600);
+      }
+      const freddo = await lugo('L.ricercato()');
+      if (freddo.wanted === 0) ok('e passa', `calore sceso a ${freddo.calore}`);
+      else ko('e passa', JSON.stringify(freddo));
+    }
+  }
+
+  // ── fase 3f: l'auto in sosta, e il suo ingombro che sparisce ─────────
+  if ((await lugo('typeof L.postoAuto')) === 'function') {
+    for (let i = 0; i < 4 && (await lugo('L.mode()')) !== 'piedi'; i++) {
+      await page.keyboard.press('KeyE');
+      await page.waitForTimeout(600);
+    }
+    const presenti0 = (await lugo('L.parcheggi()')).presenti;
+    const p = await lugo('L.postoAuto()');
+    if (!p) {
+      ko('l’auto in sosta si prende', 'nessuna auto in sosta in mappa');
+    } else {
+      const solida = await lugo(`L.libero(${p.x}, ${p.z}, 1.2)`);
+      if (solida === false) ok('le auto in sosta sono solide');
+      else ko('le auto in sosta sono solide', 'ci si passa attraverso');
+
+      await page.evaluate((q) => window.__LUGO__.teleport(q.lato[0], q.lato[1]), p);
+      await page.waitForTimeout(700);
+      await page.keyboard.press('KeyE');
+      await page.waitForTimeout(700);
+      const modeAuto = await lugo('L.mode()');
+      if (modeAuto === 'auto') ok('l’auto in sosta si prende', `stallo #${p.i}`);
+      else ko('l’auto in sosta si prende', `mode=${modeAuto}, qui c'è ${JSON.stringify(await lugo('L.furtoQui()'))}`);
+
+      // la prova che la spatial hash è stata MODIFICATA e non ricostruita:
+      // dove c'era l'auto adesso si passa
+      const vuoto = await lugo(`L.libero(${p.x}, ${p.z}, 1.2)`);
+      if (vuoto === true) ok('l’ingombro dell’auto rubata sparisce dalla fisica');
+      else ko('l’ingombro dell’auto rubata sparisce dalla fisica', 'il collider è rimasto lì');
+
+      const presenti1 = (await lugo('L.parcheggi()')).presenti;
+      if (presenti1 === presenti0 - 1) ok('lo stallo resta, l’auto no', `${presenti0} → ${presenti1}`);
+      else ko('lo stallo resta, l’auto no', `${presenti0} → ${presenti1}`);
+
+      const tinta = await lugo('L.tintaViva()');
+      if (tinta === p.tinta) ok('si guida quella, col suo colore', tinta);
+      else ko('si guida quella, col suo colore', `${tinta} invece di ${p.tinta}`);
+
+      const caldo = await lugo('L.ricercato()');
+      if (caldo.wanted >= 2) ok('due stelle per un’auto', `${caldo.wanted} stelle`);
+      else ko('due stelle per un’auto', JSON.stringify(caldo));
+
+      const q0 = await lugo('L.pos()');
+      await page.keyboard.down('ArrowUp');
+      let metri = 0;
+      for (let i = 0; i < 40 && metri <= 3; i++) {
+        await page.waitForTimeout(500);
+        const q1 = await lugo('L.pos()');
+        metri = Math.hypot(q1[0] - q0[0], q1[1] - q0[1]);
+      }
+      await page.keyboard.up('ArrowUp');
+      if (metri > 3) ok('e parte davvero', `${metri.toFixed(1)} m`);
+      else ko('e parte davvero', `spostamento ${metri.toFixed(2)} m`);
+      await page.screenshot({ path: join(SHOTS, '09-auto-sosta.png') });
+    }
+  }
+
+  // ── fase 3g: il traffico frena, e poi te la porti via ────────────────
+  if ((await lugo('typeof L.davantiATraffico')) === 'function') {
+    for (let i = 0; i < 4 && (await lugo('L.mode()')) !== 'piedi'; i++) {
+      await page.keyboard.down('Space');
+      await page.waitForTimeout(1200);
+      await page.keyboard.up('Space');
+      await page.keyboard.press('KeyE');
+      await page.waitForTimeout(600);
+    }
+    const t = await lugo('L.davantiATraffico()');
+    if (!t) {
+      ko('l’auto frena se ti pari davanti', 'nessuna auto del traffico disponibile');
+    } else {
+      const presentiPrima = (await lugo('L.parcheggi()')).presenti;
+      const furtiPrima = await lugo('L.furti()');
+      // `false`: l'auto che si stava guidando RESTA dov'era invece di
+      // seguire il teletrasporto. Serve perché è esattamente quello che
+      // capita giocando — la lasci in strada e vai — ed è l'unico modo di
+      // vedere se, portandone via un'altra, quella vecchia resta lì
+      await page.evaluate((q) => window.__LUGO__.teleport(q.x, q.z, undefined, false), t);
+      // si aspetta che la frenata FINISCA: nove metri di vista e 9 m/s² di
+      // decelerazione sono meno di un secondo di gioco, ma in headless un
+      // secondo di gioco può volerne dieci d'orologio
+      await page
+        .waitForFunction((k) => window.__LUGO__.traffico()[k].v < 0.8, t.i, { timeout: 30000 })
+        .catch(() => {});
+      const a = (await lugo('L.traffico()'))[t.i];
+      if (a.v < 0.8) ok('l’auto frena se ti pari davanti', `v=${a.v.toFixed(2)} m/s`);
+      else ko('l’auto frena se ti pari davanti', `v=${a.v.toFixed(2)} m/s`);
+
+      await page.waitForTimeout(1600);
+      const a2 = (await lugo('L.traffico()'))[t.i];
+      const scivolata = Math.hypot(a2.x - a.x, a2.z - a.z);
+      if (scivolata < 1.2) ok('e resta ferma finché non ti sposti', `${scivolata.toFixed(2)} m in 1,6 s`);
+      else ko('e resta ferma finché non ti sposti', `si è mossa di ${scivolata.toFixed(2)} m`);
+
+      // Ci si avvicina DAVANTI, non di fianco: il corridoio della frenata è
+      // largo 1,6 m per lato, e mettersi al fianco vorrebbe dire uscirne —
+      // l'auto ripartirebbe proprio mentre stai per salirci.
+      await page.evaluate(
+        (q) =>
+          window.__LUGO__.teleport(
+            q.x + Math.cos(q.yaw) * 2.2,
+            q.z + Math.sin(q.yaw) * 2.2,
+            undefined,
+            false,
+          ),
+        a2,
+      );
+      await page.waitForTimeout(800);
+      await page.keyboard.press('KeyE');
+      await page.waitForTimeout(700);
+      const modeDopo = await lugo('L.mode()');
+      const rubata = (await lugo('L.traffico()'))[t.i].rubata;
+      if (modeDopo === 'auto' && rubata === true) {
+        ok('l’auto del traffico si porta via', `auto #${t.i}`);
+      } else {
+        ko('l’auto del traffico si porta via', `mode=${modeDopo}, rubata=${rubata}, qui c'è ${JSON.stringify(await lugo('L.furtoQui()'))}`);
+      }
+
+      const furtiDopo = await lugo('L.furti()');
+      if (furtiDopo.auto === furtiPrima.auto + 1 && furtiDopo.bici >= 1) {
+        ok('i furti si contano', `${furtiDopo.bici} bici, ${furtiDopo.auto} auto`);
+      } else {
+        ko('i furti si contano', JSON.stringify(furtiDopo));
+      }
+
+      // quella che stavi guidando non svanisce: resta in sosta dove l'hai
+      // lasciata, con il suo collider, e chi passa di lì la ritrova
+      const presentiDopo = (await lugo('L.parcheggi()')).presenti;
+      if (presentiDopo === presentiPrima + 1) {
+        ok('l’auto che lasci resta parcheggiata', `${presentiPrima} → ${presentiDopo}`);
+      } else {
+        ko('l’auto che lasci resta parcheggiata', `${presentiPrima} → ${presentiDopo}`);
+      }
+
+      const caldo = await lugo('L.ricercato()');
+      if (caldo.wanted >= 2) ok('e i Carabinieri si muovono', `${caldo.wanted} stelle`);
+      else ko('e i Carabinieri si muovono', JSON.stringify(caldo));
+      await page.screenshot({ path: join(SHOTS, '09-furto-traffico.png') });
+      // il mondo è tornato coerente? due righe che lo dicono a colpo d'occhio
+      ok('il mondo dopo i furti', `${JSON.stringify(await lugo('L.bici()'))} · ${JSON.stringify(await lugo('L.parcheggi()'))}`);
+    }
+    // si torna in auto per le fasi successive, come fanno già tutte le altre
+    for (let i = 0; i < 4 && (await lugo('L.mode()')) !== 'auto'; i++) {
+      await page.keyboard.press('KeyE');
+      await page.waitForTimeout(500);
+    }
+    await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+  }
+
   // ── fase 6: cartoline dai landmark ───────────────────────────────────
   // niente pannelli davanti alla città: le cartoline devono mostrare Lugo
   await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());

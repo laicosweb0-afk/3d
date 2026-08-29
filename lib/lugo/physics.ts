@@ -19,10 +19,16 @@ export class MondoFisico {
     for (const b of mondo.buildings) this.inserisci(b.collider);
   }
 
-  /** Ostacolo OBB aggiuntivo (auto parcheggiate, arredi). */
-  aggiungiObb(cx: number, cz: number, hw: number, hd: number, angle: number): void {
+  /**
+   * Ostacolo OBB aggiuntivo (auto parcheggiate, arredi). Restituisce il
+   * collider appena inserito: per toglierlo bisogna avere in mano
+   * ESATTAMENTE quell'oggetto, perché la hash confronta per identità e non
+   * per valore. Chi non deve rimuovere niente ignora il valore e continua
+   * a compilare come prima.
+   */
+  aggiungiObb(cx: number, cz: number, hw: number, hd: number, angle: number): ColliderRT {
     const r = Math.hypot(hw, hd);
-    this.inserisci({
+    const c: ColliderRT = {
       tipo: 'obb',
       cx,
       cz,
@@ -35,14 +41,23 @@ export class MondoFisico {
       minZ: cz - r,
       maxX: cx + r,
       maxZ: cz + r,
-    });
+    };
+    this.inserisci(c);
+    return c;
   }
 
   private chiave(cx: number, cz: number): number {
     return cz * this.cols + cx;
   }
 
-  private inserisci(c: ColliderRT) {
+  /**
+   * Percorre il rettangolo di celle coperto dalla bbox del collider. Sta in
+   * un posto solo perché inserimento e rimozione devono attraversare lo
+   * STESSO insieme di celle: scritti due volte, prima o poi divergono, e
+   * quel che resta è un fantasma solido in mezzo alla strada che nessuno
+   * vede e che ferma le auto.
+   */
+  private celle(c: ColliderRT, fn: (cella: ColliderRT[], k: number) => void): void {
     const x0 = Math.floor((c.minX - this.minX) / CELLA);
     const x1 = Math.floor((c.maxX - this.minX) / CELLA);
     const z0 = Math.floor((c.minZ - this.minZ) / CELLA);
@@ -55,9 +70,35 @@ export class MondoFisico {
           cella = [];
           this.hash.set(k, cella);
         }
-        cella.push(c);
+        fn(cella, k);
       }
     }
+  }
+
+  private inserisci(c: ColliderRT) {
+    this.celle(c, (cella) => cella.push(c));
+  }
+
+  /**
+   * Toglie un ostacolo dalla fisica senza ricostruire niente.
+   *
+   * Ricostruire la spatial hash per un'auto che se ne va vorrebbe dire
+   * reinserire migliaia di edifici: mezzo secondo di scatto nel mezzo della
+   * partita, ogni volta che si prende un'auto in sosta. Il collider però si
+   * porta dietro la sua bbox, quindi le celle da ripulire sono ESATTAMENTE
+   * quelle in cui era entrato, e non serve nessuna ricerca globale:
+   * un'utilitaria (r ≈ 2,04 m su celle da 16) ne tocca al massimo quattro.
+   */
+  rimuoviCollider(c: ColliderRT): void {
+    this.celle(c, (cella) => {
+      const i = cella.indexOf(c);
+      if (i >= 0) cella.splice(i, 1);
+    });
+  }
+
+  /** Rimette un ostacolo tolto prima: l'auto abbandonata torna solida. */
+  rimettiCollider(c: ColliderRT): void {
+    this.inserisci(c);
   }
 
   /** Collider potenzialmente vicini a (x,z) entro raggio r. */

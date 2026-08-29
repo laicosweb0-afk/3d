@@ -9,6 +9,7 @@ import type { MondoLugo } from './loadMap';
 import type { MondoFisico } from './physics';
 import { runtime, type RuntimeGioco } from './runtime';
 import { infraGioco } from './veicoli';
+import type { Modalita } from './store';
 
 export type TipoNpc = 'maranza' | 'anziano' | 'carabiniere' | 'studente' | 'ciclista';
 // Gli stati dell'incontro col maranza (avvicina/chiede/ritirata) stanno QUI
@@ -16,7 +17,10 @@ export type TipoNpc = 'maranza' | 'anziano' | 'carabiniere' | 'studente' | 'cicl
 // balzo sotto le auto e l'anti-incastro continuano a valere anche mentre ti
 // sta attaccando bottone. Un secondo elenco di stati avrebbe voluto dire un
 // pedone che, mentre parla, smette di scansarsi dal traffico.
-export type StatoNpc = 'cammina' | 'fermo' | 'balzo' | 'avvicina' | 'chiede' | 'ritirata';
+// 'fuga' è del guidatore che scende dall'auto che gli hai appena portato
+// via: non cammina e non balza, se ne va di buon passo per qualche secondo
+// e poi torna a essere un passante come tutti gli altri.
+export type StatoNpc = 'cammina' | 'fermo' | 'balzo' | 'avvicina' | 'chiede' | 'ritirata' | 'fuga';
 
 export interface Npc {
   tipo: TipoNpc;
@@ -417,7 +421,7 @@ export function stepNpcs(
   mondo: MondoLugo,
   fisica: MondoFisico,
   rt: RuntimeGioco,
-  modeAuto: boolean,
+  mode: Modalita,
 ): EsitoNpcs {
   let frase: string | null = null;
   const out = { x: 0, z: 0 };
@@ -426,7 +430,7 @@ export function stepNpcs(
   // pedoni vedevano soltanto lui, così le sei auto civili e la gazzella li
   // attraversavano senza che nessuno si scansasse.
   veicoli.length = 0;
-  if (modeAuto && Math.abs(rt.vAuto) > 4) {
+  if (mode === 'auto' && Math.abs(rt.vAuto) > 4) {
     // in retromarcia il muso avanza all'indietro: il verso lo dà la velocità
     const verso = rt.vAuto >= 0 ? 1 : -1;
     veicoli.push({
@@ -434,6 +438,16 @@ export function stepNpcs(
       z: rt.auto.z,
       fx: Math.cos(rt.auto.yaw) * verso,
       fz: Math.sin(rt.auto.yaw) * verso,
+    });
+  } else if (mode === 'bici' && rt.vPersona > 4.5) {
+    // una bici lanciata a trenta all'ora in mezzo al Pavaglione fa scansare
+    // la gente come un'auto. Sotto i 4,5 m/s no, o i pedoni saltellerebbero
+    // via al passo d'uomo di chi va a spasso pedalando.
+    veicoli.push({
+      x: rt.persona.x,
+      z: rt.persona.z,
+      fx: Math.cos(rt.persona.yaw),
+      fz: Math.sin(rt.persona.yaw),
     });
   }
   for (const a of infraGioco(mondo).traffico) {
@@ -483,6 +497,18 @@ export function stepNpcs(
       if (n.timer <= 0) {
         n.stato = 'fermo';
         n.timer = 0.8 + Math.random() * 1.5;
+      }
+    } else if (n.stato === 'fuga') {
+      // scende e se ne va: riusa la direzione del balzo (bx/bz) e il timer,
+      // così non serve nessun percorso nuovo e nessuna macchina a stati
+      // parallela — collisione, scivolamento, rotazione e fase del passo
+      // sono già condivisi qui sotto e valgono anche per lui
+      vx = n.bx * n.passo * 2.2;
+      vz = n.bz * n.passo * 2.2;
+      n.timer -= dt;
+      if (n.timer <= 0) {
+        n.stato = 'cammina';
+        n.fermoDa = 0;
       }
     } else if (n.stato === 'avvicina') {
       // ti viene incontro: il bersaglio lo riscrive maranza.ts a ogni frame,
@@ -596,6 +622,57 @@ export function stepNpcs(
   }
 
   return { frase };
+}
+
+/**
+ * Fa scendere un guidatore dall'auto che gli è appena stata portata via.
+ *
+ * L'NPC non nasce: si RICICLA. Gli InstancedMesh dei pedoni hanno capienza
+ * fissa (N_NPC, che in collaudo è 30), quindi aggiungerne uno vero
+ * scriverebbe fuori dall'array delle matrici e il pedone in più sarebbe
+ * invisibile o, peggio, sovrascriverebbe qualcun altro. Si sceglie allora
+ * il pedone più LONTANO dal ladro, sopra i 45 metri, così nessuno vede un
+ * passante sparire dall'altra parte della piazza.
+ *
+ * La scelta è cieca a chi è: guarda soltanto la distanza. Restano fuori i
+ * carabinieri (sono in servizio) e i ciclisti (lascerebbero la bici per
+ * terra); nessun tipo, variante, colore o incarnato entra nella decisione.
+ */
+export function scendiEScappa(
+  npcs: Npc[],
+  x: number,
+  z: number,
+  yaw: number,
+  daX: number,
+  daZ: number,
+): Npc | null {
+  let scelto: Npc | null = null;
+  let dMax = 45;
+  for (const n of npcs) {
+    if (n.tipo === 'carabiniere' || n.tipo === 'ciclista') continue;
+    const d = Math.hypot(n.x - daX, n.z - daZ);
+    if (d > dMax) {
+      dMax = d;
+      scelto = n;
+    }
+  }
+  if (!scelto) return null;
+  // esce dalla porta del passeggero, non da sotto le ruote del ladro
+  scelto.x = x - Math.sin(yaw) * 1.6;
+  scelto.z = z + Math.cos(yaw) * 1.6;
+  let vx = scelto.x - daX;
+  let vz = scelto.z - daZ;
+  const d = Math.hypot(vx, vz) || 1;
+  vx /= d;
+  vz /= d;
+  scelto.stato = 'fuga';
+  scelto.timer = 6;
+  scelto.bx = vx;
+  scelto.bz = vz;
+  scelto.targetX = scelto.x + vx * 60;
+  scelto.targetZ = scelto.z + vz * 60;
+  scelto.fermoDa = 0;
+  return scelto;
 }
 
 // ── gazzella di pattuglia ───────────────────────────────────────────────────

@@ -55,6 +55,7 @@ export function Hud() {
   const outfit = useLugo((s) => s.outfit);
   const avviso = useLugo((s) => s.avviso);
   const hint = useLugo((s) => s.hint);
+  const hintAllerta = useLugo((s) => s.hintAllerta);
   const mode = useLugo((s) => s.mode);
   const via = useLugo((s) => s.via);
   const audioOn = useLugo((s) => s.audioOn);
@@ -353,7 +354,7 @@ export function Hud() {
 
       <div className="lugo-tachimetro" data-hud="tachimetro">
         <span className="lugo-kmh">{kmh}</span>
-        <span className="lugo-kmh-label">{mode === 'auto' ? 'km/h' : 'a piedi'}</span>
+        <span className="lugo-kmh-label">{mode === 'piedi' ? 'a piedi' : 'km/h'}</span>
       </div>
 
       <div className="lugo-minimappa-box">
@@ -643,7 +644,10 @@ export function Hud() {
         </div>
       )}
       {hint && !dialogo && !vetrina && (
-        <div className="lugo-hint" data-hud="hint">
+        <div
+          className={'lugo-hint' + (hintAllerta ? ' lugo-hint-allerta' : '')}
+          data-hud="hint"
+        >
           {hint}
         </div>
       )}

@@ -6,6 +6,7 @@
 // rosa filtrato, i passi sono tick, le missioni suonano campanelli.
 
 import type { RuntimeGioco } from './runtime';
+import type { Modalita } from './store';
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
@@ -195,6 +196,30 @@ export function campanello(): void {
 }
 
 /**
+ * Il clacson dell'auto ferma che ti sei parato davanti. Due voci
+ * leggermente stonate sono il clacson di un'utilitaria: una sola sarebbe
+ * un fischio da elettrodomestico. Suona una volta e basta — è il modo in
+ * cui l'auto ti dice che sei in mezzo alla strada, non un allarme.
+ */
+export function clacson(): void {
+  if (!attivo || !ctx || !busEffetti) return;
+  const t = ctx.currentTime;
+  for (const f of [370, 440]) {
+    const o = ctx.createOscillator();
+    o.type = 'square';
+    o.frequency.value = f;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0008, t);
+    g.gain.exponentialRampToValueAtTime(0.05, t + 0.02);
+    g.gain.setValueAtTime(0.05, t + 0.35);
+    g.gain.exponentialRampToValueAtTime(0.0008, t + 0.45);
+    o.connect(g).connect(busEffetti);
+    o.start(t);
+    o.stop(t + 0.47);
+  }
+}
+
+/**
  * Il letto ambientale: brusio di città di giorno, grilli e silenzio di
  * notte, uccelli al mattino. `luci` è 0 (giorno) → 1 (notte), `vicini` è
  * quanta gente hai attorno.
@@ -287,7 +312,7 @@ export function suonaEvento(evento: 'tappa' | 'successo' | 'fallita' | 'salita')
 }
 
 /** Chiamata ogni frame dal driver dentro il canvas. */
-export function updateAudio(rt: RuntimeGioco, mode: 'auto' | 'piedi', dt: number): void {
+export function updateAudio(rt: RuntimeGioco, mode: Modalita, dt: number): void {
   if (!attivo || !ctx || !master) return;
   const t = ctx.currentTime;
   const set = (g: GainNode, v: number) => g.gain.setTargetAtTime(v, t, 0.08);
@@ -300,6 +325,12 @@ export function updateAudio(rt: RuntimeGioco, mode: 'auto' | 'piedi', dt: number
     set(gMotore, 0.05 + giri * 0.075);
     set(gRotola, Math.min(0.09, v * 0.006));
     set(gVento, Math.max(0, (v - 11) * 0.006));
+  } else if (mode === 'bici') {
+    // in sella non si sentono i passi e non si sente il motore: si sente la
+    // ruota che rotola e, sopra i venti all'ora, un filo d'aria
+    set(gMotore, 0.008);
+    set(gRotola, Math.min(0.05, rt.vPersona * 0.006));
+    set(gVento, Math.max(0, (rt.vPersona - 6) * 0.005));
   } else {
     set(gMotore, 0.012); // il motore resta acceso al minimo, in lontananza
     set(gRotola, 0);
