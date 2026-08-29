@@ -2,7 +2,12 @@
 
 // Mappa dei comandi per <KeyboardControls> di drei. Tutta la tastiera del
 // gioco passa da qui: WASD + frecce, Shift corsa, Spazio freno a mano,
-// E/Invio sali-scendi, R raddrizza.
+// E/Invio sali-scendi, R raddrizza, F sgancia un pugno.
+//
+// La E fa cinque cose diverse e non è un caso: la sua precedenza è a
+// gradini fissi e sta scritta in Player.tsx (chiudi pannello, sali/scendi,
+// bacheca o bottega, e per ultimo il maranza). Chi legge questo file per
+// capire cosa fa la E oggi non troverebbe nessun indizio su dove guardare.
 
 export const CONTROLLI: { name: string; keys: string[] }[] = [
   { name: 'avanti', keys: ['ArrowUp', 'KeyW'] },

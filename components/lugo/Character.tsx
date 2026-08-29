@@ -22,6 +22,7 @@ import { forwardRef, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { RuntimeGioco } from './Player';
+import { runtime } from '@/lib/lugo/runtime';
 import { useLugo } from '@/lib/lugo/store';
 import { tessituraStemma } from '@/lib/lugo/marchio';
 import { TINTE_CAPELLI, TINTE_PELLE, tintaDi, type Avatar } from '@/lib/lugo/avatar';
@@ -193,6 +194,19 @@ function Gamba({
   );
 }
 
+/** Durata dell'animazione del pugno: la stessa che arma il Player. */
+export const DURATA_PUGNO = 0.42;
+
+/**
+ * 0 → 1 lungo il pugno, 0 quando non c'è nessun pugno in corso. La tengono
+ * insieme braccio e busto: il colpo parte dalle anche, e con due curve
+ * diverse il busto e il braccio andrebbero per conto loro.
+ */
+function avanzamentoPugno(): number {
+  if (runtime.pugno.t <= 0) return 0;
+  return 1 - runtime.pugno.t / DURATA_PUGNO;
+}
+
 function Braccio({
   z,
   fase,
@@ -201,6 +215,7 @@ function Braccio({
   colTop,
   colPelle,
   orologio,
+  colpisce = false,
 }: {
   z: number;
   fase: number;
@@ -209,6 +224,7 @@ function Braccio({
   colTop: string;
   colPelle: string;
   orologio: boolean;
+  colpisce?: boolean;
 }) {
   const spalla = useRef<THREE.Group>(null);
   const gomito = useRef<THREE.Group>(null);
@@ -218,6 +234,41 @@ function Braccio({
     if (!spalla.current) return;
     const v = Math.min(1, rt.vPersona / 2.3);
     const corsa = Math.min(1, Math.max(0, (rt.vPersona - 2.6) / 2.6));
+    const p = colpisce ? avanzamentoPugno() : 0;
+    if (p > 0) {
+      // ── il pugno, in tre tratti ────────────────────────────────────────
+      // Un pugno che parte già disteso non si legge: servono la carica
+      // indietro e poi la distensione. Il segno è quello del file (modello
+      // rivolto a +X: negativo = avanti/in alto, come il busto che si
+      // sporge correndo), quindi la spalla va a −1,35 e non a +1,35, che
+      // porterebbe il pugno dietro la schiena.
+      // La rotazione del passo qui si SOSTITUISCE, non si somma: sommata,
+      // camminando il colpo partirebbe da un braccio già in movimento e
+      // arriverebbe ogni volta in un punto diverso.
+      let spallaZ: number;
+      let gomitoZ: number;
+      if (p < 0.25) {
+        const k = p / 0.25;
+        spallaZ = 0.55 * k;
+        gomitoZ = -0.14 - 1.56 * k;
+      } else if (p < 0.55) {
+        const k = (p - 0.25) / 0.3;
+        const morbido = 1 - (1 - k) * (1 - k) * (1 - k);
+        spallaZ = 0.55 + (-1.35 - 0.55) * morbido;
+        gomitoZ = -1.7 + (1.7 - 0.12) * morbido;
+      } else {
+        const k = (p - 0.55) / 0.45;
+        // rientro esponenziale alla posa di camminata: il braccio torna
+        // giù da solo, senza scatti, e l'ultimo fotogramma del pugno è già
+        // quello del passo successivo
+        const rientro = Math.exp(-3.5 * k);
+        spallaZ = -1.35 * rientro;
+        gomitoZ = -0.14 + 0.02 * rientro;
+      }
+      spalla.current.rotation.z = spallaZ;
+      if (gomito.current) gomito.current.rotation.z = gomitoZ;
+      return;
+    }
     spalla.current.rotation.z = Math.sin(rt.persona.fase + fase) * (0.42 + corsa * 0.34) * v;
     // in corsa il gomito resta piegato, da vero podista; il braccio si
     // piega all'indietro, quindi negativo
@@ -365,8 +416,17 @@ export const Character = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function 
     // il busto ruota attorno alla VITA, non attorno ai piedi: correndo si
     // sporge in avanti (angolo negativo col modello rivolto a +X)
     if (busto.current) {
-      busto.current.rotation.z = -corsa * 0.26 - v * 0.05;
+      // Il pugno parte dalle anche: senza torsione del busto sembra un
+      // braccio che si muove da solo. Il segno è negativo perché con
+      // rotazione Y positiva la spalla a −z andrebbe INDIETRO
+      // (x' = x cosθ + z sinθ), cioè l'esatto contrario di quel che serve.
+      const colpo = avanzamentoPugno();
+      // sale e ridiscende lungo il colpo: la torsione accompagna il braccio
+      // e si scioglie insieme a lui
+      const curvaColpo = Math.sin(colpo * Math.PI);
+      busto.current.rotation.z = -corsa * 0.26 - v * 0.05 - 0.12 * curvaColpo;
       busto.current.rotation.x = Math.sin(rt.persona.fase) * 0.035 * v;
+      busto.current.rotation.y = -0.26 * curvaColpo;
     }
     // la testa resta più dritta del busto e ondeggia appena
     if (testa.current) {
@@ -396,7 +456,7 @@ export const Character = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function 
             )}
 
             <Braccio z={0.29} fase={Math.PI} rt={rt} top={avatar.top} colTop={colTop} colPelle={colPelle} orologio={avatar.accessorio === 'orologio'} />
-            <Braccio z={-0.29} fase={0} rt={rt} top={avatar.top} colTop={colTop} colPelle={colPelle} orologio={false} />
+            <Braccio z={-0.29} fase={0} rt={rt} top={avatar.top} colTop={colTop} colPelle={colPelle} orologio={false} colpisce />
 
             {/* collo e testa */}
             <Blocco p={[0, Q.collo + 0.02, 0]} s={[0.115, 0.09, 0.125]} col={colPelle} ombra={false} />

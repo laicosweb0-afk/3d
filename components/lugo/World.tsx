@@ -11,6 +11,7 @@ import { CityMeshes } from './CityMeshes';
 import { Landmarks } from './Landmarks';
 import { Missioni } from './Missioni';
 import { Npcs } from './Npcs';
+import { Maranza } from './Maranza';
 import { Player } from './Player';
 import { Props } from './Props';
 import { Veicoli } from './Veicoli';
@@ -449,6 +450,9 @@ export function World() {
       <Eventi />
       <Player />
       <Npcs />
+      {/* dopo <Npcs />, non prima: fumo e fumetti leggono le posizioni dei
+          pedoni dello stesso fotogramma invece di rincorrerle di uno */}
+      <Maranza />
       <Missioni />
       <HookVerifica />
     </>

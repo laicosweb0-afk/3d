@@ -653,6 +653,28 @@
   border-color: rgba(255, 179, 92, 0.4);
 }
 
+/* Il maranza che sale di giro: bordo e fondo appena più caldi, e basta.
+   Niente lampeggio — la stella del ricercato lampeggia già, e due cose che
+   pulsano insieme non ne segnalano nessuna. Serve solo a dire che è la
+   STESSA conversazione che insiste, non un pannello nuovo. */
+.lugo-dialogo-insiste {
+  border-color: rgba(255, 179, 92, 0.42);
+  background: linear-gradient(180deg, rgba(60, 34, 12, 0.5), var(--vetro-forte));
+}
+
+/* L'unica opzione col colore del pericolo: è quella che non deve essere
+   premuta per sbaglio al posto di «No». */
+.lugo-dialogo-btn-pugno {
+  color: #ffd9d3;
+  background: rgba(255, 106, 92, 0.14);
+  border-color: rgba(255, 106, 92, 0.42);
+}
+
+.lugo-dialogo-btn-pugno:hover {
+  background: rgba(255, 106, 92, 0.26);
+  border-color: rgba(255, 106, 92, 0.6);
+}
+
 /* ── joystick virtuale: la palla a destra, sopra la minimappa ────────── */
 
 .lugo-comandi {

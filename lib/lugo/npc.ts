@@ -11,7 +11,12 @@ import { runtime, type RuntimeGioco } from './runtime';
 import { infraGioco } from './veicoli';
 
 export type TipoNpc = 'maranza' | 'anziano' | 'carabiniere' | 'studente' | 'ciclista';
-export type StatoNpc = 'cammina' | 'fermo' | 'balzo';
+// Gli stati dell'incontro col maranza (avvicina/chiede/ritirata) stanno QUI
+// dentro e non in una variabile parallela: così la fisica a cerchio, il
+// balzo sotto le auto e l'anti-incastro continuano a valere anche mentre ti
+// sta attaccando bottone. Un secondo elenco di stati avrebbe voluto dire un
+// pedone che, mentre parla, smette di scansarsi dal traffico.
+export type StatoNpc = 'cammina' | 'fermo' | 'balzo' | 'avvicina' | 'chiede' | 'ritirata';
 
 export interface Npc {
   tipo: TipoNpc;
@@ -37,9 +42,55 @@ export interface Npc {
   fermoDa: number;
   /** Indice del collega da seguire (il secondo della coppia di carabinieri). */
   segue?: number;
+  /** Tonalità dell'incarnato, indipendente dal vestito. */
+  pelle: number;
+  /** Variante del copricapo (cappellino o capelli, secondo senzaCappello). */
+  cappello: number;
+  senzaCappello: boolean;
+  /** Solo maranza: ha una sigaretta accesa in mano. */
+  fuma: boolean;
+  /** Secondi alla prossima tirata; fra 0 e −durataTiro il braccio è alzato. */
+  tiro: number;
+  /** Accumulatore del filo di fumo. */
+  fumoAcc: number;
+  /** Indice in FRASI_ATLANTE della battuta sopra la testa (−1 = nessuna). */
+  frase: number;
+  /** Istanti dell'orologio di maranza.ts: da quando a quando si legge. */
+  fraseDa: number;
+  fraseFino: number;
+  /** Quando ti ha già chiesto la sigaretta (orologio di maranza.ts). */
+  chiesto: number;
+  /**
+   * La punta della sigaretta, in coordinate di mondo. La scrive Npcs.tsx
+   * dentro il ciclo che costruisce la matrice del braccio, perché è l'unico
+   * posto che sa davvero dov'è finita la mano: chi cambierà l'animazione
+   * deve aggiornare lì accanto queste tre righe. Duplicare la cinematica in
+   * maranza.ts era la strada sicura per far fluttuare la sigaretta a
+   * mezz'aria al primo ritocco.
+   */
+  manoX: number;
+  manoY: number;
+  manoZ: number;
 }
 
 export const RAGGIO_NPC = 0.3;
+
+/**
+ * Le andature dei tre stati dell'incontro. Stanno qui e non in maranza.ts
+ * perché è stepNpcs a muovere i piedi, e perché così l'importazione va in
+ * una direzione sola (maranza.ts → npc.ts) e non nasce nessun ciclo.
+ * 3,1 m/s è più della camminata del giocatore (2,3) e meno della sua corsa
+ * (5,2): camminare non basta a levarselo di torno, correre sì.
+ */
+export const PASSO_INCONTRO = {
+  avvicina: 3.1,
+  ritirata: 4.6,
+  /** Sotto `tieniMin` arretra, sopra `tieniMax` si rifà sotto. */
+  arretra: 1.2,
+  riavvicina: 1.6,
+  tieniMin: 1.5,
+  tieniMax: 2.6,
+} as const;
 
 const PASSO = { maranza: 1.5, anziano: 0.7, carabiniere: 1.1, studente: 1.7, ciclista: 4.2 } as const;
 
@@ -129,7 +180,7 @@ const vicini: SegmentoPed[] = [];
  * posizione di partenza» faceva nascere i gruppetti tutti nello stesso
  * punto e inchiodava per sempre chi si fermava.
  */
-function puntoStradaCasuale(
+export function puntoStradaCasuale(
   mondo: MondoLugo,
   x: number,
   z: number,
@@ -181,8 +232,41 @@ function puntoStradaCasuale(
   return [x, z];
 }
 
+/**
+ * Estrazione SENZA rimpiazzo: si tiene un mazzo di `quante` carte, lo si
+ * mescola e lo si distribuisce fino all'ultima prima di rimescolare.
+ *
+ * Sorteggiare ogni volta a caso sembrava equivalente e non lo è: con dodici
+ * maranza a schermo e otto incarnati, un sorteggio uniforme lascia fuori due
+ * o tre tonalità una volta su tre, e il gruppetto torna a sembrare fatto di
+ * fotocopie — che è esattamente il difetto che questi campi devono togliere.
+ * Col mazzo, dodici estrazioni contengono di sicuro tutti e otto gli
+ * incarnati e tutte e sei le tute, e restano deterministiche.
+ */
+function dalMazzo(mazzo: number[], quante: number, seme: { s: number }): number {
+  if (!mazzo.length) {
+    for (let i = 0; i < quante; i++) mazzo.push(i);
+    for (let i = mazzo.length - 1; i > 0; i--) {
+      const j = Math.floor(rand(seme) * (i + 1));
+      const t = mazzo[i];
+      mazzo[i] = mazzo[j];
+      mazzo[j] = t;
+    }
+  }
+  return mazzo.pop() as number;
+}
+
 export function creaNpcs(mondo: MondoLugo, quanti: number): Npc[] {
   const seme = { s: 12345 };
+  // Un mazzo per tratto, tenuti SEPARATI apposta: pelle, tuta, cappello e
+  // sigaretta si estraggono da flussi diversi, così nessun tratto somatico
+  // resta incollato a un vestito o a un comportamento. Prima l'incarnato era
+  // PELLI[variante % 4], cioè il colore della pelle era una conseguenza
+  // della tuta: quattro maranza e sempre gli stessi quattro.
+  const mazzoPelle: number[] = [];
+  const mazzoTuta: number[] = [];
+  const mazzoCappello: number[] = [];
+  const mazzoFumo: number[] = [];
   const npcs: Npc[] = [];
   // stessa spatial hash di tutti gli altri sistemi (edifici + auto in sosta):
   // la posizione di nascita va validata come quella della discesa dall'auto
@@ -231,6 +315,19 @@ export function creaNpcs(mondo: MondoLugo, quanti: number): Npc[] {
       bz: 0,
       v: 0,
       fermoDa: 0,
+      pelle: dalMazzo(mazzoPelle, 8, seme),
+      cappello: dalMazzo(mazzoCappello, 5, seme),
+      senzaCappello: rand(seme) < 0.22,
+      fuma: false,
+      tiro: 2 + rand(seme) * 14,
+      fumoAcc: 0,
+      frase: -1,
+      fraseDa: 0,
+      fraseFino: 0,
+      chiesto: -1e9,
+      manoX: 0,
+      manoY: 0,
+      manoZ: 0,
     };
     const [tx, tz] = puntoStradaCasuale(mondo, x, z, 120, seme);
     npc.targetX = tx;
@@ -263,6 +360,10 @@ export function creaNpcs(mondo: MondoLugo, quanti: number): Npc[] {
     const [gx, gz] = puntoStradaCasuale(mondo, ax, az, 160, seme);
     for (let i = 0; i < gruppo && fatti < nMaranza; i++, fatti++) {
       const m = spawn('maranza', gx, gz, 12);
+      // sei tute invece di quattro, e una sigaretta accesa a uno su due:
+      // il mazzo garantisce la proporzione senza affidarla alla fortuna
+      m.variante = dalMazzo(mazzoTuta, 6, seme);
+      m.fuma = dalMazzo(mazzoFumo, 4, seme) < 2;
       if (rand(seme) < 0.45) {
         m.stato = 'fermo'; // in posa col telefono
         m.timer = 6 + rand(seme) * 14;
@@ -383,6 +484,54 @@ export function stepNpcs(
         n.stato = 'fermo';
         n.timer = 0.8 + Math.random() * 1.5;
       }
+    } else if (n.stato === 'avvicina') {
+      // ti viene incontro: il bersaglio lo riscrive maranza.ts a ogni frame,
+      // e qui NON vale la resa a 1,2 m del vagabondaggio — se ci cadesse
+      // dentro, il maranza ti arriverebbe a un metro e si dimenticherebbe
+      // di te proprio mentre sta per parlarti
+      const dx = n.targetX - n.x;
+      const dz = n.targetZ - n.z;
+      const d = Math.hypot(dx, dz);
+      if (d > 0.05) {
+        vx = (dx / d) * PASSO_INCONTRO.avvicina;
+        vz = (dz / d) * PASSO_INCONTRO.avvicina;
+      }
+    } else if (n.stato === 'chiede') {
+      // ti sta davanti e tiene la distanza: se gli cammini addosso arretra,
+      // se ti allontani si rifà sotto. E ti guarda in faccia ANCHE da fermo:
+      // la rotazione più in basso vale solo per chi si muove, e uno che ti
+      // parla dandoti la schiena è la prima cosa che si nota.
+      const dx = rt.persona.x - n.x;
+      const dz = rt.persona.z - n.z;
+      const d = Math.hypot(dx, dz) || 1;
+      if (d < PASSO_INCONTRO.tieniMin) {
+        vx = (-dx / d) * PASSO_INCONTRO.arretra;
+        vz = (-dz / d) * PASSO_INCONTRO.arretra;
+      } else if (d > PASSO_INCONTRO.tieniMax) {
+        vx = (dx / d) * PASSO_INCONTRO.riavvicina;
+        vz = (dz / d) * PASSO_INCONTRO.riavvicina;
+      }
+      let dy = Math.atan2(dz, dx) - n.yaw;
+      while (dy > Math.PI) dy -= Math.PI * 2;
+      while (dy < -Math.PI) dy += Math.PI * 2;
+      n.yaw += dy * Math.min(1, dt * 8);
+    } else if (n.stato === 'ritirata') {
+      // se ne va di buon passo per qualche secondo, poi rallenta e torna a
+      // vagabondare: senza il ritorno a 'cammina' resterebbe in ritirata per
+      // sempre, cioè un pedone che scappa da un fatto di dieci minuti fa
+      n.timer -= dt;
+      if (n.timer <= 0) {
+        n.stato = 'cammina';
+      } else {
+        const dx = n.targetX - n.x;
+        const dz = n.targetZ - n.z;
+        const d = Math.hypot(dx, dz);
+        if (d > 0.6) {
+          const passo = n.timer > 2 ? PASSO_INCONTRO.ritirata : n.passo;
+          vx = (dx / d) * passo;
+          vz = (dz / d) * passo;
+        }
+      }
     } else if (n.stato === 'fermo') {
       n.timer -= dt;
       if (n.timer <= 0) {
@@ -431,11 +580,16 @@ export function stepNpcs(
       } else {
         n.fermoDa = 0;
       }
-      const targetYaw = Math.atan2(vz, vx);
-      let dy = targetYaw - n.yaw;
-      while (dy > Math.PI) dy -= Math.PI * 2;
-      while (dy < -Math.PI) dy += Math.PI * 2;
-      n.yaw += dy * Math.min(1, dt * 8);
+      // chi sta parlando ha già girato la faccia verso di te: qui si
+      // guarderebbe la direzione di marcia, cioè si volterebbe dall'altra
+      // parte proprio mentre arretra di un passo
+      if (n.stato !== 'chiede') {
+        const targetYaw = Math.atan2(vz, vx);
+        let dy = targetYaw - n.yaw;
+        while (dy > Math.PI) dy -= Math.PI * 2;
+        while (dy < -Math.PI) dy += Math.PI * 2;
+        n.yaw += dy * Math.min(1, dt * 8);
+      }
     }
     n.v = Math.hypot(vx, vz);
     n.fase += n.v * dt * (n.tipo === 'anziano' ? 3.2 : 2.4);

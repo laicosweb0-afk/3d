@@ -877,6 +877,287 @@ try {
     else ko('NPC presenti', 'npcCount=0');
   }
 
+  // ── fase 5b: i maranza, la sigaretta, il fumo e il pugno ──────────────
+  // La scena che l'utente ha chiesto: uno si stacca dal gruppetto, ti viene
+  // incontro, ti chiede una sigaretta con un fumetto vero sopra la testa,
+  // insiste se dici di no, e tu puoi dargliela, tirargli un pugno o
+  // scappare. Qui si misura che tutte e cinque le cose succedano davvero.
+  // In collaudo l'incontro non parte MAI da solo (vedi INCONTRO in
+  // lib/lugo/maranza.ts): lo si provoca, se no un pannello a sorpresa
+  // spaccherebbe le fasi che stanno misurando vetrine e bacheca.
+  if ((await lugo('typeof L.provocaIncontro')) === 'function') {
+    const aPiedi = async () => {
+      if ((await lugo('L.mode()')) === 'auto') {
+        await page.keyboard.down('Space');
+        await page.waitForTimeout(1200);
+        await page.keyboard.up('Space');
+        await page.keyboard.press('KeyE');
+        await page.waitForTimeout(600);
+      }
+    };
+    // normalizza apostrofi, virgolette e spazi: il pannello scrive la
+    // battuta fra virgolette alte, il fumetto la disegna nuda
+    const nudo = (t) => (t ?? '').replace(/[“”"«»]/g, '').replace(/[’']/g, "'").replace(/\s+/g, ' ').trim();
+    // Provoca un incontro e aspetta che il maranza sia ARRIVATO: è lui che
+    // cammina fin qui, con la macchina a stati vera, non un teletrasporto.
+    const provoca = async () => {
+      await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+      await page.waitForTimeout(300);
+      const i = await lugo('L.provocaIncontro()');
+      if (i < 0) return null;
+      const partenza = await lugo('L.incontro().distanza');
+      try {
+        await page.waitForFunction(() => window.__LUGO__.incontro().fase === 'chiede', null, { timeout: 30000 });
+      } catch {
+        return { i, partenza, arrivato: false };
+      }
+      return { i, partenza, arrivato: true };
+    };
+
+    await aPiedi();
+
+    // i maranza restano diversi fra loro: è il controllo che impedisce a
+    // una futura semplificazione di ricollassare l'incarnato sul vestito
+    const mar = await lugo('L.maranza()');
+    if (mar && mar.pelli >= 6 && mar.tute >= 5 && mar.senzaCappello > 0) {
+      ok('i maranza sono diversi fra loro', `${mar.totali} in giro · ${mar.pelli} incarnati, ${mar.tute} tute, ${mar.senzaCappello} a testa nuda`);
+    } else {
+      ko('i maranza sono diversi fra loro', JSON.stringify(mar));
+    }
+    if (mar && mar.fumatori >= mar.totali * 0.25 && mar.fumatori <= mar.totali * 0.8) {
+      ok('chi fuma e chi no', `${mar.fumatori} fumatori su ${mar.totali}`);
+    } else {
+      ko('chi fuma e chi no', JSON.stringify(mar));
+    }
+
+    // il costo del fotogramma prima dell'incontro, MISURATO QUI: il budget
+    // va confrontato nello stesso punto della città, se no si mettono a
+    // confronto piazza Baracca e un vicolo
+    const renderPrima = (await lugo('typeof L.render === "function" ? L.render() : null')) ?? null;
+
+    const primo = await provoca();
+    if (!primo) {
+      ko('il maranza ti viene incontro', 'nessun maranza in mappa');
+    } else if (!primo.arrivato) {
+      ko('il maranza ti viene incontro', `resta in fase ${await lugo('L.incontro().fase')}`);
+    } else {
+      const inc = await lugo('L.incontro()');
+      if (primo.partenza >= 4.5 && inc.distanza < 3.4 && typeof inc.frase === 'string' && inc.frase.length) {
+        ok('il maranza ti viene incontro', `da ${primo.partenza.toFixed(1)} m a ${inc.distanza.toFixed(1)} m · «${inc.frase}»`);
+      } else {
+        ko('il maranza ti viene incontro', `partenza ${primo.partenza}, arrivo ${inc.distanza}, frase ${inc.frase}`);
+      }
+      await page.screenshot({ path: join(SHOTS, '08-maranza-chiede.png') });
+
+      // il fumetto sopra la testa dice la STESSA cosa del pannello
+      const f = await lugo('L.fumetti()');
+      const testoHud = await page.textContent('[data-hud="dialogo-testo"]').catch(() => null);
+      const aggancio = await lugo('L.frasi("aggancio")');
+      if (f && f.vivi >= 1 && nudo(f.testi[0]) === nudo(testoHud) && aggancio.includes(f.testi[0])) {
+        ok('il fumetto dice quello che dice il pannello', `«${f.testi[0]}»`);
+      } else {
+        ko('il fumetto dice quello che dice il pannello', `fumetto «${f && f.testi[0]}» pannello «${testoHud}»`);
+      }
+
+      // il budget regge anche a incontro in corso (fumetto + fumo + sigarette)
+      const renderDopo = (await lugo('typeof L.render === "function" ? L.render() : null')) ?? null;
+      if (renderPrima && renderDopo) {
+        const piu = renderDopo.chiamate - renderPrima.chiamate;
+        const dettaglio = `${(renderDopo.triangoli / 1000).toFixed(0)}k triangoli, ${renderDopo.chiamate} draw call (a riposo ${renderPrima.chiamate}, +${piu})`;
+        if (renderDopo.triangoli < 700_000 && renderDopo.chiamate < 170 && piu <= 2) {
+          ok('il budget regge anche a incontro in corso', dettaglio);
+        } else {
+          ko('il budget regge anche a incontro in corso', dettaglio);
+        }
+      }
+
+      // il fumo si vede: si campiona qualche volta, perché il filo esce
+      // ogni mezzo secondo e la boccata ogni sette
+      let fumoMax = 0;
+      let fumoSforo = false;
+      for (let i = 0; i < 5; i++) {
+        const fu = await lugo('L.fumo()');
+        fumoMax = Math.max(fumoMax, fu.vivi);
+        if (fu.vivi > fu.max) fumoSforo = true;
+        await page.waitForTimeout(700);
+      }
+      if (fumoMax > 0 && !fumoSforo) ok('il fumo della sigaretta si vede', `fino a ${fumoMax} particelle vive`);
+      else ko('il fumo della sigaretta si vede', `massimo ${fumoMax} particelle`);
+
+      // la cartolina ravvicinata: qui dentro si devono vedere il fumetto,
+      // la sigaretta in mano e il filo di fumo
+      // La cartolina si punta sul MARANZA e da DAVANTI, all'altezza della
+      // mano: la sigaretta è lì, e dal punto di vista di chi gioca il
+      // pannello del dialogo la copre per intero. Il pannello si toglie di
+      // mezzo (l'incontro va avanti lo stesso), se no la cartolina
+      // mostrerebbe soprattutto sé stessa.
+      await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+      const lui = await lugo('L.incontro()');
+      const io = await lugo('L.pos()');
+      await page.evaluate(
+        (q) => {
+          const fx = (q.px - q.x) / (Math.hypot(q.px - q.x, q.pz - q.z) || 1);
+          const fz = (q.pz - q.z) / (Math.hypot(q.px - q.x, q.pz - q.z) || 1);
+          window.__LUGO__.fotocamera(
+            q.x + fx * 2.4 - fz * 1.4,
+            1.72,
+            q.z + fz * 2.4 + fx * 1.4,
+            q.x,
+            1.26,
+            q.z,
+            4000,
+          );
+        },
+        { x: lui.x, z: lui.z, px: io[0], pz: io[1] },
+      );
+      await page.waitForTimeout(1400);
+      await page.screenshot({ path: join(SHOTS, '08-maranza-fumo.png') });
+
+      // ── l'insistenza: se dici di no, non se ne va subito ──────────────
+      const quarto = await provoca();
+      if (!quarto || !quarto.arrivato) ko('insiste, dopo il no', 'nessun incontro da cui ripartire');
+      const primaFrase = (await lugo('L.incontro()')).frase;
+      const puntiPrima = await lugo('L.punteggio()');
+      await page.click('[data-hud="dialogo-opzione-no"]', { noWaitAfter: true }).catch(() => {});
+      await page.waitForTimeout(2200);
+      const dopoNo = await lugo('L.incontro()');
+      const insistenze = await lugo('L.frasi("insistenza")');
+      if (dopoNo.fase === 'insiste' && dopoNo.frase !== primaFrase && insistenze.includes(dopoNo.frase)) {
+        ok('insiste, dopo il no', `«${dopoNo.frase}»`);
+      } else {
+        ko('insiste, dopo il no', `fase ${dopoNo.fase}, frase «${dopoNo.frase}»`);
+      }
+      // altri due no: dopo i giri di insistenza si arrende da solo
+      for (let i = 0; i < 2; i++) {
+        await page.click('[data-hud="dialogo-opzione-no"]', { noWaitAfter: true }).catch(() => {});
+        await page.waitForTimeout(2200);
+      }
+      const arreso = await lugo('L.incontro()');
+      const puntiDopo = await lugo('L.punteggio()');
+      const chiuso = await page.locator('[data-hud="dialogo"]').count();
+      if ((arreso.fase === 'ritirata' || arreso.fase === 'nessuno') && puntiDopo - puntiPrima === 5 && chiuso === 0) {
+        ok('tenere i nervi paga', `+${puntiDopo - puntiPrima} REP · «${arreso.ultimaFrase}»`);
+      } else {
+        ko('tenere i nervi paga', `fase ${arreso.fase}, REP +${puntiDopo - puntiPrima}, pannelli ${chiuso}`);
+      }
+      const cooldownUno = (await lugo('L.incontro()')).cooldown;
+
+      // ── il pugno: parte, va a segno, e lo fa scappare ─────────────────
+      const secondo = await provoca();
+      if (secondo && secondo.arrivato) {
+        const dPrima = (await lugo('L.incontro()')).distanza;
+        // il tasto si tiene premuto: in headless la simulazione gira a
+        // singhiozzo, e una pressione da dieci millisecondi può cadere
+        // tutta in mezzo a due fotogrammi senza essere mai vista
+        await page.keyboard.down('KeyF');
+        await page.waitForTimeout(200);
+        const colpoVivo = await lugo('L.pugno()');
+        await page.keyboard.up('KeyF');
+        await page.waitForTimeout(900);
+        const colpo = await lugo('L.pugno()');
+        if (colpoVivo.t > 0) ok("l'animazione del pugno parte davvero", `t=${colpoVivo.t.toFixed(2)} s`);
+        else ko("l'animazione del pugno parte davvero", `t=${colpoVivo.t}`);
+        if (colpo.bersaglio === 'maranza' && colpo.molesto === true) {
+          ok('il pugno prende chi ti stava addosso', `${colpo.compagni} compagni si allontanano`);
+        } else {
+          ko('il pugno prende chi ti stava addosso', JSON.stringify(colpo));
+        }
+        await page.screenshot({ path: join(SHOTS, '08-maranza-pugno.png') });
+        await page.waitForTimeout(2600);
+        const dDopo = (await lugo('L.incontro()')).distanza;
+        const restaAperto = await page.locator('[data-hud="dialogo"]').count();
+        const faseDopo = (await lugo('L.incontro()')).fase;
+        if (dDopo - dPrima > 1.2 && (faseDopo === 'ritirata' || faseDopo === 'nessuno') && restaAperto === 0) {
+          ok('dopo il pugno scappa e il pannello sparisce', `da ${dPrima.toFixed(1)} a ${dDopo.toFixed(1)} m`);
+        } else {
+          ko('dopo il pugno scappa e il pannello sparisce', `da ${dPrima.toFixed(1)} a ${dDopo.toFixed(1)} m, fase ${faseDopo}, pannelli ${restaAperto}`);
+        }
+        // niente REP tolti a chi ti stava molestando, e il cooldown cresce
+        const cooldownDue = (await lugo('L.incontro()')).cooldown;
+        if (cooldownDue > cooldownUno && cooldownUno > 0) {
+          ok('più ti è già capitato, più diventa raro', `${cooldownUno.toFixed(0)} s → ${cooldownDue.toFixed(0)} s`);
+        } else {
+          ko('più ti è già capitato, più diventa raro', `${cooldownUno} → ${cooldownDue}`);
+        }
+      } else {
+        ko('il pugno prende chi ti stava addosso', 'il secondo incontro non è arrivato');
+      }
+
+      // ── la fuga: correndo lo si semina, e il pannello si chiude ───────
+      const terzo = await provoca();
+      if (terzo && terzo.arrivato) {
+        await page.keyboard.down('ShiftLeft');
+        await page.keyboard.down('KeyW');
+        await page.waitForTimeout(6000);
+        await page.keyboard.up('KeyW');
+        await page.keyboard.up('ShiftLeft');
+        // la coda della ritirata dura qualche secondo DI GIOCO, e in
+        // headless il gioco va più piano dell'orologio: si aspetta la fine
+        // vera invece di contare i millisecondi del computer
+        await page
+          .waitForFunction(() => window.__LUGO__.incontro().fase === 'nessuno', null, { timeout: 20000 })
+          .catch(() => {});
+        const dopoFuga = await lugo('L.incontro()');
+        const pannelli = await page.locator('[data-hud="dialogo"]').count();
+        const addii = await lugo('L.frasi("fuga")');
+        if (dopoFuga.fase === 'nessuno' && pannelli === 0 && addii.includes(dopoFuga.ultimaFrase)) {
+          ok('correndo lo semini, e il pannello si chiude', `«${dopoFuga.ultimaFrase}»`);
+        } else {
+          ko('correndo lo semini, e il pannello si chiude', `fase ${dopoFuga.fase}, pannelli ${pannelli}, ultima «${dopoFuga.ultimaFrase}»`);
+        }
+      }
+
+      // nessuna partnership, nemmeno parlando: sigarette e fumetti non
+      // introducono nessun contenuto commerciale
+      const autIncontro = await lugo('L.autorizzazioni()');
+      const promo = await page.locator('.lugo-vetrina-promo, .lugo-vetrina-partner').count();
+      if (autIncontro.partner === 0 && autIncontro.promo === 0 && autIncontro.logo === 0 && promo === 0) {
+        ok('nessuna partnership, nemmeno parlando col maranza');
+      } else {
+        ko('nessuna partnership, nemmeno parlando col maranza', JSON.stringify(autIncontro));
+      }
+    }
+
+    // ── colpire un passante costa reputazione ──────────────────────────
+    // È il contrappeso del pugno: chi ti stava addosso è un conto, un
+    // pedone che passava di lì è un altro.
+    await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+    let esitoPassante = null;
+    // Si riprova su tre passanti diversi perché il teletrasporto può far
+    // scoprire un luogo nuovo, e una scoperta vale +5 REP: cadendo nello
+    // stesso momento del pugno pareggerebbe il conto e il controllo
+    // direbbe «non toglie niente» proprio mentre invece toglieva.
+    for (let tentativo = 0; tentativo < 3 && !esitoPassante?.giusto; tentativo++) {
+      const passante = await lugo('L.npcVicino()');
+      if (!passante) break;
+      // ci si mette a un metro e mezzo, guardandolo: il pugno ha un cono
+      // frontale, e da dentro il suo stesso pixel non colpirebbe nessuno
+      await page.evaluate((q) => window.__LUGO__.teleport(q.x - 1.4, q.z, 0), passante);
+      await page.waitForTimeout(1500);
+      const puntiPrima = await lugo('L.punteggio()');
+      await page.keyboard.down('KeyF');
+      await page.waitForTimeout(250);
+      await page.keyboard.up('KeyF');
+      await page.waitForTimeout(1200);
+      const colpo = await lugo('L.pugno()');
+      const puntiDopo = await lugo('L.punteggio()');
+      esitoPassante = {
+        colpo,
+        puntiPrima,
+        puntiDopo,
+        giusto: Boolean(colpo.bersaglio) && colpo.molesto === false && puntiPrima - puntiDopo === 5,
+      };
+    }
+    if (esitoPassante?.giusto) {
+      ok('picchiare un passante costa reputazione', `−5 REP su ${esitoPassante.colpo.bersaglio}`);
+    } else if (esitoPassante) {
+      ko(
+        'picchiare un passante costa reputazione',
+        `bersaglio ${esitoPassante.colpo.bersaglio}, REP ${esitoPassante.puntiPrima} → ${esitoPassante.puntiDopo}`,
+      );
+    }
+  }
+
   // ── fase 6: cartoline dai landmark ───────────────────────────────────
   // niente pannelli davanti alla città: le cartoline devono mostrare Lugo
   await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());

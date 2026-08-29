@@ -18,13 +18,18 @@ import { attivitaVicina, registroAttivita } from '@/lib/lugo/attivita';
 import { bachecaVicina, offerteBacheca } from '@/lib/lugo/bacheche';
 import { poiDaScoprire, puntiInteresse } from '@/lib/lugo/poi';
 import { DISTINTIVI, distintiviRaggiunti } from '@/lib/lugo/distintivi';
-import { FRASI_STRADA } from '@/lib/lugo/npc';
+import {
+  avviaIncontroDaE,
+  incontroInCorso,
+  subisciPugno,
+} from '@/lib/lugo/maranza';
+import type { Npc } from '@/lib/lugo/npc';
 import { runtime, type RuntimeGioco } from '@/lib/lugo/runtime';
 import { updateAudio, suonaEvento, updateAmbiente, parla, campanello } from '@/lib/lugo/audio';
 import { cieloOra, tempo } from '@/lib/lugo/tempo';
 import { useLugo } from '@/lib/lugo/store';
 import { Car } from './Car';
-import { Character } from './Character';
+import { Character, DURATA_PUGNO } from './Character';
 import { QUOTA_CALPESTIO } from '@/lib/lugo/citygen';
 
 export type { RuntimeGioco };
@@ -229,6 +234,15 @@ export function Player() {
         };
       },
       mode: () => useLugo.getState().mode,
+      wanted: () => useLugo.getState().wanted,
+      // il pugno visto da fuori: `t` racconta che l'ANIMAZIONE è partita
+      // davvero, non solo che l'effetto logico è stato applicato
+      pugno: () => ({
+        t: runtime.pugno.t,
+        bersaglio: runtime.pugno.bersaglio,
+        molesto: runtime.pugno.molesto,
+        compagni: runtime.pugno.compagni,
+      }),
       teleport: (x: number, z: number, yaw?: number) => {
         const a = attivo();
         a.x = x;
@@ -445,84 +459,113 @@ export function Player() {
           });
           suonaEvento('tappa');
         } else if (!st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
-          for (const n of runtime.npcs) {
+          // ULTIMO gradino della precedenza della E, e ci sta apposta: è
+          // l'unica interazione che sa avviarsi da sola, quindi qui la E è
+          // una cortesia e non il canale principale.
+          const vicini = runtime.npcs;
+          for (let i = 0; i < vicini.length; i++) {
+            const n = vicini[i];
             if (n.tipo !== 'maranza') continue;
             if (Math.hypot(n.x - rt.persona.x, n.z - rt.persona.z) < 3.4) {
               cooldownDialogo.current = 45;
-              st.setDialogo({
-                id: 'sigaretta',
-                chi: 'Un ragazzo in tuta',
-                testo: '“Bella! Hai mica una sigaretta?”',
-                opzioni: [
-                  { id: 'si', label: '“Tieni.”' },
-                  { id: 'no', label: '“No, mi spiace.”' },
-                  { id: 'via', label: 'Tira dritto' },
-                ],
-              });
-              suonaEvento('tappa');
+              // Un solo ingresso per la scena, anche quando sei tu a
+              // parlare per primo: così si vede il fumetto sopra la testa,
+              // l'insistenza funziona uguale e non esistono due
+              // conversazioni diverse per la stessa cosa.
+              const inc = avviaIncontroDaE(vicini, i);
+              if (inc.apriDialogo) st.setDialogo(inc.apriDialogo);
+              if (inc.suono) suonaEvento(inc.suono);
+              if (inc.voce) parla('maranza');
               break;
             }
           }
         }
       }
     }
-    // ── pugno arcade: solo a piedi, corto raggio, con conseguenze ──────
+    // ── il pugno: si arma col tasto, va a segno a metà animazione ──────
+    // Prima il colpo andava a segno nell'istante del tasto, mentre il
+    // braccio doveva ancora muoversi: si vedeva il maranza volare via e
+    // solo dopo il pugno partire. Adesso F arma la finestra (0,42 s) e
+    // l'impatto cade al 55% dell'animazione, cioè quando il braccio è
+    // davvero disteso. La ricerca del bersaglio è la stessa di prima.
     cooldownPugno.current -= dt;
+    const pugno = runtime.pugno;
+    const inIncontro = incontroInCorso().attivo;
     if (
       st.mode === 'piedi' &&
       input.colpisci &&
       !colpiscePrima.current &&
       cooldownPugno.current <= 0 &&
+      pugno.t <= 0 &&
       !st.vetrina &&
-      !st.dialogo &&
+      !st.bacheca &&
+      // col maranza che ti sta addosso il pannello è aperto ed è proprio
+      // il momento in cui vuoi tirare il pugno: solo lì la F passa lo stesso
+      (!st.dialogo || inIncontro) &&
       runtime.npcs
     ) {
       cooldownPugno.current = 0.7;
-      const fx = Math.cos(rt.persona.yaw);
-      const fz = Math.sin(rt.persona.yaw);
-      let colpito: { tipo: string; x: number; z: number } | null = null;
-      let dMin = 2.4;
-      for (const n of runtime.npcs) {
-        const dx = n.x - rt.persona.x;
-        const dz = n.z - rt.persona.z;
-        const d = Math.hypot(dx, dz);
-        if (d > dMin || d < 0.01) continue;
-        // deve stare davanti, non alle spalle
-        if ((dx / d) * fx + (dz / d) * fz < 0.35) continue;
-        dMin = d;
-        colpito = n;
-      }
-      if (colpito) {
-        const bersaglio = colpito as unknown as {
-          tipo: string; x: number; z: number; stato: string; timer: number; bx: number; bz: number;
-        };
-        const dx = bersaglio.x - rt.persona.x;
-        const dz = bersaglio.z - rt.persona.z;
-        const d = Math.hypot(dx, dz) || 1;
-        bersaglio.stato = 'balzo';
-        bersaglio.timer = 0.5;
-        bersaglio.bx = dx / d;
-        bersaglio.bz = dz / d;
-        suonaEvento('fallita');
-        st.setAvviso(FRASI_STRADA.length ? 'Ohi! Ma sei scemo?!' : 'Ohi!');
-        // i Carabinieri non gradiscono: se uno vede, sono guai
-        let visto = bersaglio.tipo === 'carabiniere';
-        if (!visto) {
-          for (const n of runtime.npcs) {
-            if (n.tipo !== 'carabiniere') continue;
-            if (Math.hypot(n.x - rt.persona.x, n.z - rt.persona.z) < 22) {
-              visto = true;
-              break;
+      pugno.t = DURATA_PUGNO;
+      pugno.colpito = false;
+      pugno.bersaglio = null;
+      pugno.molesto = false;
+      pugno.compagni = 0;
+      suonaEvento('fallita');
+    }
+    if (pugno.t > 0) {
+      pugno.t = Math.max(0, pugno.t - dt);
+      if (!pugno.colpito && pugno.t <= DURATA_PUGNO * 0.45 && runtime.npcs) {
+        pugno.colpito = true;
+        const fx = Math.cos(rt.persona.yaw);
+        const fz = Math.sin(rt.persona.yaw);
+        let colpito: Npc | null = null;
+        let dMin = 2.4;
+        for (const n of runtime.npcs) {
+          const dx = n.x - rt.persona.x;
+          const dz = n.z - rt.persona.z;
+          const d = Math.hypot(dx, dz);
+          if (d > dMin || d < 0.01) continue;
+          // deve stare davanti, non alle spalle
+          if ((dx / d) * fx + (dz / d) * fz < 0.35) continue;
+          dMin = d;
+          colpito = n;
+        }
+        if (colpito) {
+          const bersaglio: Npc = colpito;
+          const dx = bersaglio.x - rt.persona.x;
+          const dz = bersaglio.z - rt.persona.z;
+          const d = Math.hypot(dx, dz) || 1;
+          const reazione = subisciPugno(bersaglio, runtime.npcs, dx / d, dz / d);
+          pugno.bersaglio = bersaglio.tipo;
+          pugno.molesto = reazione.eraMolesto;
+          pugno.compagni = reazione.compagni;
+          st.setAvviso('“' + reazione.frase + '”');
+          // Chi ti stava addosso a chiedere la sigaretta è un conto; un
+          // passante che non ti ha fatto niente è un altro, e costa
+          // reputazione. Prima il pugno era gratis su chiunque.
+          if (!reazione.eraMolesto) {
+            st.addPunti(-5);
+            st.setAvviso('Non era il caso · −5 REP');
+          }
+          // i Carabinieri non gradiscono: se uno vede, sono guai
+          let visto = bersaglio.tipo === 'carabiniere';
+          if (!visto) {
+            for (const n of runtime.npcs) {
+              if (n.tipo !== 'carabiniere') continue;
+              if (Math.hypot(n.x - rt.persona.x, n.z - rt.persona.z) < 22) {
+                visto = true;
+                break;
+              }
             }
           }
-        }
-        if (visto) {
-          calore.current += 2;
-          decadimento.current = 0;
-          const w = calore.current >= 7 ? 3 : calore.current >= 4 ? 2 : 1;
-          if (w !== st.wanted) {
-            st.setWanted(w);
-            st.setAvviso('Ti hanno visto: arrivano i Carabinieri!');
+          if (visto) {
+            calore.current += 2;
+            decadimento.current = 0;
+            const w = calore.current >= 7 ? 3 : calore.current >= 4 ? 2 : 1;
+            if (w !== st.wanted) {
+              st.setWanted(w);
+              st.setAvviso('Ti hanno visto: arrivano i Carabinieri!');
+            }
           }
         }
       }
@@ -619,7 +662,10 @@ export function Player() {
           if (banco && dK < dB) hint = `Premi E · lavori · ${banco.bacheca.nome}`;
           else if (bottega) hint = `Premi E · ${bottega.nome}`;
         }
-        if (!hint && !st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
+        // col maranza addosso il suggerimento cambia: quello che serve
+        // sapere non è più «puoi parlargli», è come uscirne
+        if (incontroInCorso().attivo) hint = 'F · sganciagli un pugno · oppure corri via';
+        else if (!hint && !st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
           for (const n of runtime.npcs) {
             if (n.tipo !== 'maranza') continue;
             if (Math.hypot(n.x - rt.persona.x, n.z - rt.persona.z) < 3.4) {
