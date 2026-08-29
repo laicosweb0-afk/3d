@@ -15,6 +15,7 @@ import { Guardaroba } from './Guardaroba';
 import { useMondo } from '@/lib/lugo/loadMap';
 import { contaPoi, puntiInteresse } from '@/lib/lugo/poi';
 import { DISTINTIVI } from '@/lib/lugo/distintivi';
+import { eventiDiOggi } from '@/lib/lugo/eventi';
 import {
   chiaveGiorno,
   chiaveSettimana,
@@ -102,6 +103,7 @@ export function Hud() {
     incarichiRiscossi,
   );
   const pronti = daRiscuotere(giornalieri) + daRiscuotere(settimanali);
+  const programma = eventiDiOggi();
 
   // Si accetta un lavoro dalla bacheca: da qui in poi è una missione come
   // tutte le altre, e la macchina delle missioni la porta avanti.
@@ -367,6 +369,25 @@ export function Hud() {
             {puntiInteresse(mondo).length} — {contaPoi(mondo).monumento} monumenti,{' '}
             {contaPoi(mondo).attivita} botteghe
           </div>
+          {/* Cosa succede oggi in città: gli eventi hanno un calendario, e
+              il mercato non c'è la domenica. */}
+          <div className="lugo-programma" data-hud="programma">
+            <div className="lugo-incarichi-titolo">Oggi a Lugo</div>
+            {programma.length === 0 ? (
+              <div className="lugo-offerta-testo">Giornata tranquilla: niente di speciale.</div>
+            ) : (
+              programma.map((e) => (
+                <div key={e.id} className="lugo-programma-riga">
+                  <span className="lugo-programma-ora">
+                    {String(Math.floor(e.daOra)).padStart(2, '0')}:
+                    {String(Math.round((e.daOra % 1) * 60)).padStart(2, '0')}
+                  </span>
+                  <span className="lugo-programma-nome">{e.titolo}</span>
+                </div>
+              ))
+            )}
+          </div>
+
           {/* Gli incarichi: quello che Lugo ti chiede oggi e questa settimana.
               Si riempiono da soli mentre giochi; il premio si incassa qui. */}
           <div className="lugo-incarichi" data-hud="incarichi">

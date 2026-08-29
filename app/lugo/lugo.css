@@ -1216,6 +1216,33 @@
   transform: translateY(1px);
 }
 
+/* ── Il programma della giornata ────────────────────────────────────── */
+
+.lugo-programma {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+}
+
+.lugo-programma-riga {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.76rem;
+}
+
+.lugo-programma-ora {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--accento);
+  min-width: 3.1rem;
+}
+
+.lugo-programma-nome {
+  color: var(--muto);
+}
+
 /* ── Gli incarichi del giorno e della settimana ─────────────────────── */
 
 .lugo-incarichi {
