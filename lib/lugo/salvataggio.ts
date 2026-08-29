@@ -10,6 +10,8 @@ import { useLugo } from './store';
 import { TINTE_AUTO } from './palette';
 import { CARROZZERIE } from './carrozzerie';
 import { DISTINTIVI } from './distintivi';
+import { avatarValido, type Avatar } from './avatar';
+import { livelloDaRep } from './progressione';
 
 const CHIAVE = 'lugo-salvataggio-v1';
 
@@ -21,6 +23,12 @@ export interface Salvataggio {
   modelloAuto: number;
   audioOn: boolean;
   outfit: number;
+  /** Il look pezzo per pezzo (lib/lugo/avatar.ts). */
+  avatar: Avatar;
+  /** Gli id dei capi comprati: "top:giubbotto", "scarpe:alte"… */
+  capi: string[];
+  /** Consegne portate a termine: alimenta il distintivo del rider. */
+  consegneFatte: number;
   poiVisitati: string[];
   distintivi: string[];
   volumi: { effetti: number; voce: number; ambiente: number; musica: number };
@@ -71,6 +79,14 @@ export function caricaSalvataggio(): Partial<Salvataggio> | null {
       modelloAuto: indiceValido(dati.modelloAuto, CARROZZERIE.length),
       audioOn: typeof dati.audioOn === 'boolean' ? dati.audioOn : undefined,
       outfit: typeof dati.outfit === 'number' && isFinite(dati.outfit) ? Math.max(0, Math.trunc(dati.outfit)) : undefined,
+      // avatarValido ripulisce ogni campo: un id di capo che non esiste più
+      // torna a quello di serie invece di lasciare il modello senza un pezzo
+      avatar: dati.avatar !== undefined ? avatarValido(dati.avatar) : undefined,
+      capi: Array.isArray(dati.capi) ? dati.capi.filter((x) => typeof x === 'string').slice(0, 200) : undefined,
+      consegneFatte:
+        typeof dati.consegneFatte === 'number' && isFinite(dati.consegneFatte)
+          ? Math.max(0, Math.trunc(dati.consegneFatte))
+          : undefined,
       poiVisitati: Array.isArray(dati.poiVisitati) ? dati.poiVisitati.filter((x) => typeof x === 'string').slice(0, 400) : undefined,
       distintivi: Array.isArray(dati.distintivi)
         ? dati.distintivi.filter((x) => typeof x === 'string' && ID_DISTINTIVI.has(x)).slice(0, 60)
@@ -115,10 +131,16 @@ export function avviaSalvataggio() {
       ...(dati.modelloAuto !== undefined ? { modelloAuto: dati.modelloAuto } : {}),
       ...(dati.audioOn !== undefined ? { audioOn: dati.audioOn } : {}),
       ...(dati.outfit !== undefined ? { outfit: dati.outfit } : {}),
+      ...(dati.avatar !== undefined ? { avatar: dati.avatar } : {}),
+      ...(dati.capi !== undefined ? { capi: dati.capi } : {}),
+      ...(dati.consegneFatte !== undefined ? { consegneFatte: dati.consegneFatte } : {}),
       ...(dati.poiVisitati !== undefined ? { poiVisitati: dati.poiVisitati } : {}),
       ...(dati.distintivi !== undefined ? { distintivi: dati.distintivi } : {}),
       ...(dati.volumi !== undefined ? { volumi: dati.volumi } : {}),
     });
+    // il livello è la lettura della reputazione, non uno stato a sé: al
+    // caricamento va ricalcolato, perché setState scavalca addPunti
+    useLugo.setState({ livello: livelloDaRep(useLugo.getState().punteggio).n });
   }
 
   let timer: ReturnType<typeof setTimeout> | null = null;
@@ -131,6 +153,9 @@ export function avviaSalvataggio() {
       s.modelloAuto === prima.modelloAuto &&
       s.audioOn === prima.audioOn &&
       s.outfit === prima.outfit &&
+      s.avatar === prima.avatar &&
+      s.capi === prima.capi &&
+      s.consegneFatte === prima.consegneFatte &&
       s.poiVisitati === prima.poiVisitati &&
       s.distintivi === prima.distintivi &&
       s.volumi === prima.volumi
@@ -148,6 +173,9 @@ export function avviaSalvataggio() {
         modelloAuto: st.modelloAuto,
         audioOn: st.audioOn,
         outfit: st.outfit,
+        avatar: st.avatar,
+        capi: st.capi,
+        consegneFatte: st.consegneFatte,
         poiVisitati: st.poiVisitati,
         distintivi: st.distintivi,
         volumi: st.volumi,
