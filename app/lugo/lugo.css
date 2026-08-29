@@ -1114,6 +1114,137 @@
   color: var(--accento);
 }
 
+/* ── Gli incarichi del giorno e della settimana ─────────────────────── */
+
+.lugo-incarichi {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.lugo-incarichi-gruppo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.lugo-incarichi-titolo {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.lugo-incarico {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--bordo);
+  border-radius: calc(var(--raggio) * 0.6);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.lugo-incarico-ok {
+  border-color: var(--accento);
+  background: rgba(242, 180, 25, 0.1);
+}
+
+.lugo-incarico-riscosso {
+  opacity: 0.5;
+}
+
+.lugo-incarico-testa {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.lugo-incarico-nome {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.lugo-incarico-conta {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accento);
+}
+
+.lugo-incarico-barra {
+  margin: 0.35rem 0 0.3rem;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.lugo-incarico-barra-piena {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ffd08a, var(--accento));
+  transition: width 0.3s ease;
+}
+
+.lugo-incarico-piede {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.lugo-incarico-testo {
+  font-size: 0.72rem;
+  color: var(--muto);
+}
+
+.lugo-incarico-premio,
+.lugo-incarico-fatto {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.lugo-incarico-btn {
+  padding: 0.28rem 0.6rem;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  color: #241a10;
+  background: linear-gradient(180deg, #ffd08a, var(--accento));
+  cursor: pointer;
+}
+
+.lugo-incarico-btn:active {
+  transform: translateY(1px);
+}
+
+/* il pallino sul tasto del diario: quanti premi aspettano di essere presi */
+.lugo-diario-pronti {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  line-height: 16px;
+  text-align: center;
+  color: #241a10;
+  background: var(--accento);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.45);
+}
+
 .lugo-diario-lista {
   margin-top: 0.8rem;
   display: flex;

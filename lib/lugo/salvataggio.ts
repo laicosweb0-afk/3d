@@ -12,6 +12,7 @@ import { CARROZZERIE } from './carrozzerie';
 import { DISTINTIVI } from './distintivi';
 import { avatarValido, type Avatar } from './avatar';
 import { livelloDaRep } from './progressione';
+import { CONTATORI_ZERO, type Contatori, type Metrica } from './incarichi';
 
 const CHIAVE = 'lugo-salvataggio-v1';
 
@@ -32,6 +33,32 @@ export interface Salvataggio {
   poiVisitati: string[];
   distintivi: string[];
   volumi: { effetti: number; voce: number; ambiente: number; musica: number };
+  /** I totali di sempre da cui gli incarichi ricavano il progresso. */
+  totali: Contatori;
+  /** Giorno e settimana in corso, con le loro fotografie dei totali. */
+  giorno: string;
+  settimana: string;
+  baseGiorno: Contatori;
+  baseSettimana: Contatori;
+  incarichiRiscossi: string[];
+}
+
+// I totali salvati finiscono in una sottrazione: un NaN, un numero negativo
+// o un campo mancante manderebbe il progresso di un incarico a NaN, e la
+// barra a "NaN/3" per sempre. Qui ogni metrica torna a essere un intero ≥ 0.
+function contatoriValidi(v: unknown): Contatori {
+  const out: Contatori = { ...CONTATORI_ZERO };
+  if (typeof v !== 'object' || v === null) return out;
+  const g = v as Record<string, unknown>;
+  for (const k of Object.keys(CONTATORI_ZERO) as Metrica[]) {
+    const n = g[k];
+    if (typeof n === 'number' && isFinite(n) && n > 0) out[k] = Math.trunc(n);
+  }
+  return out;
+}
+
+function chiaveValida(v: unknown): string | undefined {
+  return typeof v === 'string' && v.length > 0 && v.length < 16 ? v : undefined;
 }
 
 // Gli id dei distintivi cambiano fra una versione e l'altra: tenerne uno
@@ -91,6 +118,15 @@ export function caricaSalvataggio(): Partial<Salvataggio> | null {
       distintivi: Array.isArray(dati.distintivi)
         ? dati.distintivi.filter((x) => typeof x === 'string' && ID_DISTINTIVI.has(x)).slice(0, 60)
         : undefined,
+      totali: dati.totali !== undefined ? contatoriValidi(dati.totali) : undefined,
+      giorno: chiaveValida(dati.giorno),
+      settimana: chiaveValida(dati.settimana),
+      baseGiorno: dati.baseGiorno !== undefined ? contatoriValidi(dati.baseGiorno) : undefined,
+      baseSettimana:
+        dati.baseSettimana !== undefined ? contatoriValidi(dati.baseSettimana) : undefined,
+      incarichiRiscossi: Array.isArray(dati.incarichiRiscossi)
+        ? dati.incarichiRiscossi.filter((x) => typeof x === 'string').slice(0, 40)
+        : undefined,
       volumi:
         dati.volumi && typeof dati.volumi === 'object'
           ? {
@@ -137,10 +173,21 @@ export function avviaSalvataggio() {
       ...(dati.poiVisitati !== undefined ? { poiVisitati: dati.poiVisitati } : {}),
       ...(dati.distintivi !== undefined ? { distintivi: dati.distintivi } : {}),
       ...(dati.volumi !== undefined ? { volumi: dati.volumi } : {}),
+      ...(dati.totali !== undefined ? { totali: dati.totali } : {}),
+      ...(dati.giorno !== undefined ? { giorno: dati.giorno } : {}),
+      ...(dati.settimana !== undefined ? { settimana: dati.settimana } : {}),
+      ...(dati.baseGiorno !== undefined ? { baseGiorno: dati.baseGiorno } : {}),
+      ...(dati.baseSettimana !== undefined ? { baseSettimana: dati.baseSettimana } : {}),
+      ...(dati.incarichiRiscossi !== undefined
+        ? { incarichiRiscossi: dati.incarichiRiscossi }
+        : {}),
     });
     // il livello è la lettura della reputazione, non uno stato a sé: al
     // caricamento va ricalcolato, perché setState scavalca addPunti
     useLugo.setState({ livello: livelloDaRep(useLugo.getState().punteggio).n });
+    // se nel frattempo è passata mezzanotte (o è lunedì) gli incarichi di
+    // ieri lasciano il posto a quelli di oggi, prima ancora di giocare
+    useLugo.getState().allineaIncarichi();
   }
 
   let timer: ReturnType<typeof setTimeout> | null = null;
@@ -158,7 +205,13 @@ export function avviaSalvataggio() {
       s.consegneFatte === prima.consegneFatte &&
       s.poiVisitati === prima.poiVisitati &&
       s.distintivi === prima.distintivi &&
-      s.volumi === prima.volumi
+      s.volumi === prima.volumi &&
+      s.totali === prima.totali &&
+      s.giorno === prima.giorno &&
+      s.settimana === prima.settimana &&
+      s.baseGiorno === prima.baseGiorno &&
+      s.baseSettimana === prima.baseSettimana &&
+      s.incarichiRiscossi === prima.incarichiRiscossi
     ) {
       return;
     }
@@ -179,6 +232,12 @@ export function avviaSalvataggio() {
         poiVisitati: st.poiVisitati,
         distintivi: st.distintivi,
         volumi: st.volumi,
+        totali: st.totali,
+        giorno: st.giorno,
+        settimana: st.settimana,
+        baseGiorno: st.baseGiorno,
+        baseSettimana: st.baseSettimana,
+        incarichiRiscossi: st.incarichiRiscossi,
       });
     }, 600);
   });

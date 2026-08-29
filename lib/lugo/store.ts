@@ -9,6 +9,12 @@
 import { create } from 'zustand';
 import { AVATAR_INIZIALE, type Avatar } from './avatar';
 import { livelloDaRep } from './progressione';
+import {
+  CONTATORI_ZERO,
+  chiaveGiorno,
+  chiaveSettimana,
+  type Contatori,
+} from './incarichi';
 
 export type QualitaTier = 'alta' | 'media' | 'bassa';
 export type Modalita = 'auto' | 'piedi';
@@ -120,6 +126,19 @@ interface LugoState {
   livello: number;
   /** Consegne portate a termine: alimenta distintivi e giornaliere. */
   consegneFatte: number;
+  /**
+   * I totali di sempre del giocatore. Gli incarichi del giorno e della
+   * settimana non tengono un contatore per incarico: fotografano questi
+   * totali quando il periodo comincia, e il progresso è la differenza.
+   */
+  totali: Contatori;
+  /** La chiave del giorno e della settimana in corso, e le loro fotografie. */
+  giorno: string;
+  settimana: string;
+  baseGiorno: Contatori;
+  baseSettimana: Contatori;
+  /** Gli incarichi già riscossi nel periodo in corso. */
+  incarichiRiscossi: string[];
   /** Messaggio transitorio a centro schermo (esiti, tappe). */
   avviso: string | null;
   /** Suggerimento contestuale persistente ("Premi E…"). */
@@ -158,6 +177,16 @@ interface LugoState {
   /** Registra un capo acquistato. */
   compraCapo: (id: string) => void;
   contaConsegna: () => void;
+  /** Somma ai totali di sempre: alimenta gli incarichi. */
+  contaTotale: (metrica: keyof Contatori, quanto?: number) => void;
+  /**
+   * Se il giorno (o la settimana) è cambiato, rifà la fotografia dei totali
+   * e azzera le riscossioni di quel periodo. Va chiamata al caricamento e
+   * ogni tanto mentre si gioca: a mezzanotte la giornata cambia da sola.
+   */
+  allineaIncarichi: () => void;
+  /** Segna un incarico come riscosso; false se era già stato incassato. */
+  riscuotiIncarico: (id: string) => boolean;
   setAvviso: (msg: string | null) => void;
   setHint: (msg: string | null) => void;
   setVia: (nome: string | null) => void;
@@ -188,6 +217,12 @@ export const useLugo = create<LugoState>((set, get) => ({
   capi: [],
   livello: 1,
   consegneFatte: 0,
+  totali: { ...CONTATORI_ZERO },
+  giorno: chiaveGiorno(),
+  settimana: chiaveSettimana(),
+  baseGiorno: { ...CONTATORI_ZERO },
+  baseSettimana: { ...CONTATORI_ZERO },
+  incarichiRiscossi: [],
   poiVisitati: [],
   distintivi: [],
   scoperta: null,
@@ -214,7 +249,13 @@ export const useLugo = create<LugoState>((set, get) => ({
       // reputazione secondo la tabella in lib/lugo/progressione.ts
       return { punteggio, livello: livelloDaRep(punteggio).n };
     }),
-  addDenaro: (v) => set((s) => ({ denaro: Math.max(0, Math.round((s.denaro + v) * 100) / 100) })),
+  addDenaro: (v) =>
+    set((s) => ({
+      denaro: Math.max(0, Math.round((s.denaro + v) * 100) / 100),
+      // negli incarichi conta quanto si è GUADAGNATO, non quanto si ha in
+      // tasca: le spese non fanno tornare indietro il traguardo
+      totali: v > 0 ? { ...s.totali, euro: s.totali.euro + v } : s.totali,
+    })),
   setWanted: (wanted) => set({ wanted: Math.max(0, Math.min(3, wanted)) }),
   setMissione: (missioneId, statoMissione, tappa = 0) => set({ missioneId, statoMissione, tappa }),
   addMissioneFatta: (id) =>
@@ -226,7 +267,10 @@ export const useLugo = create<LugoState>((set, get) => ({
   setVetrina: (vetrina) => set({ vetrina }),
   scopriPoi: (id) => {
     if (get().poiVisitati.includes(id)) return false;
-    set((s) => ({ poiVisitati: [...s.poiVisitati, id] }));
+    set((s) => ({
+      poiVisitati: [...s.poiVisitati, id],
+      totali: { ...s.totali, scoperte: s.totali.scoperte + 1 },
+    }));
     return true;
   },
   setDistintivi: (distintivi) => set({ distintivi }),
@@ -236,7 +280,36 @@ export const useLugo = create<LugoState>((set, get) => ({
   setOutfit: (outfit) => set({ outfit }),
   setAvatar: (patch) => set((s) => ({ avatar: { ...s.avatar, ...patch } })),
   compraCapo: (id) => set((s) => (s.capi.includes(id) ? {} : { capi: [...s.capi, id] })),
-  contaConsegna: () => set((s) => ({ consegneFatte: s.consegneFatte + 1 })),
+  contaConsegna: () =>
+    set((s) => ({
+      consegneFatte: s.consegneFatte + 1,
+      totali: { ...s.totali, consegne: s.totali.consegne + 1 },
+    })),
+  contaTotale: (metrica, quanto = 1) =>
+    set((s) => ({ totali: { ...s.totali, [metrica]: s.totali[metrica] + quanto } })),
+  allineaIncarichi: () => {
+    const s = get();
+    const giorno = chiaveGiorno();
+    const settimana = chiaveSettimana();
+    if (giorno === s.giorno && settimana === s.settimana) return;
+    // il periodo finito si porta via le sue riscossioni: quelle dell'altro
+    // periodo, se è ancora in corso, restano dove sono
+    const tieni = (id: string) =>
+      (id.startsWith('g:') && giorno === s.giorno) ||
+      (id.startsWith('s:') && settimana === s.settimana);
+    set({
+      giorno,
+      settimana,
+      baseGiorno: giorno === s.giorno ? s.baseGiorno : { ...s.totali },
+      baseSettimana: settimana === s.settimana ? s.baseSettimana : { ...s.totali },
+      incarichiRiscossi: s.incarichiRiscossi.filter(tieni),
+    });
+  },
+  riscuotiIncarico: (id) => {
+    if (get().incarichiRiscossi.includes(id)) return false;
+    set((s) => ({ incarichiRiscossi: [...s.incarichiRiscossi, id] }));
+    return true;
+  },
   setAvviso: (avviso) => set({ avviso }),
   setHint: (hint) => set({ hint }),
   setVia: (via) => set({ via }),

@@ -157,6 +157,10 @@ export function Player() {
   const colpiscePrima = useRef(false);
   // l'esplorazione si controlla due volte al secondo, non a ogni frame
   const scansione = useRef(0);
+  // i metri percorsi in attesa di essere sommati, e l'ultimo punto visto
+  const strada = useRef(0);
+  const ultimoPunto = useRef<[number, number]>([0, 0]);
+  const orologioIncarichi = useRef(5);
   const scopertaTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cooldownPugno = useRef(0);
   const ambienteAcc = useRef(0);
@@ -470,6 +474,29 @@ export function Player() {
       }
     }
     runtime.caccia = useLugo.getState().wanted > 0;
+
+    // I metri di Lugo che ti sei fatto: si sommano una volta al secondo,
+    // così l'incarico dei chilometri non costa un aggiornamento a frame.
+    // A ogni giro si controlla anche se è cambiato il giorno: a mezzanotte
+    // gli incarichi si rinnovano da soli, anche a partita aperta.
+    const quiOra = st.mode === 'auto' ? rt.auto : rt.persona;
+    const passo = Math.hypot(quiOra.x - ultimoPunto.current[0], quiOra.z - ultimoPunto.current[1]);
+    // un salto grosso non è strada percorsa: è il cambio auto/piedi, un
+    // teletrasporto o il primo fotogramma. In un frame non si fanno 15 metri.
+    if (passo < 15) strada.current += passo;
+    ultimoPunto.current[0] = quiOra.x;
+    ultimoPunto.current[1] = quiOra.z;
+    orologioIncarichi.current -= dt;
+    if (orologioIncarichi.current <= 0) {
+      // ogni cinque secondi: i metri finiscono nei totali (e da lì nel
+      // salvataggio) senza scrivere su disco una volta al secondo
+      orologioIncarichi.current = 5;
+      if (st.fase === 'gioco' && strada.current >= 1) {
+        st.contaTotale('metri', Math.round(strada.current));
+        strada.current = 0;
+      }
+      st.allineaIncarichi();
+    }
 
     // l'esplorazione: si scopre camminando, mai passandoci davanti in auto
     scansione.current -= dt;

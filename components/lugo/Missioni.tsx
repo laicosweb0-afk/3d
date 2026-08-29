@@ -18,6 +18,15 @@ import {
   MISSIONI,
 } from '@/lib/lugo/missions';
 import { registroAttivita } from '@/lib/lugo/attivita';
+import {
+  chiaveGiorno,
+  chiaveSettimana,
+  daRiscuotere,
+  incarichiDelGiorno,
+  incarichiDellaSettimana,
+  incarichiVivi,
+  type Metrica,
+} from '@/lib/lugo/incarichi';
 import { runtime, posGiocatore } from '@/lib/lugo/runtime';
 import { suonaEvento } from '@/lib/lugo/audio';
 import { useLugo } from '@/lib/lugo/store';
@@ -85,6 +94,27 @@ export function Missioni() {
       },
       punteggio: () => useLugo.getState().punteggio,
       statoMissione: () => useLugo.getState().statoMissione,
+      // gli incarichi del giorno e della settimana, col progresso vero
+      incarichi: () => {
+        const s = useLugo.getState();
+        const giorno = incarichiVivi(
+          incarichiDelGiorno(chiaveGiorno()),
+          s.totali,
+          s.baseGiorno,
+          s.incarichiRiscossi,
+        );
+        const settimana = incarichiVivi(
+          incarichiDellaSettimana(chiaveSettimana()),
+          s.totali,
+          s.baseSettimana,
+          s.incarichiRiscossi,
+        );
+        return { giorno, settimana, pronti: daRiscuotere(giorno) + daRiscuotere(settimana) };
+      },
+      // fa avanzare un contatore: serve al collaudo per arrivare in fondo a
+      // un incarico senza doverci giocare mezz'ora
+      avanzaIncarico: (metrica: Metrica, quanto: number) =>
+        useLugo.getState().contaTotale(metrica, quanto),
       // quante attività vere di Lugo possono ospitare una missione
       attivitaConMissioni: () => attivitaConMissioni().length,
       // genera la missione di un'attività vera e ne restituisce la scheda
@@ -179,6 +209,8 @@ export function Missioni() {
           // l'elenco degli id — dove non entrava mai nulla.
           if (m.tipo === 'storia') s.addMissioneFatta(m.id);
           else if (m.tipo === 'consegna') s.contaConsegna();
+          // ogni missione chiusa, di qualunque tipo, muove gli incarichi
+          s.contaTotale('missioni');
           // il distintivo di ricompensa, se la missione ne porta uno
           if (m.distintivo && !s.distintivi.includes(m.distintivo)) {
             s.setDistintivi([...s.distintivi, m.distintivo]);
