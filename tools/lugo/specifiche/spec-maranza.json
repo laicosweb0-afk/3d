@@ -1,0 +1,261 @@
+{
+ "titolo": "Maranza di Lugo: «Ce l'hai una sigaretta?» — fumetti 3D, fumo instanziato, aggancio, insistenza, pugno e fuga",
+ "sintesi": "Camminando per il centro, ogni tanto un maranza si stacca dal suo gruppetto e ti viene incontro: si pianta a due metri e sopra la testa gli compare un fumetto vero, nel mondo, con scritto «Ce l'hai una sigaretta?» — la stessa frase che appare anche nel pannello dell'HUD con le risposte. Se dici di no non se ne va subito: insiste («Dai... dai, fai il bravo»), fino a due giri, poi si arrende da solo. Intanto la sigaretta accesa gli sta in mano, tira una boccata ogni tanto e il fumo si vede salire davvero. Puoi dargli quello che chiede (+25 REP, come già oggi), puoi tenere i nervi e vederlo mollare (+5 REP), puoi sganciargli un pugno con F o con l'opzione nel pannello — indietreggia, gli cade la sigaretta, scappa, e i compagni si allontanano senza mai fare a botte — oppure puoi metterti a correre: sopra i 4 m/s per più di un secondo ti perde, ti manda l'ultima battuta e il pannello si chiude da solo. Tutto costa 3 draw call in più e solo mentre c'è qualcosa da mostrare (a riposo gli InstancedMesh hanno count = 0, che in three non disegna nulla): ~414k triangoli e ~159 draw call nel momento peggiore.",
+ "fileNuovi": [
+  {
+   "path": "/home/user/3d/lib/lugo/maranza.ts",
+   "scopo": "Il cervello dell'incontro col maranza: repertorio completo delle battute, macchina a stati dell'aggancio/insistenza/ritirata, cooldown anti-molestia, reazione al pugno, pool deterministico delle particelle di fumo. Modulo PURO come npc.ts: nessun import di React, nessun import dello store, nessun THREE. Restituisce «esiti» che il componente applica.",
+   "esporta": [
+    "export type MomentoFrase = 'aggancio' | 'insistenza' | 'si' | 'pugno' | 'fuga' | 'gruppo'",
+    "export const FRASI_ATLANTE: readonly string[]  // le 43 battute in ordine: l'indice È la cella dell'atlante",
+    "export const GRUPPI: Record<MomentoFrase, readonly [number, number]>  // [primo, ultimo+1] dentro FRASI_ATLANTE",
+    "export const INCONTRO: { raggioAggancio: number; raggioVista: number; distanzaParla: number; distanzaMin: number; distanzaMax: number; vAvvicina: number; vRitirata: number; tempoMaxAvvicina: number; tempoMaxIncontro: number; attesaRisposta: number; giriMax: number; vFuga: number; tempoFuga: number; cooldownGlobale: number; cooldownNpc: number; attesaInizioPartita: number }",
+    "export const FUMO: { max: number; vitaFilo: number; vitaBoccata: number; cadenzaFilo: number; raggioEmissione: number; raggioTaglio: number; salita: number; salitaExtra: number; deriva: number; d0Filo: number; d1Filo: number; d0Boccata: number; d1Boccata: number; opacitaFilo: number; opacitaBoccata: number; tiroMin: number; tiroMax: number; durataTiro: number; ritardoBoccata: number }",
+    "export interface Particella { viva: boolean; x: number; y: number; z: number; vx: number; vy: number; vz: number; yaw: number; giro: number; eta: number; vita: number; d0: number; d1: number; opacita: number }",
+    "export const particelle: Particella[]  // pool fisso di FUMO.max, mai riallocato",
+    "export interface ContestoIncontro { x: number; z: number; yaw: number; v: number; aPiedi: boolean; pannelloAperto: boolean; wanted: number; missioneATempo: boolean; dt: number }",
+    "export interface EsitoIncontro { apriDialogo: { id: string; chi: string; testo: string; opzioni: { id: string; label: string }[] } | null; chiudiDialogo: boolean; avviso: string | null; rep: number; voce: boolean; suono: 'tappa' | 'fallita' | null }",
+    "export function stepIncontro(npcs: Npc[], ctx: ContestoIncontro, fisica: MondoFisico, mondo: MondoLugo): EsitoIncontro",
+    "export function avviaIncontroDaE(n: Npc): EsitoIncontro  // quando sei TU a premere E per primo",
+    "export function subisciPugno(n: Npc, npcs: Npc[], dirX: number, dirZ: number): { eraMolesto: boolean; compagni: number; frase: string }",
+    "export function stepFumo(npcs: Npc[], dt: number, gx: number, gz: number, attivo: boolean): void",
+    "export function oraGioco(): number  // l'orologio dell'incontro, avanza solo in fase 'gioco'",
+    "export function incontroInCorso(): { attivo: boolean; indice: number; fase: 'nessuno' | 'avvicina' | 'chiede' | 'insiste' | 'ritirata'; giro: number; distanza: number; frase: string | null; ultimaFrase: string | null; cooldown: number }",
+    "export const risposta: { scelta: null | 'si' | 'no' | 'pugno' | 'via' }  // ponte HUD → game loop, stesso schema di lib/lugo/stick.ts",
+    "export function provocaIncontro(npcs: Npc[], gx: number, gz: number, gyaw: number, fisica: MondoFisico): number  // hook di collaudo: forza l'aggancio, restituisce l'indice o -1",
+    "export function descrizioneMaranza(n: Npc): string  // 'Un ragazzo in tuta', mai un tratto somatico",
+    "export function statisticheMaranza(npcs: Npc[]): { totali: number; fumatori: number; pelli: number; tute: number; senzaCappello: number }",
+    "export function frasiDi(gruppo: MomentoFrase): readonly string[]  // per il collaudo"
+   ],
+   "dettaglio": "── LE BATTUTE (tutte, per intero, in ordine di atlante) ──\n\nFRASI_ATLANTE = [\n  // AGGANCIO — indici 0..7\n  'Ohi! Ce l\\'hai una sigaretta?',\n  'Bella! Una sigaretta ce l\\'hai?',\n  'Oh raga, me la fai una sigaretta?',\n  'Scusa eh... una paglia ce l\\'hai?',\n  'Ohi bro, una sigaretta e non ti disturbo più.',\n  'Ciò, dammi una sigaretta va\\'.',\n  'Bella zio! Una paglia?',\n  'Oh, hai mica una sigaretta? Giuro, l\\'ultima.',\n  // INSISTENZA dopo il no — indici 8..15\n  'Dai... dai, fai il bravo.',\n  'Ma dai, una sola, cosa ti cambia?',\n  'Dai su, dammi la sigaretta e siamo a posto.',\n  'Ciò, non fare così: una e basta.',\n  'Guarda che poi te ne offro due, eh.',\n  'Dai bro, giuro che è l\\'ultima della giornata.',\n  'Ma come no... mica te ne avanza una?',\n  'Uffa. Dammela e ti lascio andare, promesso.',\n  // REAZIONE AL SÌ — indici 16..22\n  'Grande! Sei un bravo, giuro.',\n  'Ohi, questo sì che è un signore.',\n  'Bene bene, grazie zio!',\n  'Te la ricambio, promesso.',\n  'Boia, che uomo. Grazie eh.',\n  'Sei il numero uno, ciao bello!',\n  'Ecco, così si fa. Buona giornata!',\n  // REAZIONE AL PUGNO — indici 23..29\n  'Ohi ohi ohi! Ma sei matto?!',\n  'Aiaaa! E cosa ti ho fatto?!',\n  'Boia d\\'un mond léder, che manata!',\n  'Va bene, va bene: me ne vado!',\n  'Oh, calma! Calma, eh!',\n  'Ciò! Ma sei fuori di testa?!',\n  'Niente sigaretta, ho capito, niente sigaretta!',\n  // REAZIONE ALLA FUGA / RINUNCIA — indici 30..36\n  'Ma dove scappi? Vai va\\'...',\n  'Vabbè, ciao eh.',\n  'Boh. Buona giornata lo stesso.',\n  'Eh, va bene: non fumo più.',\n  'Ciò, che fretta. Ci si vede.',\n  'Niente sigaretta, pazienza.',\n  'Va\\' va\\', che poi ti stanchi.',\n  // I COMPAGNI DEL GRUPPO (dopo il pugno) — indici 37..42\n  'Oh oh oh! Fermi tutti!',\n  'Lascia perdere, andiamo va\\'.',\n  'Ciò, questo mena! Via, via.',\n  'Ma cosa gli è preso?',\n  'Dai, non ne vale la pena: andiamo.',\n  'Sta\\' calmo eh, noi ce ne andiamo.',\n];\nGRUPPI = { aggancio:[0,8], insistenza:[8,16], si:[16,23], pugno:[23,30], fuga:[30,37], gruppo:[37,43] };\nRegole di scrittura, da mettere come commento in testa al file: niente parolacce, niente insulti, niente minacce, nessun riferimento a etnia, provenienza, religione o aspetto fisico; il romagnolo è colore locale («ciò», «boia d'un mond léder», «va'»), non la caricatura di qualcuno. Le stesse 43 battute valgono per TUTTI i maranza: nessuna frase è legata alla variante estetica.\n\nScelta senza ripetizioni: `pescaFrase(gruppo)` usa un LCG (seme 4242, stessa forma di npc.ts: s = (s*1664525+1013904223)>>>0) e un array `ultima: Record<MomentoFrase, number>`; se esce lo stesso indice dell'ultima volta si ritira una volta sola. Con 6-8 varianti per gruppo la ripetizione diventa invisibile.\n\n── L'OROLOGIO ──\n`let orologio = 0;` avanzato in stepIncontro con `orologio += ctx.dt` solo quando il gioco è in corso (chi chiama non lo invoca in fase 'start'); `oraGioco()` lo restituisce. Tutti i timestamp (n.fraseFino, cooldown, n.chiesto) stanno su questo orologio: a partita ferma il tempo non scorre e i cooldown non scadono in pausa.\n\n── LA MACCHINA A STATI ──\nStato di modulo: `let attivo = -1` (indice dell'NPC agganciato), `let fase: 'nessuno'|'avvicina'|'chiede'|'insiste'|'ritirata'`, `let giro = 0`, `let tIncontro = 0`, `let tFuga = 0`, `let attesa = 0`, `let prossimo = INCONTRO.attesaInizioPartita`, `let quanti = 0` (incontri già avvenuti).\n\nCOSTANTI: raggioAggancio 9, raggioVista 12, distanzaParla 2.0, distanzaMin 1.5, distanzaMax 2.6, vAvvicina 3.1, vRitirata 4.6, tempoMaxAvvicina 7, tempoMaxIncontro 22, attesaRisposta 9, giriMax 2, vFuga 4.0, tempoFuga 1.2, cooldownGlobale QA?6:75, cooldownNpc QA?8:240, attesaInizioPartita QA?2:20. I valori QA arrivano da `import { QA } from './qa'`, come fa Npcs.tsx per N_NPC: il collaudo headless non può aspettare 75 secondi.\n\n1) SELEZIONE (solo se fase === 'nessuno'). Condizioni tutte necessarie: ctx.aPiedi; !ctx.pannelloAperto; ctx.wanted === 0 (con i Carabinieri alle costole nessuno ti si avvicina); !ctx.missioneATempo (mai sabotare una consegna a tempo); oraGioco() >= prossimo. Poi il maranza più vicino con d < raggioAggancio, stato 'cammina' o 'fermo', n.chiesto + cooldownNpc < oraGioco(), e VISTA LIBERA: quattro campionamenti a t = 0.25/0.5/0.75/1 sul segmento npc→giocatore con `fisica.cerchioLibero(px, pz, 0.3)`; se uno fallisce c'è un muro in mezzo e si passa al candidato dopo. Il controllo gira al massimo ogni 0,5 s (accumulatore `scansione`), non a frame.\n   Trovato: fase = 'avvicina', n.stato = 'avvicina', tIncontro = 0, giro = 0; i compagni (fino a due maranza entro 6 m) passano a 'fermo' con timer 12 e restano a guardare.\n\n2) AVVICINA. Bersaglio = il giocatore, aggiornato ogni frame; la velocità la applica stepNpcs leggendo n.stato ('avvicina' ⇒ INCONTRO.vAvvicina, non n.passo). 3,1 m/s è più della camminata del giocatore (2,3) e meno della corsa (5,2): camminare non basta a levarselo di torno, correre sì — è tutta lì la regola della fuga. Si rinuncia (→ 'ritirata' con una frase del gruppo 'fuga') se d > raggioVista, se tIncontro > tempoMaxAvvicina, oppure se n.fermoDa > 1.6 (incastrato dietro un muro: la fisica lo fa già scivolare, ma se non avanza si arrende invece di pestare i piedi per sempre).\n   Arrivo: d < distanzaParla ⇒ fase = 'chiede', n.stato = 'chiede', frase = pescaFrase('aggancio'), esito.apriDialogo con la STESSA frase (id 'sigaretta', chi = descrizioneMaranza(n)), esito.voce = true, esito.suono = 'tappa'.\n\n3) CHIEDE / INSISTE. Sta fermo davanti a te e tiene la distanza: sotto 1,5 m arretra a 1,2 m/s, sopra 2,6 m si riavvicina a 1,6 m/s (lo esegue stepNpcs); la faccia è sempre girata verso di te. Legge `risposta.scelta` e la azzera:\n   • 'si' → frase = pescaFrase('si'); esito.rep = +25 (come oggi); n.chiesto = oraGioco() + 1e5 (con te ha chiuso); fase = 'ritirata'; suono 'tappa'.\n   • 'no' → giro++; se giro <= giriMax: frase = pescaFrase('insistenza'), fase = 'insiste', esito.apriDialogo con la frase nuova (id 'sigaretta-insiste'), attesa = attesaRisposta. Se giro > giriMax: frase = pescaFrase('fuga'), esito.rep = +5, esito.avviso = 'Hai tenuto i nervi · +5 REP', fase = 'ritirata'.\n   • 'via' → esito.chiudiDialogo; resta in 'insiste' senza pannello per 2,5 s con una frase di insistenza sopra la testa, poi 'ritirata'.\n   • 'pugno' → qui chiude soltanto il pannello: il colpo vero passa dal Player (vedi HUD).\n   • nessuna risposta per `attesaRisposta` secondi → insiste da solo (stesso ramo del 'no'): anche chi lascia il pannello aperto vede la scena andare avanti.\n   Uscite comuni: tIncontro > tempoMaxIncontro ⇒ 'ritirata'. FUGA: se ctx.v > vFuga si accumula tFuga += dt, altrimenti tFuga = 0; se tFuga > tempoFuga oppure d > raggioVista ⇒ frase = pescaFrase('fuga'), esito.chiudiDialogo = true (il pannello non deve restarti addosso mentre corri: è il difetto peggiore del dialogo di oggi), fase = 'ritirata'. Se n.stato diventa 'balzo' da fuori (un'auto in corsa mentre ti parla) l'incontro si chiude allo stesso modo.\n\n4) RITIRATA. n.stato = 'ritirata', meta = puntoStradaCasuale(mondo, n.x + via*40, n.z + via*40, 30, seme) dove `via` è la direzione opposta al giocatore; velocità vRitirata per 4 s, poi n.passo; dopo 6 s n.stato = 'cammina'.\n   Chiusura: attivo = -1, fase = 'nessuno', quanti++, n.chiesto = oraGioco(), e il cooldown CRESCE: prossimo = oraGioco() + cooldownGlobale * Math.min(3.2, 1 + 0.4 * quanti) → 75 s la prima volta, poi 105, 135, 165... fino a 240. È la risposta a «come si evita che sia molesto»: più ti è già successo, più diventa raro.\n\n── IL PUGNO SUBITO ──\nsubisciPugno(n, npcs, dirX, dirZ): n.stato = 'balzo'; n.timer = 0.22; n.bx = dirX; n.bz = dirZ (a 6,5 m/s del balzo esistente fanno ~1,4 m di arretramento); frase = pescaFrase('pugno') per 2,4 s; la sigaretta cade: n.fuma = false e n.tiro = -25 (si riaccende dopo 25 s), con tre particelle 'boccata' emesse a y 0,25 dove è finita; n.chiesto = oraGioco() + 1e5. Se era lui l'agganciato: fase = 'ritirata' e chiusura con il cooldown massimo (prossimo = oraGioco() + cooldownGlobale * 3.2). COMPAGNI: tutti i maranza entro 12 m passano a 'ritirata' (si allontanano di 8-12 m) e a UNO solo si dà una frase del gruppo 'gruppo'. Regola di progetto scritta nel file: il gruppo non attacca mai il giocatore, non c'è rissa e non c'è vendetta — la reazione è comica e si esaurisce da sé. Ritorna { eraMolesto (n era in 'chiede'|'insiste'), compagni, frase } così il Player decide REP, avviso e calore.\n\n── IL FUMO ──\nPool fisso `particelle` di FUMO.max = 48 oggetti creati una volta (nessuna allocazione a frame, come i buffer riusati di npc.ts). Costanti: vitaFilo 1.8 s, vitaBoccata 2.4 s, cadenzaFilo 0.55 s, raggioEmissione 30 m, raggioTaglio 45 m, salita 0.55 m/s (+0.25 a fine vita), deriva ±0.18 m/s, d0Filo 0.035 → d1Filo 0.16, d0Boccata 0.09 → d1Boccata 0.44, opacitaFilo 0.20, opacitaBoccata 0.48, tiroMin 7 s, tiroMax 16 s, durataTiro 1.1 s, ritardoBoccata 0.9 s.\nstepFumo(npcs, dt, gx, gz, attivo):\n  a) per ogni maranza con n.fuma entro raggioEmissione: n.tiro -= dt; se n.tiro <= -durataTiro si riarma a tiroMin + rand()*(tiroMax-tiroMin). Fra 0 e -durataTiro il braccio è alzato (lo legge Npcs.tsx). Attraversata la soglia -ritardoBoccata (una volta sola) si emettono 3 particelle 'boccata' dalla BOCCA — locale (0.15, 1.52, 0) ruotata di yaw — con una spinta in avanti di 0.55 m/s che decade come exp(-2.2*dt): la boccata esce dalla bocca, non dalla sigaretta, perché la tirata è avvenuta un attimo prima. È il dettaglio che rende leggibile la scena.\n  b) filo di fumo: n.fumoAcc += dt; ogni cadenzaFilo una particella 'filo' dalla punta della sigaretta, cioè n.manoX/manoY/manoZ scritti da Npcs.tsx più 0,05 m in su (nessuna cinematica duplicata).\n  c) integrazione: p.y += (salita + salitaExtra * t) * dt; p.x += p.vx*dt; p.z += p.vz*dt con ondeggio p.vx += Math.sin(orologio*1.7 + p.giro)*0.05*dt; p.yaw += 0.6*dt; p.eta += dt; morta a p.eta >= p.vita. Scala = d0 + (d1-d0) * (1 - (1-t)^2): si gonfia subito e poi rallenta, come il fumo vero.\n  d) spegnimento a distanza: nessuna emissione oltre raggioEmissione; le particelle oltre raggioTaglio dal giocatore muoiono subito per liberare slot; se `attivo` è false (fase !== 'gioco', oppure sei in auto) non si emette e le vive si spengono da sole in meno di 2,4 s.\n  e) determinismo: un solo LCG di modulo (seme 909) per deriva, yaw iniziale e giro di fase.\n\n── LA DIVERSITÀ, GARANTITA QUI ──\nassegnaMaranza(n, rand), chiamata da creaNpcs, pesca da FLUSSI SEPARATI: n.pelle = floor(rand()*8), n.variante = floor(rand()*6) per la tuta, n.cappello = floor(rand()*5), n.senzaCappello = rand() < 0.22, n.fuma = rand() < 0.55. Nessun campo di comportamento (fuma, frasi, aggancio, insistenza) dipende da n.pelle, e la funzione lo dichiara in un commento: le battute sono un unico repertorio per tutti, l'aggressività non esiste come tratto di nessuno, e il colore della pelle non compare in nessuna condizione del file. descrizioneMaranza() nomina solo i vestiti: ['Un ragazzo in tuta','Una ragazza in tuta','Un ragazzo col cappellino','Un tipo col marsupio','Un ragazzo in felpa','Una ragazza col cappellino'][n.variante % 6]."
+  },
+  {
+   "path": "/home/user/3d/components/lugo/Maranza.tsx",
+   "scopo": "I tre InstancedMesh nuovi e nient'altro: la sigaretta accesa, le boccate di fumo, i fumetti sopra la testa. Legge runtime.npcs e le funzioni pure di lib/lugo/maranza.ts; si monta DOPO <Npcs /> in World.tsx così legge le posizioni dello stesso fotogramma.",
+   "esporta": [
+    "export function Maranza(): JSX.Element  // il <group> con i tre instancedMesh",
+    "export function atlanteFrasi(): { tessitura: THREE.CanvasTexture; celle: { u0: number; v0: number; u1: number; v1: number; rapporto: number }[] } | null  // costruito una volta, con cache di modulo come Insegne.tsx"
+   ],
+   "dettaglio": "── 1. L'ATLANTE DELLE FRASI (CanvasTexture, una volta sola) ──\nStessa strategia di Insegne.tsx (che già cuoce tutte le insegne in un canvas solo) ma molto più piccola. CELLA = 448 × 104 px. colonne = ceil(43*104/2048) = 3, righePerCol = ceil(43/3) = 15, canvas 1344 × 1560 (~8 MB: un quarto dell'atlante delle insegne). Cache in un `let atlante` di modulo più la guardia `typeof document === 'undefined'`, perché il componente sta sotto Suspense e un useMemo sospeso viene buttato via: è la stessa trappola già documentata in Insegne.tsx.\nDisegno della cella i (colonna c = floor(i/righePerCol), riga r = i % righePerCol, origine ox = c*448, oy = r*104):\n  • font 'bold 25px ui-sans-serif, system-ui, sans-serif'; la frase si spezza in al massimo 2 righe con ctx.measureText su una larghezza utile di 400 px, interlinea 28.\n  • larghezza della bolla = max(larghezza riga) + 34 px di respiro, minimo 150, massimo 424; altezza 62 (una riga) o 86 (due); si disegna CENTRATA nella cella lasciando almeno 12 px di margine trasparente su tutti i lati — serve al mipmapping: senza margine, dal quinto livello in poi le celle vicine si sbavano l'una nell'altra e sopra la testa compaiono pezzi di un'altra battuta.\n  • forma: rettangolo ad angoli arrotondati (ctx.roundRect, raggio 14) con fondo '#F7F4EC' al 96%, bordo 3 px '#1A1B20', più una codina triangolare in basso al centro (base 22 px, punta 14 px sotto) che indica la testa del maranza. Testo '#15171D', textAlign 'center'.\n  • si memorizza la cella: u0/u1 dai bordi orizzontali della bolla, v0/v1 speculari in Y (v = 1 - y/H), rapporto = larghezzaBolla/altezzaBolla — serve a dare al quad la larghezza giusta: una battuta corta fa una bolla corta, non una bolla mezza vuota.\n  • tessitura: CanvasTexture, anisotropy 4, mipmap ATTIVE (a 20 m la bolla copre ~90 px contro 448: senza mipmap sfarfalla).\n\n── 2. I FUMETTI (1 draw call, 6 istanze al massimo) ──\n<instancedMesh args={[geoFumetto, matFumetto, 6]} frustumCulled={false} renderOrder={10}>; geometria = PlaneGeometry(1,1) con due InstancedBufferAttribute: `aUv` (vec4 = u0,v0,u1,v1) e `aFade` (float). Materiale = ShaderMaterial (il progetto già scrive GLSL: vedi il cielo in World.tsx), transparent, depthWrite false, depthTest true (dietro un muro il fumetto sparisce: se non lo vedi non devi leggerlo), fog false.\n  vertex:  vUv = mix(aUv.xy, aUv.zw, uv); vFade = aFade;\n           vec4 mv = modelViewMatrix * instanceMatrix * vec4(0.0,0.0,0.0,1.0);\n           mv.xy += position.xy * vec2(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz));\n           gl_Position = projectionMatrix * mv;\n           → billboard in spazio vista: guarda sempre la camera e resta DRITTO, e non costa niente alla CPU perché le due dimensioni viaggiano già nella scala della matrice.\n  fragment: vec4 c = texture2D(atlante, vUv); if (c.a * vFade < 0.01) discard; gl_FragColor = vec4(c.rgb, c.a * vFade);\n           Niente tonemapping e niente conversione: il fumetto è un elemento di LETTURA e il bianco deve restare bianco e il nero nero esattamente come sono stati disegnati sul canvas. È per questo che è uno ShaderMaterial e non un meshBasicMaterial.\nOgni frame si scorre runtime.npcs prendendo chi ha n.frase >= 0, n.fraseFino > oraGioco() e distanza dalla camera < 26 m, ordinati per distanza, al massimo 6. Per ciascuno:\n  • hMondo = 0.46 m (0.60 per le bolle a due righe); wMondo = hMondo * cella.rapporto; posizione (n.x, 2.18 + hMondo/2, n.z). NON si somma il bob del passo: un fumetto che sobbalza è illeggibile.\n  • matrice = translation(pos) * scale(wMondo, hMondo, 1); aUv dalla cella; aFade = min(1,(ora-n.fraseDa)/0.18) * min(1,(n.fraseFino-ora)/0.35); nei primi 0,16 s la scala parte da 0,6 (un piccolo «pop» d'ingresso).\n  • mesh.count = quanti ne ha trovati: con count 0 three esce prima della draw call, quindi a riposo il costo è zero draw call e zero triangoli.\n\n── 3. LA SIGARETTA (1 draw call, compattata) ──\nGeometria costruita una volta: DUE BoxGeometry fuse a mano (positions + colors + index concatenati con offset; niente normali perché il materiale è unlit, niente BufferGeometryUtils da importare): corpo 0.062 × 0.010 × 0.010 in colore vertice '#EFE9DC' e brace 0.010 × 0.011 × 0.011 all'estremità +X in '#FF5A1E'. 24 triangoli in tutto.\nMateriale: meshBasicMaterial vertexColors, fog false. Ogni frame `mat.color.setScalar(1 - 0.45 * cieloOra().luci)`: di notte tutto si smorza del 45% e la brace resta la cosa più luminosa in mano al maranza, senza pagare una seconda mesh emissiva (che sarebbe stata +1 draw call).\nRiempimento compattato: k = 0; per ogni maranza con n.fuma entro 40 m dal giocatore → matrice = translation(n.manoX, n.manoY, n.manoZ) * rotationY(-n.yaw) * rotationZ(-0.35) (la sigaretta punta avanti e un po' in giù, come la si tiene fra le dita), setMatrixAt(k++). mesh.count = k. Con i colori dentro la geometria la compattazione è gratis: non c'è nessun instanceColor da riordinare.\n\n── 4. IL FUMO (1 draw call, 48 particelle) ──\n<instancedMesh args={[boxGeometry(1,1,1), matFumo, 48]} frustumCulled={false}>: cubetti, coerenti con l'arte a blocchi del gioco, 12 triangoli l'uno (576 nel caso peggiore assoluto). ShaderMaterial con due attributi instanziati `aVita` (0→1) e `aOpacita`, uniform `tinta` (vec3), nessuna luce:\n  vertex:   vVita = aVita; vOp = aOpacita; gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position,1.0);\n  fragment: float a = vOp * smoothstep(0.0,0.12,vVita) * (1.0 - smoothstep(0.35,1.0,vVita)); if (a < 0.01) discard; gl_FragColor = vec4(tinta, a);\n  transparent, depthWrite false, side FrontSide: le facce anteriori di un cubo convesso non si sovrappongono mai in schermo, quindi ogni pixel viene miscelato una volta sola e non restano aloni scuri.\nOgni frame: stepFumo(...) dalla libreria, poi compattazione del pool nelle prime k istanze (matrice = translation * rotationY(p.yaw) * scale(dim)), aVita = p.eta/p.vita, aOpacita = p.opacita, mesh.count = k. `tinta` = grigio '#E8E6E0' moltiplicato per (1 - 0.55 * cieloOra().luci): di notte il fumo è un'ombra chiara, non una macchia bianca.\n\n── COSTO DICHIARATO ──\nA riposo: +0 draw call e +0 triangoli (tutti e tre i count a 0). Durante un incontro con due fumatori vicini: 3 draw call e circa 390 triangoli. Caso peggiore immaginabile (20 fumatori inquadrati, 48 particelle, 6 fumetti): 3 draw call e 1.068 triangoli → da 156 a 159 draw call, da ~410k a ~411k triangoli."
+  }
+ ],
+ "fileModificati": [
+  {
+   "path": "/home/user/3d/lib/lugo/npc.ts",
+   "modifiche": [
+    {
+     "dove": "type StatoNpc (riga 14)",
+     "cosa": "StatoNpc = 'cammina' | 'fermo' | 'balzo' | 'avvicina' | 'chiede' | 'ritirata'.",
+     "perche": "L'incontro è uno stato del pedone, non una variabile parallela: così la fisica, il balzo dai veicoli e l'anti-incastro esistenti continuano a valere anche mentre ti attacca bottone."
+    },
+    {
+     "dove": "interface Npc (righe 16-40), in coda ai campi",
+     "cosa": "Campi nuovi, tutti riempiti da creaNpcs così nessuno è undefined a runtime: `pelle: number` (tonalità, indipendente dalla variante); `cappello: number`; `senzaCappello: boolean`; `fuma: boolean`; `tiro: number` (secondi alla prossima tirata; fra 0 e −durataTiro il braccio è alzato); `fumoAcc: number`; `frase: number` (indice in FRASI_ATLANTE, −1 = nessuna); `fraseDa: number`; `fraseFino: number` (istanti dell'orologio di maranza.ts); `chiesto: number` (quando ti ha già chiesto la sigaretta); `manoX/manoY/manoZ: number` (punta della sigaretta, la scrive Npcs.tsx ogni frame).",
+     "perche": "manoX/Y/Z evitano di riscrivere la cinematica del braccio in due file: chi disegna il braccio è l'unico che sa dov'è la mano, e il fumo la legge invece di ricalcolarla — era la strada sicura per far fluttuare la sigaretta a mezz'aria appena qualcuno ritocca l'animazione."
+    },
+    {
+     "dove": "creaNpcs, dentro la funzione spawn (righe 200-240) e nel blocco dei maranza (righe 257-271)",
+     "cosa": "Assegnazione dei campi nuovi alla nascita con estrazioni SEPARATE dal seme: pelle (0..7), variante (0..5 per i maranza), cappello (0..4), senzaCappello (22%), fuma (solo maranza, 55%), tiro = 2 + rand()*14, frase = -1, chiesto = -1e9, mano* = 0.",
+     "perche": "Oggi l'incarnato è PELLI[variante % 4]: il colore della pelle è incollato alla tuta e i maranza escono in quattro copie identiche. Separando i flussi le combinazioni passano da 4 a 8 × 6 × 5 × 2 = 480, e nessun tratto somatico resta legato a un vestito o a un comportamento."
+    },
+    {
+     "dove": "stepNpcs, il blocco delle velocità (righe 376-415)",
+     "cosa": "Tre rami nuovi prima dell'else 'cammina': `avvicina` → verso (targetX,targetZ) a INCONTRO.vAvvicina, senza la resa a d<1.2 (ci pensa maranza.ts); `chiede` → velocità nulla salvo la tenuta di distanza (arretra a 1,2 m/s sotto 1,5 m, avanza a 1,6 m/s sopra 2,6 m) e yaw ruotato verso il giocatore con lo stesso smorzamento dt*8 già usato più sotto; `ritirata` → verso il waypoint a INCONTRO.vRitirata per i primi 4 s. Il ramo `chiede` deve aggiornare lo yaw ANCHE a velocità nulla (oggi la rotazione sta dentro `if (vx !== 0 || vz !== 0)`).",
+     "perche": "Senza rami espliciti i tre stati nuovi cadrebbero nel ramo 'cammina', che a 1,2 m dalla meta rimette il pedone su 'fermo': il maranza ti arriverebbe a un metro e si dimenticherebbe di te. E uno che ti parla dandoti la schiena è la prima cosa che si nota."
+    },
+    {
+     "dove": "stepNpcs, firma (righe 313-320) e interfaccia EsitoNpcs (righe 300-303)",
+     "cosa": "Nuovo parametro `ui` (dialogoAperto, pannelloAperto, wanted, missioneATempo, vGiocatore) e nuovo campo dell'esito `incontro: EsitoIncontro | null`. Dentro, dopo il ciclo dei pedoni, una sola chiamata a stepIncontro(npcs, ctx, fisica, mondo) quando !modeAuto. L'oggetto di contesto è un literal di modulo riusato, non allocato a ogni frame.",
+     "perche": "L'incontro deve girare dopo che le posizioni del frame sono aggiornate e nello stesso posto in cui vive già la fisica dei pedoni; e l'esito esce con lo stesso schema di `frase`, così Npcs.tsx resta l'unico punto che tocca lo store."
+    },
+    {
+     "dove": "puntoStradaCasuale (riga 132)",
+     "cosa": "Aggiungere `export`.",
+     "perche": "La ritirata ha bisogno di un punto di strada vero a 40 m dalla parte opposta al giocatore, se no il maranza scappa dentro una vetrina e la fisica lo tiene lì a strusciare."
+    }
+   ]
+  },
+  {
+   "path": "/home/user/3d/components/lugo/Npcs.tsx",
+   "modifiche": [
+    {
+     "dove": "le palette in testa (righe 27-33)",
+     "cosa": "PELLI da 4 a 8 tonalità su tutta la scala: ['#F0CDA8','#E8C09A','#D9A67C','#C89066','#B87A4E','#9A6038','#7A4A2C','#5C3720']. TUTE_MARANZA a 6: ['#1A1A20','#E8E8EC','#22366E','#3A3A42','#7A2233','#2E5E4A']. Nuovi CAPPELLI_MARANZA = ['#16161C','#E8E8EC','#B03A2E','#2E4E8E','#D9A62E'] e CAPELLI = ['#1A1512','#2E2620','#4A3E30','#6B4A2F','#141014'].",
+     "perche": "È il punto in cui la diversità si vede davvero: otto incarnati e sei tute vogliono dire che due maranza vicini non sono mai la stessa persona. E l'incarnato ora si legge da n.pelle, non più da n.variante: fra pelle e vestito non c'è più nessuna correlazione."
+    },
+    {
+     "dove": "useEffect dei colori per instanza (righe 116-146)",
+     "cosa": "p.testa usa PELLI[n.pelle % 8]; per i maranza p.copricapo usa CAPPELLI_MARANZA[n.cappello % 5] con il cappellino e CAPELLI[n.cappello % 5] senza.",
+     "perche": "Riusare l'istanza del copricapo per i capelli costa zero draw call: chi non porta il cappellino ha una lastra più bassa e larga color capelli, e nel gruppetto si distingue subito chi è chi."
+    },
+    {
+     "dove": "ciclo di disegno, blocco copricapo (riga ~200)",
+     "cosa": "Per i maranza con senzaCappello: scala (1.05, 0.55, 1.05) e y abbassata di 0.03 — da cappellino a capigliatura.",
+     "perche": "Un maranza a testa nuda con la stessa scatola del cappello sembrerebbe pettinato a caschetto quadrato."
+    },
+    {
+     "dove": "ciclo di disegno, calcolo di oscB e setParte(p.braccioD) (righe 191-196)",
+     "cosa": "const oscD = n.fuma && n.tipo === 'maranza' ? (n.tiro > -DURATA_TIRO && n.tiro < 0 ? mescola(0.35, 1.15, curvaTiro) : 0.35 + oscB * 0.15) : oscB; si usa oscD solo per braccioD. Subito dopo, per chi fuma, si scrive la punta della sigaretta nell'NPC: lx = avantiTesta*0.7 + 0.46*Math.sin(oscD), ly = 1.30 - 0.46*Math.cos(oscD) + bob, lz = 0.24 → n.manoX = n.x + lx*cos(n.yaw) - lz*sin(n.yaw); n.manoY = ly; n.manoZ = n.z + lx*sin(n.yaw) + lz*cos(n.yaw).",
+     "perche": "Chi fuma tiene il braccio quasi fermo (la sigaretta non si sventola camminando) e lo alza a 1,15 rad per la tirata; e la mano si misura QUI, dove si costruisce davvero la matrice del braccio, con la convenzione di assi del resto del gioco (modello verso +X, rotation.y = -yaw)."
+    },
+    {
+     "dove": "useFrame, chiamata a stepNpcs (righe 158-166)",
+     "cosa": "Passare il contesto UI (st.dialogo/vetrina/bacheca/diario/guardaroba, st.wanted, st.tempoResiduo !== null, rt.vPersona) e applicare esito.incontro: setDialogo(apriDialogo) oppure setDialogo(null) se chiudiDialogo, addPunti(rep), setAvviso(avviso), suonaEvento(suono), parla('maranza') se voce.",
+     "perche": "Npcs.tsx è già l'unico posto che legge lo store dentro il ciclo dei pedoni: l'incontro non aggiunge un secondo padrone dello stato."
+    },
+    {
+     "dove": "useEffect degli hook (righe 110-114)",
+     "cosa": "Aggiungere a __LUGO__: `maranza: () => statisticheMaranza(npcs)`, `incontro: () => incontroInCorso()`, `provocaIncontro: () => provocaIncontro(npcs, rt.persona.x, rt.persona.z, rt.persona.yaw, fisica)`, `fumo: () => ({ vivi: particelle.filter(p => p.viva).length, max: FUMO.max })`, `fumetti: () => ({ vivi, testi })`, `frasi: (g) => frasiDi(g)`, `npcVicino: () => l'indice e la posizione del pedone non-maranza più vicino`.",
+     "perche": "Il collaudo non può aspettare che un maranza si decida: provocaIncontro forza l'aggancio azzerando i cooldown (e accende n.fuma sul bersaglio), gli altri rendono misurabile tutto il resto."
+    },
+    {
+     "dove": "il return del componente",
+     "cosa": "Nessuna mesh nuova qui: i tre InstancedMesh stanno in <Maranza />, montato da World.tsx.",
+     "perche": "Tenere separati i pedoni (sistema stabile e delicato) dagli effetti dell'incontro riduce il rischio di conflitti su un file che tutti toccano."
+    }
+   ]
+  },
+  {
+   "path": "/home/user/3d/components/lugo/World.tsx",
+   "modifiche": [
+    {
+     "dove": "import in testa e funzione World() (righe 395-415)",
+     "cosa": "import { Maranza } from './Maranza'; e <Maranza /> subito DOPO <Npcs />.",
+     "perche": "L'ordine di montaggio è l'ordine dei useFrame a pari priorità: montandolo dopo, fumo e fumetti leggono le posizioni aggiornate nello stesso fotogramma invece di rincorrerle di uno."
+    }
+   ]
+  },
+  {
+   "path": "/home/user/3d/lib/lugo/runtime.ts",
+   "modifiche": [
+    {
+     "dove": "campo npcs (riga ~33)",
+     "cosa": "`npcs: Npc[] | null`, con `import type { Npc } from './npc'`. E un campo nuovo `pugno: { t: number; colpito: boolean; bersaglio: string | null; molesto: boolean; compagni: number }` inizializzato a { t: 0, colpito: false, bersaglio: null, molesto: false, compagni: 0 }.",
+     "perche": "Oggi npcs è tipizzato { tipo; x; z } e il Player è costretto a un doppio cast (`colpito as unknown as {...}`) per toccare stato/timer/bx/bz: col tipo vero il pugno e i fumetti leggono i campi senza cast, e l'import è di solo tipo, quindi nessun ciclo a runtime. `pugno` è stato caldo come vPersona: lo scrive il Player, lo legge Character.tsx per animare il braccio, senza passare da React."
+    }
+   ]
+  },
+  {
+   "path": "/home/user/3d/components/lugo/Character.tsx",
+   "modifiche": [
+    {
+     "dove": "componente Braccio, props e useFrame (righe 143-180)",
+     "cosa": "Nuova prop opzionale `colpisce?: boolean`. Nel useFrame, se colpisce e runtime.pugno.t > 0: p = 1 - runtime.pugno.t / 0.42 (0→1) e curva a tre tratti — carica (p<0.25): spalla.rotation.z sale a +0.55 e gomito a -1.7; colpo (0.25..0.55): spalla a -1.35 con easing out cubico e gomito a -0.12 (braccio disteso); rientro (p>0.55): ritorno esponenziale alla posa di camminata. La rotazione del passo viene sostituita, non sommata.",
+     "perche": "Un pugno che parte già disteso non si legge: servono la carica indietro e la distensione. Il segno è quello del file (modello verso +X: negativo = avanti/in alto, come per il busto che si sporge correndo), quindi la spalla va a -1.35 e non a +1.35, che porterebbe il pugno dietro la schiena."
+    },
+    {
+     "dove": "corpo di Character, dove si montano le due Braccio (righe 330-331) e useFrame del busto (righe 285-300)",
+     "cosa": "colpisce passato solo al braccio z={-0.29} (fase 0). Nel useFrame del busto: busto.rotation.y = -0.26 * curvaColpo e busto.rotation.z -= 0.12 * curvaColpo, con curvaColpo ricavata dallo stesso runtime.pugno.t.",
+     "perche": "Il pugno parte dalle anche: senza torsione del busto sembra un braccio che si muove da solo. Il segno è negativo perché con rotazione Y positiva la spalla a −z andrebbe INDIETRO (x' = x cosθ + z sinθ), cioè l'esatto contrario di quello che serve."
+    },
+    {
+     "dove": "import in testa",
+     "cosa": "import { runtime } from '@/lib/lugo/runtime'.",
+     "perche": "Il tempo del pugno è stato caldo come vPersona: non passa da React e non provoca re-render."
+    }
+   ]
+  },
+  {
+   "path": "/home/user/3d/tools/lugo/verify-lugo.mjs",
+   "modifiche": [
+    {
+     "dove": "dopo la «fase 5: NPC» (riga ~793)",
+     "cosa": "Nuova «fase 5b: i maranza, la sigaretta e il pugno» con i controlli descritti in collaudo, tutti condizionati a `typeof L.provocaIncontro === 'function'`.",
+     "perche": "Le fasi si accendono da sole in base agli hook presenti (è la regola dichiarata in testa al file): aggiungerne una non deve rompere le milestone precedenti."
+    },
+    {
+     "dove": "fase «costo di un fotogramma» (righe 632-641)",
+     "cosa": "Una seconda lettura di L.render() DURANTE l'incontro (fumetti + fumo + sigarette a schermo), stesse soglie 700k/170, più il confronto col valore a riposo (differenza di draw call attesa ≤ 3).",
+     "perche": "Il budget misurato solo a città vuota non dice niente: il momento peggiore è proprio quello nuovo."
+    }
+   ]
+  }
+ ],
+ "condivisi": {
+  "store": [
+   "NESSUN campo e NESSUNA azione nuova in lib/lugo/store.ts. Il ponte HUD → game loop è `risposta` esportato da lib/lugo/maranza.ts (stesso schema di lib/lugo/stick.ts: il DOM scrive, il ciclo di gioco legge).",
+   "Unica convenzione, che non cambia nessun tipo: due id di Dialogo, 'sigaretta' (aggancio, quello di oggi) e 'sigaretta-insiste' (giri di insistenza). L'interfaccia Dialogo resta identica.",
+   "Sola lettura di campi esistenti: dialogo, vetrina, bacheca, diario, guardaroba, wanted, tempoResiduo, mode, fase. Scrittura con azioni esistenti: setDialogo, setAvviso, addPunti, setWanted."
+  ],
+  "player": [
+   "Riga ~200 (useEffect degli hook): aggiungere `wanted: () => useLugo.getState().wanted` e `pugno: () => ({ t: runtime.pugno.t, bersaglio: runtime.pugno.bersaglio, molesto: runtime.pugno.molesto, compagni: runtime.pugno.compagni })` a window.__LUGO__.",
+   "Righe 470-540 (blocco «pugno arcade»): il colpo non va più a segno all'istante del tasto. Alla pressione si arma soltanto runtime.pugno = { t: 0.42, colpito: false, bersaglio: null, molesto: false, compagni: 0 }; a ogni frame runtime.pugno.t -= dt e quando t scende sotto 0.42*0.45 rimasto (istante d'impatto, cioè al 55% dell'animazione) e !colpito si esegue la ricerca del bersaglio che c'è già oggi: raggio 2,2 m, cono frontale con dot >= 0.35, il più vicino.",
+   "Righe 490-520 (effetto del colpo): sostituire l'assegnazione diretta di stato/timer/bx/bz con `subisciPugno(bersaglio, runtime.npcs, dx/d, dz/d)` di lib/lugo/maranza.ts, e usare la frase restituita per st.setAvviso. Se NON era molesto (un passante qualunque, non il maranza che ti stava addosso): st.addPunti(-5) e avviso «Non era il caso · −5 REP». Il calcolo di calore e wanted (visto da un carabiniere entro 22 m → +2) resta identico a oggi.",
+   "Riga 507: togliere `st.setAvviso(FRASI_STRADA.length ? 'Ohi! Ma sei scemo?!' : 'Ohi!')` (è una condizione che non vuol dire niente) e mettere la battuta vera del gruppo 'pugno'.",
+   "Righe 447-465 (dialogo con E): resta, ma instrada su maranza.ts — `avviaIncontroDaE(n)` mette il maranza in 'chiede' e apre lo stesso pannello, così anche parlando per primo si vede il fumetto sopra la testa. Nessuna funzionalità rimossa.",
+   "Righe 615-630 (hint contestuale): se incontroInCorso().attivo, hint = 'F · sganciagli un pugno · oppure corri via'; il vecchio 'Premi E per parlare' resta per quando sei tu ad avvicinarti."
+  ],
+  "hud": [
+   "Funzione rispondi(id) (righe 175-190): per i dialoghi 'sigaretta' e 'sigaretta-insiste' non applica più gli effetti direttamente ma scrive `risposta.scelta = id` (import da '@/lib/lugo/maranza') e chiude il pannello; REP e avvisi arrivano dall'esito del ciclo di gioco, così pannello e mondo non possono raccontare due cose diverse. Per id === 'pugno': setDialogo(null) e poi `stick.pugnoBtn = true; setTimeout(() => (stick.pugnoBtn = false), 140)` — riusa il ponte del pulsante ✊ che esiste già, senza inventare un secondo canale.",
+   "JSX del dialogo (righe 560-575): `data-hud={'dialogo-opzione-' + o.id}` su ogni bottone (oggi non ne hanno nessuno e Playwright non può cliccare «no» in modo affidabile), classe condizionale 'lugo-dialogo-btn-pugno' sull'opzione pugno, e `data-hud=\"dialogo-testo\"` sulla riga del testo per confrontarla col fumetto.",
+   "Le opzioni le costruisce maranza.ts, l'HUD le disegna e basta: aggancio → [«Tieni, prendi.» (si), «No, non fumo.» (no), «Sganciargli un pugno» (pugno), «Tirare dritto» (via)]; insistenza → [«E va bene, tieni.» (si), «Ho detto di no.» (no), «Sganciargli un pugno» (pugno), «Andarsene» (via)].",
+   "Classe condizionale 'lugo-dialogo-insiste' sul contenitore quando dialogo.id === 'sigaretta-insiste'."
+  ],
+  "css": [
+   "lugo-dialogo-btn-pugno",
+   "lugo-dialogo-insiste",
+   "@keyframes lugo-insiste"
+  ],
+  "input": [
+   "NESSUNA modifica a lib/lugo/input.ts: il tasto F 'colpisci' esiste già (riga 15), il Player lo legge già (input.colpisci) ed è già fuso col pulsante ✊ in lib/lugo/stick.ts (colpisci: t.colpisci || stick.pugnoBtn). Al pugno non manca un tasto: mancano l'animazione, il tempo d'impatto e una reazione.",
+   "Al massimo aggiornare il commento in testa al file citando anche F fra i comandi, che oggi non è nominato."
+  ]
+ },
+ "rischi": [
+  "Deriva della sigaretta dalla mano: la punta si misura in Npcs.tsx dentro il ciclo che costruisce le matrici, e chi cambierà l'animazione del braccio deve aggiornare lì accanto le tre righe di n.manoX/Y/Z. È il motivo per cui NON ho duplicato la cinematica in maranza.ts: se cambia, cambia in un posto solo. Va scritto come commento in tutti e due i file.",
+  "Bleeding dell'atlante delle frasi: con le mipmap attive le celle vicine si sbavano ai livelli alti. Mitigato dai 12 px di margine trasparente attorno a ogni bolla; se comparissero frammenti, la cura è portare il margine a 20 px, non spegnere le mipmap (senza mip il fumetto sfarfalla a 20 m).",
+  "Memoria video: l'atlante è ~8 MB (1344×1560) più mipmap. È un quarto di quello delle insegne, ma su telefoni vecchi ogni texture pesa: all'occorrenza si scende a celle 384×88 con font 22px e si dimezza.",
+  "Il maranza a 3,1 m/s è più veloce della camminata: chi gioca senza correre (o col joystick a metà corsa) non riesce a staccarlo e potrebbe viverlo come un inseguimento. Contromisure già previste: tempoMaxIncontro 22 s, due giri di insistenza al massimo, resa automatica. Se in prova risultasse ancora opprimente la manopola da girare è vAvvicina, non i timer.",
+  "Un incontro che parte mentre una missione a tempo sta scadendo rovinerebbe la partita: per questo la selezione si blocca con tempoResiduo !== null. Va tenuto anche in futuro, ed è la prima cosa da guardare se qualcuno segnala «ho perso la consegna per colpa del maranza».",
+  "Pannello orfano: se l'NPC agganciato cambia stato da fuori (balzo per un'auto in corsa mentre ti parla) il dialogo resterebbe aperto. Rimedio previsto nella macchina a stati: con n.stato === 'balzo' l'incontro va comunque in 'ritirata' e alza chiudiDialogo.",
+  "Regressione dei draw call: i tre InstancedMesh costano zero solo finché si ricorda di rimettere mesh.count = 0 quando non c'è niente da mostrare (in three la draw call viene saltata solo con count === 0). Se qualcuno «semplificasse» lasciando il count fisso si tornerebbe a 159 draw call sempre e a ~4k triangoli inutili per fotogramma.",
+  "Determinismo: le battute usano un LCG condiviso; se un altro fronte pescasse dallo stesso seme cambierebbe la sequenza. I semi di maranza.ts (4242 per le frasi, 909 per il fumo) restano privati del modulo e non vanno esportati.",
+  "Confine editoriale: sigarette e fumo sono oggetti generici, senza marca, senza pacchetto e senza negozio; nessuna battuta nomina un'attività vera e nessun incontro tocca attivita.json o i livelli di partner. L'hook L.autorizzazioni() deve continuare a rispondere 0/0/0/0 anche a incontro in corso, ed è verificato in collaudo."
+ ],
+ "collaudo": [
+  {
+   "nome": "il maranza ti viene incontro",
+   "come": "Fase condizionata a `typeof L.provocaIncontro === 'function'`. Ci si assicura di essere a piedi (se L.mode() === 'auto': Space 1,2 s, poi KeyE), quindi `await page.evaluate(() => window.__LUGO__.provocaIncontro())`; se torna -1 → ko('maranza da agganciare','nessun maranza in mappa'). Si legge subito L.incontro().distanza (attesa ≥ 5 m), poi page.waitForFunction su `window.__LUGO__.incontro().fase === 'chiede'` con timeout 12000 (in headless la simulazione è lenta: le altre fasi usano già finestre larghe). Ok se alla fine distanza < 3.2 e L.incontro().frase è una stringa non vuota: si è avvicinato lui. Screenshot 07-maranza-chiede.png."
+  },
+  {
+   "nome": "il fumetto sopra la testa dice la stessa cosa del pannello",
+   "come": "In fase 'chiede': `const f = await lugo('L.fumetti()')` → ok se f.vivi >= 1. Si legge `page.textContent('[data-hud=\"dialogo-testo\"]')`, si normalizzano virgolette e spazi e lo si confronta con f.testi[0]: devono coincidere. Si controlla anche che f.testi[0] stia dentro `L.frasi('aggancio')`."
+  },
+  {
+   "nome": "l'insistenza dopo il no, e non si ripete",
+   "come": "Si memorizza la frase corrente, click su `[data-hud=\"dialogo-opzione-no\"]`, attesa 1800 ms, rilettura di L.incontro(): ok se fase === 'insiste', se la frase è CAMBIATA e se appartiene a L.frasi('insistenza'). Poi click sul 'no' del secondo pannello: ok se dopo 2 s la fase è 'ritirata' e L.punteggio() è salito di 5 rispetto al valore letto prima."
+  },
+  {
+   "nome": "il fumo si vede",
+   "come": "provocaIncontro accende n.fuma sul bersaglio, così la prova non dipende dal 55% casuale. Si campiona `L.fumo()` cinque volte a 700 ms l'una dall'altra: ok se in almeno una lettura vivi > 0 e in nessuna vivi > max. Cartolina con `L.fotocamera()` a 3 m dal maranza, all'altezza della testa, salvata come 07-fumo.png: nello screenshot il filo di fumo dev'essere visibile."
+  },
+  {
+   "nome": "il pugno parte, va a segno e lo fa scappare",
+   "come": "In fase 'chiede': page.keyboard.press('KeyF'); entro 200 ms `L.pugno().t > 0` (l'animazione è partita davvero, non è solo un effetto logico). Dopo 700 ms: L.pugno().bersaglio !== null e L.pugno().molesto === true. Si campiona L.incontro().distanza subito dopo il colpo e di nuovo 2,5 s più tardi: ok se è cresciuta di almeno 2 m e la fase è 'ritirata' o 'nessuno'. Il pannello dev'essere sparito: `page.locator('[data-hud=\"dialogo\"]').count() === 0`. Screenshot 07-pugno.png."
+  },
+  {
+   "nome": "colpire un passante costa reputazione, colpire il molesto no",
+   "come": "Fuori da un incontro: si legge L.punteggio(), ci si porta addosso a un pedone qualunque con `L.teleport` sulla posizione data da L.npcVicino(), KeyF, attesa 1 s → ok se il punteggio è calato di 5. Si ripete durante un incontro (il maranza che ti sta chiedendo la sigaretta) → ok se il punteggio NON cala."
+  },
+  {
+   "nome": "la fuga chiude l'incontro e il pannello",
+   "come": "Nuovo provocaIncontro, attesa della fase 'chiede', poi keyboard.down('ShiftLeft') + down('KeyW') per 4 s (corsa a 5,2 m/s, sopra la soglia vFuga di 4), poi rilascio. Ok se L.incontro().fase === 'nessuno', se il conteggio di `[data-hud=\"dialogo\"]` è 0 e se L.incontro().ultimaFrase sta dentro L.frasi('fuga')."
+  },
+  {
+   "nome": "non è molesto: il cooldown cresce",
+   "come": "Subito dopo la chiusura di un incontro si legge L.incontro().cooldown (secondi al prossimo aggancio possibile): ok se > 0 e se dopo un secondo incontro forzato il valore è maggiore del primo. Poi si controlla che con un pannello aperto (E davanti a una vetrina) e con L.wanted() > 0 nessun aggancio parta: L.incontro().fase resta 'nessuno' per 6 s di fila."
+  },
+  {
+   "nome": "i maranza restano diversi fra loro",
+   "come": "`const m = await lugo('L.maranza()')`: ok se m.pelli >= 6 (tonalità distinte davvero in uso fra i maranza vivi), m.tute >= 5, m.senzaCappello > 0 e m.fumatori compreso fra il 25% e l'80% del totale. È il controllo che impedisce a una futura semplificazione di ricollassare l'incarnato sulla variante del vestito."
+  },
+  {
+   "nome": "il budget regge anche a incontro in corso",
+   "come": "Si legge L.render() a città tranquilla (esiste già), si forza un incontro, si aspetta la fase 'chiede' con fumo vivo e si rilegge. Ok se triangoli < 700_000, chiamate < 170 e se la differenza di draw call fra le due letture è ≤ 3. Il dettaglio stampato riporta tutte e due le letture, così una regressione si vede a colpo d'occhio nel log."
+  },
+  {
+   "nome": "nessuna partnership, nemmeno parlando",
+   "come": "Con l'incontro aperto si richiama L.autorizzazioni() e si ricontano nel DOM `.lugo-vetrina-promo, .lugo-vetrina-partner`: ok se restano tutti a zero. Dimostra che maranza, sigaretta e fumetti non introducono nessun contenuto commerciale."
+  }
+ ]
+}

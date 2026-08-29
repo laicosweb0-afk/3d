@@ -3,13 +3,27 @@
 // Le auto degli altri: i posteggi instanziati (tre draw call per tutte) e
 // il filo di traffico civile che percorre le strade lunghe, sulla corsia
 // di destra come si deve.
+//
+// Un'auto che sparisce da uno stallo, o che ricompare perché il giocatore
+// l'ha abbandonata lì, NON fa ripartire React: si riscrivono tre matrici e
+// un colore, guardando un contatore di revisione. Ricostruire l'InstancedMesh
+// per una macchina vorrebbe dire ricreare tutte e centosettantasei a ogni
+// furto, e il vantaggio dell'instanziamento sarebbe finito lì.
 
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useMondo } from '@/lib/lugo/loadMap';
-import { infraGioco, stepAutoCivile, TINTE_PARCO, type AutoCivile } from '@/lib/lugo/veicoli';
+import {
+  infraGioco,
+  stepAutoCivile,
+  TINTE_PARCO,
+  TRAFFICO,
+  type AutoCivile,
+} from '@/lib/lugo/veicoli';
 import { Accumulo } from '@/lib/lugo/citygen';
+import { clacson } from '@/lib/lugo/audio';
+import { posGiocatore } from '@/lib/lugo/runtime';
 import { useLugo } from '@/lib/lugo/store';
 
 const VETRO = '#2E3A4E';
@@ -29,6 +43,10 @@ export function Veicoli() {
     const HW = 1.2; // mezza larghezza
     const S = 0.09; // mezzo spessore della riga
     for (const p of infra.parcheggi) {
+      // solo gli stalli veri: i posti di riserva in coda non sono un
+      // parcheggio di Lugo, e disegnarli lascerebbe un rettangolo blu
+      // dipinto all'origine della mappa
+      if (!p.stallo) continue;
       const c = Math.cos(p.yaw);
       const s = Math.sin(p.yaw);
       const punto = (u: number, v: number): [number, number] => [
@@ -61,6 +79,46 @@ export function Veicoli() {
 
   const fari = useRef<THREE.InstancedMesh>(null);
 
+  // l'ultima revisione dei parcheggi già disegnata, e chi ha già suonato
+  const revVista = useRef(-1);
+  const suonato = useRef<boolean[]>([]);
+
+  const m = useMemo(() => new THREE.Matrix4(), []);
+  const q = useMemo(() => new THREE.Quaternion(), []);
+  const su = useMemo(() => new THREE.Vector3(0, 1, 0), []);
+  const uno = useMemo(() => new THREE.Vector3(1, 1, 1), []);
+  const vec = useMemo(() => new THREE.Vector3(), []);
+  const zero = useMemo(() => new THREE.Vector3(0, 0, 0), []);
+  const tinta = useMemo(() => new THREE.Color(), []);
+
+  /**
+   * Le tre matrici (e il colore) di un'auto in sosta, oppure la matrice a
+   * scala ZERO se quell'auto non c'è più. Far sparire e ricomparire una
+   * singola auto è scrivere tre matrici: nascondere un InstancedMesh
+   * intero, o ricostruirlo, sarebbe stato molto più caro di così.
+   */
+  const scriviPosteggio = useMemo(
+    () => (i: number) => {
+      const p = infra.parcheggi[i];
+      if (!p.presente) {
+        m.compose(zero, q.identity(), zero);
+        scocca.current?.setMatrixAt(i, m);
+        abitacolo.current?.setMatrixAt(i, m);
+        sotto.current?.setMatrixAt(i, m);
+        return;
+      }
+      q.setFromAxisAngle(su, -p.yaw);
+      m.compose(vec.set(p.x, 0.5, p.z), q, uno);
+      scocca.current?.setMatrixAt(i, m);
+      scocca.current?.setColorAt(i, tinta.set(TINTE_PARCO[p.tinta % TINTE_PARCO.length]));
+      m.compose(vec.set(p.x - Math.cos(p.yaw) * 0.15, 1.02, p.z - Math.sin(p.yaw) * 0.15), q, uno);
+      abitacolo.current?.setMatrixAt(i, m);
+      m.compose(vec.set(p.x, 0.22, p.z), q, uno);
+      sotto.current?.setMatrixAt(i, m);
+    },
+    [infra, m, q, su, uno, vec, zero, tinta],
+  );
+
   // Le auto che girano stanno nelle STESSE instanced di quelle in sosta.
   // Prima ognuna era un gruppetto di quattro mesh sue: nove auto facevano
   // trentasei chiamate di disegno, e a piazza Baracca — dove si vede mezzo
@@ -68,51 +126,66 @@ export function Veicoli() {
   // accorgesse, perché il collaudo misurava in un punto solo.
   useFrame((_, dtRaw) => {
     const dt = Math.min(dtRaw, 0.05);
-    const gioca = useLugo.getState().fase === 'gioco';
+    const st = useLugo.getState();
+    const gioca = st.fase === 'gioco';
     const base = infra.parcheggi.length;
-    const m = new THREE.Matrix4();
-    const q = new THREE.Quaternion();
-    const su = new THREE.Vector3(0, 1, 0);
-    const uno = new THREE.Vector3(1, 1, 1);
-    infra.traffico.forEach((a, i) => {
-      if (gioca) stepAutoCivile(a, dt);
+    const g = posGiocatore(st.mode);
+    infra.traffico.forEach((a: AutoCivile, i) => {
+      if (gioca) stepAutoCivile(a, dt, g);
+      // L'auto ferma che aspetta te te lo dice, e UNA volta sola: senza il
+      // ref, il clacson suonerebbe a ogni fotogramma e sarebbe un allarme
+      // antifurto, non un colpo di clacson.
+      if (a.attesa > TRAFFICO.pazienza && !suonato.current[i]) {
+        suonato.current[i] = true;
+        clacson();
+      } else if (a.attesa === 0) {
+        suonato.current[i] = false;
+      }
+      if (a.rubata) {
+        // gliel'hai portata via: l'auto civile non c'è più (quella che
+        // guidi adesso è il modello del giocatore), e il modo di non
+        // disegnarla dentro un'instanced è la matrice a scala zero
+        m.compose(zero, q.identity(), zero);
+        scocca.current?.setMatrixAt(base + i, m);
+        abitacolo.current?.setMatrixAt(base + i, m);
+        sotto.current?.setMatrixAt(base + i, m);
+        fari.current?.setMatrixAt(i, m);
+        return;
+      }
       q.setFromAxisAngle(su, -a.yaw);
       const c = Math.cos(a.yaw);
       const s2 = Math.sin(a.yaw);
-      m.compose(new THREE.Vector3(a.x, 0.5, a.z), q, uno);
+      m.compose(vec.set(a.x, 0.5, a.z), q, uno);
       scocca.current?.setMatrixAt(base + i, m);
-      m.compose(new THREE.Vector3(a.x - c * 0.15, 1.02, a.z - s2 * 0.15), q, uno);
+      m.compose(vec.set(a.x - c * 0.15, 1.02, a.z - s2 * 0.15), q, uno);
       abitacolo.current?.setMatrixAt(base + i, m);
-      m.compose(new THREE.Vector3(a.x, 0.22, a.z), q, uno);
+      m.compose(vec.set(a.x, 0.22, a.z), q, uno);
       sotto.current?.setMatrixAt(base + i, m);
-      m.compose(new THREE.Vector3(a.x + c * 1.76, 0.55, a.z + s2 * 1.76), q, uno);
+      m.compose(vec.set(a.x + c * 1.76, 0.55, a.z + s2 * 1.76), q, uno);
       fari.current?.setMatrixAt(i, m);
     });
+
+    // un confronto fra due interi per fotogramma è gratis; le 176 matrici
+    // si riscrivono una volta per furto, non una volta per frame
+    if (revVista.current !== infra.revParcheggi) {
+      revVista.current = infra.revParcheggi;
+      for (let i = 0; i < infra.parcheggi.length; i++) scriviPosteggio(i);
+      if (scocca.current?.instanceColor) scocca.current.instanceColor.needsUpdate = true;
+    }
+
     for (const ref of [scocca, abitacolo, sotto, fari]) {
       if (ref.current) ref.current.instanceMatrix.needsUpdate = true;
     }
   });
 
   useLayoutEffect(() => {
-    const m = new THREE.Matrix4();
-    const q = new THREE.Quaternion();
-    const su = new THREE.Vector3(0, 1, 0);
-    const uno = new THREE.Vector3(1, 1, 1);
     const c = new THREE.Color();
     infra.traffico.forEach((a, i) => {
       scocca.current?.setColorAt(infra.parcheggi.length + i, c.set(a.colore));
     });
     if (fari.current) fari.current.count = infra.traffico.length;
-    infra.parcheggi.forEach((p, i) => {
-      q.setFromAxisAngle(su, -p.yaw);
-      m.compose(new THREE.Vector3(p.x, 0.5, p.z), q, uno);
-      scocca.current?.setMatrixAt(i, m);
-      scocca.current?.setColorAt(i, c.set(TINTE_PARCO[p.tinta % TINTE_PARCO.length]));
-      m.compose(new THREE.Vector3(p.x - Math.cos(p.yaw) * 0.15, 1.02, p.z - Math.sin(p.yaw) * 0.15), q, uno);
-      abitacolo.current?.setMatrixAt(i, m);
-      m.compose(new THREE.Vector3(p.x, 0.22, p.z), q, uno);
-      sotto.current?.setMatrixAt(i, m);
-    });
+    for (let i = 0; i < infra.parcheggi.length; i++) scriviPosteggio(i);
+    revVista.current = infra.revParcheggi;
     for (const ref of [scocca, abitacolo, sotto]) {
       if (ref.current) {
         ref.current.count = infra.parcheggi.length + infra.traffico.length;
@@ -120,7 +193,7 @@ export function Veicoli() {
         if (ref.current.instanceColor) ref.current.instanceColor.needsUpdate = true;
       }
     }
-  }, [infra]);
+  }, [infra, scriviPosteggio]);
 
   const max = Math.max(1, infra.parcheggi.length + infra.traffico.length);
 

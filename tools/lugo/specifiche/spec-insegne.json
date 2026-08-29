@@ -1,0 +1,439 @@
+{
+ "titolo": "Le botteghe di Lugo riconoscibili da lontano: pittogramma, insegna a bandiera, tendone e vetrina vera",
+ "sintesi": "Oggi una bottega di Lugo è una striscia scura larga 3,4 m con sopra 26 px di testo: da venti metri il nome è già illeggibile e da lontano non si distingue una farmacia da una merceria. Questo fronte rifà l'insegna come segnaletica vera: una fascia frontale appoggiata alla cimasa REALE dell'edificio che la ospita (non più a quota fissa 2,75 m), larga quanto il fronte della bottega, con il nome grande fino a 0,42 m; un PITTOGRAMMA disegnato da noi — tazzina, croce, pane, forbici, chiave inglese — che vive sulla fascia e su una nuova INSEGNA A BANDIERA perpendicolare al muro, quella che si legge camminando lungo la via; un tendone a righe con la mantovana festonata e la merce che si intravede dietro il vetro della vetrina al piano terra; e un colore proprio per ogni bottega, ricavato dal nome con lo stesso hash che genera già l'id stabile, ma scostato dalla tinta della facciata perché l'insegna non anneghi nel giallino di Lugo. Tutto passa da UN solo atlante 2048×2048 e da quattro draw call in croce: si tolgono le sette mesh separate della croce verde e della T dei tabacchi, quindi il conto delle chiamate SCENDE. Il logo autorizzato ha il suo binario — entra nel riquadro del pittogramma della fascia, e solo dopo essere passato per `logoAutorizzato()`, l'unica funzione al mondo che può restituire un percorso: senza `partner: true` e livello sopra NESSUNO non compare mai nulla, e il collaudo lo dimostra sia contando i loghi disegnati sia sorvegliando le richieste di rete verso `/lugo/insegne/`.",
+ "fileNuovi": [
+  {
+   "path": "lib/lugo/pittogrammi.ts",
+   "scopo": "Il repertorio dei simboli di mestiere disegnati da noi su canvas, e la tabella che dice quale simbolo tocca a quale bottega. È il modo legale e immediato per riconoscere una bottega da lontano: un marchio non si può copiare, una tazzina sì.",
+   "esporta": [
+    "export type Pittogramma = 'tazzina' | 'bicchiere' | 'forchetta' | 'pane' | 'torta' | 'cono' | 'coltellaccio' | 'mela' | 'T' | 'croce' | 'sacchetto' | 'maglietta' | 'scarpa' | 'borsa' | 'gioiello' | 'occhiali' | 'forbici' | 'chiaveInglese' | 'libro' | 'fiore' | 'carrello' | 'bottiglia' | 'telefono' | 'casa' | 'bici' | 'pallone' | 'busta' | 'chiave'",
+    "export const REPERTORIO: readonly Pittogramma[]",
+    "export const PITTOGRAMMA_CATEGORIA: Record<CategoriaAttivita, Pittogramma>",
+    "export const PITTOGRAMMA_OSM: Record<string, Pittogramma>",
+    "export const PITTOGRAMMI_NON_TINTI: ReadonlySet<Pittogramma>",
+    "export function pittogrammaDi(categoria: string, osm?: string): Pittogramma",
+    "export function disegnaPittogramma(ctx: CanvasRenderingContext2D, id: Pittogramma, cx: number, cy: number, lato: number, inchiostro: string, fondo: string): void",
+    "export function tesseraPittogramma(ctx: CanvasRenderingContext2D, id: Pittogramma, x: number, y: number, lato: number, gutter: number): void"
+   ],
+   "dettaglio": "REGOLE DI DISEGNO, uguali per tutti i simboli, perché il vincolo vero non è il gusto ma il mipmap: a 60 m il simbolo occupa ~11 px sullo schermo e la GPU campiona il livello 3 dell'atlante (tessera 16×16). Un tratto sottile, mediato quattro volte, diventa grigio e sparisce. Quindi: (a) tratto T = 0.15*lato, mai meno — a 128 px di tessera sono 19 px, che dopo tre dimezzamenti sono ancora 2,4 px; (b) ctx.lineCap = ctx.lineJoin = 'round'; (c) tutto dentro il cerchio di raggio 0.44*lato centrato in (cx,cy), così la rotazione della bandiera non taglia niente; (d) copertura d'inchiostro fra il 24% e il 46% dell'area della tessera: sotto il 24% il simbolo evapora, sopra il 46% diventa una macchia; (e) nessun dettaglio più piccolo di T; (f) niente testo, con due eccezioni motivate sotto; (g) i 'buchi' interni (scollo della maglietta, etichetta della bottiglia, tagli del pane) si disegnano nel colore `fondo`, mai con globalCompositeOperation, perché la tessera deve restare opaca e non serve alpha.\n\nCONTRASTO. `disegnaPittogramma` riceve `inchiostro` e `fondo` e non li sceglie: chi la chiama garantisce un rapporto di luminanza relativa >= 7:1. Sulla bandiera l'inchiostro è quasi-nero (#171310) sul `campo` chiaro della bottega; sulla fascia frontale è il `testo` chiaro sul `fondo` scuro. Sono le due letture opposte dello stesso simbolo, ed è voluto: la bandiera è un cartello smaltato al sole, la fascia è una scritta illuminata.\n\nI 28 SIMBOLI (lato L, centro cx,cy, tratto T = 0.15L):\n1. `tazzina` (cafe/bar diurno): tazza = roundRect(cx-0.26L, cy-0.16L, 0.44L, 0.34L, 0.06L) piena; manico = arc(cx+0.24L, cy+0.01L, 0.13L, -1.1, 1.1) stroke T; piattino = roundRect(cx-0.38L, cy+0.20L, 0.76L, 0.10L, 0.05L); due volute di vapore quadraticCurveTo, stroke 0.09L (decoro: sparisce col mip e va bene così).\n2. `bicchiere` (pub/alcohol/wine): coppa = trapezio (cx-0.22L,cy-0.28L)(cx+0.22L,cy-0.28L)(cx+0.09L,cy+0.06L)(cx-0.09L,cy+0.06L); stelo rect(cx-0.045L, cy+0.06L, 0.09L, 0.20L); base roundRect(cx-0.22L, cy+0.26L, 0.44L, 0.08L, 0.04L).\n3. `forchetta` (restaurant/fast_food/cibo): forchetta a sinistra — 3 rebbi rect larghi 0.09L alti 0.20L a x = cx-0.28L±0.10L, testa comune roundRect, gambo fino a cy+0.34L; coltello a destra — lama path a punta (cx+0.15L,cy-0.36L)→(cx+0.31L,cy-0.12L)→(cx+0.31L,cy-0.02L)→(cx+0.15L,cy-0.02L), manico rect(cx+0.19L, cy-0.02L, T, 0.36L).\n4. `pane` (bakery): ellipse(cx, cy+0.02L, 0.38L, 0.24L) piena; tre tagli obliqui a 30°, lunghi 0.20L, stroke 0.07L in `fondo`.\n5. `torta` (pastry/confectionery): spicchio triangolo (cx-0.34L,cy+0.28L)(cx+0.34L,cy+0.28L)(cx,cy-0.30L); ciliegia arc(cx, cy-0.18L, 0.09L) piena in `inchiostro`, staccata dalla punta da un anello di `fondo` largo 0.04L.\n6. `cono` (ice_cream): due palle arc(cx-0.12L,cy-0.16L,0.15L) e arc(cx+0.12L,cy-0.18L,0.15L); cono triangolo (cx-0.20L,cy-0.02L)(cx+0.20L,cy-0.02L)(cx,cy+0.38L).\n7. `coltellaccio` (butcher/deli/seafood): lama roundRect(cx-0.32L, cy-0.26L, 0.44L, 0.28L, 0.05L); manico roundRect(cx+0.10L, cy-0.17L, 0.26L, 0.11L, 0.055L); foro arc(cx-0.22L, cy-0.16L, 0.045L) in `fondo`.\n8. `mela` (greengrocer/farm): due archi pieni arc(cx-0.11L, cy+0.06L, 0.22L) e arc(cx+0.11L, cy+0.06L, 0.22L); picciolo rect(cx-0.025L, cy-0.30L, 0.05L, 0.15L); foglia ellipse(cx+0.12L, cy-0.26L, 0.12L, 0.06L) ruotata -35°.\n9. `T` (tabacchi): UNICA tessera col campo baked NERO #14161C, perché la T bianca in campo nero È la segnaletica pubblica dei Monopoli, non il marchio di nessuno, e riconoscerla al volo è tutto il punto. Cornice bianca strokeRect spessa 0.055L inset 0.07L; asta rect(cx-0.075L, cy-0.30L, 0.15L, 0.62L); traversa rect(cx-0.30L, cy-0.30L, 0.60L, 0.17L); font mai usato — è geometria, così non dipende dai font di sistema.\n10. `croce` (farmacia/chemist): seconda tessera col campo baked, BIANCO #F4F2ED, croce VERDE #1E8A46 (l'insegna sanitaria ha colori fissi per legge: tingerla del rosa della bottega sarebbe sbagliato e pure illeggibile). Asta rect(cx-0.15L, cy-0.46L, 0.30L, 0.92L); traversa rect(cx-0.46L, cy-0.15L, 0.92L, 0.30L).\n11. `sacchetto` (negozio generico, fallback): corpo trapezio (cx-0.30L,cy-0.10L)(cx+0.30L,cy-0.10L)(cx+0.26L,cy+0.36L)(cx-0.26L,cy+0.36L); due manici arc(cx±0.13L, cy-0.10L, 0.11L, Math.PI, 2*Math.PI) stroke 0.12L.\n12. `maglietta` (clothes/boutique/fashion/laundry): silhouette chiusa (cx-0.34L,cy-0.22L)(cx-0.18L,cy-0.30L)(cx+0.18L,cy-0.30L)(cx+0.34L,cy-0.22L)(cx+0.22L,cy-0.06L)(cx+0.22L,cy+0.32L)(cx-0.22L,cy+0.32L)(cx-0.22L,cy-0.06L); scollo arc(cx, cy-0.29L, 0.10L, 0, Math.PI) in `fondo`.\n13. `scarpa` (shoes): profilo (cx-0.34L,cy+0.22L)(cx-0.34L,cy-0.04L) poi quadraticCurveTo(cx-0.10L,cy-0.10L, cx+0.10L,cy+0.04L) poi (cx+0.34L,cy+0.11L)(cx+0.34L,cy+0.22L) chiuso.\n14. `borsa` (bag/leather): corpo roundRect(cx-0.30L, cy-0.06L, 0.60L, 0.38L, 0.06L); manico arc(cx, cy-0.06L, 0.19L, Math.PI, 2*Math.PI) stroke 0.12L.\n15. `gioiello` (jewelry/watches): rombo pieno (cx,cy-0.34L)(cx+0.32L,cy-0.02L)(cx,cy+0.34L)(cx-0.32L,cy-0.02L); due tagli in `fondo` stroke 0.055L: la corda orizzontale e il segmento (cx-0.16L,cy-0.18L)→(cx,cy+0.34L).\n16. `occhiali` (optician): due anelli arc(cx±0.20L, cy, 0.16L) stroke T; ponte segmento (cx-0.045L,cy)→(cx+0.045L,cy) stroke T; due stanghette lunghe 0.10L verso l'esterno.\n17. `forbici` (hairdresser/beauty): due lame rect ruotati ±22°, lunghi 0.62L, larghi 0.10L, incrociati a (cx, cy-0.05L); due anelli arc(cx±0.16L, cy+0.28L, 0.10L) stroke 0.10L; perno arc(cx, cy-0.05L, 0.05L) pieno.\n18. `chiaveInglese` (hardware/doityourself/car_repair/car_parts/paint): gambo roundRect lungo 0.62L largo 0.16L ruotato 40°; testa a U all'estremo alto — arc(estremo, 0.17L, -0.55π, 0.55π) stroke 0.13L, aperta verso l'esterno.\n19. `libro` (books/newsagent/stationery/kiosk/music): due trapezi speculari che si toccano al dorso, (cx-0.36L,cy-0.22L)(cx-0.03L,cy-0.14L)(cx-0.03L,cy+0.28L)(cx-0.36L,cy+0.20L) e il ribaltato; dorso rect(cx-0.03L, cy-0.16L, 0.06L, 0.46L).\n20. `fiore` (florist/garden_centre): cinque petali ellipse(cx+cos(a)*0.20L, cy-0.06L+sin(a)*0.20L, 0.13L, 0.13L) per a = -π/2 + k*2π/5; cuore arc(cx, cy-0.06L, 0.10L) in `fondo`; stelo rect(cx-0.035L, cy+0.10L, 0.07L, 0.28L).\n21. `carrello` (supermarket/convenience/grocery): cesto trapezio stroke T (cx-0.28L,cy-0.14L)(cx+0.32L,cy-0.14L)(cx+0.22L,cy+0.12L)(cx-0.18L,cy+0.12L); manico (cx-0.28L,cy-0.14L)→(cx-0.38L,cy-0.28L); ruote arc(cx-0.12L,cy+0.28L,0.075L) e arc(cx+0.16L,cy+0.28L,0.075L).\n22. `bottiglia` (alcohol/wine/beverages): collo rect(cx-0.07L, cy-0.36L, 0.14L, 0.18L); corpo roundRect(cx-0.19L, cy-0.18L, 0.38L, 0.52L, 0.07L); etichetta rect(cx-0.19L, cy+0.02L, 0.38L, 0.14L) in `fondo`.\n23. `telefono` (mobile_phone/electronics/computer/photo): roundRect(cx-0.20L, cy-0.36L, 0.40L, 0.72L, 0.07L) pieno; schermo roundRect(cx-0.135L, cy-0.28L, 0.27L, 0.50L, 0.03L) in `fondo`.\n24. `casa` (estate_agent/furniture): tetto triangolo (cx,cy-0.34L)(cx+0.36L,cy-0.02L)(cx-0.36L,cy-0.02L); corpo rect(cx-0.26L, cy-0.02L, 0.52L, 0.34L); porta rect(cx-0.075L, cy+0.10L, 0.15L, 0.22L) in `fondo`.\n25. `bici` (bicycle): ruote arc(cx±0.24L, cy+0.10L, 0.16L) stroke 0.11L; telaio triangolo stroke 0.09L (cx-0.24L,cy+0.10L)(cx-0.02L,cy+0.10L)(cx-0.08L,cy-0.14L); manubrio e sella due segmenti di 0.10L.\n26. `pallone` (sports/toys): arc(cx, cy, 0.34L) pieno; pentagono regolare r=0.14L in `fondo`; tre archi corti in `fondo` verso il bordo.\n27. `busta` (post_office/bank/travel_agency/copyshop, e fallback di `servizi`): rect(cx-0.34L, cy-0.22L, 0.68L, 0.44L) pieno; falda (cx-0.34L,cy-0.22L)→(cx,cy+0.04L)→(cx+0.34L,cy-0.22L) stroke 0.075L in `fondo`.\n28. `chiave` (locksmith): anello arc(cx-0.20L, cy-0.16L, 0.14L) stroke 0.11L; gambo rect ruotato 40°, lungo 0.50L largo 0.10L; due denti rect 0.10L×0.09L sull'estremo.\n\nTABELLE.\nPITTOGRAMMA_CATEGORIA = { bar:'tazzina', cibo:'forchetta', tabacchi:'T', farmacia:'croce', negozio:'sacchetto', servizi:'busta' } — copre le sei categorie che esistono davvero in lib/lugo/attivita.ts.\nPITTOGRAMMA_OSM è la tabella fine sul valore GREZZO di shop=* / amenity=*, e serve perché build-map.mjs oggi schiaccia 42 botteghe su 65 nella categoria 'negozio': senza il valore grezzo, due terzi di Lugo porterebbero lo stesso sacchetto. Chiavi (valore OSM → id): cafe→tazzina, bar→bicchiere, pub→bicchiere, restaurant/fast_food→forchetta, ice_cream→cono, pharmacy/chemist→croce, tobacco→T, post_office/bank/travel_agency/copyshop→busta, bakery→pane, pastry/confectionery→torta, butcher/deli/seafood→coltellaccio, greengrocer/farm→mela, supermarket/convenience/grocery→carrello, alcohol/wine/beverages→bottiglia, optician→occhiali, hairdresser/beauty→forbici, clothes/boutique/fashion/laundry/dry_cleaning→maglietta, shoes→scarpa, bag/leather→borsa, jewelry/watches→gioiello, books/newsagent/stationery/kiosk/music→libro, florist/garden_centre→fiore, hardware/doityourself/car_repair/car_parts/paint→chiaveInglese, locksmith→chiave, mobile_phone/electronics/computer/photo→telefono, estate_agent/furniture→casa, bicycle→bici, sports/toys→pallone, gift/variety_store→sacchetto.\npittogrammaDi(categoria, osm) = PITTOGRAMMA_OSM[osm ?? ''] ?? PITTOGRAMMA_CATEGORIA[normalizza(categoria)]. Il campo `osm` è OPZIONALE apposta: finché map.json non viene rigenerato dalla pipeline, la funzione ricade sulla categoria e non si rompe niente.\nPITTOGRAMMI_NON_TINTI = new Set(['T','croce']) — le sole due tessere che il vertex color NON deve moltiplicare (la geometria scrive colore bianco puro su quei quad).\n\ntesseraPittogramma(ctx, id, x, y, lato, gutter) disegna la tessera dell'atlante: prima riempie tutto il riquadro (gutter compreso) col colore di campo — bianco puro per le tessere tinte, il colore baked per T e croce —, poi chiama disegnaPittogramma nel riquadro interno. Il gutter riempito col colore di campo è quello che impedisce alle tessere vicine di sbavare l'una nell'altra ai livelli di mipmap bassi: senza, a 40 m la tazzina del bar prende dentro un pezzo della croce verde accanto."
+  },
+  {
+   "path": "lib/lugo/botteghe.ts",
+   "scopo": "Il FRONTE di ogni bottega: quale edificio la ospita, su quale lato del footprint affaccia, su che tratto di quel lato, e a che quota sta la cimasa. È l'anagrafe condivisa fra citygen (che disegna la vetrina) e Insegne (che appende l'insegna): oggi i due la deducono per conto proprio con due regole diverse, e succede che la vetrina sia sul lato lungo e il cartello sul lato corto, cioè dietro l'angolo.",
+   "esporta": [
+    "export interface FronteBottega { negozio: number; edificio: EdificioRT | null; lato: number; x: number; z: number; nx: number; nz: number; ex: number; ez: number; t0: number; t1: number; larghezza: number; yCimasa: number; hTerra: number }",
+    "export function frontiBotteghe(mondo: MondoLugo): FronteBottega[]",
+    "export function frontiPerEdificio(mondo: MondoLugo): Map<EdificioRT, FronteBottega[]>",
+    "export const ALTEZZA_FASCIA = 0.72",
+    "export const ALTEZZA_CORNICETTA = 0.14",
+    "export function quotaCimasa(k: Carattere): number"
+   ],
+   "dettaglio": "quotaCimasa(k) = Math.max(2.2, k.hTerra - 0.85). È esattamente la `yTop` che vetrina() in citygen.ts calcola già oggi: viene estratta qui perché la usino in due senza poter divergere. Insegne.tsx oggi appende i cartelli a quota FISSA 2.75–3.30 m mentre la cimasa vera va da 2.20 a 3.20 secondo il piano terra dell'edificio: metà delle insegne di Lugo galleggiano sopra la loro fascia o ci entrano dentro. Con questa funzione l'insegna sta SEMPRE dove il muro le ha preparato il posto.\n\nfrontiBotteghe(mondo), cache WeakMap<MondoLugo, FronteBottega[]> come attivita.ts/carattere.ts (serve perché Insegne si sospende con use() e React butta via i useMemo del tentativo sospeso — è lo stesso motivo scritto nel commento di cacheInsegne).\n\nPASSO 1 — chi ospita chi. Per ogni negozio i di mondo.negozi:\n  a) si cerca prima l'edificio che CONTIENE il nodo (ray casting sul footprint, la stessa dentroAnello di loadMap.ts). Un negozio sta dentro la sua casa: oggi trovaMuri prende il muro geometricamente più vicino e in via Codazzi, dove la carreggiata è larga sei metri, il cartello finisce sulla facciata del palazzo DI FRONTE.\n  b) se nessuno lo contiene, si prende l'edificio il cui bbox dista meno di 9 m, come oggi.\n  c) fra i lati di quell'edificio, si scartano quelli con L < 4 m (L2 < 16, come oggi) e si sceglie quello che massimizza  0.65 * (1 - d/9)  +  0.35 * max(0, nx*vx + nz*vz),  dove d è la distanza del nodo dal lato e (vx,vz) è il versore dal nodo verso il punto di carreggiata più vicino (mondo.roads, classe != 'pedonale' esclusa solo se esiste un'alternativa). Il secondo termine è la ragione di tutto: l'insegna deve dare SULLA VIA. Senza, le botteghe del Pavaglione e degli isolati con cortile mettono il cartello dentro la corte, dove non passa nessuno.\n  d) la normale nx,nz esce dal footprint (stesso test col centroide che c'è oggi), ex,ez è il versore del lato.\n\nPASSO 2 — la spartizione del muro. Si raggruppa per chiave `edificio|lato`. Dentro il gruppo si ordina per t (proiezione del nodo sul lato, clampata a [0,1]) e si assegna a ciascuno una fetta CONTIGUA di [0.04, 0.96]:\n  k == 1: t0 = clamp(tNodo - (LARGO/2)/L, 0.04, 0.96 - LARGO/L), t1 = t0 + LARGO/L, con LARGO = Math.min(6.4, L * 0.92).\n  k > 1: fetta di ampiezza (0.92/k) ciascuna, in ordine di t: t0 = 0.04 + q*(0.92/k), t1 = t0 + 0.92/k.\nlarghezza = (t1 - t0) * L. Questo risolve un difetto vero e visibile: oggi ogni cartello è largo 3,4 m fissi e centrato sul nodo, e tre botteghe attaccate sotto lo stesso portico si sovrappongono di due metri a testa.\n\nPASSO 3 — le quote. Il Carattere dell'edificio arriva da caratteriCitta(mondo). yCimasa = quotaCimasa(k), hTerra = k.hTerra. Se l'edificio è null (nessun muro entro 9 m) o è un landmark escluso dall'estrusione, si mettono yCimasa = 2.60 e hTerra = 3.45 e si segna edificio: null — Insegne appende comunque l'insegna, ma il collaudo li conta a parte (`senzaMuro`).\n\nfrontiPerEdificio(mondo) è la stessa lista indicizzata per EdificioRT, e la consuma citygen per sapere DOVE aprire la vetrina."
+  },
+  {
+   "path": "lib/lugo/insegneAtlante.ts",
+   "scopo": "L'atlante unico delle insegne e l'identità cromatica di ogni bottega. Nessun componente React qui dentro: è codice puro, così l'atlante si costruisce una volta per mondo e il collaudo può interrogarne le misure senza montare la scena.",
+   "esporta": [
+    "export interface IdentitaBottega { fondo: THREE.Color; testo: THREE.Color; campo: THREE.Color; tenda: THREE.Color; cornice: THREE.Color }",
+    "export function identitaBottega(nome: string, categoria: CategoriaAttivita, facciata: THREE.Color, insegnaAutorizzata?: { fondo?: string; testo?: string; tenda?: string }): IdentitaBottega",
+    "export const MISURE: { bandaH: number; capNome: number; bandieraW: number; bandieraH: number; piastraW: number; piastraH: number; simboloH: number; sportoBandiera: number; sportoTenda: number; tendaCaduta: number; mantovanaH: number; offsetFascia: number; offsetMerce: number }",
+    "export interface UV { u0: number; v0: number; u1: number; v1: number }",
+    "export interface DatiBottega { nome: string; categoria: CategoriaAttivita; pittogramma: Pittogramma; identita: IdentitaBottega; larghezza: number; logo: string | null }",
+    "export interface Atlante { tex: THREE.CanvasTexture; canvas: HTMLCanvasElement; lato: number; uvBanda(i: number): UV; uvSimbolo(p: Pittogramma): UV; uvMerce(c: CategoriaAttivita): UV; uvBianco(): UV; uvRighe(): UV; slotBandiera(i: number): Pittogramma | number; applicaLoghi(botteghe: DatiBottega[]): Promise<number> }",
+    "export function costruisciAtlante(botteghe: DatiBottega[], ridotto: boolean): Atlante",
+    "export function pixelSuSchermo(hMetri: number, distanza: number, altezzaViewport: number, fovGradi: number): number"
+   ],
+   "dettaglio": "MISURE (metri), e il perché di ognuna. Il conto che le governa tutte è pixelSuSchermo(h, d, H, fov) = H * h / (2 * d * Math.tan(fov * Math.PI / 360)). Con il fov 55° del gioco e il viewport 1280×800 del collaudo diventa px ≈ 768 * h / d; su uno schermo 1080p è px ≈ 1037 * h / d. Sotto ~9 px una forma non si riconosce più, sotto ~10 px di altezza-maiuscola una parola non si legge più.\n  bandaH = 0.66  → la fascia frontale. A 20 m sono 25 px: si vede che c'è un'insegna. Non poteva essere più alta di così senza mangiare le finestre del primo piano, che partono a hTerra+0.92.\n  capNome = 0.42 → altezza della maiuscola del nome al corpo massimo. A 25 m sono 12,9 px: si legge. A 40 m sono 8 px: non si legge più, e infatti da lì in poi il lavoro lo fanno il simbolo e il colore. Questo è il numero onesto da dichiarare: IL NOME SI LEGGE FINO A ~28 m, non a 60.\n  bandieraW = 0.95, bandieraH = 1.10 → il pannello a bandiera. A 60 m il pannello è 14 px di colore pieno: si vede che c'è una bottega e di che famiglia. A 120 m sono 7 px: resta una macchia colorata sul muro, che è comunque un'informazione.\n  piastraW = 1.07, piastraH = 1.22 → la piastra chiara dietro il pannello. Sporge di 6 cm per lato ed è tutto quello che serve perché il pannello non anneghi in una facciata dello stesso tono: è la stessa ragione per cui i cartelli stradali hanno il bordo bianco.\n  simboloH = 0.86 → il pittogramma dentro il pannello. A 60 m sono 11 px, a 40 m 16,5 px, a 25 m 26 px. Il simbolo frontale sulla fascia è alto quanto la fascia (0.66) e a 40 m fa 12,7 px: c'è ridondanza voluta fra bandiera e fascia, perché in una via stretta si vede l'una e in piazza l'altra.\n  sportoBandiera = 1.25, sportoTenda = 1.35, tendaCaduta = 0.62, mantovanaH = 0.28, offsetFascia = 0.10, offsetMerce = 0.085.\n\nL'ATLANTE: 2048×2048 RGBA, uno solo, opaco. Quattro fasce, e la somma fa esattamente 2048 righe.\n  A — bande frontali, y 0…1631. Tessere 512×96, 4 colonne × 17 righe = 68 slot (le botteghe di Lugo oggi sono 65). Slot i: col = i % 4, riga = (i / 4) | 0; x0 = col*512, y0 = riga*96. Gutter di 6 px riempito col `fondo` della bottega stessa: il riquadro stampato è [x0+6, x0+506] × [y0+6, y0+90], cioè 500×84 px. Se le botteghe superano i 68 slot, le colonne raddoppiano a 8 e la tessera diventa 256×96 (136 slot): il cartello resta largo uguale in metri, cala solo la risoluzione da 147 a 73 px/m, e il testo si accorcia.\n  B — pittogrammi, y 1632…1887. Tessere 128×128, 16 per riga × 2 righe = 32 slot: i 28 del repertorio più 4 di riserva. Gutter 10 px. 128 px è la misura giusta e non un compromesso: sulla bandiera il simbolo copre 0.86 m, che a 4 m di distanza (quando ci passi davanti) fa 165 px sullo schermo, quindi il mip 0 è appena sotto — un filo morbido da vicino, nitido da 8 m in poi, che è dove serve.\n  C — merce di vetrina, y 1888…1983. Tessere 256×96, 8 per riga: sei categorie più due di riserva. Gutter 6 px.\n  D — servizio, y 1984…2047. x 0…63: `bianco`, #FFFFFF pieno, campionato SEMPRE nel suo punto centrale esatto (32/2048, 1-2016/2048) su tutti e quattro i vertici del quad, così nessun filtro e nessun livello di mip può inquinarlo: è il texel su cui appoggiano tutti i quad tinti dal solo vertex color (piastre, mensole, telai). x 64…575: `righe`, 512×64, sedici bande verticali alterne bianche e grigie #9E9E9E larghe 32 px, con gli ultimi 12 px in basso festonati in ALPHA 0 (semicerchi di raggio 12 px ogni 32 px): è la mantovana della tenda, e il festone è alpha e non geometria perché con alphaTest 0.5 costa zero. x 576…2047: riserva.\nPeso: 16 MiB + mipmap ≈ 21,3 MiB. Sostituisce l'atlante attuale (512×4096, 10,7 MiB) e la targa T (96×112). Con `ridotto = true` (qualita 'bassa' dello store) l'atlante scende a 1024×1024: bande 256×48 in 4 colonne × 17 righe, pittogrammi 64×64, merce 128×48, servizio 32 righe — 5,3 MiB, e il gioco resta leggibile perché a bassa qualità anche il DPR è 1.0.\n\nCOSTRUZIONE DELLA TESSERA A (per bottega). ctx.fillStyle = fondo → riempimento di tutta la tessera, gutter compreso. Riquadro del simbolo: 84×84 px a x0+8, y0+8; se la bottega ha un logo autorizzato quel riquadro resta VUOTO in attesa di applicaLoghi, altrimenti tesseraPittogramma vi disegna il simbolo con inchiostro = `testo` e fondo = `fondo`. Poi il nome: riquadro [x0+104, x0+506], corpo iniziale 74 px 'bold ui-sans-serif, system-ui, sans-serif', textBaseline 'middle', textAlign 'left', ridotto di 2 px alla volta finché measureText sta dentro 402 px, con pavimento a 40 px; se anche a 40 px non ci sta, si taglia a 26 caratteri e si aggiunge '…'. Se il context espone letterSpacing (Chromium 99+, Safari 17.4+) si mette a (corpo*0.03).toFixed(1)+'px', dietro un `if ('letterSpacing' in ctx)`: dove manca, il testo esce solo un filo più stretto, non rotto. Filetto di categoria: rect(x0+6, y0+84, 500, 4) nel COLORE_CATEGORIA — è quello che oggi già distingue due botteghe vicine, e resta.\n\nIDENTITÀ CROMATICA (punto 5 del brief). Deterministica dal nome, con lo stesso mixer del resto del gioco:\n  h32 = hashNome(nome + '|' + categoria)   // la FNV-1a già esportata da attivita.ts\n  r(k) = estrai(h32, k)                    // la stessa estrai di carattere.ts, resa export\n  base = COLORE_CATEGORIA[categoria] → getHSL(hsl)\n  H = frac(hsl.h + (r(1) - 0.5) * 0.050)   // ±9°: la bottega è sua, ma la famiglia si riconosce ancora\n  S = clamp(hsl.s * (0.86 + r(2) * 0.30), CAMPO_S_MIN[categoria], 0.94)\n  // ARMONIA CON LA FACCIATA. Se il tono dell'insegna cade addosso a quello del muro, l'insegna\n  // sparisce. Lugo è una città di intonaci gialli fra 30° e 45° di tinta: senza questo scarto,\n  // ogni bar e ogni panetteria diventano invisibili proprio sulle vie del centro.\n  dH = distanza circolare fra H e facciata.getHSL().h    // 0…0.5\n  se dH < 0.055:  H = frac(H + (H >= hf ? +0.075 : -0.075));  S = Math.min(0.94, S + 0.10)\n  fondo  = HSL(H, Math.min(0.80, S * 0.92), 0.17 + r(3) * 0.06)   // la fascia: scura, il nome ci risalta\n  campo  = HSL(H, S, CAMPO_L[categoria][0] + r(4) * (CAMPO_L[categoria][1] - CAMPO_L[categoria][0]))\n  tenda  = HSL(H, S * 0.88, 0.40 + r(5) * 0.07)\n  cornice = new THREE.Color('#EDE5D2')     // la stessa cCornice di citygen: le insegne e i cornicioni sono la stessa pietra\n  testo  = luminanzaRelativa(fondo) > 0.30 ? '#1A1712' : '#F4EEDD'\nCAMPO_L = { bar:[0.56,0.64], cibo:[0.52,0.60], tabacchi:[0.44,0.52], farmacia:[0.50,0.58], negozio:[0.58,0.66], servizi:[0.36,0.44] } e CAMPO_S_MIN = { bar:0.62, cibo:0.58, tabacchi:0.44, farmacia:0.50, negozio:0.40, servizi:0.14 }. I `servizi` fanno eccezione apposta: il grigio #8A8A96 saturato diventerebbe un blu che si confonde coi tabacchi, quindi resta grigio ma si scurisce, e contro le facciate chiare di Lugo si stacca lo stesso.\nSul `testo` la soglia è la LUMINANZA RELATIVA e non la L di HSL, perché un giallo a L 0.22 è già chiaro e si mangia il testo bianco. La regola vale anche quando i colori arrivano da attivita.json: un esercente può autorizzare i suoi colori, non può autorizzare un'insegna illeggibile.\ninsegnaAutorizzata sovrascrive fondo/testo/tenda, ma la riceve solo chi ha già verificato che la bottega sia partner con livello sopra NESSUNO (vedi la modifica ad attivita.ts).\n\napplicaLoghi(botteghe): per ogni bottega con `logo` non nullo — e il valore arriva SOLO da logoAutorizzato(), mai da schedaDi() — si carica un HTMLImageElement con new Image(); img.decoding='async'; img.src = percorso. Alla risoluzione si ridisegna la sola tessera A di quella bottega: fillStyle = fondo sul riquadro 84×84, poi drawImage contenuto (lettera-boxato, mai stirato) dentro 80×80 con 2 px di margine. Se la bottega ha livello PREMIUM e restano slot liberi in B, si occupa uno slot di B con il logo su campo `campo` e la bandiera di quella bottega punta lì; oltre i 4 slot liberi la bandiera resta col pittogramma, e la regola è scritta: la BANDIERA è segnaletica e dice che mestiere è, la FASCIA è identità e dice chi è — il marchio sta dove sta il nome. Alla fine di tutto: tex.needsUpdate = true. Ritorna quanti loghi sono stati davvero disegnati. Su img.onerror non si fa nulla: resta il pittogramma, e non c'è mai un buco nero sull'insegna. Nessuna texture in più: il logo finisce DENTRO l'atlante e l'Image viene lasciata al garbage collector."
+  }
+ ],
+ "fileModificati": [
+  {
+   "path": "components/lugo/Insegne.tsx",
+   "modifiche": [
+    {
+     "dove": "tutto il file: sostituisce trovaMuri(), identita(), costruisciInsegne() e usaTargaT()",
+     "cosa": "Il componente diventa il montatore della geometria e non più il posto dove si decidono muri, colori e atlante: quelli vanno in botteghe.ts, insegneAtlante.ts e pittogrammi.ts. Resta la cache WeakMap<MondoLugo, DatiInsegne|null> col suo commento sul use() che butta via i useMemo, perché il problema è ancora quello.",
+     "perche": "Oggi Insegne.tsx fa tre mestieri (trova i muri, sceglie i colori, disegna l'atlante) e nessuno dei tre è riusabile da citygen, che infatti si è dovuto inventare una regola diversa per la vetrina. Separando, la vetrina e l'insegna finiscono per forza sullo stesso muro."
+    },
+    {
+     "dove": "nuova funzione costruisciInsegne(mondo): sostituisce trovaMuri con frontiBotteghe(mondo)",
+     "cosa": "const fronti = frontiBotteghe(mondo); const caratteri = caratteriCitta(mondo); per ogni fronte si costruisce un DatiBottega { nome, categoria, pittogramma: pittogrammaDi(neg.categoria, neg.osm), identita: identitaBottega(nome, categoria, caratteri.get(fronte.edificio)?.tinta ?? new THREE.Color('#E3C878'), att.partner && att.livelloPartner !== 'NESSUNO' ? att.insegna : undefined), larghezza: fronte.larghezza, logo: logoAutorizzato(att) } dove `att` è l'elemento di registroAttivita(mondo) con lo stesso indice.",
+     "perche": "Passare per registroAttivita invece che per schedaDi() risolve un buco vero: schedaDi() non applica la guardia sugli omonimi, quindi oggi due filiali con lo stesso nome si prendono entrambe l'autorizzazione di una sola. E la tinta della facciata entra nel calcolo del colore: è l'unico modo perché l'insegna sia armonica col muro invece che sopra il muro."
+    },
+    {
+     "dove": "la geometria fusa: al posto dei soli quad frontali, si accumula tutto in un unico BufferGeometry con position, uv e color",
+     "cosa": "Per ogni fronte i si emettono, in coordinate di mondo:\n(1) FASCIA FRONTALE — quad largo `min(fronte.larghezza - 0.35, 6.4)` centrato su (t0+t1)/2, da y = yCimasa + 0.02 a y = yCimasa + 0.68, scostato di MISURE.offsetFascia = 0.10 lungo la normale (la cimasa di citygen sta a 0.07 e la cornicetta a 0.09). UV = atlante.uvBanda(i). Colore vertice bianco: la tessera è già stampata coi colori suoi. La tangente si ricava dalla normale del muro (hx = nz*hw, hz = -nx*hw) esattamente come oggi, perché è quello che tiene il testo dal verso giusto — il bug delle insegne allo specchio è già stato pagato una volta.\n(2) BANDIERA — piastra chiara 1.07×1.22 e pannello 0.95×1.10, entrambi nel piano che contiene la normale del muro e la verticale, centro in (x + nx*(1.25 - 0.475), yBandiera, z + nz*(1.25 - 0.475)), con yBandiera = Math.min(yCimasa + 1.52, hTerra + 1.30). Due facce esplicite, non DoubleSide: la faccia con normale +ex prende UV (u0,u1) e quella con normale -ex prende UV SCAMBIATE (u1,u0), altrimenti chi cammina nel verso opposto vede le forbici e la chiave inglese allo specchio. Piastra: UV = uvBianco(), colore vertice = identita.cornice. Pannello: UV = uvSimbolo(pittogramma), colore vertice = identita.campo, tranne per i PITTOGRAMMI_NON_TINTI dove è (1,1,1).\n(3) MENSOLA — due quad sottili (montante verticale 0.05×0.55 sul muro, braccio orizzontale 1.25×0.05) più un tirante diagonale, UV = uvBianco(), colore vertice #3A3A38 (cFerro).\n(4) MERCE — per ogni campata della vetrina sotto il fronte (le stesse campate che calcola vetrina(), Math.max(1, Math.min(9, Math.round(L/5.2))) ristretto a [t0,t1]) un quad da y 0.45 a y = yCimasa - 0.14, scostato di MISURE.offsetMerce = 0.085, UV = uvMerce(categoria), colore vertice bianco.\nTotale ≈ 22 triangoli per bottega, 1430 per tutta Lugo.",
+     "perche": "Un solo BufferGeometry e un solo materiale = una sola draw call per tutte le insegne di Lugo, bandiere comprese. La mesh non si culla mai (il suo volume di contenimento è tutta la città) ma sono 1400 triangoli su un budget di 700 000: spezzarla per celle come fa la Griglia degli edifici COSTEREBBE venti draw call per risparmiare mille triangoli, che è il contrario di quello che serve."
+    },
+    {
+     "dove": "il render: materiale della mesh fusa",
+     "cosa": "<meshBasicMaterial map={atlante.tex} vertexColors side={THREE.FrontSide} alphaTest={0.5} />. FrontSide e non DoubleSide perché adesso ogni faccia esiste davvero.",
+     "perche": "Il materiale basic non è una scorciatoia: un'insegna commerciale è illuminata, e tenerla a piena luminosità la fa leggere di notte come di giorno senza costare un lume. È anche la ragione per cui la croce verde e la T possono smettere di essere mesh emissive separate."
+    },
+    {
+     "dove": "il blocco dati.cartelli.map(...) che oggi emette una mesh per i tabacchi e un group di due mesh per ogni farmacia",
+     "cosa": "Si cancella per intero, insieme a usaTargaT(). La T e la croce diventano due tessere del repertorio in fascia B dell'atlante, disegnate col loro campo baked.",
+     "perche": "Sono fino a 7 draw call e una texture in più per due sole categorie, e non scalano: alla terza categoria con la sua targa il budget salta. Nell'atlante costano zero, e per giunta compaiono anche sulla fascia frontale, dove oggi non ci sono."
+    },
+    {
+     "dove": "instancedMesh delle tende",
+     "cosa": "La geometria diventa un tendone vero e non una scatola: falda inclinata dal muro (y = yCimasa - 0.06) fino all'esterno (sporto 1.35, caduta 0.62), due triangoli di chiusura laterali, e una mantovana verticale di 0.28 m all'estremo. 6 triangoli, UV: la falda e la mantovana campionano uvRighe(), i fianchi uvBianco(). Materiale meshLambertMaterial({ map: atlante.tex, vertexColors: true, side: THREE.DoubleSide, alphaTest: 0.5 }), colore per istanza = identita.tenda. La matrice per istanza porta anche una scala X pari a min(fronte.larghezza - 0.5, 4.6)/1 così ogni tenda è larga quanto la sua bottega.",
+     "perche": "Una tenda da sole a righe è, dopo il colore, il secondo segnale che si legge da lontano in una via italiana, e costa una draw call sola. Il Lambert (non basic) è voluto: la tenda deve prendere l'ombra del cornicione, altrimenti sembra incollata. Il DoubleSide evita di raddoppiare la geometria per il sotto-falda, che si vede eccome quando ci si cammina sotto."
+    },
+    {
+     "dove": "instancedMesh delle vetrine e delle porte",
+     "cosa": "Restano, ma si allineano al fronte: la vetrina si centra su (t0+t1)/2 - 0.25*larghezza e la porta su (t0+t1)/2 + 0.35*larghezza, sempre lungo ex, e la loro altezza si adatta a yCimasa invece che essere fissa a y = 1.1 con box 1.9×2.0.",
+     "perche": "Oggi sono agganciate al punto del cartello con scostamenti fissi (±0.5 e ±1.15 lungo ex) e con un piano terra alto 3,9 m finiscono a mezz'aria sopra la vetrina vera che citygen ha già disegnato."
+    }
+   ]
+  },
+  {
+   "path": "lib/lugo/attivita.ts",
+   "modifiche": [
+    {
+     "dove": "nuova export accanto a idStabile()",
+     "cosa": "export function hashNome(s: string): number — la FNV-1a che oggi vive dentro idStabile, estratta. idStabile la chiama e resta identica bit per bit.",
+     "perche": "L'identità cromatica di una bottega deve nascere dallo stesso hash che genera il suo id, altrimenti due sistemi 'deterministici dal nome' possono divergere e un giorno la stessa bottega cambia colore senza che nessuno abbia toccato niente. Estrarla senza cambiarne il comportamento tiene fermi i salvataggi (poiVisitati contiene gli id)."
+    },
+    {
+     "dove": "nuova export, subito dopo registroAttivita()",
+     "cosa": "export function logoAutorizzato(a: Attivita): string | null. Ritorna a.logo SOLO se, tutte insieme: a.partner === true; a.livelloPartner !== 'NESSUNO'; typeof a.logo === 'string'; e il percorso supera /^\\/lugo\\/insegne\\/[a-z0-9][a-z0-9._-]{0,60}\\.(png|webp)$/ senza contenere '..'. In ogni altro caso null. Nessun'altra funzione del gioco può produrre un percorso di logo: è scritto nel commento e il collaudo lo verifica.",
+     "perche": "registroAttivita azzera già logo e promo senza partner, ma è una riga in mezzo a un map: basta un refactor distratto e passa. Qui la regola diventa una funzione con un nome che si legge, un punto solo da controllare, e la validazione del percorso chiude tre strade che il file dei dati potrebbe aprire da solo — un URL a un altro dominio, un data: URI, una risalita fuori dalla cartella. Il file dei dati è dato, non codice: va trattato come ostile anche quando lo scriviamo noi."
+    },
+    {
+     "dove": "nel map di registroAttivita(), campo `insegna`",
+     "cosa": "insegna: sch?.partner === true && livello !== 'NESSUNO' ? sch.insegna : undefined",
+     "perche": "Oggi Insegne legge i colori con schedaDi(nome) senza guardare partner: una scheda non autorizzata può già tingere l'insegna di una bottega. Il livello BASE è definito nello schema come 'più la riga di presentazione E i colori dell'insegna': i colori sono un'autorizzazione anche loro."
+    },
+    {
+     "dove": "COLORE_CATEGORIA, subito sotto",
+     "cosa": "Riferimento incrociato in commento a PITTOGRAMMA_CATEGORIA di lib/lugo/pittogrammi.ts, e nessuna modifica ai valori.",
+     "perche": "I sei colori sono già tarati e li usano minimappa e insegne: cambiarli qui vorrebbe dire cambiare la minimappa. Il pittogramma si aggiunge accanto, non al posto."
+    }
+   ]
+  },
+  {
+   "path": "lib/lugo/loadMap.ts",
+   "modifiche": [
+    {
+     "dove": "interface NegozioRT",
+     "cosa": "Aggiunge `/** Valore grezzo di shop=* o amenity=* da OSM, quando la mappa lo porta. */ osm?: string`.",
+     "perche": "È l'unico modo per dare un simbolo giusto ai 42 negozi su 65 che build-map schiaccia in 'negozio'. Opzionale apposta: le mappe già generate non ce l'hanno e devono continuare a funzionare col simbolo di categoria."
+    },
+    {
+     "dove": "la costruzione di negozi in carica()",
+     "cosa": "negozi: (raw.negozi ?? []).map((s) => ({ nome: s.n, categoria: s.c ?? 'negozio', x: s.x * M, z: s.z * M, ...(s.s ? { osm: s.s } : {}) }))",
+     "perche": "Stessa forma condizionale già usata per r.nome e b.col: il campo compare solo se c'è, e nessun consumatore vede una stringa vuota da distinguere da 'assente'."
+    }
+   ]
+  },
+  {
+   "path": "lib/lugo/types.ts",
+   "modifiche": [
+    {
+     "dove": "interface NegozioMap",
+     "cosa": "Aggiunge `/** Valore grezzo di shop=* o amenity=* (dato pubblico OSM): sceglie il pittogramma. */ s?: string`.",
+     "perche": "Il nome e la categoria sono già dati pubblici OSM; il valore grezzo del tag lo è esattamente allo stesso titolo, e serve solo a scegliere un disegno nostro."
+    },
+    {
+     "dove": "interface EdificioMap",
+     "cosa": "Aggiunge i campi opzionali che oggi la pipeline butta via: `liv?: number` (building:levels), `rs?: string` (roof:shape normalizzato: gabled|hipped|flat|pyramidal|skillion|round|dome), `rc?: string` (roof:colour hex), `bm?: string` (building:material normalizzato), `bt?: string` (il valore di building=*), `nm?: string` (name dell'edificio, quando non è già un landmark), `civ?: number` (addr:housenumber).",
+     "perche": "Sono tutti tag che la query Overpass già scarica e che build-map legge, usa per una decisione sola e getta. Vedi la modifica a build-map.mjs per cosa ci si fa."
+    }
+   ]
+  },
+  {
+   "path": "lib/lugo/carattere.ts",
+   "modifiche": [
+    {
+     "dove": "function estrai(seme, k)",
+     "cosa": "Diventa `export function estrai(...)`. Corpo invariato.",
+     "perche": "insegneAtlante deve estrarre dallo stesso mixer, altrimenti la 'determinismo dal nome' del colore dell'insegna e quella del carattere dell'edificio sono due cose diverse che si somigliano."
+    },
+    {
+     "dove": "carattereDi(), blocco dei piani",
+     "cosa": "Se b.liv è definito e sta fra 1 e 8, `piani = b.liv` e hPiano = (dichiarata ? b.h/piani : 2.86 + estrai(s,4)*0.56), invece di ricavare i piani da Math.round(b.h / 3.15).",
+     "perche": "OSM a Lugo dichiara building:levels più spesso di height. Oggi la pipeline lo converte in metri (levels*3.2) e poi carattere.ts li riconverte in piani dividendo per 3.15: due arrotondamenti di fila su un dato che era già esatto, e le file di finestre escono sbagliate di un piano su un edificio su tre fra quelli mappati bene."
+    },
+    {
+     "dove": "carattereDi(), blocco materiale",
+     "cosa": "Se b.bm è definito, mappa diretta: brick|brick_block→mattone, plaster|render|stucco→intonaco, stone|limestone|sandstone→pietra, concrete|reinforced_concrete→cemento, metal|steel→metallo, wood|timber→legno; e solo in mancanza si tira il dado su MAT_ZONA.",
+     "perche": "Oggi il materiale di ogni casa di Lugo è un dado pesato per zona. Dove OSM lo dice, dirlo giusto costa una riga e cambia la faccia della via."
+    },
+    {
+     "dove": "carattereDi(), blocco tetto e tintaTetto",
+     "cosa": "Se b.rs è definito: gabled→falde, hipped→padiglione, flat→piano, skillion→nuova forma 'mono', pyramidal→nuova forma 'piramide', round|dome→padiglione (approssimazione dichiarata). Se b.rc è definito, tintaTetto = new THREE.Color(b.rc). FormaTetto guadagna 'mono' | 'piramide' e copertura() in citygen le tratta: 'mono' = una sola falda inclinata verso il lato lungo, 'piramide' = quattro triangoli su un colmo puntiforme (che copertura() sa già fare, è il caso degenere del padiglione).",
+     "perche": "Oggi roof:shape viene ridotto a un booleano e poi il padiglione si tira a sorte con estrai(s,11) < 0.44: dove il dato c'è, il tetto vero costa meno di quello inventato."
+    },
+    {
+     "dove": "carattereDi(), calcolo di rimessa / capannone / bottega / dettaglio",
+     "cosa": "Se b.bt è definito: garage|garages|shed|hut|carport|roof → rimessa certa (niente più soglia area < 46); industrial|warehouse → capannone certo (niente più area > 780); retail|commercial → bottega = true certa; apartments → marcapiano e balconi con probabilità 0.85 invece che 0.62/0.34; school|public|civic|hospital|government → intonaco chiaro, tetto piano, persiane false; hotel → come apartments. Se b.nm è definito (palazzo con un nome proprio) → dettaglio = 2 e gronda maggiorata di 0.1.",
+     "perche": "Le due euristiche sull'area sono la fonte più grossa di edifici sbagliati di Lugo: un capannone di 600 m² diventa una palazzina di tre piani e una rimessa di 60 m² diventa una casa. Il tag building=* lo dice a lettere ed è già nel file scaricato."
+    }
+   ]
+  },
+  {
+   "path": "lib/lugo/citygen.ts",
+   "modifiche": [
+    {
+     "dove": "function vetrina(), calcolo di yTop e delle bande finali",
+     "cosa": "yTop resta Math.max(2.2, k.hTerra - 0.85) ma va estratto in quotaCimasa(k) di botteghe.ts e importato da lì. La cimasa passa da 0.52 a ALTEZZA_FASCIA = 0.72 e la cornicetta da 0.14 a ALTEZZA_CORNICETTA = 0.14 (invariata): bandaV(..., yTop, yTop + 0.72, ...) e bandaV(..., yTop + 0.72, yTop + 0.86, ...).",
+     "perche": "L'altezza dell'insegna è il vincolo che decide quanto può essere grande il nome: con 0.52 m di fascia la maiuscola non supera 0.30 m e il nome muore a venti metri, con 0.72 m arriva a 0.42 m e regge fino a ventotto. Il conto di sicurezza: la cimasa finisce a hTerra + 0.01 e le finestre del primo piano partono a hTerra + 0.92, quindi restano 91 cm di muro. Una fascia di 72 cm su un piano terra da 3,5 m è la proporzione che si vede in Corso Garibaldi."
+    },
+    {
+     "dove": "function vetrina(), firma e ciclo delle campate",
+     "cosa": "Nuova firma: vetrina(acc, x1, z1, x2, z2, nx, nz, k, t0 = 0, t1 = 1). Le campate si calcolano sul TRATTO [t0,t1] invece che su tutto il lato: campate = Math.max(1, Math.min(9, Math.round(((t1-t0)*L) / 5.2))) e ogni b mappa in [t0 + (b+0.16)/campate*(t1-t0), t0 + (b+0.84)/campate*(t1-t0)].",
+     "perche": "Serve per aprire una vetrina distinta per ogni bottega quando due o tre si dividono lo stesso muro, che a Lugo è la norma sotto i portici."
+    },
+    {
+     "dove": "function facciata(), il ramo `if (k.bottega && i === latoLungo)`",
+     "cosa": "Diventa: si guardano i fronti dell'edificio da frontiPerEdificio(mondo) (passati a facciata come nuovo parametro `fronti: FronteBottega[] | null`); se ce n'è almeno uno sul lato i, si chiama vetrina() una volta per ciascuno col suo [t0,t1]; se non ce n'è nessuno per tutto l'edificio ma k.bottega è vero, si ricade sul comportamento di oggi (una vetrina su latoLungo) per non far sparire nulla agli edifici che hanno la bottega per dado o per affaccio su piazza.",
+     "perche": "È il difetto centrale da correggere: la vetrina la decide la forma del footprint (il lato più lungo) e l'insegna la decide la distanza dal nodo del negozio, e le due cose non coincidono. Una bottega su un isolato a L si ritrova la vetrina su via Baracca e il cartello su via Manfredi. Con i fronti condivisi, vetrina e insegna nascono dallo stesso dato."
+    },
+    {
+     "dove": "generaCitta() e estrudiEdificio()",
+     "cosa": "generaCitta calcola `const fronti = frontiPerEdificio(mondo)` una volta e passa `fronti.get(b) ?? null` a estrudiEdificio, che lo gira a facciata.",
+     "perche": "frontiPerEdificio è già memoizzata per mondo: il costo è zero e la firma resta esplicita invece di andare a pescare un singleton dentro facciata()."
+    },
+    {
+     "dove": "le costanti di colore in cima al file",
+     "cosa": "export delle sole cCornice e cFerro (le altre restano private).",
+     "perche": "La piastra della bandiera e la mensola devono essere della stessa pietra e dello stesso ferro dei cornicioni e delle ringhiere: due valori duplicati in due file è esattamente il modo in cui la città smette di sembrare una città sola."
+    },
+    {
+     "dove": "function copertura()",
+     "cosa": "Due rami nuovi per FormaTetto 'mono' (una falda sola verso il lato lungo, colmo sul lato opposto) e 'piramide' (quattro triangoli sul punto medio del rettangolo minimo, cioè il padiglione con hw del colmo = 0).",
+     "perche": "Servono a consumare roof:shape=skillion e pyramidal senza approssimarli a 'falde', che è quello che oggi succede a tutte le tettoie e ai casottini piramidali della campagna."
+    }
+   ]
+  },
+  {
+   "path": "lib/lugo/store.ts",
+   "modifiche": [
+    {
+     "dove": "interface VetrinaAperta",
+     "cosa": "Tre campi nuovi: `/** Percorso del logo autorizzato, null in tutti gli altri casi. */ logo: string | null`, `/** Id del pittogramma di mestiere (lib/lugo/pittogrammi.ts). */ pittogramma: string`, `/** Il colore proprio della bottega, in esadecimale: tinge il bordo della scheda. */ colore: string`.",
+     "perche": "La vetrina dell'HUD deve mostrare lo stesso simbolo che si è visto sul muro, altrimenti l'associazione simbolo→mestiere non si impara. Il logo sta qui e non nel componente perché lo stato che l'HUD mostra deve essere ispezionabile: il collaudo legge lo store, non il DOM."
+    }
+   ]
+  },
+  {
+   "path": "components/lugo/Hud.tsx",
+   "modifiche": [
+    {
+     "dove": "dentro il blocco {vetrina && (...)}, subito sopra .lugo-vetrina-testa",
+     "cosa": "Un blocco <div className=\"lugo-vetrina-marchio\"> che contiene sempre un <canvas className=\"lugo-vetrina-simbolo\" width={56} height={56} data-simbolo={vetrina.pittogramma} /> dipinto da un useEffect che chiama disegnaPittogramma(ctx, vetrina.pittogramma, 28, 28, 56, '#F4EEDD', vetrina.colore), e — solo se vetrina.partner && vetrina.livello !== 'NESSUNO' && vetrina.logo — un <img className=\"lugo-vetrina-logo\" src={vetrina.logo} alt=\"\" width={56} height={56} />.",
+     "perche": "Il pittogramma è nostro e si mostra sempre; il logo è di qualcun altro e si mostra solo con la sua firma. Tenere le due condizioni una accanto all'altra, nello stesso blocco, è il modo per non dimenticarsene alla prossima modifica. L'alt vuoto è voluto: il nome dell'attività è già scritto sotto e un alt col nome del marchio sarebbe una dichiarazione in più."
+    },
+    {
+     "dove": ".lugo-vetrina-piede",
+     "cosa": "Il testo resta 'Attività di Lugo · listino di fantasia, non una promozione reale', e quando c'è un logo diventa 'Attività di Lugo · marchio usato su autorizzazione · listino di fantasia'.",
+     "perche": "Se un giorno un marchio comparirà, chi guarda deve sapere perché è lì. Vale anche come promemoria per noi."
+    }
+   ]
+  },
+  {
+   "path": "components/lugo/Player.tsx",
+   "modifiche": [
+    {
+     "dove": "dove si costruisce l'oggetto passato a setVetrina()",
+     "cosa": "Aggiunge logo: logoAutorizzato(a), pittogramma: pittogrammaDi(a.categoria, negozioDi(a)?.osm), colore: '#' + identitaBottega(a.nome, a.categoria, tintaFacciata).campo.getHexString().",
+     "perche": "logoAutorizzato è l'unico rubinetto: qui si vede che l'HUD lo prende da lì e non dal registro grezzo."
+    },
+    {
+     "dove": "nel blocco degli hook __LUGO__, accanto ad autorizzazioni()",
+     "cosa": "insegne: () => ({ cartelli, bandiere, senzaMuro, senzaPittogramma, sovrapposte, fuoriCimasa, pittogrammi: Record<string, number>, loghi, loghiLeciti, percorsiLogo: string[], atlante: { w, h, tessere } }). `sovrapposte` conta le coppie di fronti sullo stesso (edificio, lato) i cui [t0,t1] si intersecano; `fuoriCimasa` conta le fasce la cui y0 dista più di 0.05 m dalla quotaCimasa del suo edificio; `loghiLeciti` ricalcola da capo, con logoAutorizzato, quanti loghi POTREBBERO comparire.",
+     "perche": "Sono le quattro cose che possono rompersi in silenzio e che a occhio non si vedono in uno screenshot: un'insegna dietro l'angolo, due che si accavallano, una che galleggia, un logo di troppo."
+    },
+    {
+     "dove": "stesso blocco",
+     "cosa": "leggibilita: (d: number) => { const cam = gl.domElement; const fov = (camera as THREE.PerspectiveCamera).fov; const k = cam.clientHeight / (2 * d * Math.tan(fov * Math.PI / 360)); return { campo: MISURE.bandieraH * k, simbolo: MISURE.simboloH * k, nome: MISURE.capNome * k, fascia: MISURE.bandaH * k, viewport: cam.clientHeight, fov }; }",
+     "perche": "Trasforma 'si deve vedere da lontano' in un numero che il collaudo può difendere per sempre. Senza, la prossima volta che qualcuno rimpicciolisce un pannello per fare spazio a qualcos'altro nessuno se ne accorge finché non lo vede un giocatore."
+    },
+    {
+     "dove": "stesso blocco",
+     "cosa": "provaLogo: (schede: SchedaAttivita[]) => schede.map((s) => logoAutorizzato({ ...ATTIVITA_FINTA, partner: s.partner === true, livelloPartner: (s.partner === true && s.livello) || 'NESSUNO', logo: s.logo ?? null })). Funzione PURA: non tocca il mondo, non registra niente, non carica niente. Esposta comunque solo dentro `if (QA)`, importando QA da lib/lugo/qa.ts.",
+     "perche": "È la prova negativa, quella che serve davvero: dimostra che la funzione RESPINGE i casi cattivi, non solo che oggi non ce n'è nessuno. E siccome è pura e sotto ?qa=1, non apre nessuna strada per accendere una partnership dal di fuori — che sarebbe il classico hook di collaudo che diventa un buco."
+    }
+   ]
+  },
+  {
+   "path": "app/lugo/lugo.css",
+   "modifiche": [
+    {
+     "dove": "nella sezione '── la vetrina di un'attività ──', prima di .lugo-vetrina-testa",
+     "cosa": "Tre regole nuove: .lugo-vetrina-marchio { display:flex; align-items:center; gap:0.55rem; margin-bottom:0.5rem } · .lugo-vetrina-simbolo { width:2.1rem; height:2.1rem; border-radius:8px; flex:0 0 auto } · .lugo-vetrina-logo { width:2.1rem; height:2.1rem; object-fit:contain; border-radius:6px; background:rgba(255,255,255,0.9); flex:0 0 auto }.",
+     "perche": "object-fit:contain e non cover: un logo autorizzato non si ritaglia. Il fondo bianco al 90% perché quasi tutti i loghi sono pensati per la carta e su vetro scuro sparirebbero."
+    },
+    {
+     "dove": "accanto a .lugo-vetrina-partner",
+     "cosa": "Nessuna modifica alle regole esistenti: .lugo-vetrina-partner e .lugo-vetrina-promo restano com'è, perché il collaudo le conta con querySelectorAll e cambiarne il nome renderebbe muta la guardia.",
+     "perche": "Quei due nomi di classe sono, di fatto, l'interfaccia fra il codice e la regola non negoziabile. Vanno trattati come una API."
+    }
+   ]
+  },
+  {
+   "path": "tools/lugo/fetch-osm.mjs",
+   "modifiche": [
+    {
+     "dove": "la costante QUERY",
+     "cosa": "Tre righe nuove: `way[\"shop\"](${B});` e `way[\"amenity\"~\"^(cafe|bar|restaurant|pharmacy)$\"](${B});` e `node[\"addr:housenumber\"](${B});`. Facoltativa ma consigliata: `way[\"barrier\"~\"^(wall|fence|hedge)$\"](${B});`.",
+     "perche": "Oggi si chiedono solo i NODI con shop=*: ogni bottega che a Lugo è mappata sul poligono dell'edificio — e sono parecchie, tipicamente quelle rilevate da rilievo e non da app — semplicemente non esiste nel gioco. I civici servono a numerare le porte, che è il dettaglio che fa dire 'questa è la mia via'. I muri di cinta sono la cosa più grossa che manca fra il campo e la città, ma sono un altro fronte."
+    },
+    {
+     "dove": "nessuna",
+     "cosa": "Il file di cache tools/lugo/cache/overpass-raw.json presente nel repo ha 102 elementi contro i 2047 edifici di map.json: è un residuo, non la sorgente vera. Va rimosso o rinominato in .esempio, altrimenti un `node build-map.mjs` senza --force rigenera una Lugo vuota.",
+     "perche": "È una trappola che scatta la prima volta che qualcuno prova a rigenerare la mappa, e la diagnosi costa mezza giornata."
+    }
+   ]
+  },
+  {
+   "path": "tools/lugo/build-map.mjs",
+   "modifiche": [
+    {
+     "dove": "funzione addBuilding(), dopo il blocco falde/chiesa/col",
+     "cosa": "Emette i campi opzionali nuovi: se tags['building:levels'] è un intero fra 1 e 8 → b.liv; roof:shape normalizzato in gabled|hipped|flat|pyramidal|skillion|round|dome → b.rs; roof:colour passato per la stessa coloreEdificio() (rinominandola in coloreDa(v)) → b.rc; building:material o building:facade:material normalizzato → b.bm; il valore di tags.building se diverso da 'yes' → b.bt; tags.name se c'è e landmarkOf ha detto null → b.nm; parseInt(tags['addr:housenumber']) se è un numero puro → b.civ.",
+     "perche": "Sono sei tag che la query scarica già, che questa funzione legge già per prendere una decisione sola, e che poi butta. Trasferirli costa sei righe e sposta il carattere degli edifici dal dado al dato: vedi le modifiche a carattere.ts per quello che ne esce."
+    },
+    {
+     "dove": "il ciclo `for (const n of nodes.values())` che costruisce `negozi`",
+     "cosa": "Aggiunge il valore grezzo: negozi.push({ n: nomeNegozio, c: cat, x: q(x), z: q(z), s: tags.shop || tags.amenity }). E il ciclo va estratto in una funzione raccogliNegozio(tags, x, z) chiamata anche dai WAY con shop=*/amenity commerciale (centroide dell'anello), che oggi non sono considerati.",
+     "perche": "Il campo `s` è quello che dà un simbolo giusto ai 42 negozi generici. È dato pubblico OSM esattamente come il nome e la categoria, e serve solo a scegliere quale disegno NOSTRO mettere sull'insegna."
+    },
+    {
+     "dove": "la sezione output",
+     "cosa": "Il tetto `negozi.slice(0, 350)` resta, ma l'ordinamento per distanza dal Pavaglione va fatto DOPO l'unione nodi+way, non prima.",
+     "perche": "Altrimenti le botteghe che arrivano dai way finiscono in coda e vengono tagliate per prime pur essendo in centro."
+    }
+   ]
+  },
+  {
+   "path": "public/lugo/attivita.json",
+   "modifiche": [
+    {
+     "dove": "schema.logo",
+     "cosa": "Il testo diventa esplicito sulle condizioni: 'percorso di un'immagine autorizzata sotto /lugo/insegne/, nella forma /lugo/insegne/nome.png o .webp, senza .. e senza indirizzi di altri siti; vale SOLO se partner è true e livello è diverso da NESSUNO; in ogni altro caso il gioco lo ignora e mostra il pittogramma di mestiere disegnato da noi'.",
+     "perche": "Lo schema è il posto dove la regola la legge chi compila il file, che non è chi ha scritto il codice."
+    },
+    {
+     "dove": "nuova chiave di primo livello accanto a schema",
+     "cosa": "\"insegne\": { \"cartella\": \"public/lugo/insegne/\", \"regola\": \"in questa cartella non entra nessun file senza autorizzazione scritta dell'esercente. Un logo che sta qui e non ha partner true in questo file non compare comunque nel gioco: la guardia è nel codice, non nella cartella.\" }",
+     "perche": "La cartella e il file dei dati devono raccontare la stessa cosa. E va detto a chiare lettere che mettere un file lì non basta: chi lo scopre da solo dopo un'ora di prove finisce per cercare la scorciatoia nel codice."
+    },
+    {
+     "dove": "nuova cartella",
+     "cosa": "public/lugo/insegne/LEGGIMI.txt con la stessa regola. Nessun file immagine committato.",
+     "perche": "Una cartella vuota in git non esiste, e senza il percorso il binario del logo non è provabile."
+    }
+   ]
+  },
+  {
+   "path": "tools/lugo/verify-lugo.mjs",
+   "modifiche": [
+    {
+     "dove": "subito dopo page.on('console', ...), in cima",
+     "cosa": "const richiesteInsegne = []; page.on('request', (r) => { const u = r.url(); if (u.includes('/lugo/insegne/')) richiesteInsegne.push(u); });",
+     "perche": "È la sola guardia che sorprende un logo caricato ma mai disegnato, o caricato da un componente che nessuno ha pensato di controllare. Contare quello che finisce a schermo non basta: la richiesta di rete è il fatto."
+    },
+    {
+     "dove": "nuova fase 3d, subito dopo il blocco 'nessuna partnership dichiarata'",
+     "cosa": "Il corpo della fase, descritto per intero nella sezione collaudo qui sotto.",
+     "perche": "La fase 3b prova che la vetrina si apre; questa prova che la bottega si riconosce PRIMA di arrivarci, che è quello che ha chiesto l'utente."
+    },
+    {
+     "dove": "il blocco 'costo del fotogramma'",
+     "cosa": "Invariato nelle soglie (700k triangoli, 170 draw call), ma il dettaglio stampato aggiunge le insegne: `${r.chiamate} draw call (insegne: ${ins.drawCall})`.",
+     "perche": "Quando un giorno il conto si avvicinerà a 170, si deve sapere subito se la colpa è delle insegne o d'altro."
+    }
+   ]
+  }
+ ],
+ "condivisi": {
+  "store": [
+   "VetrinaAperta.logo: string | null — percorso del logo autorizzato, null in ogni altro caso (è il valore restituito da logoAutorizzato(), mai a.logo grezzo)",
+   "VetrinaAperta.pittogramma: string — l'id del simbolo di mestiere (il tipo Pittogramma di lib/lugo/pittogrammi.ts, tenuto come string qui per non far dipendere lo store dal repertorio)",
+   "VetrinaAperta.colore: string — '#RRGGBB' del `campo` della bottega: tinge il pittogramma nella scheda HUD, così il simbolo a schermo è lo stesso identico che si è visto sul muro",
+   "nessuna azione nuova: setVetrina resta com'è, cambiano solo i campi del payload"
+  ],
+  "player": [
+   "nel punto in cui si costruisce il payload di setVetrina(): tre campi in più — logo: logoAutorizzato(a), pittogramma: pittogrammaDi(a.categoria, negozio.osm), colore: '#' + identitaBottega(...).campo.getHexString()",
+   "hook __LUGO__.insegne(): oggetto con cartelli, bandiere, senzaMuro, senzaPittogramma, sovrapposte, fuoriCimasa, pittogrammi (istogramma id→conteggio), loghi, loghiLeciti, percorsiLogo, drawCall, atlante {w,h,tessere}",
+   "hook __LUGO__.leggibilita(d): pixel a schermo di campo/simbolo/nome/fascia alla distanza d, con viewport e fov usati per il conto",
+   "hook __LUGO__.provaLogo(schede): mappa un array di SchedaAttivita finte sul verdetto di logoAutorizzato(). Pura, non tocca il mondo, esposta solo dentro if (QA)"
+  ],
+  "hud": [
+   "nuovo blocco .lugo-vetrina-marchio dentro {vetrina && ...}, sopra .lugo-vetrina-testa: contiene sempre il canvas del pittogramma e, solo con vetrina.partner && vetrina.livello !== 'NESSUNO' && vetrina.logo, l'<img> del logo",
+   "useEffect nel componente vetrina che dipinge il canvas con disegnaPittogramma(ctx, vetrina.pittogramma, 28, 28, 56, '#F4EEDD', vetrina.colore)",
+   ".lugo-vetrina-piede: la riga diventa 'Attività di Lugo · marchio usato su autorizzazione · listino di fantasia' quando e solo quando c'è un logo",
+   "NON toccare .lugo-vetrina-partner e .lugo-vetrina-promo: il collaudo li conta per nome con querySelectorAll e sono di fatto l'API della regola non negoziabile"
+  ],
+  "css": [
+   ".lugo-vetrina-marchio",
+   ".lugo-vetrina-simbolo",
+   ".lugo-vetrina-logo"
+  ],
+  "input": [
+   "Nessun tasto nuovo e nessun tasto cambiato: tutto questo fronte si legge con gli occhi camminando, ed è esattamente il punto. Se servisse un interruttore di diagnosi lo si mette su window.__LUGO__ dietro ?qa=1, non su una lettera della tastiera, per non rubare un tasto a chi gioca."
+  ]
+ },
+ "rischi": [
+  "VRAM: l'atlante 2048×2048 RGBA pesa 16 MiB, 21,3 con la catena di mipmap, contro i 10,7 dell'atlante di oggi. Sono +11 MiB su un telefono. Mitigazione già prevista: costruisciAtlante(botteghe, ridotto) con ridotto = (qualita === 'bassa'), che scende a 1024×1024 e 5,3 MiB. Da sorvegliare con __LUGO__.render().texture, che NON deve crescere: l'atlante nuovo prende il posto di quello vecchio e della targa T, e i loghi autorizzati vengono disegnati DENTRO l'atlante, non caricati come texture a parte.",
+  "La mesh fusa delle insegne ha per volume di contenimento tutta Lugo e non viene mai scartata dal frustum: 1430 triangoli e 1 draw call sempre presenti, anche guardando la campagna. È una scelta, non una svista — spezzarla per celle come la Griglia degli edifici costerebbe venti draw call per risparmiare mille triangoli.",
+  "Alzare la cimasa da 0.52 a 0.72 m tocca TUTTI gli edifici con k.bottega, compresi quelli che hanno la bottega per dado (estrai(s,15) < 0.34) o per affaccio su piazza, e non solo i 65 con un negozio vero. Il centro di Lugo cambia proporzioni: va guardato negli screenshot 01-citta.png e nelle cartoline di via prima di dire che è finito.",
+  "frontiBotteghe cambia il muro scelto per una parte delle botteghe (preferisce l'edificio che contiene il nodo e il lato che dà sulla via): le insegne si spostano rispetto a oggi e tutti gli screenshot di confronto cambiano. Se l'euristica sbaglia — nodo dentro un edificio grande con la bottega su un altro corpo di fabbrica — l'insegna finisce su un muro cieco. Il contatore `senzaMuro` e uno sguardo alle cartoline sono l'unica difesa: non c'è un dato OSM che leghi il nodo del negozio al suo muro.",
+  "Il festone della mantovana è alpha con alphaTest 0.5: nessun ordinamento e nessun costo, ma anche nessun antialias, quindi i bordi sono duri. Coerente con lo stile a blocchi del gioco (le nuvole sono cubi), ma è una scelta da confermare a occhio e non da scoprire.",
+  "Il bleeding fra tessere dell'atlante è chiuso dai gutter fino al livello di mipmap 3 (tessera 16×16): sotto, le tessere vicine si mescolano. Succede oltre i 240 m, dove l'insegna è sotto il pixel e c'è la nebbia che parte a 280 m: nessuno lo vedrà, ma se un giorno la nebbia si allontana torna a essere un problema.",
+  "ctx.letterSpacing esiste su Chromium 99+ e Safari 17.4+, non prima. Va messo dietro if ('letterSpacing' in ctx): dove manca il nome esce un filo più stretto, mai rotto. Il collaudo gira su Chromium e quindi NON copre il caso in cui manca: va provato a mano su un Safari vecchio o accettato consapevolmente.",
+  "Un logo autorizzato è un file di terzi che può mancare, essere corrotto o avere proporzioni assurde. img.onerror deve lasciare il pittogramma disegnato al suo posto e non lasciare mai un riquadro nero sull'insegna; drawImage deve essere lettera-boxato, mai stirato, perché stirare il marchio di qualcuno è peggio che non mostrarlo.",
+  "Finché map.json non viene rigenerato da Overpass, il campo `osm` dei negozi non c'è e 42 botteghe su 65 restano col sacchetto generico. È per questo che il campo è opzionale e la ricaduta sulla categoria è nel percorso principale e non in un ramo di emergenza: il sistema deve essere già giusto con i dati di oggi e diventare più ricco con quelli di domani.",
+  "La bandiera sporge 1,25 m dal muro a quota yCimasa+1.52 e può sovrapporsi visivamente alle finestre del primo piano, ai rami degli alberi instanziati di Arredi e alle tende dei banchi di Eventi. È quello che succede anche a Lugo dal vivo e non c'è nessuna collisione fisica (le insegne non entrano nel MondoFisico), ma in un vicolo stretto due bandiere opposte possono incrociarsi a mezz'aria.",
+  "Se attivita.json autorizza colori di insegna a basso contrasto — un fondo chiarissimo con testo chiaro — il nome sparisce. Il colore del testo va SEMPRE ricalcolato dalla luminanza relativa del fondo effettivo, anche quando il fondo arriva dal file dei dati: l'esercente autorizza i suoi colori, non un'insegna illeggibile.",
+  "La modifica a vetrina() cambia la firma di una funzione chiamata da facciata(), che a sua volta è chiamata da estrudiEdificio() e da porticiPiazza(): il parametro fronti va propagato fin lassù, e se ci si dimentica un chiamante TypeScript lo dice, ma se si passa null per pigrizia le botteghe di quel ramo perdono la vetrina in silenzio."
+ ],
+ "collaudo": [
+  {
+   "nome": "insegne complete: ogni bottega ha fascia, bandiera e simbolo",
+   "come": "Fase 3d, subito dopo il blocco 'nessuna partnership dichiarata'. `const ins = await lugo('L.insegne()');` poi: ok se ins.cartelli > 0 && ins.bandiere === ins.cartelli && ins.senzaPittogramma === 0, con dettaglio `${ins.cartelli} fasce · ${ins.bandiere} bandiere · ${Object.keys(ins.pittogrammi).length} simboli distinti`. Hook nuovo richiesto: __LUGO__.insegne() in Player.tsx. Il conteggio dei simboli distinti va preteso >= 4 con la mappa di oggi: se scendesse a 1 vorrebbe dire che pittogrammaDi ricade sempre sul fallback e nessuno se ne accorgerebbe guardando uno screenshot."
+  },
+  {
+   "nome": "insegne appoggiate alla cimasa vera",
+   "come": "Nello stesso blocco: ok se ins.fuoriCimasa === 0. L'hook conta le fasce la cui y0 dista più di 0.05 m da quotaCimasa(carattere dell'edificio ospite). È la prova che il bug della quota fissa 2.75 non torna: è invisibile in uno screenshot frontale e si vede solo di sbieco, quando l'insegna galleggia sopra la sua fascia."
+  },
+  {
+   "nome": "insegne che non si accavallano",
+   "come": "Nello stesso blocco: ok se ins.sovrapposte === 0. L'hook conta le coppie di fronti sullo stesso (edificio, lato) i cui intervalli [t0,t1] si intersecano. Con tre botteghe sotto lo stesso portico è l'unico modo di accorgersi che la spartizione del muro è saltata."
+  },
+  {
+   "nome": "un solo atlante e le sue misure",
+   "come": "ok se ins.atlante.w === ins.atlante.h && ins.atlante.w * ins.atlante.h <= 4194304 && ins.drawCall <= 4. Poi si confronta `L.render().texture` con il valore letto alla fase 1: NON deve essere cresciuto, perché l'atlante nuovo sostituisce quello vecchio e la targa T, e i loghi autorizzati si disegnano dentro l'atlante invece di essere texture a sé."
+  },
+  {
+   "nome": "leggibilità misurata, non a occhio",
+   "come": "`const l60 = await lugo('L.leggibilita(60)'); const l25 = await lugo('L.leggibilita(25)'); const l40 = await lugo('L.leggibilita(40)');` poi tre asserzioni: l60.campo >= 12 (il pannello a bandiera resta una macchia di colore leggibile a sessanta metri), l40.simbolo >= 12 (il simbolo di mestiere si riconosce a quaranta), l25.nome >= 10 (il nome si legge a venticinque). Il dettaglio stampato riporta anche viewport e fov, perché i numeri valgono per quel viewport: sul 1280×800 del collaudo la costante è 768·h/d, su 1080p è 1037·h/d. Questa è la fase che difende il brief dell'utente per sempre: se qualcuno rimpicciolisce un pannello, qui casca."
+  },
+  {
+   "nome": "nessun logo non autorizzato compare mai",
+   "come": "Tre controlli concatenati. (1) `const aut = await lugo('L.autorizzazioni()');` e ok se ins.loghi === ins.loghiLeciti && ins.loghi <= aut.partner — con l'attivita.json di serie sono tutti e tre zero. (2) ogni percorso di ins.percorsiLogo deve superare /^\\/lugo\\/insegne\\/[a-z0-9][a-z0-9._-]{0,60}\\.(png|webp)$/. (3) l'array richiesteInsegne raccolto da page.on('request') fin dall'inizio deve essere un sottoinsieme di ins.percorsiLogo: un logo caricato e mai disegnato è comunque un logo scaricato dal giocatore, e questo è il solo controllo che lo vede."
+  },
+  {
+   "nome": "la funzione di autorizzazione respinge i casi cattivi",
+   "come": "La prova negativa, che è quella che conta: `const casi = await page.evaluate(() => window.__LUGO__.provaLogo([ {partner:false, livello:'PREMIUM', logo:'/lugo/insegne/x.png'}, {partner:true, livello:'NESSUNO', logo:'/lugo/insegne/x.png'}, {partner:true, livello:'BASE', logo:'https://esempio.it/x.png'}, {partner:true, livello:'BASE', logo:'/lugo/insegne/../../seg.png'}, {partner:true, livello:'BASE', logo:'data:image/png;base64,AAAA'}, {partner:true, livello:'BASE', logo:'/lugo/insegne/x.svg'}, {partner:true, livello:'BASE', logo:'/lugo/insegne/bottega.png'} ]));` ok se casi è esattamente [null,null,null,null,null,null,'/lugo/insegne/bottega.png']. È l'unica prova che vale anche il giorno in cui una bottega diventerà partner davvero: contare zero loghi su un file di dati vuoto non dimostra niente."
+  },
+  {
+   "nome": "cartoline: la bottega si riconosce da lontano",
+   "come": "Si prende il primo negozio da `L.attivita()`, si chiude tutto con `L.chiudiPannelli()`, si ferma l'orologio con `L.tempoScorre(false)` e si mette `L.ora(11)`. Poi tre inquadrature con l'hook fotocamera già esistente, ciascuna con 1200 ms di attesa e uno screenshot: `L.fotocamera(n.x + 58, 6, n.z + 14, n.x, 3.4, n.z, 4000)` → shots/07-insegne-60m.png; la stessa a 25 m → 08-insegne-25m.png; e una a 9 m di lato, lungo la via, per far vedere che la BANDIERA si legge di profilo mentre la fascia frontale scompare in prospettiva → 09-bandiera-di-profilo.png. Queste tre non hanno un ok/ko: sono le prove che si guardano, ed è il motivo per cui la fase precedente misura dei numeri."
+  },
+  {
+   "nome": "la vetrina HUD mostra lo stesso simbolo del muro",
+   "come": "Dentro la fase 3b esistente, quando il pannello si è aperto: `const simboloDom = await page.getAttribute('[data-hud=\"vetrina\"] .lugo-vetrina-simbolo', 'data-simbolo');` e `const simboloMondo = await lugo('L.insegne().pittogrammiPerNome[' + JSON.stringify(n.nome) + ']');` — ok se coincidono. Serve perché l'associazione simbolo→mestiere si impara solo se il simbolo è lo stesso nei due posti: se l'HUD ne mostrasse un altro, il giocatore non imparerebbe niente e nessun test lo direbbe."
+  },
+  {
+   "nome": "nessuna promessa non mantenuta sul piano terra",
+   "come": "Nuovo hook __LUGO__.vetrine() → { fronti, conVetrinaCitygen, senzaVetrina }: conta quanti fronti di frontiBotteghe trovano davvero una vetrina disegnata da citygen sul loro lato e nel loro intervallo t. ok se senzaVetrina === 0. È la prova che il difetto centrale è chiuso: oggi la vetrina la decide il lato più lungo del footprint e l'insegna la distanza dal nodo, e su un isolato a L finiscono su due vie diverse. Senza questo contatore la regressione tornerebbe silenziosamente alla prima modifica di facciata()."
+  },
+  {
+   "nome": "il costo del fotogramma scende, non sale",
+   "come": "Il blocco esistente resta con le sue soglie (< 700k triangoli, < 170 draw call) ma il dettaglio stampa anche ins.drawCall. La verifica in più: il numero di chiamate misurato dopo questa modifica deve essere MINORE o uguale a quello di prima, perché si tolgono fino a sette mesh separate (la targa T e le due mesh per ciascuna delle tre croci di farmacia) e se ne aggiunge zero. Se salisse, vuol dire che la geometria delle insegne si è spezzata in più mesh senza che nessuno l'abbia deciso."
+  }
+ ]
+}

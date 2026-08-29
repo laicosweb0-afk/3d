@@ -26,6 +26,8 @@ import {
   type IncaricoVivo,
 } from '@/lib/lugo/incarichi';
 import { avanzamento, gradoDaRep, livelloDaRep } from '@/lib/lugo/progressione';
+import { risposta } from '@/lib/lugo/maranza';
+import { stick } from '@/lib/lugo/stick';
 
 function tempoMMSS(s: number): string {
   const mm = Math.floor(s / 60);
@@ -53,6 +55,7 @@ export function Hud() {
   const outfit = useLugo((s) => s.outfit);
   const avviso = useLugo((s) => s.avviso);
   const hint = useLugo((s) => s.hint);
+  const hintAllerta = useLugo((s) => s.hintAllerta);
   const mode = useLugo((s) => s.mode);
   const via = useLugo((s) => s.via);
   const audioOn = useLugo((s) => s.audioOn);
@@ -178,16 +181,28 @@ export function Hud() {
 
   const missione = missioneId ? missioneById(missioneId) : null;
 
-  // le risposte del dialogo della sigaretta (e futuri): effetti semplici
+  // Le risposte del dialogo. Per l'incontro col maranza qui NON si applica
+  // più niente: si scrive soltanto la scelta sul ponte di maranza.ts (lo
+  // stesso schema di stick.ts — il DOM scrive, il frame legge) e REP,
+  // avvisi e battuta di risposta arrivano dall'esito del ciclo di gioco.
+  // Quando invece l'HUD applicava da sé il +25 REP, pannello e mondo
+  // raccontavano due cose diverse: a schermo «grazie», e in strada il
+  // maranza che continuava a insistere.
   const rispondi = (id: string) => {
-    if (dialogo?.id === 'sigaretta') {
-      if (id === 'si') {
-        addPunti(25);
-        setAvviso('“Grande, sei un bravo!” · +25 REP');
-        suonaEvento('tappa');
-      } else if (id === 'no') {
-        setAvviso('“Vabbè, ciao.”');
+    if (dialogo?.id === 'sigaretta' || dialogo?.id === 'sigaretta-insiste') {
+      if (id === 'pugno') {
+        // riusa il ponte del pulsante ✊ che esiste già, invece di
+        // inventare un secondo canale per la stessa identica azione
+        setDialogo(null);
+        stick.pugnoBtn = true;
+        setTimeout(() => {
+          stick.pugnoBtn = false;
+        }, 140);
+        return;
       }
+      risposta.scelta = id as 'si' | 'no' | 'via';
+      setDialogo(null);
+      return;
     }
     setDialogo(null);
   };
@@ -339,7 +354,7 @@ export function Hud() {
 
       <div className="lugo-tachimetro" data-hud="tachimetro">
         <span className="lugo-kmh">{kmh}</span>
-        <span className="lugo-kmh-label">{mode === 'auto' ? 'km/h' : 'a piedi'}</span>
+        <span className="lugo-kmh-label">{mode === 'piedi' ? 'a piedi' : 'km/h'}</span>
       </div>
 
       <div className="lugo-minimappa-box">
@@ -598,12 +613,23 @@ export function Hud() {
 
       {/* dialogo a scelte con un NPC */}
       {dialogo && (
-        <div className="lugo-dialogo" data-hud="dialogo">
+        <div
+          className={
+            'lugo-dialogo' + (dialogo.id === 'sigaretta-insiste' ? ' lugo-dialogo-insiste' : '')
+          }
+          data-hud="dialogo"
+        >
           <div className="lugo-dialogo-chi">{dialogo.chi}</div>
-          <div className="lugo-dialogo-testo">{dialogo.testo}</div>
+          <div className="lugo-dialogo-testo" data-hud="dialogo-testo">{dialogo.testo}</div>
           <div className="lugo-dialogo-opzioni">
             {dialogo.opzioni.map((o) => (
-              <button key={o.id} type="button" className="lugo-dialogo-btn" onClick={() => rispondi(o.id)}>
+              <button
+                key={o.id}
+                type="button"
+                className={'lugo-dialogo-btn' + (o.id === 'pugno' ? ' lugo-dialogo-btn-pugno' : '')}
+                data-hud={'dialogo-opzione-' + o.id}
+                onClick={() => rispondi(o.id)}
+              >
                 {o.label}
               </button>
             ))}
@@ -618,7 +644,10 @@ export function Hud() {
         </div>
       )}
       {hint && !dialogo && !vetrina && (
-        <div className="lugo-hint" data-hud="hint">
+        <div
+          className={'lugo-hint' + (hintAllerta ? ' lugo-hint-allerta' : '')}
+          data-hud="hint"
+        >
           {hint}
         </div>
       )}

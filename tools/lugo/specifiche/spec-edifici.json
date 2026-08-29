@@ -1,0 +1,377 @@
+{
+ "titolo": "Strutture ed edifici: il lato diventa l'unità di lavoro (fronti veri, tetti sulla pianta vera, facciate d'isolato)",
+ "sintesi": "Oggi Lugo è modellata per EDIFICIO: un carattere, un \"lato lungo\" che si prende bottega e balconi, un budget di finestre spalmato uguale su tutti i muri, e un tetto ricavato dal rettangolo minimo. Ho misurato che solo il 20% dei lati utili guarda davvero una strada (2785 su 14277), che 930 lati sono sepolti dentro l'edificio confinante e continuano a disegnare finestre e cornicioni invisibili, e che il 31% degli edifici ha un tetto che sborda dalla pianta (il 9% in modo grossolano). Il proposito è spostare l'unità di lavoro dall'edificio al LATO: ogni muro sa se è su strada, su piazza, sul retro, in corte o cieco, e riceve dettaglio, finestre, vetrina, cornicione e pluviale in proporzione. Chi cammina in centro vede facciate tre volte più fitte e ordinate — finestre incolonnate sulle stesse campate delle vetrine, marcapiani e fascia dell'insegna allineati per tutto l'isolato, portoni ad arco di larghezza vera, cornicioni modanati e cantonali agli spigoli — mentre i muri che nessuno guarda smettono di costare. I tetti nascono per offset della pianta reale, quindi una casa a L ha finalmente due falde e un compluvio invece di una piastra storta. E i portici del centro diventano archi veri, ricavati dai dati OSM già scaricati e mai letti.",
+ "fileNuovi": [
+  {
+   "path": "lib/lugo/fronti.ts",
+   "scopo": "Dice, per ogni lato di ogni edificio, che cosa ha davanti: strada (e quale, e quanto larga), piazza, corte, retro, o il muro del vicino. È il file che permette di smettere di trattare tutti i muri allo stesso modo. Include anche il raggruppamento in isolati di strada, che serve ad allineare marcapiani e fascia delle insegne.",
+   "esporta": [
+    "export type Esposizione = 'strada' | 'piazza' | 'corte' | 'retro' | 'cieco';",
+    "export interface LatoInfo { i: number; L: number; x1: number; z1: number; x2: number; z2: number; mx: number; mz: number; nx: number; nz: number; esposizione: Esposizione; /** frazione [0..1] del lato coperta dal muro di un vicino */ sepolto: number; /** altezza del vicino che lo copre, 0 se nessuno */ hVicino: number; /** distanza del midpoint dall'asse strada, Infinity se nessuna */ dStrada: number; /** larghezza carreggiata della strada che ha davanti, 0 se nessuna */ wStrada: number; /** indice in mondo.roads della strada affacciata, -1 se nessuna */ strada: number; /** ascissa curvilinea lungo quella strada, m */ s: number; /** peso per la ripartizione del budget finestre */ peso: number; /** dettaglio EFFETTIVO di questo lato (0|1|2), non dell'edificio */ dettaglio: 0 | 1 | 2; }",
+    "export interface Fronte { lati: LatoInfo[]; /** indice del lato che porta vetrina, portone e balconi */ principale: number; /** chiave dell'isolato di strada, '' se fuori isolato */ isolato: string; }",
+    "export function frontiCitta(mondo: MondoLugo): Map<EdificioRT, Fronte>;",
+    "export function isolatiCitta(mondo: MondoLugo): Map<string, EdificioRT[]>;",
+    "export function statoFronti(mondo: MondoLugo): { lati: number; strada: number; piazza: number; corte: number; retro: number; cieco: number; senzaFronte: number; ms: number };"
+   ],
+   "dettaglio": "Cache WeakMap per MondoLugo come fa caratteriCitta, calcolo in una passata sola al caricamento (bilancio: sotto i 120 ms su 16080 lati; statoFronti().ms lo misura).\n\n1) HASH DELLE STRADE. Cella 12 m, chiave `Math.floor(x/12)+':'+Math.floor(z/12)`. Per ogni r di mondo.roads e per ogni suo segmento si inseriscono i riferimenti {rIdx, segIdx, ax, az, bx, bz, w: r.larghezza, s0} in TUTTE le celle toccate dal bbox del segmento dilatato di r.larghezza/2+6. s0 è l'ascissa curvilinea cumulata dall'inizio della polilinea: serve per gli isolati.\n\n2) HASH DEI LATI. Cella 8 m sui midpoint, tutti i 16080 lati di tutti i footprint (solo l'anello esterno fp, non i fori).\n\n3) SEPOLTO. Per ogni lato s si cercano nelle 9 celle intorno i lati t di ALTRI edifici; per ciascuno si proiettano gli estremi di t sulla retta di s: ux=(x2-x1)/L, uz=(z2-z1)/L, per un punto (x,z) → t_par=(x-x1)*ux+(z-z1)*uz e d_perp=|-(x-x1)*uz+(z-z1)*ux|. Se entrambi gli estremi hanno d_perp<=0.7 m si prende overlap = max(0, min(L, max(ta,tb)) - max(0, min(ta,tb))). sepolto = max degli overlap / L, hVicino = h del vicino che dà l'overlap massimo. Soglia: sepolto>0.8 → esposizione 'cieco'. (Misurato: 930 lati su 16080, 546 edifici coinvolti.)\n\n4) STRADA. Punto di sonda p = midpoint + n*4 (n = normale uscente calcolata rispetto al baricentro dell'anello, come già fa facciata()). Si cerca il segmento stradale più vicino a p entro 16 m; sia d la distanza del MIDPOINT dall'asse di quel segmento e w la sua larghezza. Condizione: d < w/2 + 6 AND (proiezione del punto di asse - midpoint) · n > 0, cioè la strada sta davvero davanti al muro e non dietro. Allora esposizione='strada', dStrada=d, wStrada=w, strada=rIdx, s = s0 + proiezione. Le strade di classe 'pedonale' contano ma con w=3 e soglia d < 5.\n\n5) PIAZZA. Se non è strada: si prova p = midpoint + n*3 contro i poligoni con kind==='piazza' (riuso di dentroPoly già presente in citygen: esportarlo o duplicarlo qui in 12 righe). Dentro → 'piazza'.\n\n6) CORTE. Se il lato appartiene a un anello di b.fori → 'corte'. Il resto → 'retro'.\n\n7) PESO E DETTAGLIO PER LATO. peso: cieco 0, strada 3, piazza 3, corte 1, retro 1. Il dettaglio non è più una proprietà dell'edificio ma del lato:\n   - 'cieco' → 0 sempre (solo il muro piatto, niente altro);\n   - 'strada' o 'piazza' → 2 se dist dal Pavaglione < 520 m OR wStrada >= 7 OR c'è una bottega nel bbox+8 m; altrimenti 1;\n   - 'retro'/'corte' → 1 se dist < 520 m, altrimenti 0.\n  Questo sostituisce l'attuale `dettaglio` a fasce di distanza (dist<300 → 2), che oggi premia appena 62 edifici e tratta allo stesso modo il fronte su Via Baracca e il muro cieco dietro. `Carattere.dettaglio` resta come massimo dei lati, per non rompere chi lo legge.\n\n8) PRINCIPALE. Fra i lati con esposizione 'strada'|'piazza' e L>=4 si prende quello che massimizza L*(wStrada+4). Se nessuno, ripiego sull'attuale latoLungo (il lato più lungo), così il comportamento non regredisce mai a zero.\n\n9) ISOLATO. Chiave = (nome della strada affacciata dal lato principale, o 'r'+rIdx se senza nome) + ':' + Math.floor(s/70) + ':' + (lato del muro rispetto all'asse: segno di n·(perpendicolare della strada), così i due fronti opposti della via non si mescolano). isolatiCitta() raggruppa gli edifici per questa chiave. Sui dati veri di Lugo vengono circa 300-400 isolati con 2-8 edifici ciascuno.\n\nDeterminismo: nessun Math.random, tutto deriva da map.json."
+  },
+  {
+   "path": "lib/lugo/tetti.ts",
+   "scopo": "Costruire il tetto sulla PIANTA VERA invece che sul rettangolo minimo. Misurato: 1036 edifici su 2047 hanno una pianta non convessa e 611 (31%) hanno un tetto che oggi sborda visibilmente; 182 (9%) in modo grossolano.",
+   "esporta": [
+    "export type FormaFalda = 'padiglione' | 'capanna' | 'mono' | 'piano';",
+    "/** Anello rientrato di `d` metri, o null se degenera. */ export function insetAnello(anello: Float32Array, d: number): Float32Array | null;",
+    "/** Padiglione su pianta qualsiasi: gonna di falde + colmo piatto. Ritorna false se ha dovuto ripiegare. */ export function tettoPadiglione(acc: Accumulo, anello: Float32Array, y: number, pendenza: number, sporto: number, colmo: THREE.Color, spiovente: THREE.Color, sottogronda: THREE.Color, dettaglio: 0 | 1 | 2): boolean;",
+    "/** Capanna: due falde e due timpani, colmo lungo (ux,uz). */ export function tettoCapanna(acc: Accumulo, anello: Float32Array, y: number, ux: number, uz: number, salita: number, sporto: number, spiovente: THREE.Color, timpano: THREE.Color, sottogronda: THREE.Color, dettaglio: 0 | 1 | 2): void;",
+    "/** Mono-falda (roof:shape=skillion): rimesse, tettoie, bassi servizi. */ export function tettoMono(acc: Accumulo, anello: Float32Array, y: number, nx: number, nz: number, salita: number, sporto: number, c: THREE.Color, sotto: THREE.Color): void;",
+    "export function statoTetti(): { padiglione: number; capanna: number; mono: number; anello: number; piano: number; ripiego: number };"
+   ],
+   "dettaglio": "INSET (il cuore). Per ogni lato i dell'anello (già antiorario dalla pipeline) si calcola la normale INTERNA (nix, niz) e si scrive la retta offset: punto P_i = A_i + ni*d, direzione u_i = (A_{i+1}-A_i)/L_i. Il nuovo vertice j-esimo è l'intersezione della retta i-1 con la retta i:\n  den = u_{i-1}.x*u_i.z - u_{i-1}.z*u_i.x\n  se |den| < 0.08 (lati quasi allineati) → vertice = A_i + media normalizzata di ni-1 e ni, per d\n  altrimenti si risolve P_{i-1} + t*u_{i-1} = P_i + s*u_i in forma chiusa.\nVALIDITÀ: l'inset è valido se (a) l'area con segno dell'anello risultante ha lo stesso segno dell'originale, (b) per ogni lato il prodotto scalare fra la direzione del lato nuovo e quella del lato vecchio è > 0 (nessun lato ribaltato), (c) nessun vertice nuovo dista più di 3*d dal corrispondente vecchio (spigoli acuti che sparano lontano). Se fallisce: d *= 0.55 e si riprova, fino a 4 volte. Se d scende sotto 0.55 m → insetAnello ritorna null e il chiamante ripiega sulla piastra piana col parapetto (il comportamento odierno di tetto 'piano'), contando +1 in statoTetti().ripiego.\n\nPADIGLIONE. d = clamp(0.42 * profonditàMinima, 1.0, 4.5), dove profonditàMinima = 2*hd del rettangoloMinimo (già in gates.ts). salita = d * pendenza, con pendenza 0.32..0.48 dal seme (una falda romagnola da coppo sta fra 18° e 26°). Si emette:\n  - il cappello dell'anello INTERNO alla quota y+salita, via THREE.ShapeUtils.triangulateShape → m-2 triangoli;\n  - la gonna: per ogni lato dell'anello ESTERNO, due triangoli fra (A_i, A_{i+1}) alla quota y e i corrispondenti vertici interni alla quota y+salita. Gli estremi esterni sono spostati di `sporto` lungo la normale uscente, così la gronda aggetta come oggi;\n  - se dettaglio>=1, la fascia della gronda (quadV di 0.16 m) e l'intradosso (quadO all'ingiù) come già fa tettoAnello, che va lasciato com'è per gli anelli con cortile.\nCosto: 2n + (m-2) triangoli contro gli attuali (n-2)+6. Su un footprint a 8 vertici: 22 contro 12.\n\nCAPANNA. Si usa SOLO quando la pianta è quasi rettangolare (area/areaRettangoloMinimo > 0.9) oppure quando roof:shape lo dichiara. Geometria identica a quella odierna, con una differenza: l'asse del colmo. Oggi è sempre l'asse lungo del rettangolo minimo; quando hw/hd < 1.35 (pianta quasi quadrata) l'asse è arbitrario e produce colmi ruotati a caso lungo una fila di case. Nuovo: se hw/hd < 1.35 e il lato principale è noto (fronti.ts), il colmo si mette PARALLELO al fronte principale — è così che si comportano le schiere.\n\nMONO. Per le rimesse (area < 46 m2) e per roof:shape=skillion: due triangoli di falda che salgono dal lato opposto al fronte verso il fronte, salita 0.5..0.9 m. Sostituisce l'attuale capanna in miniatura: 2 triangoli invece di 6, e sulle 160 rimesse è anche più giusto.\n\nSTATISTICHE. Contatori modulo-locali azzerati da generaCitta all'inizio, letti da statoTetti() e riesposti in __LUGO__.citta3d(): servono al collaudo per pretendere ripiego/(totale) < 8%."
+  },
+  {
+   "path": "lib/lugo/modanature.ts",
+   "scopo": "Le poche primitive di rilievo che oggi mancano e che fanno la differenza fra un muro colorato e una facciata: l'arco a tutto sesto, il cornicione a più risalti, il cantonale d'angolo, il davanzale sporgente e la mostra a tre pezzi della finestra. Stanno fuori da citygen.ts perché sono geometria pura e citygen è già lungo 1337 righe.",
+   "esporta": [
+    "export function arcoTondo(acc: Accumulo, x1: number, z1: number, x2: number, z2: number, nx: number, nz: number, yImposta: number, semiLuce: number, spessore: number, cVano: THREE.Color, cGhiera: THREE.Color, off: number, segmenti?: number): void;",
+    "export function cornicione(acc: Accumulo, x1: number, z1: number, x2: number, z2: number, nx: number, nz: number, h: number, gronda: number, cChiaro: THREE.Color, cOmbra: THREE.Color, ricco: boolean): void;",
+    "export function cantonale(acc: Accumulo, px: number, pz: number, eAx: number, eAz: number, eBx: number, eBz: number, y0: number, y1: number, larghezza: number, c: THREE.Color): void;",
+    "export function davanzale(acc: Accumulo, cx: number, cz: number, ex: number, ez: number, nx: number, nz: number, semi: number, y: number, c: THREE.Color): void;",
+    "export function mostra(acc: Accumulo, cx: number, cz: number, ex: number, ez: number, nx: number, nz: number, semi: number, y0: number, y1: number, spalla: number, architrave: number, c: THREE.Color): void;"
+   ],
+   "dettaglio": "arcoTondo: il vano d'apertura è già disegnato rettangolare fino a yImposta dal chiamante; qui si aggiunge la lunetta. Con `segmenti` = 5 (default) si emettono 5 trapezi orizzontali impilati: per k=0..4, angolo a0 = k*(PI/2)/5 e a1 = (k+1)*(PI/2)/5; semilarghezza w_k = semiLuce*cos(a_k), quota y_k = yImposta + semiLuce*sin(a_k). Ogni trapezio è un quad (2 triangoli) in colore cVano, scostato di `off`; sopra ciascuno una fascia di `spessore` (0.14 m) in cGhiera, scostata di off+0.03. Totale 5*2 + 5*2 = 20 triangoli. I due pennacchi laterali (fra la ghiera e lo spigolo del vano) NON si disegnano: il muro dietro li fa già.\nSi usa per: il portone d'ingresso in centro, le arcate del portico, la lunetta sopra la vetrina quando k.storico.\n\ncornicione: sostituisce la coppia (quadV h-0.36..h, gronda) di citygen. Con ricco=false emette esattamente quello che c'è oggi (2+6 triangoli). Con ricco=true emette tre risalti crescenti — fascia liscia h-0.52..h-0.30 sporgenza 0.05, gola h-0.30..h-0.16 sporgenza 0.12, corona h-0.16..h sporgenza 0.20 — più la gronda: 6+6=12 triangoli. È il profilo che si legge dalla strada guardando in su, e costa 4 triangoli in più per lato.\n\ncantonale: sullo spigolo convesso fra i lati A e B si disegnano due bande verticali larghe `larghezza` (0.34 m), una su ciascuna faccia, scostate di 0.04 e in tinta cCornice interpolata al 40% con la tinta del muro. 4 triangoli per spigolo. Serve a due cose: è il bugnato d'angolo dei palazzi lugensi, e nasconde la tacca che oggi resta fra due marcapiani adiacenti (ogni fascia è scostata lungo la PROPRIA normale, quindi allo spigolo non si toccano mai).\n\ndavanzale: soglia con ritorni. Lastra superiore (quadO in su), fronte (quadV), e intradosso in ombra (quadO in giù): 6 triangoli, larghezza semi*1.25, sporgenza 0.13. Oggi il davanzale è un solo quad da 2 triangoli senza spessore, e sparisce quando il sole è alto.\n\nmostra: la cornice della finestra in tre pezzi invece che un rettangolo unico — due spalle verticali larghe `spalla` (0.11 m) e un architrave alto `architrave` (0.16 m) sopra il vano. 6 triangoli contro i 2 di oggi, ma il vano resta pulito e l'architrave si legge anche in controluce. Si usa solo sui lati con dettaglio 2."
+  },
+  {
+   "path": "lib/lugo/portici.ts",
+   "scopo": "I portici del centro come archi veri e come spazio percorribile, decisi dai dati OSM già scaricati (footway con covered=yes / tunnel=building_passage) e non più solo dalla vicinanza a Piazza Baracca. Contiene anche l'apertura dei collider, perché un portico in cui si sbatte contro il muro invisibile della facciata è peggio di nessun portico.",
+   "esporta": [
+    "export interface TrattoPortico { b: EdificioRT; lato: number; profondita: number; campate: number; hLuce: number; arco: boolean; }",
+    "export function porticiCitta(mondo: MondoLugo): TrattoPortico[];",
+    "/** Riscrive i collider degli edifici porticati: il muro arretra, si passa sotto. Ritorna quanti lati sono stati aperti. */ export function apriPortici(mondo: MondoLugo): number;",
+    "export function disegnaPortico(acc: Accumulo, t: TrattoPortico, k: Carattere, cPilastro: THREE.Color, cSoffitto: THREE.Color, cOmbra: THREE.Color): void;"
+   ],
+   "dettaglio": "SELEZIONE. Un lato diventa portico se ricorre una di queste, in ordine di fiducia:\n  (a) mondo.portici (nuovo campo di map.json, polilinee dei footway con covered=yes|arcade o tunnel=building_passage) passa entro 2.5 m dal lato ed è quasi parallelo (|cos| > 0.8);\n  (b) il lato ha esposizione 'piazza' entro 60 m dal POI 'baracca' e guarda il monumento (dot > 0.55) — è la regola di oggi, tenuta come rete di sicurezza se (a) non trova nulla;\n  (c) il lato ha esposizione 'strada' entro 220 m dal Pavaglione, L >= 12 m, e l'edificio ha profondità (2*hd del rettangolo minimo) > 11 m.\nEsclusioni non negoziabili: mai su un edificio con b.landmark fra quelli esclusi (Pavaglione, Rocca, stazione, teatro: hanno modelli a mano), mai su un lato 'cieco', mai se l'edificio ha meno di 2 piani.\nTetto di sicurezza: 40 tratti, 260 campate complessive; superato il tetto si scartano i tratti a distanza crescente dal Pavaglione, così il centro è servito per primo.\n\nGEOMETRIA (a differenza di oggi il portico sta SOTTO l'edificio, non davanti). profondita = min(3.0, 0.34 * profonditàEdificio), hLuce = min(4.2, k.hTerra - 0.35). Per il tratto:\n  - il muro di fondo, arretrato di `profondita` lungo -n: due triangoli in tinta k.tinta, e ai due estremi due muretti di ritorno (2 triangoli ciascuno);\n  - il soffitto (quadO all'ingiù, cSoffitto) fra il filo esterno e il muro arretrato, alla quota hLuce;\n  - il pavimento, in QUOTA_CALPESTIO+0.005, in tinta pietra: 2 triangoli — oggi manca e sotto il portico si vede l'asfalto;\n  - campate = max(2, Math.round(L / 3.6)); per ogni pilastro un `pareti()` di lato 0.44 (8 triangoli) fra 0 e hLuce sul filo esterno;\n  - per ogni campata, se arco=true (sempre in centro), arcoTondo() sul filo esterno con semiLuce = (passoCampata - 0.44)/2, yImposta = hLuce - semiLuce: 20 triangoli;\n  - la fascia di trabeazione sopra le arcate: bandaV 0.35 m in cCornice, 2 triangoli.\nCosto per campata: 8 (pilastro) + 20 (arco) = 28; per tratto: ~10 fissi. Con 260 campate: circa 8.000 triangoli, zero draw call in più (tutto va nell'Accumulo della cella di Griglia che già contiene l'edificio).\n\nCOLLIDER. apriPortici() gira DOPO che loadMap ha costruito buildings e mondo.roads/poi, e prima che qualcuno costruisca MondoFisico (che oggi nasce dentro infraGioco). Per ogni edificio con almeno un tratto: si forza collider.tipo='edges' e si ricostruisce segs sostituendo, sui lati porticati, il segmento di facciata col segmento ARRETRATO di `profondita`, più i due ritorni. I pilastri restano attraversabili apposta: un pilastro da 44 cm che ferma il giocatore è una trappola, e nella corte del Pavaglione la stessa scelta è già stata fatta coi varchi. Il bbox minX/minZ/maxX/maxZ non cambia (il footprint esterno è lo stesso), quindi la spatial hash resta valida.\nLa camera in terza persona non ha bisogno di nulla: a piedi sta fra 1.16 e 2.10 m di quota (Player.tsx, `const alt = mode === 'auto' ? 3.4 : 2.1`, poi altViva = alt*(0.55..1)), cioè sempre sotto hLuce, e la sua collisione è 2D contro la stessa fisica."
+  }
+ ],
+ "fileModificati": [
+  {
+   "path": "lib/lugo/citygen.ts",
+   "modifiche": [
+    {
+     "dove": "export class Griglia — `constructor(private lato = 190)` e il metodo `a(x, z)`",
+     "cosa": "Griglia a due passi: `constructor(private lato = 190, private latoFuori = 380, private cx = 0, private cz = 0, private raggio = 500)`. In `a()`: se Math.hypot(x-cx, z-cz) < raggio si usa `lato` e la chiave è prefissata 'a', altrimenti `latoFuori` e prefisso 'b'. generaCitta passa il centro del Pavaglione.",
+     "perche": "Misurato adesso: 105 tasselli, e a Piazza Baracca il fotogramma costa 179 draw call — SOPRA il tetto di 170. Il collaudo non se ne accorge perché misura in un punto solo. Con la griglia ibrida i tasselli scendono a 65 (verificato contando i centroidi di map.json), cioè ~40 draw call recuperate, ed è quello che finanzia tutto il resto. In periferia il culling più grosso non costa quasi nulla in triangoli, perché là il dettaglio è 0 e gli edifici pesano poche decine di triangoli l'uno."
+    },
+    {
+     "dove": "function facciata(acc, anello, k, budget) — firma e ciclo `for (let i = 0; i < n; i++)`",
+     "cosa": "Nuova firma `facciata(acc, anello, k, budget, fronte: Fronte)`. Dentro il ciclo, `const lato = fronte.lati[i]`. Si sostituiscono le tre decisioni per-edificio con decisioni per-lato: `if (lato.esposizione === 'cieco')` → si emette SOLO il muro piatto fino a min(k.h, lato.hVicino) e la facciata normale sopra quella quota (se l'edificio è più alto del vicino), poi `continue`; `k.bottega && i === latoLungo` diventa `k.bottega && i === fronte.principale`; `i === latoCorto` (condizionatori) diventa `lato.esposizione === 'retro' || lato.esposizione === 'corte'`.",
+     "perche": "930 lati su 16080 sono sepolti per più dell'80% dentro il vicino e oggi disegnano zoccolo, marcapiani, cornicione, gronda aggettante e finestre dentro la muratura di un altro edificio: si vedono i cornicioni doppi che sfarfallano lungo le schiere, e la gronda di A entra 60 cm dentro B. E i condizionatori finivano sul lato corto, che nel 20% dei casi è proprio quello su strada."
+    },
+    {
+     "dove": "function facciata — `const quotaLato = budget ? Math.max(3, Math.ceil(budget.n / Math.max(1, latiUtili))) : 0;`",
+     "cosa": "Ripartizione a pesi invece che uniforme: `const pesoTot = somma di lato.peso su tutti i lati; const quotaLato_i = Math.round(budget.n * lati[i].peso / pesoTot)`. Il peso vale 0 (cieco), 1 (retro/corte), 3 (strada/piazza).",
+     "perche": "Ho misurato che solo il 20% dei lati utili (2785 su 14277) guarda una strada, e in centro il 24% (441 su 1844). Oggi il budget si spalma in parti uguali, quindi l'80% delle finestre sta su muri che nessuno vede — e le finestre sono circa il 59% dei 457.495 triangoli della città. A parità di budget, sui fronti su strada la densità triplica. È la modifica con il miglior rapporto resa/costo di tutto il fronte: costa zero triangoli."
+    },
+    {
+     "dove": "function finestreLato — `const nFin = Math.max(1, Math.min(16, Math.round(L / k.passo) - 1));` e il ciclo `for (let w = 0; w < nFin; w++)` con `const t = (w + 1) / (nFin + 1);`",
+     "cosa": "Griglia di campate unica: `const campate = Math.max(1, Math.min(14, Math.round(L / k.campata)));` e `const t = (w + 0.5) / campate;`. La stessa espressione la usa vetrina(). k.campata sostituisce k.passo (vedi carattere.ts).",
+     "perche": "Oggi le finestre stanno su `round(L/passo)-1` assi con passo 2.9-4.1 m, mentre le vetrine del piano terra stanno su `round(L/5.2)` campate: i due ritmi non coincidono mai, e la facciata risulta 'a caso' esattamente come una città generata. Nelle case vere la finestra sta sopra la vetrina. Unificare non costa un triangolo e, portando il passo a 4.0-5.4 m in centro, riduce anche il numero di finestre di circa un quarto: è quello che paga le mostre e i davanzali nuovi."
+    },
+    {
+     "dove": "function finestreLato — `const hFin = Math.min(1.45, alt - 1.05);` e `const hw = 0.46;`",
+     "cosa": "Gerarchia dei piani. hw e hFin diventano funzione del piano p: p===1 (piano nobile) → hw 0.55, hFin min(2.05, alt-0.95); p===2 → hw 0.52, hFin *= 0.92; p>=3 → hw 0.50, hFin *= 0.84; ultimo piano quando k.sottetto → hw 0.34, hFin 0.62 e y0 alzato a base+alt-0.95. Il piano terra non commerciale resta come oggi ma con hw 0.50.",
+     "perche": "Oggi tutte le finestre di tutta Lugo sono 0.92 x 1.45 m, uguali a ogni piano: proporzione 1:1.58, che è la finestra di un capannone, non di una casa. Le aperture vere di un palazzo emiliano sono ~1.1 x 2.0 al primo piano e calano salendo, e sotto la gronda c'è il sottotetto con le finestrelle quadre. Costa zero triangoli e cambia la lettura di tutta la città."
+    },
+    {
+     "dove": "function finestreLato — il blocco `// cornice chiara, appena più larga del vano` e `// davanzale`",
+     "cosa": "Su lato.dettaglio===2 si chiama `mostra()` e `davanzale()` da modanature.ts al posto dei due quadV attuali; su dettaglio 1 restano i due quadV di oggi; su dettaglio 0 solo il vetro. Cade la condizione `p > 2` che oggi toglie il davanzale ai piani alti.",
+     "perche": "La cornice è un rettangolo unico dietro il vetro e il davanzale un quad senza spessore: quando il sole è alto spariscono entrambi. Con architrave e soglia sporgente la finestra proietta un'ombra e si legge da lontano. Il costo aggiuntivo (+8 triangoli a finestra) è sostenuto solo dai lati con dettaglio 2, che dopo la ripartizione a pesi sono ~441 lati in centro."
+    },
+    {
+     "dove": "function vetrina — `const campate = Math.max(1, Math.min(9, Math.round(L / 5.2)));` e `const yTop = Math.max(2.2, k.hTerra - 0.85);`",
+     "cosa": "campate = la stessa espressione di finestreLato (L / k.campata). yTop = k.hCimasa (nuovo campo di Carattere, allineato per isolato). Quando k.storico, sopra ogni campata non-porta si aggiunge un arcoTondo() con semiLuce = larghezzaCampata/2 - 0.2.",
+     "perche": "Il ritmo del piano terra e quello dei piani alti devono essere lo stesso, altrimenti la facciata non sta in piedi. E la cimasa dell'insegna, oggi calcolata edificio per edificio da hTerra (che varia 2.96-4.72 m), fa una linea a zig-zag lungo la via: allineandola per isolato la fascia dei negozi diventa una riga continua, che è esattamente quello che si vede in Corso Garibaldi."
+    },
+    {
+     "dove": "function facciata — `bandaV(acc, x1, z1, dx, dz, 0.26, 0.38, 0, 2.62, nx, nz, cCornice, 0.05);` e la banda cPorta subito sotto",
+     "cosa": "Portone a larghezza METRICA e centrato su una campata: `const wPorta = Math.min(1.65, L * 0.4); const tc = (Math.round(campate/2) - 0.5)/campate; const t0 = tc - wPorta/2/L, t1 = tc + wPorta/2/L;`. Su lato.dettaglio===2 o k.storico, arcoTondo() sopra il vano con yImposta 2.45 e semiLuce wPorta/2.",
+     "perche": "Oggi la larghezza è una FRAZIONE del muro: su un isolato di 40 m il portone esce largo 4.8 m, su una casetta di 4 m esce 0.5 m. È lo stesso errore che il commento del pluviale dice di aver già corretto ('larghezza fissa: in proporzione al muro diventava una fascia'). E il portone di Lugo è ad arco, non un rettangolo."
+    },
+    {
+     "dove": "function facciata — `// cornicione e gronda aggettante: è quello che si legge dall'alto` (quadV h-0.36..h + il blocco gronda)",
+     "cosa": "Chiamata a `cornicione(acc, ..., ricco = lato.dettaglio === 2 && k.piani >= 2)` da modanature.ts. Su lato.esposizione==='cieco' non si emette nulla.",
+     "perche": "Il cornicione è il pezzo più visibile della facciata dalla strada e oggi è una sola fascia piatta da 36 cm. Coi tre risalti costa 4 triangoli in più per lato e diventa un cornicione. Nel complesso il capitolo gronda+cornicione vale ~56.000 triangoli oggi: toglierlo dai lati ciechi ne recupera ~5.600 senza che nessuno se ne accorga."
+    },
+    {
+     "dove": "function facciata — `// pluviale nell'angolo` (`k.dettaglio === 2 && h > 5 && i % 2 === 0`)",
+     "cosa": "Condizione `lato.dettaglio === 2 && h > 5 && lato.esposizione !== 'cieco'`, pluviale ai DUE estremi del lato (t0 = 0.25/L e t0 = 1 - 0.39/L) e, alla base, uno scarpone svasato (bandaV più larga fra 0 e 0.45 m). Nuovo: dove due lati concorrono in uno spigolo convesso, si disegna un solo pluviale.",
+     "perche": "`i % 2 === 0` mette il pluviale su un lato sì e uno no indipendentemente da dove piove e da dove si guarda; e un pluviale che finisce nel nulla a terra è la cosa che più tradisce un edificio finto. Sono +2 triangoli l'uno, su un insieme che dopo la ripartizione a pesi è piccolo."
+    },
+    {
+     "dove": "function facciata — subito dopo il ciclo sui lati (fine funzione)",
+     "cosa": "Nuovo blocco cantonali: per ogni vertice dell'anello dove l'angolo interno è < 175° (spigolo convesso) e almeno uno dei due lati ha dettaglio 2, si chiama `cantonale()` da modanature.ts fra 0 e min(h - 0.5, quotaPiano(k, k.piani)).",
+     "perche": "Due motivi: è il bugnato d'angolo dei palazzi del centro, e chiude la tacca che oggi resta a ogni spigolo fra i marcapiani dei due lati (ognuno scostato lungo la propria normale, quindi non si incontrano). 4 triangoli per spigolo, ~300 edifici in centro."
+    },
+    {
+     "dove": "function copertura(acc, k, fp, fori) — tutto il ramo non-'piano' senza fori (da `cappello(acc, fp, fori, h, k.tintaTetto.clone().multiplyScalar(0.94));` fino ai timpani)",
+     "cosa": "Delegazione a tetti.ts: se k.tetto==='padiglione' o la pianta non è quasi rettangolare (area/areaRettMinimo <= 0.9) → tettoPadiglione(); se è quasi rettangolare e k.tetto==='falde' → tettoCapanna() con l'asse del colmo preso dal fronte principale quando hw/hd < 1.35; se k.tetto==='mono' (rimesse e roof:shape=skillion) → tettoMono(). Restano invariati il ramo 'piano' col parapetto e il ramo `fori.length > 0` che va a tettoAnello().",
+     "perche": "rettangoloMinimo() è giusto solo sulle piante rettangolari: ho misurato che 1036 edifici su 2047 hanno una pianta non convessa e che per 611 (31%) il rapporto area/rettangolo minimo scende sotto 0.85 — cioè il tetto sborda oltre il muro, e per 182 (9%) sotto 0.65, dove è proprio un'altra forma. È la cosa che si vede di più dalla camera in terza persona, che sta sempre sopra la spalla."
+    },
+    {
+     "dove": "function copertura — i comignoli (`for (let q = 0; q < k.comignoli; q++)`) e i pannelli solari",
+     "cosa": "I comignoli si posano sul COLMO (per il padiglione: sul contorno dell'anello inset, alla quota y+salita) o sui muri condivisi (dove fronte.lati[i].esposizione === 'cieco'), non più su una fila a r.hd*0.35. I pannelli restano ma solo se k.tetto !== 'padiglione' o l'anello inset è abbastanza largo.",
+     "perche": "I camini vivono sulla linea di colmo e sui muri divisori, che è dove passano le canne fumarie: oggi stanno tutti allineati sulla stessa falda come antenne. Nessun costo aggiuntivo, solo posizioni diverse."
+    },
+    {
+     "dove": "function porticiPiazza(griglia, mondo, esclusi) — tutta la funzione",
+     "cosa": "Sostituita da un ciclo su porticiCitta(mondo) che chiama disegnaPortico() nella cella di Griglia dell'edificio. Il vecchio criterio (POI 'baracca', raggio 78/58 m, dot > 0.55) sopravvive dentro porticiCitta come regola (b) di ripiego.",
+     "perche": "Oggi il portico è un solaio a sbalzo su pilastrini quadrati: senza archi legge come una pensilina moderna, e sta DAVANTI alla facciata invece che sotto l'edificio. E il criterio geometrico si limita a Piazza Baracca, mentre i portici veri di Lugo corrono anche lungo le vie del centro — dove OSM li mappa come footway covered=yes, dati che la pipeline già scarica (`way[\"highway\"]`) e butta via."
+    },
+    {
+     "dove": "export function generaCitta(mondo, senzaLandmark) — la creazione della Griglia e il ciclo `for (const b of mondo.buildings)`",
+     "cosa": "`const pav = mondo.poi.get('pavaglione'); const edifici = new Griglia(190, 380, pav?.xm ?? 0, pav?.zm ?? 0, 500);` e, prima del ciclo, `const fronti = frontiCitta(mondo);` passato a estrudiEdificio → facciata. Azzeramento dei contatori di tetti.ts. Alla fine, chiamata a porticiCitta/disegnaPortico al posto di porticiPiazza.",
+     "perche": "È il punto in cui tutto si tiene insieme, e dove i contatori per il collaudo devono partire puliti."
+    },
+    {
+     "dove": "function estrudiEdificio(acc, b, k)",
+     "cosa": "Nuova firma `estrudiEdificio(acc, b, k, fronte: Fronte)`; la passa a facciata() e a copertura().",
+     "perche": "Il fronte serve alla facciata per i lati e alla copertura per l'asse del colmo."
+    },
+    {
+     "dove": "const GRANA (riga ~270)",
+     "cosa": "Aggiunta della voce `pietra` differenziata per il bugnato (già c'è) e nuova voce per il materiale dichiarato in OSM quando arriva (building:material). Nessuna modifica ai valori esistenti.",
+     "perche": "Con `mt` in map.json il materiale può venire dal dato invece che dalla lotteria per zona; la grana deve seguirlo."
+    }
+   ]
+  },
+  {
+   "path": "lib/lugo/carattere.ts",
+   "modifiche": [
+    {
+     "dove": "export interface Carattere",
+     "cosa": "Nuovi campi: `tipo: TipoEdificio` (enum da OSM), `livelliVeri?: number` (building:levels dichiarato), `storico: boolean`, `pendenza: number` (0.32..0.48), `sottotetto: boolean`, `cantonali: boolean`, `campata: number` (passo unico delle campate, m), `hCimasa: number` (quota della fascia insegna, allineata per isolato). `passo` resta ma deprecato in favore di `campata`. `tetto` accetta il nuovo valore 'mono'.",
+     "perche": "Sono i cinque dati che oggi mancano per far uscire una facciata coerente, e quattro dei cinque possono venire da OSM invece che dal seme."
+    },
+    {
+     "dove": "export function carattereDi(b, ctx) — `const rimessa = area < 46 && !b.chiesa;` e `const capannone = area > 780 && zona !== 'centro' && !b.chiesa;`",
+     "cosa": "Quando `b.tipo` è dichiarato (nuovo campo di EdificioRT) comanda lui: rimessa = tipo in {garage, shed, hut, carport, roof}; capannone = tipo in {industrial, warehouse}; pubblico = tipo in {school, civic, public, hospital, townhall, museum}. L'area resta solo come ripiego quando tipo è 'yes' o assente.",
+     "perche": "Oggi 178 edifici superano 780 m2 e 160 stanno sotto 46 m2: circa il 17% della città è classificato guardando solo l'area, e così il palazzo delle poste diventa un capannone e una cappella diventa una rimessa. Il valore di `building=*` è presente su TUTTI i 2047 edifici nel dato grezzo Overpass: è già scaricato e viene buttato via dentro altezza()."
+    },
+    {
+     "dove": "export function carattereDi — `const dichiarata = b.h < 5.4 || b.h > 9.7;`",
+     "cosa": "`const dichiarata = b.livelli !== undefined || b.hDichiarata === true;` — cioè si crede al dato quando la pipeline dice che il dato c'era, non quando il numero cade fuori da una banda. Se b.livelli è noto: piani = clamp(b.livelli, 1, 8), hPiano dal tipo (3.05 residenziale, 3.6 commerciale, 4.2 pubblico/storico).",
+     "perche": "Ho contato le altezze in map.json: 44 valori distinti su 2047 edifici, tutti addensati fra 6.9 e 9.5 perché il rand01 della pipeline ha pochissima entropia. Solo 31 edifici (1,5%) escono dalla banda 5.4-9.7. Ma 46 hanno h multiplo esatto di 3.2, cioè building:levels dichiarato — e 16 di questi valgono 6.4 (levels=2), che casca DENTRO la banda e viene scartato. Stiamo buttando via l'unico dato vero che abbiamo. Con un campo `lv` esplicito il problema sparisce."
+    },
+    {
+     "dove": "export function carattereDi — il blocco `// ── dettaglio: fitto dove si cammina, sobrio in lontananza ──`",
+     "cosa": "`dettaglio` resta ma diventa il MASSIMO dei dettagli dei lati (calcolato in fronti.ts). budgetFinestre sale a 96/40/12 (da 72/34/10), perché ora il budget non si spreca sui muri ciechi.",
+     "perche": "Il dettaglio a fasce di distanza premia oggi 62 edifici su 2047 (dist<300 m) e tratta allo stesso modo il fronte su strada e il muro interno di corte. Alzare il budget mentre si toglie lo spreco è a saldo negativo in triangoli."
+    },
+    {
+     "dove": "export function carattereDi — i campi tetto/salita/gronda del return",
+     "cosa": "`tetto` accetta 'mono' per rimessa/tettoia; `salita` non è più estratta a caso ma calcolata a valle da tetti.ts come d*pendenza; `pendenza` = 0.32 + estrai(s,16)*0.16. Quando b.formaTetto (roof:shape da OSM) è nota, comanda lei.",
+     "perche": "Oggi salita è 1.5-3.6 m indipendentemente dalla profondità della casa: su un fabbricato profondo 6 m viene una falda a 50 gradi (alpina), su uno profondo 25 m una a 8 gradi (piatta). La pendenza è una proprietà del materiale di copertura, la salita è una conseguenza."
+    },
+    {
+     "dove": "export function caratteriCitta(mondo) — dopo il ciclo `for (const b of mondo.buildings) m.set(b, carattereDi(b, ctx));`",
+     "cosa": "Nuova passata `allineaIsolati(mondo, m)`: per ogni isolato di isolatiCitta(mondo) si calcola la mediana di hTerra fra i suoi edifici, la si arrotonda a 0.25 m e la si assegna a tutti; poi hCimasa = max(2.4, hTerraAllineata - 0.85) e h viene ricalcolata (hTerra + (piani-1)*hPiano). Vincolo: lo scostamento di hTerra non supera mai 0.5 m rispetto al valore originale, altrimenti l'edificio resta com'è.",
+     "perche": "È la differenza fra 'una fila di case' e 'una via'. La fascia delle insegne, i marcapiani del primo piano e le lunette dei portoni corrono alla stessa quota su tutto l'isolato in ogni centro storico italiano; oggi ogni edificio se la calcola per conto suo con estrai(s,5) e viene una linea seghettata. Costa zero triangoli."
+    },
+    {
+     "dove": "export function preparaContesto(mondo)",
+     "cosa": "Aggiunta di `zone: AreaRT[]` (landuse residential/retail/commercial/industrial da map.json, nuovo) e uso di quelle per determinare `Zona` quando ci sono, con la distanza dal Pavaglione come ripiego.",
+     "perche": "Il modello ad anelli concentrici (400/700/1050 m) dice che una zona artigianale a 500 m è 'semicentro' e le dà persiane e balconi. Il landuse è un poligono, costa 5-20 anelli in map.json e dice la verità."
+    }
+   ]
+  },
+  {
+   "path": "lib/lugo/loadMap.ts",
+   "modifiche": [
+    {
+     "dove": "export interface EdificioRT",
+     "cosa": "Nuovi campi opzionali: `tipo?: TipoEdificio` (stringa breve), `livelli?: number`, `hDichiarata?: boolean`, `formaTetto?: FormaTettoOSM`, `materiale?: Materiale`, `tintaTetto?: string`, `storico?: boolean`, `civico?: number`, `via?: string`. Tutti opzionali, tutti con ripiego a monte.",
+     "perche": "Nessun consumatore deve rompersi se map.json è una versione vecchia: è la stessa disciplina già usata per `falde` ('mappe vecchie senza il campo: euristica')."
+    },
+    {
+     "dove": "async function carica() — dentro `raw.buildings.map((b) => { ... })`",
+     "cosa": "Lettura dei nuovi campi compatti: `if (b.t !== undefined) e.tipo = TIPI[b.t]; if (b.lv) { e.livelli = b.lv; e.hDichiarata = true; } if (b.rt !== undefined) e.formaTetto = FORME[b.rt]; if (b.mt !== undefined) e.materiale = MATERIALI_OSM[b.mt]; if (b.st) e.storico = true;` ecc.",
+     "perche": "La de-quantizzazione è già il posto dove si traducono i codici compatti in cose leggibili."
+    },
+    {
+     "dove": "async function carica() — subito dopo `adottaEdifici(buildings, poi, ['teatro']);` e prima del return",
+     "cosa": "Si costruisce l'oggetto mondo in una const, poi `apriPortici(mondo)` da portici.ts, poi si ritorna.",
+     "perche": "apriPortici ha bisogno di roads e poi (che a quel punto esistono) e deve girare PRIMA che infraGioco costruisca MondoFisico dai collider. Se girasse dopo, il giocatore sbatterebbe contro la facciata invisibile sotto il portico."
+    },
+    {
+     "dove": "function colliderDa(b, fp, fori) — il ramo `edges`",
+     "cosa": "Nessuna modifica alla logica; si estrae in una funzione riusabile `segmentiDa(anelli, saltaVarco)` che apriPortici possa richiamare per ricostruire segs.",
+     "perche": "Evita di duplicare la costruzione dei segmenti e mantiene la regola dei varchi del Pavaglione in un posto solo."
+    }
+   ]
+  },
+  {
+   "path": "lib/lugo/types.ts",
+   "modifiche": [
+    {
+     "dove": "export interface EdificioMap",
+     "cosa": "Nuovi campi opzionali quantizzati: `t?: number` (indice tipologia), `lv?: number` (building:levels), `rt?: number` (indice roof:shape), `mt?: number` (indice building:material), `rc?: number` (indice famiglia colore tetto da roof:colour/roof:material), `st?: 1` (storico), `civ?: number` (addr:housenumber numerico), `vi?: number` (indice in LugoMap.vie). Documentati come 'assenti nelle mappe vecchie'.",
+     "perche": "Codici interi invece di stringhe: sui 2047 edifici sono circa 20 KB su un file che oggi pesa 476 KB, con un tetto a 4 MB. Le stringhe (building:material=brick ripetuto 300 volte) costerebbero dieci volte tanto."
+    },
+    {
+     "dove": "export interface LugoMap",
+     "cosa": "Nuovi campi opzionali: `vie?: string[]` (tabella dei nomi di via, indicizzata da vi), `portici?: number[][]` (polilinee dm dei footway coperti), `muri?: { poly: number[]; h: number }[]` (barrier=wall/hedge, altezza in dm), `zone?: { kind: 'residenziale'|'commerciale'|'industriale'|'artigianale'; poly: number[] }[]` (landuse).",
+     "perche": "Sono le quattro cose che OSM sa e il gioco no: dove corrono i portici, dove i muri di cinta chiudono l'isolato, come si chiama la via (serve ai civici e alla toponomastica) e dov'è davvero la zona artigianale."
+    },
+    {
+     "dove": "export interface CivicoMap (nuova) e LugoMap.civici?: CivicoMap[]",
+     "cosa": "`{ n: number; vi?: number; x: number; z: number }` — i numeri civici come nodi, tetto a 400 elementi ordinati per vicinanza al Pavaglione.",
+     "perche": "In Italia i civici sono mappati fittissimi. Sono il dato che dice DOVE stanno le porte lungo una facciata continua, cioè il ritmo vero delle campate: molto meglio di round(L/5.2)."
+    }
+   ]
+  },
+  {
+   "path": "tools/lugo/build-map.mjs",
+   "modifiche": [
+    {
+     "dove": "function altezza(tags, id) e function addBuilding(ring, tags, id, fori)",
+     "cosa": "altezza() ritorna `{ h, livelli, dichiarata }` invece del solo numero: dichiarata=true solo quando c'era height o building:levels. addBuilding scrive `b.lv` e non affida più al numero h il compito di dire se il dato esisteva.",
+     "perche": "È il buco più grave della pipeline. Verificato sui dati veri: 44 altezze distinte per 2047 edifici (il rand01 xorshift ha pochissima entropia), tutte addensate in 6.9-9.5, e carattere.ts è costretto a indovinare se un valore è vero guardando se cade fuori dalla banda 5.4-9.7. Così i 16 edifici con building:levels=2 (h=6.4) vengono scartati come finti. Un flag esplicito risolve, e costa 1 byte."
+    },
+    {
+     "dove": "function addBuilding — subito dopo `const forma = String(tags['roof:shape'] || '').toLowerCase();`",
+     "cosa": "Mappatura completa: gabled→1, hipped→2, pyramidal→3, skillion|lean_to|mono_pitched→4, half-hipped|mansard|gambrel→5, dome|round|onion→6, flat→0. Si scrive `b.rt` sempre che il tag c'era; l'euristica romagnola resta e riempie `b.falde` come oggi.",
+     "perche": "Oggi roof:shape viene ridotto a un booleano falde/non-falde: pyramidal e skillion (che sono la torretta e la tettoia, forme molto riconoscibili) diventano una capanna qualsiasi."
+    },
+    {
+     "dove": "function addBuilding — nuovo blocco di raccolta tag dopo `const col = coloreEdificio(tags);`",
+     "cosa": "Estrazione di: `b.t` dalla tipologia (unione di tags.building con tags.amenity/tourism/office/shop quando building='yes'), `b.mt` da building:material (brick|plaster|stucco|concrete|stone|metal|wood|glass), `b.rc` da roof:material+roof:colour, `b.st` da (tags.historic || tags.heritage || start_date < 1900 || amenity in {townhall, theatre} || tourism==='museum'), `b.civ`/`b.vi` da addr:housenumber + addr:street.",
+     "perche": "È l'oro vero: questi tag sono TUTTI già dentro tools/lugo/cache/overpass-raw.json, perché `way[\"building\"]` con `out body` restituisce l'intero set di tag della way — la query non va toccata per averli, li butta via il lettore. Attenzione a una cosa che ho verificato invece in negativo: building:colour ha 0 occorrenze sui 2047 edifici di Lugo (il campo `col` di map.json è vuoto ovunque). Su quel tag non va costruito niente."
+    },
+    {
+     "dove": "il ciclo `for (const w of ways.values())`, ramo `if (tags.highway)`",
+     "cosa": "Nuovo ramo prima della classificazione: se `tags.covered === 'yes' || tags.covered === 'arcade' || tags.tunnel === 'building_passage' || tags.man_made === 'arcade'`, la polilinea semplificata finisce anche in `portici`. Inoltre: se `tags.width` o `tags.lanes` esistono, la larghezza della strada viene da lì invece che dalla tabella LARGHEZZA fissa; se `tags.surface` è sett|cobblestone|paving_stones si marca la strada come lastricata.",
+     "perche": "I portici in Emilia-Romagna si mappano così, e i footway sono già tutti nel dato scaricato. È il modo onesto di sapere dove sono i portici di Lugo invece di dedurli dalla distanza da Piazza Baracca."
+    },
+    {
+     "dove": "il ciclo `for (const n of nodes.values())`",
+     "cosa": "Nuovo ramo: `if (tags['addr:housenumber'])` → si accoda a `civici` con il numero e l'indice della via (tabella `vie` costruita in corsa, deduplicata). Tetto a 400, ordinati per distanza dal Pavaglione come già si fa per i negozi.",
+     "perche": "È l'unica fonte che dica dove stanno davvero le porte lungo una facciata continua."
+    },
+    {
+     "dove": "il ciclo `for (const w of ways.values())` — nuovi rami barrier e landuse",
+     "cosa": "`barrier` in {wall, city_wall, fence, hedge} o `man_made=wall` → `muri` con altezza da tags.height (default 2.2 per wall, 1.6 per hedge, 1.8 per fence). `landuse` in {residential, retail, commercial, industrial} → `zone`.",
+     "perche": "I muri di cinta chiudono gli isolati del centro e oggi si vede attraverso; sono nastri piatti che costano 6-8 triangoli l'uno. Il landuse sostituisce il modello ad anelli concentrici."
+    },
+    {
+     "dove": "il blocco `// ── report ──` in coda",
+     "cosa": "Righe nuove nel report: quanti edifici hanno livelli dichiarati, quanti hanno roof:shape, building:material, addr:housenumber, historic; quanti portici, muri, zone, civici sono stati raccolti.",
+     "perche": "Non posso verificare da qui quanti covered=yes e quanti addr:housenumber ci siano davvero nella bbox di Lugo: la cache nel repo (tools/lugo/cache/overpass-raw.json, 8 KB) è una fixture sintetica di 102 elementi, e in questa sessione il proxy blocca overpass-api.de con 403. Il report deve dire la verità al primo `npm run lugo:map`, e tutti i consumatori devono degradare in silenzio se il conto è zero."
+    }
+   ]
+  },
+  {
+   "path": "tools/lugo/fetch-osm.mjs",
+   "modifiche": [
+    {
+     "dove": "const QUERY — dentro il gruppo `( ... )`",
+     "cosa": "Righe nuove: `node[\"addr:housenumber\"](B);` `way[\"addr:housenumber\"](B);` `way[\"barrier\"~\"^(wall|city_wall|fence|hedge)$\"](B);` `way[\"man_made\"~\"^(arcade|wall)$\"](B);` `way[\"landuse\"~\"^(residential|retail|commercial|industrial)$\"](B);` `nwr[\"amenity\"~\"^(place_of_worship|townhall|library|school|post_office|bank|cinema|marketplace)$\"](B);` `nwr[\"tourism\"~\"^(museum|hotel|gallery|attraction)$\"](B);` e allargamento di `nwr[\"historic\"~\"^(castle|memorial|monument)$\"]` a `nwr[\"historic\"](B);`.",
+     "perche": "Queste sono le UNICHE cose che davvero mancano alla query: tutto il resto (building:levels, roof:shape, building:material, addr sugli edifici, covered sui footway, name, amenity/shop sugli edifici) arriva già oggi con `way[\"building\"]` e `way[\"highway\"]` + `out body`, perché Overpass restituisce l'intero set di tag dell'elemento. Il costo della query cresce di poco; la bbox resta la stessa 1.8x1.8 km."
+    },
+    {
+     "dove": "il messaggio di riepilogo finale",
+     "cosa": "Stampa anche il conteggio degli elementi con addr:housenumber, covered, barrier e landuse trovati.",
+     "perche": "Stesso motivo del report di build-map: bisogna sapere subito se il dato c'è, prima di scriverci sopra del codice."
+    }
+   ]
+  },
+  {
+   "path": "components/lugo/CityMeshes.tsx",
+   "modifiche": [
+    {
+     "dove": "il blocco `citta3d: () => ({ tasselli, triEdifici, triSuolo })` dentro useEffect",
+     "cosa": "Si aggiungono i contatori: `...statoTetti()` (padiglione/capanna/mono/anello/piano/ripiego), `...statoFronti(mondo)` (lati/strada/piazza/corte/retro/cieco/senzaFronte/ms), `portici: numeroTratti`, `archi: numeroCampate`, `celleDentro`/`celleFuori` della Griglia ibrida.",
+     "perche": "È l'unico posto da cui il collaudo può pretendere che il refactor abbia davvero fatto quello che dice: che i tetti di ripiego siano pochi, che i lati ciechi siano stati trovati, che i tasselli siano scesi."
+    }
+   ]
+  },
+  {
+   "path": "components/lugo/Insegne.tsx",
+   "modifiche": [
+    {
+     "dove": "`const y1 = 3.3;` (riga ~159) e le due `position={[c.x + c.nx * 0.55, 3.7, c.z + c.nz * 0.55]}` (righe ~269 e ~281)",
+     "cosa": "La quota del cartello e della tenda viene da `caratteriCitta(mondo).get(edificio)?.hCimasa` dell'edificio a cui il cartello si è agganciato (trovaMuri già sa qual è, basta portarsi dietro il riferimento): cartello a hCimasa + 0.10, tenda a hCimasa - 0.15. Ripiego a 3.3 / 3.7 se il carattere non c'è.",
+     "perche": "Oggi le insegne stanno a una quota fissa mentre la cimasa della vetrina sta a max(2.2, hTerra-0.85), cioè fra 2.2 e 3.87 m: su una casa bassa il cartello galleggia sopra il cornicione, su un palazzo alto finisce dentro le finestre del primo piano. Con l'allineamento d'isolato la cimasa diventa una linea continua e i cartelli ci si posano sopra tutti insieme — che è esattamente l'immagine di una via commerciale."
+    }
+   ]
+  },
+  {
+   "path": "tools/lugo/verify-lugo.mjs",
+   "modifiche": [
+    {
+     "dove": "il blocco `// ── costo di un fotogramma ──` (riga ~633)",
+     "cosa": "Il costo si misura in QUATTRO punti invece che uno: si cicla su ['pavaglione','baracca','bar','rocca'], si fa L.teleport(poi.x, poi.z), si aspettano 1800 ms e si legge L.render(); la fase fallisce se in uno qualsiasi dei punti triangoli >= 700k o chiamate >= 170. Il dettaglio riportato è il punto peggiore.",
+     "perche": "Ho misurato adesso, sulla build in out/: al Pavaglione 402k triangoli / 161 draw call, a Piazza Baracca 398k / 179 draw call. Il tetto di 170 è GIÀ superato oggi, e il collaudo non lo vede perché misura in un punto solo. Questa correzione va fatta comunque, indipendentemente dal resto."
+    },
+    {
+     "dove": "nuove fasi dopo il costo del fotogramma",
+     "cosa": "Le quattro fasi descritte nella sezione collaudo (fronti, tetti, allineamento, cartoline).",
+     "perche": "Nessuna delle modifiche proposte è verificabile a occhio in headless senza contatori."
+    }
+   ]
+  }
+ ],
+ "condivisi": {
+  "store": [
+   "Niente. Nessun campo e nessuna azione: tutto quello che serve è geometria generata al caricamento e ispezionabile da window.__LUGO__, che non passa dallo store."
+  ],
+  "player": [
+   "Niente. Verificato leggendo Player.tsx: la camera a piedi sta fra 1.16 e 2.10 m di quota (`const alt = mode === 'auto' ? 3.4 : 2.1` poi `altViva = alt * (0.55 + 0.45 * d/dist)`), quindi passa sotto il portico (luce 4.2 m) senza toccare il solaio, e la sua collisione è già 2D contro MondoFisico, che apriPortici() aggiorna a monte. QUOTA_CALPESTIO resta 0.19 e il pavimento del portico si posa lì."
+  ],
+  "hud": [
+   "Niente."
+  ],
+  "css": [
+   "Niente."
+  ],
+  "input": [
+   "Niente. L'eventuale visualizzazione diagnostica dei fronti (colori per esposizione) va su window.__LUGO__.fronti(true), non su un tasto, così non ruba una lettera a nessuno."
+  ]
+ },
+ "rischi": [
+  "DRAW CALL: è il vincolo che stringe davvero, non i triangoli. Misurato oggi a Piazza Baracca: 179 chiamate, cioè già sopra il tetto di 170, mentre i triangoli sono a 398k su 700k. Ogni cosa nuova DEVE finire dentro l'Accumulo della Griglia esistente (costo zero) e mai in una mesh separata: archi, cantonali, davanzali, portici, tetti, tutto. La griglia ibrida 190/380 (105 tasselli → 65 misurati sui centroidi veri) è quello che riporta il margine sotto controllo, e va fatta PER PRIMA, prima di aggiungere qualunque triangolo.",
+  "GRIGLIA IBRIDA E CULLING: tasselli più grandi in periferia significano meno scarto per frustum. Sui dati veri là fuori il dettaglio è 0 e ci sono 713 edifici oltre gli 850 m, quindi il costo dovrebbe essere sotto i 25k triangoli; ma è una previsione, non una misura. Se il collaudo mostra un peggioramento oltre i 40k si torna a 190/285 con raggio 700 (87 tasselli), che è comunque un guadagno.",
+  "INSET DEL TETTO SU PIANTE PATOLOGICHE: 1036 edifici su 2047 hanno una pianta non convessa, e alcune arrivano a 118 vertici. L'offset può auto-intersecarsi in silenzio e produrre un tetto annodato, che è molto peggio del rettangolo storto di oggi. Difesa a tre livelli: convalida (segno dell'area, nessun lato ribaltato, nessun vertice che si allontana oltre 3d), dimezzamento di d fino a 4 volte, e ripiego finale sulla piastra piana col parapetto (comportamento odierno del tetto 'piano'). Il contatore statoTetti().ripiego rende il fallimento visibile invece che silenzioso, e il collaudo pretende che resti sotto l'8%.",
+  "MURI CIECHI SPENTI PER SBAGLIO: la soglia sepolto>0.8 con tolleranza laterale 0.7 m può spegnere un muro che in realtà si vede — due edifici che si toccano solo di sbieco, o un vicino molto più basso. La mitigazione è già nella specifica: si spegne solo la porzione FINO ALLA QUOTA DEL VICINO (hVicino, che il test di sovrapposizione conosce), e sopra quella quota la facciata si disegna normale. Senza questa clausola una casa di quattro piani accanto a una rimessa perderebbe tre piani di finestre.",
+  "hTERRA ALLINEATO PER ISOLATO: cambia h di tutti gli edifici dell'isolato e quindi tutto ciò che ci si appende. Vincolo duro: mai più di 0.5 m di scostamento rispetto al valore originale, altrimenti l'edificio resta com'è. Da controllare in coda che altezzeDistinte (hook L.citta()) non crolli: oggi vale 137 su 2047 edifici e se scendesse sotto 110 vorrebbe dire che l'allineamento ha appiattito la città, che è il difetto che carattere.ts era nato per togliere.",
+  "CAMPATA UNICA E INSEGNE: portando le campate a 4.0-5.4 m in centro cambia la larghezza della vetrina, e il cartello di Insegne.tsx è un box fisso da 3.0 m. Su una campata da 4.0 m con pilastrini resta ~3.4 m di luce: ci sta, ma di misura. Da verificare a video nella cartolina di Via Baracca; se stringe, il cartello va parametrizzato sulla campata.",
+  "PORTICI E COLLIDER: apriPortici() riscrive i collider e sostituisce OBB con segmenti. Due pericoli concreti: (a) se gira dopo che infraGioco ha già costruito MondoFisico, il muro invisibile resta e il giocatore sbatte sotto il portico; (b) se il muro arretrato finisce dentro un altro collider, ci si può incastrare. Difese: chiamata dentro loadMap prima del return, profondità limitata a 0.34 della profondità dell'edificio e mai oltre 3.0 m, mai su edifici con fori o con landmark bespoke, e una fase di collaudo che cammina sotto un portico e verifica di essere passato.",
+  "DATI OSM NON VERIFICABILI DA QUI: overpass-api.de è bloccato dal proxy in questa sessione (403 sul CONNECT) e la cache nel repo è una fixture sintetica da 102 elementi, non lo scarico vero. Quindi non so quanti covered=yes, addr:housenumber, building:material e roof:shape ci siano davvero nella bbox di Lugo. Due certezze le ho invece misurate su map.json: building:colour ha ZERO occorrenze su 2047 edifici, e solo ~46 edifici hanno un'altezza multipla di 3.2 (building:levels). Regola di conseguenza: ogni campo nuovo è opzionale, ogni consumatore ha il ripiego euristico di oggi, e build-map.mjs stampa i conteggi così il primo `npm run lugo:map` dice la verità.",
+  "COSTO AL CARICAMENTO: frontiCitta() aggiunge una passata su 16080 lati con due hash spaziali, e gira sul thread principale prima del primo fotogramma. Bilancio 120 ms; statoFronti().ms lo misura e il collaudo lo pretende. Se sfora, l'ottimizzazione ovvia è ridurre il campionamento delle strade da 3 m a 6 m.",
+  "REGRESSIONI DA NON FARE: non si toglie niente. tettoAnello resta per gli isolati con cortile (63 edifici, fra cui il Pavaglione), il ramo 'piano' col parapetto resta, il nastroIndustriale resta, i pannelli solari restano, e il vecchio criterio dei portici di Piazza Baracca sopravvive come regola di ripiego dentro porticiCitta. La regola sulle attività non è toccata da questo fronte: le facciate non fabbricano mai un'insegna, un logo o una dicitura — la vetrina resta un pezzo di architettura e chi ci scrive sopra è Insegne.tsx col nome pubblico di OpenStreetMap."
+ ],
+ "collaudo": [
+  {
+   "nome": "costo del fotogramma in quattro punti del centro",
+   "come": "Sostituire la fase esistente (riga ~633, `if ((await lugo('typeof L.render')) === 'function')`). Per ciascun id in ['pavaglione','baracca','bar','rocca']: `const p = await lugo('L.poi.' + id)`, `await page.evaluate(([x,z]) => window.__LUGO__.teleport(x,z), [p.x,p.z])`, `await page.waitForTimeout(1800)`, `const r = await lugo('L.render()')`. Si tiene il massimo di triangoli e di chiamate. ok() solo se maxTriangoli < 700_000 E maxChiamate < 170, riportando quale punto è il peggiore. NOTA: su out/ com'è oggi questa fase FALLISCE (Piazza Baracca: 397.992 triangoli, 179 chiamate) — è voluto, è la prova che il tetto era sfondato e che nessuno se ne accorgeva."
+  },
+  {
+   "nome": "i tetti stanno sulla pianta vera",
+   "come": "Nuovo hook: CityMeshes.tsx aggiunge a `citta3d()` i campi di statoTetti(). Nel collaudo: `const t = await lugo('L.citta3d()')`. Si pretende che `t.ripiego / (t.padiglione + t.capanna + t.mono + t.anello + t.piano + t.ripiego) < 0.08` (l'inset non deve degenerare su più dell'8% degli edifici) e che `t.padiglione > 400` (oggi le piante non convesse sono 1036: se il padiglione su pianta vera non scatta mai vuol dire che il ramo non viene preso). Cartolina dall'alto: `await lugo('L.fotocamera(...)')` con la camera a 120 m sopra il Pavaglione che guarda in giù di 55 gradi, screenshot `12-tetti-dallalto.png`."
+  },
+  {
+   "nome": "i fronti sono stati riconosciuti e il budget è finito dove si cammina",
+   "come": "Nuovo hook `fronti: () => statoFronti(mondo)` esposto da CityMeshes.tsx. `const f = await lugo('L.citta3d()')`. Si pretende: `f.lati > 15000`; `f.strada / f.lati` fra 0.15 e 0.30 (ho misurato 0.195 sui dati veri: fuori da questa forbice vuol dire che il test di affaccio è rotto, in un verso o nell'altro); `f.cieco > 700` (misurati 930 lati sepolti oltre l'80%); `f.senzaFronte === 0` (ogni edificio deve avere un lato principale, foss'anche di ripiego); `f.ms < 120` (il calcolo non deve rubare mezzo secondo al caricamento). Se l'hook non c'è la fase si salta da sola, come tutte le altre."
+  },
+  {
+   "nome": "le facciate del centro corrono allineate",
+   "come": "Nuovo hook `allineamento: () => ...` in World.tsx accanto a `citta()`: per i 12 isolati più popolosi di isolatiCitta(mondo) restituisce `{ isolati: n, scartoMax: number, scartoMedio: number }` dove lo scarto è la deviazione standard di hCimasa fra gli edifici dello stesso isolato. Nel collaudo si pretende `scartoMedio < 0.20` e `scartoMax < 0.40` metri. Poi la cartolina: si porta il giocatore a piedi sul fronte di una via del centro (`L.teleport` sul POI 'bar', `L.mode()` a 'piedi' con KeyE dopo la frenata, `L.fotocamera(x, 1.7, z, x+12, 4.0, z+2, 4000)` per inquadrare la fascia delle insegne di sbieco) e si scatta `10-fronte-strada.png`. È l'immagine che dice se la fascia dei negozi è una riga sola o un zig-zag."
+  },
+  {
+   "nome": "sotto il portico ci si passa davvero",
+   "come": "Se `(await lugo('L.citta3d()')).portici > 0`: si prende il primo tratto tramite un hook `L.portico(0)` che restituisce `{ xFuori, zFuori, xDentro, zDentro }` (il punto sul filo dei pilastri e quello contro il muro arretrato). Si fa `L.teleport(xFuori, zFuori)`, si scende a piedi, si tiene premuto KeyW verso il muro per 2500 ms e si legge `L.pos()`: la distanza percorsa dev'essere > 1.2 m, cioè si è entrati sotto il portico invece di sbattere sul filo della facciata. Screenshot `13-portico.png` guardando lungo l'arcata."
+  },
+  {
+   "nome": "nessuna regressione sul carattere della città",
+   "come": "Fase di guardia sull'hook già esistente `L.citta()`, che oggi non è collaudato da nessuno. Si pretende: `altezzeDistinte > 110` (oggi 137: l'allineamento d'isolato non deve appiattire la città), `tinteDistinte > 1500` (oggi 1687), `botteghe > 60` (oggi 78), `n === edifici` della fase 1, e che nessuna delle sei famiglie di `materiali` sia a zero. Se una di queste crolla vuol dire che il refactor ha rimesso Lugo a blocchi, che è esattamente il difetto da cui carattere.ts era nato."
+  }
+ ]
+}

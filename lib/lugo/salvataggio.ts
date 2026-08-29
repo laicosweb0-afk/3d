@@ -41,6 +41,14 @@ export interface Salvataggio {
   baseGiorno: Contatori;
   baseSettimana: Contatori;
   incarichiRiscossi: string[];
+  /**
+   * Quante bici e quante auto sono state portate via, da sempre. È l'unica
+   * cosa del furto che sopravvive alla chiusura del browser: non l'auto che
+   * stavi guidando, non le stelle, non quali auto mancavano dai loro
+   * stalli. Al ricaricamento si riparte dalla Rocca con la propria auto e
+   * una Lugo intera, com'è sempre stato per le posizioni.
+   */
+  furti: { bici: number; auto: number };
 }
 
 // I totali salvati finiscono in una sottrazione: un NaN, un numero negativo
@@ -51,6 +59,21 @@ function contatoriValidi(v: unknown): Contatori {
   if (typeof v !== 'object' || v === null) return out;
   const g = v as Record<string, unknown>;
   for (const k of Object.keys(CONTATORI_ZERO) as Metrica[]) {
+    const n = g[k];
+    if (typeof n === 'number' && isFinite(n) && n > 0) out[k] = Math.trunc(n);
+  }
+  return out;
+}
+
+// Stessa filosofia di contatoriValidi: un NaN o un negativo qui dentro
+// finirebbe scritto nell'HUD e non tornerebbe più indietro. Ogni campo
+// torna a essere un intero ≥ 0, e un salvataggio vecchio (senza il campo)
+// riparte semplicemente da zero.
+function furtiValidi(v: unknown): { bici: number; auto: number } {
+  const out = { bici: 0, auto: 0 };
+  if (typeof v !== 'object' || v === null) return out;
+  const g = v as Record<string, unknown>;
+  for (const k of ['bici', 'auto'] as const) {
     const n = g[k];
     if (typeof n === 'number' && isFinite(n) && n > 0) out[k] = Math.trunc(n);
   }
@@ -127,6 +150,7 @@ export function caricaSalvataggio(): Partial<Salvataggio> | null {
       incarichiRiscossi: Array.isArray(dati.incarichiRiscossi)
         ? dati.incarichiRiscossi.filter((x) => typeof x === 'string').slice(0, 40)
         : undefined,
+      furti: dati.furti !== undefined ? furtiValidi(dati.furti) : undefined,
       volumi:
         dati.volumi && typeof dati.volumi === 'object'
           ? {
@@ -181,6 +205,7 @@ export function avviaSalvataggio() {
       ...(dati.incarichiRiscossi !== undefined
         ? { incarichiRiscossi: dati.incarichiRiscossi }
         : {}),
+      ...(dati.furti !== undefined ? { furti: dati.furti } : {}),
     });
     // il livello è la lettura della reputazione, non uno stato a sé: al
     // caricamento va ricalcolato, perché setState scavalca addPunti
@@ -211,7 +236,8 @@ export function avviaSalvataggio() {
       s.settimana === prima.settimana &&
       s.baseGiorno === prima.baseGiorno &&
       s.baseSettimana === prima.baseSettimana &&
-      s.incarichiRiscossi === prima.incarichiRiscossi
+      s.incarichiRiscossi === prima.incarichiRiscossi &&
+      s.furti === prima.furti
     ) {
       return;
     }
@@ -238,6 +264,7 @@ export function avviaSalvataggio() {
         baseGiorno: st.baseGiorno,
         baseSettimana: st.baseSettimana,
         incarichiRiscossi: st.incarichiRiscossi,
+        furti: st.furti,
       });
     }, 600);
   });

@@ -1,0 +1,513 @@
+{
+ "titolo": "Furti a Lugo: la bici al muro, l'auto in sosta, l'auto che passa",
+ "sintesi": "A piedi, davanti a una delle bici appoggiate ai muri o alle nuove rastrelliere del centro, la E ti mette in sella: nasce una terza modalità 'bici', che pedala a 30 km/h, sterza col manubrio e si lascia dove vuoi — la stessa bici resta lì e la si può riprendere. Con la E accanto a un'auto in sosta ci si sale e si parte con QUELLA auto: sparisce dallo stallo (resta solo la riga blu), il suo ingombro esce dalla spatial hash senza ricostruirla, e la tua vecchia auto resta parcheggiata dove l'avevi lasciata, con la sua tinta. Le auto del traffico civile smettono di essere un binario: se ti pari in mezzo alla strada frenano, dopo due secondi suonano il clacson, e se sali a bordo il guidatore scende e se ne va a piedi. Ogni furto scalda i Carabinieri: la bici vale una stella per una ventina di secondi, un'auto in sosta due stelle, portare via un'auto col guidatore dentro due stelle piene e tre se ti vede una pattuglia — e adesso la gazzella insegue anche chi scappa a piedi o in bici, e può fermarti. Nessuna tecnica di furto è modellata né spiegata: l'interazione è e resta un tasto.",
+ "fileNuovi": [
+  {
+   "path": "lib/lugo/bici.ts",
+   "scopo": "La bici: modello di guida arcade in sella (opera sullo StatoPersona esistente, così tutto ciò che già legge rt.persona continua a funzionare) e registro delle bici parcheggiate, prese e riposate. Nessuna geometria nuova: le bici rubabili SONO le bici che imperfezioni.ts già semina ai muri.",
+   "esporta": [
+    "export const BICI: { vMax: 8.4; vMaxIndietro: 1.1; accel: 4.6; frenataPedale: 8.0; frenata: 11.0; attritoLin: 0.22; attritoQuad: 0.012; sterzoLento: 2.4; sterzoVeloce: 0.85; vSterzo: 6.5; raggio: 0.45; pedalata: 1.15; inclinazione: 0.38 }",
+    "export interface EsitoBici { v: number; urto: number; piega: number }",
+    "export function stepBici(s: StatoPersona, input: StatoInput, dt: number, fisica: MondoFisico, bounds: { minX: number; minZ: number; maxX: number; maxZ: number }): EsitoBici",
+    "export function biciRubabili(mondo: MondoLugo, fisica: MondoFisico): number[]",
+    "export function biciPiuVicina(mondo: MondoLugo, fisica: MondoFisico, x: number, z: number, maxD?: number): number",
+    "export function prendiBici(mondo: MondoLugo, fisica: MondoFisico, i: number): boolean",
+    "export function lasciaBici(mondo: MondoLugo, fisica: MondoFisico, x: number, z: number, yaw: number): void",
+    "export const PEDALI: readonly Pezzo[]"
+   ],
+   "dettaglio": "stepBici, passo per passo (stessa struttura di stepAuto ma senza slittamento laterale: una bici non deriva).\n1) fx=cos(yaw), fz=sin(yaw); v = s.vx*fx + s.vz*fz (tutta la velocità è longitudinale per costruzione, quindi qui non si perde nulla).\n2) gas = clamp(input.az, -1, 1). Se gas>0.05: v += BICI.accel*gas*dt. Se gas<-0.05: v -= (v>0.3 ? BICI.frenataPedale : BICI.accel*0.5) * (-gas) * dt — sopra i 0,3 m/s indietro FRENA, sotto spinge in retromarcia lentissima. Niente retromarcia rapida: il clamp finale è [-BICI.vMaxIndietro, BICI.vMax] = [-1.1, 8.4].\n3) input.freno (Spazio / pulsante FRENO): v -= sign(v)*min(|v|, BICI.frenata*dt). Nessun freno a mano, nessuna derapata: sulla bici il freno è secco e basta.\n4) Ruota libera: v -= (attritoLin*v + attritoQuad*v*|v|)*dt. Con 0.22 e 0.012 la resistenza a 8,4 m/s vale 2,7 m/s² contro 4,6 di spinta (si arriva davvero a fondo scala) e mollando i pedali da 8,4 ci si ferma in circa 3 s e 12 m: si scivola, non si inchioda.\n5) Sterzo dipendente dalla velocità: t = min(1, |v|/BICI.vSterzo); agilita = sterzoLento + (sterzoVeloce - sterzoLento)*t (2.4 rad/s da fermi → 0.85 a 6,5 m/s: in corsa la bici si raddrizza, nel vicolo gira su se stessa). presa = min(1, 0.4 + |v|/1.6) così da fermi ci si punta comunque coi piedi ma piano. s.yaw += input.ax * agilita * presa * dt * (v < -0.05 ? -1 : 1) (spingendola indietro lo sterzo si inverte, come nella realtà). Segno: ax>0 = destra = yaw crescente, coerente con stepAuto e con rotation.y = -yaw.\n6) omega = (yaw nuovo - yaw vecchio)/dt; piega = clamp(omega * v * 0.055, -BICI.inclinazione, +BICI.inclinazione) — solo estetica, positivo = piega a destra (coerente con Car.tsx, dove rollio finisce in rotation.x).\n7) s.vx = cos(yaw)*v; s.vz = sin(yaw)*v; s.x += s.vx*dt; s.z += s.vz*dt.\n8) Collisione con UN cerchio di raggio BICI.raggio=0.45 (più largo della persona: 0.35) via fisica.risolviCerchio. Se c'è contatto: s.x=out.x, s.z=out.z; vn = s.vx*nx + s.vz*nz; se vn<0 → frontale = min(1, -vn/max(0.3,|v|)); v *= 1 - 0.75*frontale; si ricompone vx/vz; urto = -vn. Contro un muro la bici NON rimbalza come l'auto (niente moltiplicatore 1.3): si struscia e perde slancio, altrimenti nei vicoli di Lugo si veniva sparati indietro.\n9) Confini del mondo identici a stepAuto (margine 30 m, azzeramento della componente uscente).\n10) Se |v|<0.03 → v=0, vx=vz=0 (niente deriva a bici ferma). s.fase += |v|*dt*BICI.pedalata: la fase avanza con la DISTANZA come per il passo, ma con 1.15 rad/m invece di FALCATA=3.5, cioè 2π ogni 5,5 m — a 8 m/s fanno 88 pedalate al minuto, la cadenza di un ciclista vero.\nRitorna { v, urto, piega }.\n\nRegistro delle bici. biciRubabili(mondo, fisica) filtra imperfezioni(mondo, fisica) (la lista MEMOIZZATA, vedi imperfezioni.ts) tenendo gli indici degli elementi con t==='bici' e !presa; il risultato è memoizzato in una WeakMap<MondoLugo, number[]> ricalcolata solo quando cambia runtime.revImperfezioni. biciPiuVicina scorre quegli indici con confronto al quadrato e maxD di default 2.2 m, saltando le prese.\nprendiBici(mondo, fisica, i): se la voce non è una bici o è già presa ritorna false; altrimenti o.presa = true, runtime.biciInSella = i, runtime.biciSporche.push(i), runtime.revImperfezioni++ e true. Le bici NON hanno collider (imperfezioniCitta valida con cerchioLibero ma non chiama mai aggiungiObb), quindi qui non c'è niente da togliere alla fisica: è il motivo per cui la bici è il furto più semplice dei tre.\nlasciaBici(mondo, fisica, x, z, yaw): riprende l'indice da runtime.biciInSella; cerca il primo posto libero fra [ (x,z), e i quattro scostamenti laterali di 0.8 m ] con fisica.cerchioLibero(px, pz, 0.7); se nessuno è libero la posa comunque in (x,z) — una bici non si perde mai, altrimenti resta irrecuperabile dentro un muro. Scrive o.x, o.z, o.rot = yaw + Math.PI/2 (appoggiata di traverso, come tutte le altre), o.presa = false, runtime.biciInSella = -1, biciSporche.push(i), revImperfezioni++.\nPEDALI: i due Pezzo in più che ha solo la bici guidata (pedivella e pedale), definiti qui e non in PEZZI.bici perché aggiungerli lì li moltiplicherebbe per le ~350 bici della città: [{ forma:'scatola', p:[0,0.26,0], s:[0.06,0.30,0.05], col:'#3A3A38' }, { forma:'scatola', p:[0,0.12,0.09], s:[0.16,0.04,0.06], col:'#26262A' }]."
+  },
+  {
+   "path": "components/lugo/Bici.tsx",
+   "scopo": "Il modello della bici che si sta guidando. Due sole draw call, e solo mentre si pedala: i pezzi sono gli stessi di PEZZI.bici, così quella che guidi è letteralmente la bici che hai preso al muro.",
+   "esporta": [
+    "export const Bici = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function Bici({ rt }, ref) {...})"
+   ],
+   "dettaglio": "Struttura: <group ref> con due InstancedMesh.\n- telaio: <instancedMesh args={[undefined, undefined, 6]}> con <boxGeometry args={[1,1,1]} /> e <meshLambertMaterial /> a colori per istanza. Contiene le 4 scatole di PEZZI.bici (telaio, piantone, manubrio, sella) più i 2 PEZZI di bici.ts (pedivella e pedale). Matrici e colori scritti in useLayoutEffect con la stessa composizione di Imperfezioni.tsx: compose(pos(p[0],p[1],p[2]), quat da Euler(rx ?? 0, 0, 0), scale(s)). Il colore del telaio si legge dalla bici presa: const o = imperfezioni(mondo, fisica)[runtime.biciInSella]; tinta = PEZZI.bici[2].tinte[o.v % 5] — la bici blu che hai preso resta blu.\n- ruote: <instancedMesh args={[undefined, undefined, 2]}> con <cylinderGeometry args={[0.5,0.5,1,10]} /> (10 lati invece dei 7 di Imperfezioni: questa la vedi da 6 metri). Aggiornate in useFrame: per ogni ruota compose(pos(±0.52, 0.33, 0), quat da Euler(Math.PI/2, spin, 0, 'XYZ'), scale(0.66, 0.07, 0.66)); spin = -(rt.persona.fase / BICI.pedalata) / 0.33. Il segno è negativo perché con l'ordine XYZ la rotazione attorno all'asse della ruota porta il punto anteriore verso l'alto quando è positiva, cioè la ruota girerebbe al contrario del moto.\nIl gruppo NON si posiziona da solo: lo colloca il Player (posizione, rotazione.y e rotazione.x della piega), esattamente come fa con gruppoAuto e gruppoPersona.\nCosto: 6 scatole (72 triangoli) + 2 cilindri da 10 lati (~80 triangoli) = ~150 triangoli e 2 draw call, presenti solo quando visible è true, cioè solo in modalità bici."
+  },
+  {
+   "path": "lib/lugo/furti.ts",
+   "scopo": "Lo strato del furto: chi si può prendere qui, cosa succede quando lo prendi, quanto scaldi i Carabinieri, e gli hook di collaudo. Sta tutto qui apposta, così la modifica al Player resta di poche righe leggibili e i tre furti si ritoccano da un file solo.",
+   "esporta": [
+    "export type TipoFurto = 'bici' | 'posteggio' | 'traffico'",
+    "export interface BersaglioFurto { tipo: TipoFurto; i: number; d: number; hint: string }",
+    "export interface EsitoFurto { mode: Modalita; calore: number; ritardo: number; avviso: string; contatore: 'bici' | 'auto'; veicolo: { colore: string; carrozzeria: number } | null }",
+    "export const DIST_FURTO: Record<TipoFurto, number>",
+    "export const CALORE_FURTO: Record<TipoFurto, { calore: number; ritardo: number; avviso: string }>",
+    "export function bersaglioFurto(mondo: MondoLugo, x: number, z: number): BersaglioFurto | null",
+    "export function compiFurto(b: BersaglioFurto, mondo: MondoLugo, rt: RuntimeGioco): EsitoFurto | null",
+    "export function vistoDaiCarabinieri(mondo: MondoLugo, x: number, z: number): boolean",
+    "export function hookFurti(mondo: MondoLugo, rt: RuntimeGioco): Record<string, unknown>"
+   ],
+   "dettaglio": "DIST_FURTO = { bici: 2.2, posteggio: 3.0, traffico: 3.2 }. Sono corte apposta: devi essere addosso al mezzo, così davanti a una vetrina vince sempre la vetrina (che si cerca fino a 9 m) e la E non ti fa rubare una bici mentre volevi entrare in un bar.\nCALORE_FURTO = { bici: { calore: 2, ritardo: 0, avviso: 'Ti sei preso una bici. Occhio.' }, posteggio: { calore: 4, ritardo: 8, avviso: 'Auto rubata! I Carabinieri sono avvisati.' }, traffico: { calore: 5, ritardo: 14, avviso: 'Gliel’hai portata via davanti agli occhi!' } }. Il «calore» è quello che il Player già usa per la guida spericolata (soglie esistenti: 2→1 stella, 4→2, 7→3), quindi una bici vale una stella, un'auto in sosta due, un'auto tolta a chi ci stava dentro due piene. Il «ritardo» sottrae secondi al raffreddamento: il Player fa decadimento.current = -ritardo, e siccome il calore cala di 2 ogni 20 s, la bici torna pulita in ~20 s, l'auto in sosta scende a una stella dopo 28 s ed è pulita dopo 48, la rapina resta a due stelle 34 s. Sopra a tutto: se vistoDaiCarabinieri il Player aggiunge +2 (stessa regola del pugno), che porta la rapina a tre stelle.\nvistoDaiCarabinieri(mondo, x, z): true se in runtime.npcs c'è un tipo 'carabiniere' entro 25 m, o se runtime.gazzella è entro 60 m, o se si è entro 90 m dal POI 'caserma' (mondo.poi.get('caserma')): rubare sotto la finestra della caserma è un'altra cosa.\nbersaglioFurto(mondo, x, z): valuta i tre candidati e restituisce il più vicino (mai due insieme).\n • bici: i = biciPiuVicina(mondo, fisica, x, z, DIST_FURTO.bici); hint 'Premi E per prendere la bici'.\n • posteggio: scorre infraGioco(mondo).parcheggi tenendo solo p.presente, distanza dal CENTRO auto < DIST_FURTO.posteggio; hint 'Premi E per prendere l’auto'.\n • traffico: scorre infraGioco(mondo).traffico tenendo solo !a.rubata && a.vAttuale < TRAFFICO.vFerma e distanza < DIST_FURTO.traffico; hint 'Premi E per prendere l’auto ferma'.\ncompiFurto(b, mondo, rt):\n • 'bici': prendiBici(...); ritorna { mode:'bici', veicolo:null, contatore:'bici', ...CALORE_FURTO.bici }.\n • 'posteggio': p = parcheggi[b.i]. Prima si LASCIA quella che avevi: se hypot(rt.auto − p) > 6, si chiama posaAuto(infra, rt.auto.x, rt.auto.z, rt.auto.yaw, tintaPrecedente, carrozzeriaPrecedente) — la tua vecchia auto diventa un'auto in sosta come le altre, con il suo collider, esattamente dove l'avevi lasciata. Poi prendiPosteggio(infra, b.i) toglie il collider dalla hash e nasconde l'istanza; rt.auto.x/z/yaw = p.x/z/yaw, vx=vz=sterzo=0. veicolo = { colore: TINTE_PARCO[p.tinta % TINTE_PARCO.length], carrozzeria: p.carrozzeria }. mode 'auto'.\n • 'traffico': a = traffico[b.i]. Stesso lascito dell'auto precedente. scendiEScappa(runtime.npcs, a.x, a.z, a.yaw, rt.persona.x, rt.persona.z) fa scendere il guidatore (un pedone RICICLATO, mai uno nuovo: gli InstancedMesh dei pedoni hanno capienza fissa). a.rubata = true; a.rientro = TRAFFICO.rientro. rt.auto sull'auto, veicolo = { colore: a.colore, carrozzeria: a.carrozzeria }. mode 'auto'.\nTutti e tre i rami: nessuna serratura, nessun contatto, nessuna tecnica. Si preme E e si è dentro, come si sale in ascensore. È finzione, non un manuale.\nhookFurti(mondo, rt) restituisce l'oggetto degli hook da fondere in window.__LUGO__ (vedi la sezione collaudo): bici, biciVicina, parcheggi, postoAuto, traffico, davantiATraffico, libero, furtoQui, tintaViva."
+  }
+ ],
+ "fileModificati": [
+  {
+   "path": "lib/lugo/physics.ts",
+   "modifiche": [
+    {
+     "dove": "metodo aggiungiObb (riga 23)",
+     "cosa": "cambia il tipo di ritorno da void a ColliderRT: costruisce l'oggetto in una const, chiama this.inserisci(c) e lo restituisce. L'unico chiamante esistente (veicoli.ts:72) ignora il valore e continua a compilare.",
+     "perche": "per togliere un collider bisogna avere in mano ESATTAMENTE quell'oggetto: la hash confronta per identità, non per valore."
+    },
+    {
+     "dove": "nuovo metodo privato celle(c: ColliderRT, fn: (cella: ColliderRT[]) => void) e refactor di inserisci perché lo usi",
+     "cosa": "calcola una volta sola il rettangolo di celle [x0..x1]×[z0..z1] dalla bbox del collider e chiama fn su ogni cella esistente.",
+     "perche": "inserimento e rimozione devono percorrere lo STESSO insieme di celle; scritto due volte, prima o poi divergono e resta un fantasma solido in mezzo alla strada."
+    },
+    {
+     "dove": "nuovi metodi pubblici rimuoviCollider(c: ColliderRT): void e rimettiCollider(c: ColliderRT): void",
+     "cosa": "rimuoviCollider percorre le celle della bbox e fa cella.splice(cella.indexOf(c), 1) dove lo trova; rimettiCollider è this.inserisci(c). Commento: ricostruire la spatial hash (migliaia di edifici) per un'auto sarebbe mezzo secondo di scatto in mezzo alla partita; il collider porta con sé la sua bbox, quindi le celle da ripulire sono esattamente quelle in cui era entrato, senza nessuna ricerca globale. Un'auto in sosta (r = hypot(1.85, 0.85) ≈ 2.04 su celle da 16 m) tocca al massimo quattro celle.",
+     "perche": "è il cuore del punto 2: l'ingombro dell'auto rubata deve sparire subito e tornare identico se il giocatore l'abbandona."
+    }
+   ]
+  },
+  {
+   "path": "lib/lugo/veicoli.ts",
+   "modifiche": [
+    {
+     "dove": "interface Posteggio",
+     "cosa": "aggiunge carrozzeria: number (indice in CARROZZERIE), presente: boolean, collider: ColliderRT | null.",
+     "perche": "un'auto in sosta ora è un oggetto con una storia: può essere presa, può tornare, e quando la guidi deve avere una forma sua."
+    },
+    {
+     "dove": "creaParcheggi",
+     "cosa": "salva il ritorno di aggiungiObb nel Posteggio (collider), imposta presente: true e carrozzeria: (out.length + tinta) % CARROZZERIE.length. In coda, dopo il ciclo, appende RISERVA_POSTEGGI = 6 slot vuoti { presente: false, collider: null, x: 0, z: 0, yaw: 0, tinta: 0, carrozzeria: 0 }.",
+     "perche": "la carrozzeria si DERIVA da indice e tinta invece di pescare dall'LCG: una estrazione in più sposterebbe il seme e ridisegnerebbe tutti i parcheggi di Lugo. Gli slot di riserva servono perché l'InstancedMesh di Veicoli.tsx ha capienza fissa: quando abbandoni un'auto ci vuole un posto già allocato dove metterla."
+    },
+    {
+     "dove": "nuove funzioni esportate prendiPosteggio(infra: InfraGioco, i: number): boolean e posaAuto(infra: InfraGioco, x: number, z: number, yaw: number, tinta: number, carrozzeria: number): boolean",
+     "cosa": "prendiPosteggio: se !p.presente ritorna false; altrimenti fisica.rimuoviCollider(p.collider!), p.collider = null, p.presente = false, infra.revParcheggi++, true. posaAuto: cerca il primo slot con !presente (prima quelli di riserva in coda, poi quelli liberati), richiede fisica.cerchioLibero(x, z, 1.2) — l'auto del giocatore non è nella hash, quindi qui si sta chiedendo solo che non ci sia un muro — scrive x/z/yaw/tinta/carrozzeria, presente = true, collider = fisica.aggiungiObb(x, z, 1.85, 0.85, yaw), infra.revParcheggi++, true. Se non c'è nessuno slot o il posto è occupato ritorna false e l'auto vecchia semplicemente non resta (documentato).",
+     "perche": "«come si rimette se il giocatore la abbandona»: la si rimette come qualunque altra auto in sosta, con lo stesso collider e la stessa istanza."
+    },
+    {
+     "dove": "interface AutoCivile",
+     "cosa": "aggiunge vAttuale: number, attesa: number, rubata: boolean, rientro: number, carrozzeria: number.",
+     "perche": "il traffico smette di essere cinematico puro: ha una velocità vera che può andare a zero, una pazienza, e una vita dopo il furto."
+    },
+    {
+     "dove": "creaTraffico",
+     "cosa": "inizializza vAttuale: 0, attesa: 0, rubata: false, rientro: 0, carrozzeria: i % CARROZZERIE.length.",
+     "perche": "anche qui niente estrazioni nuove dall'LCG: i colori del traffico devono restare quelli di sempre."
+    },
+    {
+     "dove": "nuova costante esportata TRAFFICO e nuova firma stepAutoCivile(a: AutoCivile, dt: number, davanti?: { x: number; z: number } | null): void",
+     "cosa": "TRAFFICO = { vista: 9, corsia: 1.6, frenata: 9, ripartenza: 2.6, vFerma: 0.6, pazienza: 2.2, rientro: 90 }. In testa: se a.rubata → a.rientro -= dt e, quando scende sotto zero E il giocatore è oltre 120 m, rubata = false, vAttuale = 0 (rientra in circolazione lontano dagli occhi, così il traffico di Lugo non si spopola a nove furti). Poi il rilevamento: fx = cos(a.yaw), fz = sin(a.yaw) (a.yaw tiene già conto del verso di marcia); dx/dz verso il giocatore; avanti = dx*fx + dz*fz, lato = -dx*fz + dz*fx; bloccata = avanti > 0 && avanti < TRAFFICO.vista && |lato| < TRAFFICO.corsia. vTarget = bloccata ? 0 : a.velocita; rampa = vTarget < vAttuale ? frenata : ripartenza; a.vAttuale += clamp(vTarget - vAttuale, ±rampa*dt); sotto 0.02 si azzera. a.attesa cresce solo se bloccata && vAttuale < vFerma, altrimenti torna a 0. Infine a.s += a.vAttuale*dt*a.verso e TUTTO il resto della funzione (rimbalzo agli estremi, posizione sulla polilinea, corsia di destra) resta identico.",
+     "perche": "la frenata guarda un corridoio, non un cerchio: un pedone sul marciapiede non deve bloccare il traffico, uno in mezzo alla carreggiata sì. 9 m sono circa 1,3 s a 7 m/s più il margine per fermarsi in 2,7 m: l'auto si ferma a due metri da te, non addosso."
+    },
+    {
+     "dove": "nuova funzione esportata respingiDaAuto(x: number, z: number, r: number, a: { x: number; z: number; yaw: number }): [number, number] | null",
+     "cosa": "spinta cerchio-vs-OBB (semiassi 1.85 × 0.85) con la stessa matematica di MondoFisico.risolviCerchio, ma su un rettangolo passato a mano.",
+     "perche": "le auto civili FERME devono essere solide anche per chi va a piedi o in bici: ci si appoggia, non ci si passa dentro. Quelle in corsa no — a Lugo non si investe nessuno, e un'auto in movimento che spinge il giocatore lo sbatterebbe contro le facciate."
+    },
+    {
+     "dove": "interface InfraGioco e funzione infraGioco",
+     "cosa": "aggiunge revParcheggi: number (inizializzato a 0) al record restituito.",
+     "perche": "è il contatore di revisione che dice a Veicoli.tsx di riscrivere le matrici delle istanze senza far ripartire React."
+    }
+   ]
+  },
+  {
+   "path": "lib/lugo/imperfezioni.ts",
+   "modifiche": [
+    {
+     "dove": "interface Imperfezione",
+     "cosa": "aggiunge presa?: boolean (opzionale, così nessun punto di costruzione esistente cambia).",
+     "perche": "una bici presa dal giocatore non si disegna più al muro, ma resta al suo posto nella lista: è la stessa bici, e quando la lasci torna visibile."
+    },
+    {
+     "dove": "PEZZI: nuova voce 'rastrelliera' e nuovo tipo in TipoImperfezione",
+     "cosa": "rastrelliera: due correnti orizzontali e tre archetti, tutti scatole/cilindri già instanziati — [{ scatola p:[0,0.12,0] s:[2.4,0.08,0.06] col:'#8A8E92' }, { scatola p:[0,0.12,0.5] s:[2.4,0.08,0.06] col:'#8A8E92' }, { cilindro p:[-0.8,0.34,0.25] s:[0.06,0.68,0.06] col:'#8A8E92' }, { cilindro p:[0,0.34,0.25] s:[0.06,0.68,0.06] col:'#8A8E92' }, { cilindro p:[0.8,0.34,0.25] s:[0.06,0.68,0.06] col:'#8A8E92' }].",
+     "perche": "la rastrelliera è chiesta dall'utente e non costa NIENTE in draw call: finisce negli stessi tre InstancedMesh (scatola/cilindro/sfera) di tutte le altre imperfezioni. 5 pezzi × 14 rastrelliere ≈ 900 triangoli."
+    },
+    {
+     "dove": "corpo di imperfezioniCitta: si estrae il ciclo attuale in una funzione locale seminaStrade(mondo, fisica): Imperfezione[] (identica, MAX e semi invariati) e imperfezioniCitta diventa: const out = seminaStrade(...); aggiungiRastrelliere(mondo, fisica, out); return out;",
+     "cosa": "aggiungiRastrelliere usa un LCG PROPRIO (seme 20260901) e non tocca quello delle strade. Per ognuno dei POI ['stazione','pavaglione','rocca','teatro','baracca','parco'] prova 12 direzioni a raggio 8 e 13 m dal punto; prende la prima posizione con fisica.cerchioLibero(px, pz, 2.2); orienta la rastrelliera con lo yaw di puntoStradaVicino(mondo, px, pz); appende la rastrelliera e fino a 4 bici a passo 0.62 m lungo il suo asse, ruotate di +90° rispetto a essa (le bici stanno di traverso, come nella realtà), ognuna validata con cerchioLibero(0.5). Massimo MAX_RASTRELLIERE = 14.",
+     "perche": "il ciclo attuale esce con `return out` appena tocca MAX: se le rastrelliere fossero dentro quel ciclo verrebbero saltate, e se usassero lo stesso LCG sposterebbero l'intero disordine della città (che è deterministico e già collaudato). Fuori e con seme proprio, Lugo resta identica e le rastrelliere si aggiungono in coda."
+    },
+    {
+     "dove": "nuova funzione esportata imperfezioni(mondo: MondoLugo, fisica: MondoFisico): Imperfezione[] con WeakMap<MondoLugo, Imperfezione[]> di memoria, sul modello di infraGioco",
+     "cosa": "restituisce sempre lo stesso array per lo stesso mondo. Commento: senza questa memoria ogni chiamante otteneva una COPIA (Imperfezioni.tsx e l'hook citta() di World.tsx la ricalcolano già oggi), e la bici che uno si porta via resterebbe appoggiata al muro per tutti gli altri.",
+     "perche": "il registro delle bici rubabili e il disegnatore delle bici devono guardare lo stesso array, o non si vedrà mai sparire niente."
+    }
+   ]
+  },
+  {
+   "path": "lib/lugo/npc.ts",
+   "modifiche": [
+    {
+     "dove": "type StatoNpc",
+     "cosa": "aggiunge 'fuga'.",
+     "perche": "il guidatore che scende dall'auto non cammina e non balza: se ne va di corsa per qualche secondo e poi torna a essere un passante come tutti."
+    },
+    {
+     "dove": "stepNpcs, catena degli stati (dopo il ramo 'balzo')",
+     "cosa": "nuovo ramo: else if (n.stato === 'fuga') { vx = n.bx * n.passo * 2.2; vz = n.bz * n.passo * 2.2; n.timer -= dt; if (n.timer <= 0) { n.stato = 'cammina'; n.fermoDa = 0; } }. Il resto (collisione, scivolamento, rotazione dello yaw, fase) è già condiviso sotto e vale anche per lui.",
+     "perche": "riusa tutto quello che c'è: nessun percorso nuovo, nessuna macchina a stati parallela."
+    },
+    {
+     "dove": "nuova funzione esportata scendiEScappa(npcs: Npc[], x: number, z: number, yaw: number, daX: number, daZ: number): Npc | null",
+     "cosa": "sceglie fra gli NPC vivi quello PIÙ LONTANO dal ladro (soglia minima 45 m), escludendo 'carabiniere' (è in servizio) e 'ciclista' (lascerebbe la bici per terra); lo teletrasporta al fianco passeggero dell'auto (x - sin(yaw)*1.6, z + cos(yaw)*1.6), stato 'fuga', timer 6 s, bx/bz = direzione che si allontana dal ladro, target a 60 m in quella direzione. Ritorna l'NPC o null.",
+     "perche": "gli InstancedMesh dei pedoni hanno capienza FISSA (N_NPC): aggiungere un NPC vero scriverebbe fuori dall'array delle matrici. Si ricicla, e si sceglie il più lontano così nessuno vede un passante sparire dall'altra parte della piazza. La scelta è cieca al tipo e alla variante: nessun comportamento è legato all'aspetto di nessuno."
+    },
+    {
+     "dove": "firma stepNpcs: il parametro modeAuto: boolean diventa mode: 'auto' | 'piedi' | 'bici'",
+     "cosa": "il blocco che riempie `veicoli` diventa: in auto come oggi (|rt.vAuto| > 4); in bici si spinge { x: rt.persona.x, z: rt.persona.z, fx: cos(rt.persona.yaw), fz: sin(rt.persona.yaw) } quando rt.vPersona > 4.5.",
+     "perche": "una bici lanciata a 30 km/h in mezzo al Pavaglione deve far scansare la gente come fa un'auto; sotto i 4,5 m/s no, o i pedoni saltellerebbero al passo d'uomo."
+    }
+   ]
+  },
+  {
+   "path": "lib/lugo/runtime.ts",
+   "modifiche": [
+    {
+     "dove": "interface RuntimeGioco",
+     "cosa": "aggiunge sella: number (0 a piedi, 1 in sella, con la rampa di transizione) e piega: number (inclinazione in curva, rad).",
+     "perche": "sono i due valori che il modello del personaggio e quello della bici devono leggere per stare in posa; stanno nel runtime caldo come faseRuote, non nello store, perché cambiano a ogni fotogramma."
+    },
+    {
+     "dove": "oggetto runtime",
+     "cosa": "aggiunge biciInSella: number (indice dell'imperfezione che si sta guidando, -1 = nessuna), biciSporche: number[] (indici da ridisegnare, svuotati da chi disegna), revImperfezioni: number.",
+     "perche": "far cambiare una singola istanza in un InstancedMesh senza far ri-renderizzare React: un contatore intero confrontato una volta per frame."
+    },
+    {
+     "dove": "posGiocatore",
+     "cosa": "la firma passa da (mode: 'auto' | 'piedi') a (mode: Modalita); il corpo resta mode === 'auto' ? rt.auto : rt.persona.",
+     "perche": "la bici VIVE su rt.persona: è la scelta che fa funzionare da sola metà del gioco (camera, minimappa, missioni, eventi) senza toccarla."
+    }
+   ]
+  },
+  {
+   "path": "lib/lugo/store.ts",
+   "modifiche": [
+    {
+     "dove": "export type Modalita",
+     "cosa": "'auto' | 'piedi' | 'bici'.",
+     "perche": "la terza modalità chiesta dall'utente."
+    },
+    {
+     "dove": "interfaccia e stato iniziale",
+     "cosa": "aggiunge veicoloRubato: { colore: string; carrozzeria: number } | null = null con setVeicoloRubato, e furti: { bici: number; auto: number } = { bici: 0, auto: 0 } con contaFurto: (che: 'bici' | 'auto') => void.",
+     "perche": "veicoloRubato è il vestito dell'auto che si sta guidando adesso e NON deve toccare tintaAuto/modelloAuto, che sono la scelta del giocatore allo start ed è salvata: sovrascriverle vorrebbe dire perdere per sempre il colore che si era scelto."
+    },
+    {
+     "dove": "setHint",
+     "cosa": "firma setHint: (msg: string | null, allerta?: boolean) => void, con un nuovo campo hintAllerta: boolean nello stato. I chiamanti esistenti non cambiano.",
+     "perche": "il suggerimento che ti fa alzare il livello di ricercato deve essere rosso: è l'unico avviso che il giocatore ha prima di premere."
+    },
+    {
+     "dove": "avvia",
+     "cosa": "set({ fase: 'gioco', veicoloRubato: null }).",
+     "perche": "una partita nuova comincia con l'auto che ti sei scelto, non con l'ultima che avevi preso."
+    }
+   ]
+  },
+  {
+   "path": "lib/lugo/salvataggio.ts",
+   "modifiche": [
+    {
+     "dove": "interface Salvataggio, caricaSalvataggio, avviaSalvataggio (setState e subscribe) e scrivi",
+     "cosa": "aggiunge furti: { bici: number; auto: number }, validato con una funzione locale che riporta ogni campo a un intero ≥ 0 (stessa filosofia di contatoriValidi) e con il confronto s.furti === prima.furti nella sottoscrizione.",
+     "perche": "quante bici e quante auto hai portato via è un totale di sempre e va sopravvissuto alla chiusura del browser; NON si salvano invece né veicoloRubato, né wanted, né lo stato di bici e auto rubate in giro per la città: al ricaricamento si riparte dalla Rocca con la propria auto e una Lugo intera, com'è sempre stato per le posizioni."
+    }
+   ]
+  },
+  {
+   "path": "lib/lugo/audio.ts",
+   "modifiche": [
+    {
+     "dove": "updateAudio",
+     "cosa": "la firma passa a (rt, mode: Modalita, dt). Il ramo else si sdoppia: in 'bici' set(gMotore, 0.008), set(gRotola, min(0.05, rt.vPersona * 0.006)), set(gVento, max(0, (rt.vPersona - 6) * 0.005)) e nessun passo; in 'piedi' tutto come oggi.",
+     "perche": "in sella non si sentono i passi e non si sente il motore: si sente la ruota che rotola e, sopra i 20 km/h, un filo d'aria."
+    },
+    {
+     "dove": "nuova funzione esportata clacson(): void",
+     "cosa": "stessa struttura di campanello(): due oscillatori 'square' a 370 e 440 Hz sul busEffetti, gain 0.0008 → 0.05 in 20 ms, tenuto 0,35 s, spento in 0,1.",
+     "perche": "due voci leggermente stonate sono il clacson di un'utilitaria; è il modo in cui l'auto ferma ti dice che ti sei parato in mezzo alla strada."
+    }
+   ]
+  },
+  {
+   "path": "components/lugo/Player.tsx",
+   "modifiche": [
+    {
+     "dove": "import e refs",
+     "cosa": "import { stepBici, BICI, lasciaBici } from '@/lib/lugo/bici'; import { bersaglioFurto, compiFurto, vistoDaiCarabinieri, hookFurti } from '@/lib/lugo/furti'; import { TRAFFICO, respingiDaAuto } from '@/lib/lugo/veicoli'; import { Bici } from './Bici'; nuovo ref gruppoBici.",
+     "perche": "tutta la logica sta nei moduli: qui si orchestra e basta, come dice l'intestazione del file."
+    },
+    {
+     "dove": "ChaseCamera, dopo il ramo if (mode === 'auto')",
+     "cosa": "nuovo ramo else if (mode === 'bici'): scarto = normalizzato(rt.persona.yaw - rt.cameraYaw); rt.cameraYaw += scarto * (1 - Math.exp(-7 * dt)). E le tre costanti diventano ternari a tre vie: dist = mode === 'auto' ? 8.5 : mode === 'bici' ? 6.0 : 4.2; alt = 3.4 : 2.7 : 2.1; k del lerp = 3.4 : 4.5 : 5.5; avantiMira = 5 : 2.6 : 1.2; fovTarget in bici = 55 + min(6, rt.vPersona * 0.4).",
+     "perche": "in sella si sterza col manubrio, non con la camera: se il riferimento restasse fermo come a piedi (dove si riallinea solo camminando dritti) girando si finirebbe a comandare la bici col riferimento di dieci secondi fa. Segue il muso, ma con una costante di tempo di 7 e non agganciata di colpo, o ogni colpo di sterzo diventa una frustata."
+    },
+    {
+     "dove": "blocco degli hook useEffect (riga ~202)",
+     "cosa": "si fonde ...hookFurti(mondo, rt) nell'oggetto __LUGO__ e si aggiungono due hook che devono chiudere sui ref locali: ricercato: () => ({ wanted: useLugo.getState().wanted, calore: calore.current, decadimento: decadimento.current }) e invecchia: (s: number) => { decadimento.current += s; }.",
+     "perche": "il collaudo deve poter far passare venti secondi di raffreddamento senza aspettarli davvero."
+    },
+    {
+     "dove": "useFrame, struttura dei rami: if (st.mode === 'auto') { ... } else if (st.mode === 'bici') { ... } else { ... }",
+     "cosa": "NUOVO ramo bici: const yawPrima = rt.persona.yaw; const esito = stepBici(rt.persona, input, dt, fisica, mondo.bounds); rt.vPersona = Math.abs(esito.v); rt.urto = esito.urto; rt.piega += (esito.piega - rt.piega) * (1 - Math.exp(-9 * dt)); runtime.frenata = input.freno || (input.indietro && esito.v > 0.5). Poi le auto civili ferme sono solide (ciclo su infra.traffico, salta rubata o vAttuale > 1.5, respingiDaAuto con raggio BICI.raggio). Poi R: se input.reset e non premuto prima, si riporta la bici sul puntoStradaVicino. Poi E: se input.interagisci && !interagiscePrima.current && rt.vPersona < 1.5 && !fuocoSuComando() → lasciaBici(mondo, fisica, rt.persona.x, rt.persona.z, rt.persona.yaw); st.setMode('piedi'); suonaEvento('salita').",
+     "perche": "si scende solo quasi da fermi, come dall'auto; e la bici resta dove l'hai lasciata, riprendibile."
+    },
+    {
+     "dove": "ramo 'piedi', catena delle priorità della E",
+     "cosa": "si calcola const bers = occupato ? null : bersaglioFurto(mondo, rt.persona.x, rt.persona.z) e si inserisce un ramo fra `dAuto < DIST_SALITA` e la bacheca: else if (bers && bers.d < dBanco && bers.d < dBottega) { const e = compiFurto(bers, mondo, rt); if (e) { st.setMode(e.mode); st.setVeicoloRubato(e.veicolo); st.contaFurto(e.contatore); calore.current += e.calore + (vistoDaiCarabinieri(mondo, rt.persona.x, rt.persona.z) ? 2 : 0); decadimento.current = -e.ritardo; <aggiorna wanted con la stessa tabella già usata due volte nel file>; st.setAvviso(e.avviso); suonaEvento('salita'); } }.",
+     "perche": "l'auto TUA resta la prima scelta (2,6 m), poi vince chi è più vicino fra veicolo da prendere, bacheca e bottega: è la stessa regola di precedenza per distanza che il file già applica fra banco e bottega, ed è il motivo per cui le distanze di furto sono corte (2,2–3,2 m) mentre una vetrina si apre da 9."
+    },
+    {
+     "dove": "il controllo «beccato dai Carabinieri» (oggi dentro il ramo st.mode === 'auto')",
+     "cosa": "si sposta FUORI dai rami, subito prima del blocco del pugno, e usa il bersaglio attivo: const qui = st.mode === 'auto' ? rt.auto : rt.persona; const vQui = st.mode === 'auto' ? Math.abs(rt.vAuto) : rt.vPersona; se st.wanted > 0 && runtime.gazzella && hypot(qui − gazzella) < 4.2 && vQui < 2.5 → stessa multa di oggi (min(denaro, 30*wanted)), calore 0, wanted 0, runtime.caccia = false.",
+     "perche": "rubata una bici e scappati a piedi, con il controllo dentro il ramo auto la gazzella ti stava addosso all'infinito senza che succedesse mai niente. A piedi si corre a 5,2 m/s e la soglia è 2,5: scappare funziona ancora, fermarsi no."
+    },
+    {
+     "dove": "coda del useFrame: rt.sella",
+     "cosa": "rt.sella += ((st.mode === 'bici' ? 1 : 0) - rt.sella) * (1 - Math.exp(-9 * dt)); se |differenza| < 0.01 si aggancia a 0 o 1.",
+     "perche": "il passaggio in sella non deve essere uno scatto di un fotogramma, e la coda asintotica va tagliata o il personaggio resta per sempre a 0,997 di posa."
+    },
+    {
+     "dove": "suggerimento contestuale (hint)",
+     "cosa": "in 'auto' invariato; in 'bici': se rt.vPersona < 1.5 → 'Premi E per scendere'. In 'piedi': dopo il controllo dell'auto propria, se bers esiste ed è più vicino di bottega e bacheca → hint = bers.hint con allerta = true. La chiamata diventa st.setHint(hint, allerta).",
+     "perche": "il giocatore deve sapere PRIMA di premere che quella E gli costa una stella."
+    },
+    {
+     "dove": "blocco «modelli» in coda",
+     "cosa": "gruppoPersona.visible = st.mode !== 'auto'; gruppoPersona.position.set(rt.persona.x, QUOTA_CALPESTIO + 0.16 * rt.sella, rt.persona.z); gruppoPersona.rotation.y = -rt.persona.yaw. Nuovo: se gruppoBici.current → visible = st.mode === 'bici'; position.set(rt.persona.x + Math.cos(rt.persona.yaw) * 0.30, QUOTA_CALPESTIO, rt.persona.z + Math.sin(rt.persona.yaw) * 0.30); rotation.y = -rt.persona.yaw; rotation.x = rt.piega.",
+     "perche": "la sella dei pezzi della bici sta a x = -0.32 nel suo riferimento: spostando la BICI in avanti di 0,30 m il sedile finisce esattamente sotto il bacino del personaggio, che sta a 0,94 m da terra e va alzato solo di 16 cm perché il piede esteso arrivi al pedale. Bici e ciclista pendono attorno alla stessa linea a terra, quindi la piega li tiene insieme."
+    },
+    {
+     "dove": "blocco della «esplorazione» e del pugno",
+     "cosa": "nessuna modifica: restano condizionati a st.mode === 'piedi'.",
+     "perche": "i luoghi di Lugo si scoprono camminando, non pedalando, ed è la regola di sempre; e in sella non si tirano pugni."
+    },
+    {
+     "dove": "return del componente",
+     "cosa": "si aggiunge <Bici ref={gruppoBici} rt={rt} /> accanto a <Car> e <Character>.",
+     "perche": "stessa struttura degli altri due modelli del giocatore."
+    }
+   ]
+  },
+  {
+   "path": "components/lugo/Car.tsx",
+   "modifiche": [
+    {
+     "dove": "corpo di Car, dove si leggono tinta e modello",
+     "cosa": "const rubata = useLugo((s) => s.veicoloRubato); const c = carrozzeriaById(CARROZZERIE[(rubata ? rubata.carrozzeria : modello) % CARROZZERIE.length].id); const colore = rubata ? rubata.colore : TINTE_AUTO[tinta % TINTE_AUTO.length].colore.",
+     "perche": "l'auto che guidi è quella che hai preso: la sua tinta e la sua sagoma. Senza toccare tintaAuto/modelloAuto, che restano la scelta salvata del giocatore."
+    }
+   ]
+  },
+  {
+   "path": "components/lugo/Character.tsx",
+   "modifiche": [
+    {
+     "dove": "Gamba.useFrame",
+     "cosa": "const sella = rt.sella; anca.rotation.z = camminata*(1-sella) + pedalata*sella, con pedalata = 0.62 + Math.sin(rt.persona.fase + fase) * 0.30; ginocchio.rotation.z = camminaGin*(1-sella) + pedalaGin*sella, con pedalaGin = -(0.95 + Math.sin(rt.persona.fase + fase + 1.9) * 0.45).",
+     "perche": "con il modello rivolto a +X un angolo POSITIVO su un arto che pende porta il piede in avanti: 0,62 rad mettono le cosce sui pedali, e il ginocchio si piega all'indietro (negativo) come già fa camminando. La fase è la stessa di sempre, solo che ora avanza a 1,15 rad/m invece di 3,5: si pedala a 88 giri al minuto senza nessun contatore nuovo."
+    },
+    {
+     "dove": "Braccio.useFrame",
+     "cosa": "spalla.rotation.z = camminata*(1-sella) + 1.05*sella; gomito.rotation.z = camminaGomito*(1-sella) + (-0.20)*sella.",
+     "perche": "le mani vanno sul manubrio e ci restano: niente bracci che dondolano mentre si pedala."
+    },
+    {
+     "dove": "Character.useFrame (corpo, busto, testa)",
+     "cosa": "corpo.position.y = (rimbalzo + respiro) * (1 - sella); corpo.rotation.x = (1-sella)*oscillazioneDaFermo + rt.piega*sella; busto.rotation.z = (-corsa*0.26 - v*0.05)*(1-sella) + (-0.5)*sella; testa.rotation.z = (corsa*0.2)*(1-sella) + 0.42*sella.",
+     "perche": "in sella non si rimbalza a ogni passo, si piega con la bici (rotation.x positivo = verso destra, come il rollio dell'auto) e ci si sporge sul manubrio tenendo la testa dritta sulla strada."
+    }
+   ]
+  },
+  {
+   "path": "components/lugo/Veicoli.tsx",
+   "modifiche": [
+    {
+     "dove": "useLayoutEffect delle matrici dei posteggi",
+     "cosa": "si estrae una funzione locale scriviPosteggio(i: number) che compone le tre matrici (scocca, abitacolo, sotto) e il colore, oppure scrive ZERO (matrice a scala 0) se !p.presente; il useLayoutEffect la chiama per ogni indice. Capienza allocata: infra.parcheggi.length (che ora comprende i 6 slot di riserva), count fisso a quella lunghezza.",
+     "perche": "nascondere e far riapparire una singola auto è scrivere tre matrici, non ricostruire l'InstancedMesh."
+    },
+    {
+     "dove": "nuovo useFrame nel componente Veicoli",
+     "cosa": "un ref con l'ultima revisione vista; se infra.revParcheggi è diverso, si riscrivono TUTTE le matrici dei posteggi (170 istanze: costa una volta ogni furto, non ogni frame) e si alza needsUpdate su instanceMatrix e instanceColor.",
+     "perche": "un confronto fra due interi per fotogramma è gratis e non fa passare da React niente che cambia in mezzo al gioco."
+    },
+    {
+     "dove": "AutoInGiro",
+     "cosa": "nel useFrame: si passa il giocatore a stepAutoCivile — stepAutoCivile(auto, dt, posGiocatore(useLugo.getState().mode)); gruppo.visible = !auto.rubata; un ref suonato per il clacson: se auto.attesa > TRAFFICO.pazienza && !suonato → clacson(), suonato = true; se auto.attesa === 0 → suonato = false.",
+     "perche": "l'auto ferma che aspetta deve dirtelo, e una volta sola: senza il ref suonerebbe a ogni fotogramma."
+    },
+    {
+     "dove": "strisce blu (useMemo)",
+     "cosa": "nessuna modifica: le righe restano disegnate anche quando l'auto non c'è più.",
+     "perche": "lo stallo resta dipinto sull'asfalto: è quello che vedi dal vivo, e rende leggibile che lì un'auto c'era."
+    }
+   ]
+  },
+  {
+   "path": "components/lugo/Imperfezioni.tsx",
+   "modifiche": [
+    {
+     "dove": "useMemo dei gruppi",
+     "cosa": "si estrae la composizione in una funzione locale componi(o: Imperfezione, pz: Pezzo, m: THREE.Matrix4) (identica a quella di oggi) e si costruisce, accanto ai tre array, una mappa indici: Map<number, { scatola: number[]; cilindro: number[] }> popolata solo per gli oggetti con t === 'bici'. Si legge imperfezioni(mondo, fisica) invece di imperfezioniCitta(mondo, fisica).",
+     "perche": "per far sparire UNA bici bisogna sapere quali istanze dei due InstancedMesh sono sue; e la lista dev'essere quella condivisa, o si nasconderebbe una bici in una copia che nessuno disegna."
+    },
+    {
+     "dove": "nuovo useFrame",
+     "cosa": "se runtime.revImperfezioni è diverso dall'ultima vista, per ogni indice in runtime.biciSporche si riscrivono le sue istanze — matrice ZERO (scala 0) se o.presa, altrimenti componi(o, pezzo, m) con le sue x/z/rot nuove — poi biciSporche.length = 0 e needsUpdate.",
+     "perche": "prendere e posare una bici deve costare sei matrici, non un ri-render dell'intera città."
+    }
+   ]
+  },
+  {
+   "path": "components/lugo/Npcs.tsx",
+   "modifiche": [
+    {
+     "dove": "chiamata a stepNpcs",
+     "cosa": "stepNpcs(npcs, dt, mondo, fisica, rt, st.mode).",
+     "perche": "segue la nuova firma: anche la bici lanciata fa scansare la gente."
+    },
+    {
+     "dove": "bersaglio della gazzella",
+     "cosa": "const g = posGiocatore(st.mode); const bersaglio = runtime.caccia ? { x: g.x, z: g.z } : undefined.",
+     "perche": "oggi la gazzella insegue solo chi è in auto: rubata una bici, i Carabinieri non partivano mai. Ora insegue chiunque sia ricercato, e il controllo del fermo (spostato nel Player) chiude la partita."
+    }
+   ]
+  },
+  {
+   "path": "components/lugo/Hud.tsx",
+   "modifiche": [
+    {
+     "dove": "tachimetro (riga 342)",
+     "cosa": "{mode === 'piedi' ? 'a piedi' : 'km/h'}.",
+     "perche": "in bici i km/h hanno senso: sono quelli veri della pedalata."
+    },
+    {
+     "dove": "blocco hint (riga 621)",
+     "cosa": "si legge hintAllerta dallo store e className={'lugo-hint' + (hintAllerta ? ' lugo-hint-allerta' : '')}.",
+     "perche": "il suggerimento che costa una stella dev'essere riconoscibile a colpo d'occhio."
+    }
+   ]
+  },
+  {
+   "path": "components/lugo/Joystick.tsx",
+   "modifiche": [
+    {
+     "dove": "riga 114, scelta del pulsante",
+     "cosa": "la condizione {mode === 'auto' ? <FRENO/> : <CORRI + PUGNO/>} diventa {mode === 'piedi' ? <CORRI + PUGNO/> : <FRENO/>}.",
+     "perche": "in sella si frena, non si corre e non si tira un pugno: sul telefono il pulsante deve fare la cosa giusta. L'useEffect che azzera i pulsanti al cambio di mode già copre la terza modalità."
+    }
+   ]
+  },
+  {
+   "path": "components/lugo/Minimap.tsx",
+   "modifiche": [
+    {
+     "dove": "riga 93, finestraTarget",
+     "cosa": "s.mode === 'auto' ? 260 + Math.min(140, Math.abs(rt.vAuto) * 6) : s.mode === 'bici' ? 215 : 190.",
+     "perche": "senza il ternario a tre vie la bici userebbe lo zoom dell'auto letto su rt.vAuto, che in bici è fermo: si vedrebbe la mappa larga per un mezzo che va piano. Le righe 90 e 164 restano come sono, perché 'bici' cade già su rt.persona ed è giusto così."
+    }
+   ]
+  },
+  {
+   "path": "components/lugo/World.tsx",
+   "modifiche": [
+    {
+     "dove": "hook citta(), riga 382",
+     "cosa": "imperfezioni: imperfezioni(mondo, infraGioco(mondo).fisica).length.",
+     "perche": "deve contare la lista condivisa, quella vera, comprese le rastrelliere. Nessuna fase del collaudo attuale asserisce su questo numero, quindi il cambiamento non rompe niente."
+    }
+   ]
+  },
+  {
+   "path": "app/lugo/lugo.css",
+   "modifiche": [
+    {
+     "dove": "dopo .lugo-hint (riga ~509)",
+     "cosa": "nuova regola .lugo-hint-allerta { color: var(--pericolo); border-color: rgba(255, 106, 92, 0.45); } — nessun keyframe, nessun lampeggio: lampeggia già la stella del ricercato.",
+     "perche": "l'unico segnale di cui il giocatore ha bisogno prima di premere E su un veicolo che non è suo."
+    }
+   ]
+  },
+  {
+   "path": "tools/lugo/verify-lugo.mjs",
+   "modifiche": [
+    {
+     "dove": "nuove fasi 3d, 3e, 3f inserite dopo il blocco «fase 3c: esplorazione e distintivi» e PRIMA di «costo di un fotogramma»",
+     "cosa": "le tre prove descritte nel campo collaudo, ciascuna attivata dalla presenza del proprio hook (typeof L.biciVicina === 'function' e simili), come fanno già tutte le altre fasi.",
+     "perche": "lo script si accende da solo in base agli hook presenti: le fasi vecchie continuano a girare identiche anche prima che il codice nuovo esista."
+    },
+    {
+     "dove": "fase «costo di un fotogramma»",
+     "cosa": "nessuna modifica alle soglie (700k triangoli, 170 draw call): la prova della bici misura di nuovo L.render() mentre si pedala.",
+     "perche": "le due draw call in più della bici esistono solo in sella, ed è lì che vanno misurate."
+    }
+   ]
+  }
+ ],
+ "condivisi": {
+  "store": [
+   "Modalita: il tipo diventa 'auto' | 'piedi' | 'bici' (una parola in più, nessun campo)",
+   "veicoloRubato: { colore: string; carrozzeria: number } | null — default null; è il vestito dell'auto che si guida ADESSO, non tocca tintaAuto/modelloAuto (che sono salvati e sono la scelta del giocatore)",
+   "setVeicoloRubato: (v: { colore: string; carrozzeria: number } | null) => void",
+   "furti: { bici: number; auto: number } — default { bici: 0, auto: 0 }, totale di sempre, salvato",
+   "contaFurto: (che: 'bici' | 'auto') => void — incrementa il contatore giusto",
+   "hintAllerta: boolean — default false; true quando il suggerimento in corso è un furto",
+   "setHint: (msg: string | null, allerta?: boolean) => void — parametro AGGIUNTO in coda, i chiamanti esistenti non cambiano; scrive hint e hintAllerta insieme",
+   "avvia: aggiunge veicoloRubato: null al set esistente"
+  ],
+  "player": [
+   "import { stepBici, BICI, lasciaBici } from '@/lib/lugo/bici'; import { bersaglioFurto, compiFurto, vistoDaiCarabinieri, hookFurti } from '@/lib/lugo/furti'; import { TRAFFICO, respingiDaAuto } from '@/lib/lugo/veicoli'; import { Bici } from './Bici'",
+   "ChaseCamera: nuovo ramo else if (mode === 'bici') che aggancia rt.cameraYaw a rt.persona.yaw con costante 7; i cinque ternari mode === 'auto' ? A : B (dist, alt, k del lerp, avantiMira, fovTarget) diventano a tre vie con i valori 6.0 / 2.7 / 4.5 / 2.6 / 55+min(6, vPersona*0.4)",
+   "hook useEffect: ...hookFurti(mondo, rt) fuso in __LUGO__, più ricercato() e invecchia(s) che chiudono su calore.current e decadimento.current",
+   "useFrame: il if/else diventa if (mode === 'auto') / else if (mode === 'bici') / else, con il ramo bici completo (stepBici, auto civili ferme solide via respingiDaAuto, R, E per scendere sotto 1,5 m/s)",
+   "useFrame ramo piedi: un solo ramo nuovo nella catena della E, fra `dAuto < DIST_SALITA` e la bacheca, che chiama compiFurto e applica calore/ritardo/wanted/avviso",
+   "il blocco «beccato dai Carabinieri» esce dal ramo auto e diventa comune a tutte e tre le modalità (usa il bersaglio attivo e la sua velocità)",
+   "coda del frame: rt.sella con rampa exp(-9*dt) e aggancio a 0/1 sotto 0.01",
+   "hint: ramo bici ('Premi E per scendere') e ramo piedi (bers.hint con allerta true); la chiamata diventa st.setHint(hint, allerta)",
+   "blocco modelli: gruppoPersona.visible = st.mode !== 'auto', quota QUOTA_CALPESTIO + 0.16 * rt.sella, e il nuovo gruppoBici posizionato 0,30 m avanti al ciclista con rotation.x = rt.piega",
+   "return: <Bici ref={gruppoBici} rt={rt} />",
+   "RuntimeGioco (lib/lugo/runtime.ts): due campi nuovi, sella: number e piega: number, entrambi inizializzati a 0 nel useMemo che crea rt"
+  ],
+  "hud": [
+   "tachimetro: {mode === 'piedi' ? 'a piedi' : 'km/h'} al posto di {mode === 'auto' ? 'km/h' : 'a piedi'}",
+   "hint: legge hintAllerta e aggiunge la classe lugo-hint-allerta quando è true",
+   "nient'altro: stelle del ricercato, avvisi e denaro funzionano già come sono"
+  ],
+  "css": [
+   "lugo-hint-allerta"
+  ],
+  "input": [
+   "nessun tasto nuovo e nessun tasto cambiato: E prende, E scende, R raddrizza anche in bici, Spazio frena anche in bici, Shift in sella non fa nulla (niente scatto: la bici ha una sola velocità massima, altrimenti si terrebbe Shift premuto per sempre)",
+   "Joystick.tsx: il pulsante a schermo passa da FRENO/CORRI scelti su mode === 'auto' a scelti su mode === 'piedi', così in bici compare FRENO"
+  ]
+ },
+ "rischi": [
+  "La terza modalità entra in 14 punti che oggi scrivono mode === 'auto' ? A : B. Tutti sono stati verificati: 'bici' cade sul ramo persona ed è quello giusto per camera-target, minimappa (righe 90 e 164), Eventi.tsx:212, World.tsx:215, posGiocatore, teleport e tachimetro. I soli che vanno corretti a mano sono Minimap:93 (userebbe lo zoom dell'auto su una velocità ferma), Hud:342 (direbbe 'a piedi' in sella), Joystick:114 (mostrerebbe CORRI) e updateAudio (farebbe i passi mentre pedali). Missioni.tsx:210 resta com'è di proposito: una tappa 'aPiedi' non si chiude in sella, bisogna scendere.",
+  "rimuoviCollider confronta per IDENTITÀ dell'oggetto: se un giorno qualcuno duplicasse il ColliderRT prima di inserirlo, la rimozione fallirebbe in silenzio e resterebbe un'auto invisibile e solida in mezzo alla strada. Il Posteggio tiene il riferimento e lo azzera quando lo cede: quel null è la guardia contro il doppio inserimento.",
+  "Determinismo della città: imperfezioniCitta e creaParcheggi condividono un LCG per posizioni, salti e tinte. Una sola estrazione in più sposta TUTTO (le bici cambiano muro, i parcheggi cambiano via) e le fasi di collaudo che teletrasportano su punti calcolati diventano instabili. Per questo carrozzeria si deriva dall'indice e le rastrelliere hanno un seme proprio e stanno in una funzione a parte, appesa dopo il MAX del ciclo delle strade.",
+  "Capienza degli InstancedMesh. I posteggi ne allocano quanti sono: senza i 6 slot di riserva, abbandonare un'auto scriverebbe fuori dall'array delle matrici. Idem per i pedoni: il guidatore che scappa DEVE essere un NPC riciclato, mai uno nuovo (N_NPC è la capienza, e in QA è 30).",
+  "Prestazioni: +2 draw call (solo in sella) e circa +6k triangoli fra rastrelliere e bici in rastrelliera, tutti dentro gli InstancedMesh che esistono già. Da 156 draw call si passa a 158 nel caso peggiore, e ogni auto rubata al traffico ne toglie 4. Il rischio vero sarebbe stato disegnare la bici del giocatore con sette mesh separate: qui sono due InstancedMesh.",
+  "La gazzella ora insegue anche a piedi e in bici, e il fermo (con multa) vale in tutte e tre le modalità: è un comportamento NUOVO per chi va a piedi, che prima era intoccabile. La soglia resta 2,5 m/s contro i 5,2 della corsa, quindi scappare funziona; ma un giocatore che si ferma a leggere una vetrina mentre è ricercato ora paga.",
+  "Auto civili ferme solide: il push si applica solo sotto 1,5 m/s. Se la soglia salisse, un'auto in corsa spingerebbe il giocatore dentro una facciata (la spinta non è filtrata dalla fisica dei muri). Sotto quella soglia il peggio che può capitare è restare incastrati fra l'auto e il muro, e basta indietreggiare.",
+  "Se il giocatore abbandona la sua auto e non c'è nessuno slot libero (sette furti d'auto senza mai riprendere quelle lasciate), l'auto vecchia semplicemente non resta parcheggiata: sparisce. È documentato e preferibile a far crescere l'array.",
+  "Etica e regole del progetto: nessuna serratura, nessun contatto, nessun attrezzo — l'interazione è E e niente altro, e nemmeno l'HUD racconta un metodo. Il guidatore che scappa si sceglie per DISTANZA, escludendo solo carabinieri e ciclisti per ragioni di scena: nessun tipo, variante, colore o pelle entra nella scelta, e i maranza restano quello che sono, diversi fra loro e non associati a niente. Nomi e categorie delle attività non vengono toccati, nessun livello partner cambia, nessuna insegna nuova."
+ ],
+ "collaudo": [
+  {
+   "nome": "la bici si prende, si pedala e si lascia",
+   "come": "Fase 3d, attiva se typeof L.biciVicina === 'function'. Si scende dall'auto (Spazio 1200 ms, KeyE) se serve. const b = await lugo('L.biciVicina()') → { i, x, z } della bici rubabile più vicina al giocatore (l'hook cerca su tutta la città, non solo attorno). teleport(b.x, b.z) e attesa 700 ms; press KeyE; attesa 600 ms. (1) L.mode() === 'bici' → ok('bici presa'), altrimenti ko con { mode, pos, bici: L.bici() }. (2) L.bici().libere === libere0 - 1 → ok('la bici sparisce dal muro'). (3) p0 = L.pos(); ArrowUp tenuto 4000 ms; p1 = L.pos(); distanza > 4 → ok('si pedala', metri) — la finestra è larga perché in headless il rasterizzatore software fa pochi fotogrammi, come già scritto per la guida. (4) const r = L.render(); r.triangoli < 700000 && r.chiamate < 170 → ok('costo del fotogramma in sella'). (5) Spazio 1200 ms per fermarsi, press KeyE, L.mode() === 'piedi' && L.bici().libere === libere0 → ok('la bici resta dove l’hai lasciata'), e hypot(L.biciVicina() − L.pos()) < 3 conferma che è proprio lì. (6) L.ricercato().wanted >= 1 → ok('un furto si vede'); L.invecchia(25); attesa 500 ms; L.ricercato().wanted === 0 → ok('e passa')."
+  },
+  {
+   "nome": "l'auto in sosta si prende, e il suo ingombro sparisce dalla fisica",
+   "come": "Fase 3e, attiva se typeof L.postoAuto === 'function'. const p = await lugo('L.postoAuto()') → { i, x, z, yaw, tinta, lato: [x, z] } dell'auto in sosta più vicina, con `lato` già validato libero (scostamento 1,55 m sul fianco, ripiego sull'altro fianco e poi davanti/dietro a 2,4 m). (1) L.libero(p.x, p.z, 1.2) === false → ok('le auto in sosta sono solide'). (2) A piedi: teleport(p.lato[0], p.lato[1]), attesa 700 ms, press KeyE, attesa 600 ms. L.mode() === 'auto' → ok('auto in sosta rubata'). (3) L.libero(p.x, p.z, 1.2) === true → ok('il collider dell’auto rubata è sparito') — è la prova che la spatial hash è stata modificata e non ricostruita. (4) L.parcheggi().presenti === presenti0 - 1. (5) L.tintaViva() === p.tinta → ok('si guida quella, col suo colore'). (6) L.ricercato().wanted >= 2 → ok('due stelle per un’auto'). (7) p0 = L.pos(); ArrowUp 3000 ms; distanza > 3 → ok('e parte davvero'). (8) Si scende (Spazio + KeyE) e si controlla che dopo il furto successivo l'auto lasciata compaia fra i posteggi: L.parcheggi().presenti torna a presenti0."
+  },
+  {
+   "nome": "l'auto del traffico frena se le ti pari davanti, e poi te la porti via",
+   "come": "Fase 3f, attiva se typeof L.davantiATraffico === 'function'. const t = await lugo('L.davantiATraffico()') → { i, x, z } di un punto sulla corsia 7 m davanti a un'auto del traffico in movimento, validato con cerchioLibero(0.45) (se il primo candidato è dentro un muro l'hook passa all'auto dopo). (1) A piedi: teleport(t.x, t.z); attesa 2500 ms; const a = (await lugo('L.traffico()'))[t.i]; a.v < 0.8 → ok('l’auto frena davanti al giocatore', v). (2) Si aspettano altri 1500 ms e si riletge: hypot(a2 − a) < 1.2 → ok('e resta ferma finché non ti sposti'). (3) Furto: teleport sul fianco (a.x - sin(a.yaw)*1.7, a.z + cos(a.yaw)*1.7), attesa 600 ms, press KeyE, attesa 600 ms. L.mode() === 'auto' && L.traffico()[t.i].rubata === true → ok('auto del traffico portata via'). (4) L.furti().auto === 2 (questa e quella della fase 3e) → ok('i furti si contano'). (5) L.ricercato().wanted >= 2 → ok('e i Carabinieri si muovono'); screenshot in tools/lugo/shots/06-furto.png. (6) Si torna in auto per le fasi successive come fanno già tutte le altre fasi (ciclo di KeyE finché L.mode() === 'auto')."
+  },
+  {
+   "nome": "regressioni da tenere d'occhio nelle fasi che esistono già",
+   "come": "Le fasi 2 (guida), 3 (discesa/camminata/risalita), 3a (matrice delle otto direzioni) e 3b (vetrina) devono passare identiche: sono la prova che la terza modalità non ha spostato niente. In più, la fase «costo del fotogramma» resta con le stesse soglie (700k / 170) e va letta DOPO le tre fasi nuove, con almeno un'auto del traffico rubata e un'auto in sosta in meno: se i numeri salgono invece di scendere, qualcosa non si sta nascondendo davvero. Utile anche stampare, alla fine, L.bici() e L.parcheggi() nel riepilogo: sono due righe che dicono a colpo d'occhio se il mondo è tornato coerente."
+  }
+ ]
+}

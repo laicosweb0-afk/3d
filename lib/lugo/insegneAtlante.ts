@@ -199,11 +199,22 @@ export function costruisciAtlante(botteghe: DatiBottega[], ridotto: boolean): At
   const lato = ridotto ? 1024 : 2048;
   const k = ridotto ? 0.5 : 1;
   const BW = 512 * k;
-  const BH = 96 * k;
   const COL = 4;
-  const RIGHE_A = 17;
+  // L'ALTEZZA DELLA BANDA SI ADATTA AL NUMERO DI BOTTEGHE, e non è un
+  // dettaglio: la fascia delle bande è alta 1632 pixel e basta, quindi o
+  // sono alte 96 (17 righe, 68 posti) o alte 48 (34 righe, 136 posti).
+  // Con la mappa vera di Lugo le attività sono diventate centodieci, e con
+  // 68 posti le ultime quarantadue mostravano tutte il nome della
+  // sessantottesima: quarantadue insegne sbagliate in giro per la città.
+  //
+  // Si stringe in ALTEZZA e non in larghezza perché a leggersi da lontano è
+  // la larghezza che conta: un nome sta su una riga sola, e quello che
+  // serve sono i pixel per lettera, non quelli sopra e sotto.
+  const compatto = botteghe.length > 68;
+  const BH = (compatto ? 48 : 96) * k;
+  const RIGHE_A = compatto ? 34 : 17;
   const SLOT = COL * RIGHE_A;
-  const yB = RIGHE_A * BH; // 1632 (o 816)
+  const yB = RIGHE_A * BH; // sempre 1632 (o 816 in ridotto)
   const PW = 128 * k;
   const yD = lato - 64 * k;
 
@@ -215,7 +226,7 @@ export function costruisciAtlante(botteghe: DatiBottega[], ridotto: boolean): At
   ctx.fillRect(0, 0, lato, lato);
 
   // ── fascia A: una banda per bottega ──
-  const gutter = 6 * k;
+  const gutter = (compatto ? 3 : 6) * k;
   botteghe.slice(0, SLOT).forEach((b, i) => {
     const cx = (i % COL) * BW;
     const cy = ((i / COL) | 0) * BH;
@@ -226,7 +237,7 @@ export function costruisciAtlante(botteghe: DatiBottega[], ridotto: boolean): At
 
     // il riquadro del simbolo a sinistra: se la bottega ha un logo
     // autorizzato resta vuoto e lo riempirà applicaLoghi
-    const lat = BH - gutter * 2 - 4 * k;
+    const lat = BH - gutter * 2 - (compatto ? 2 : 4) * k;
     if (!b.logo) {
       disegnaPittogramma(ctx, b.pittogramma, cx + gutter + lat / 2, cy + BH / 2, lat, testo, fondo);
     }
@@ -237,8 +248,8 @@ export function costruisciAtlante(botteghe: DatiBottega[], ridotto: boolean): At
     ctx.fillStyle = testo;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    let corpo = Math.round(74 * k);
-    const pavimento = Math.round(40 * k);
+    let corpo = Math.round((compatto ? 34 : 74) * k);
+    const pavimento = Math.round((compatto ? 20 : 40) * k);
     let nome = (b.nome || 'Bottega').toUpperCase();
     const font = (c: number) => `bold ${c}px ui-sans-serif, system-ui, sans-serif`;
     ctx.font = font(corpo);
@@ -262,7 +273,8 @@ export function costruisciAtlante(botteghe: DatiBottega[], ridotto: boolean): At
 
     // il filetto di categoria: due botteghe vicine non hanno la stessa insegna
     ctx.fillStyle = COLORE_CATEGORIA[b.categoria] ?? '#8A8A96';
-    ctx.fillRect(cx + gutter, cy + BH - gutter - 4 * k, BW - gutter * 2, 4 * k);
+    const filetto = (compatto ? 2 : 4) * k;
+    ctx.fillRect(cx + gutter, cy + BH - gutter - filetto, BW - gutter * 2, filetto);
   });
 
   // ── fascia B: i pittogrammi ──
@@ -331,7 +343,7 @@ export function costruisciAtlante(botteghe: DatiBottega[], ridotto: boolean): At
               img.onload = () => {
                 const cx = (i % COL) * BW;
                 const cy = ((i / COL) | 0) * BH;
-                const lat = BH - gutter * 2 - 4 * k;
+                const lat = BH - gutter * 2 - (compatto ? 2 : 4) * k;
                 ctx.fillStyle = '#' + b.identita.fondo.getHexString();
                 ctx.fillRect(cx + gutter, cy + gutter, lat, lat);
                 // contenuto dentro il riquadro, mai stirato

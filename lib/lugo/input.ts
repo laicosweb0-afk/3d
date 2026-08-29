@@ -2,7 +2,19 @@
 
 // Mappa dei comandi per <KeyboardControls> di drei. Tutta la tastiera del
 // gioco passa da qui: WASD + frecce, Shift corsa, Spazio freno a mano,
-// E/Invio sali-scendi, R raddrizza.
+// E/Invio sali-scendi, R raddrizza, F sgancia un pugno.
+//
+// La E fa sei cose diverse e non è un caso: la sua precedenza è a gradini
+// FISSI e sta scritta in Player.tsx (1 chiudi il pannello, 2 scendi,
+// 3 la tua auto, 4 il veicolo da prendere, 5 bacheca o bottega, e per
+// ultimo il maranza); dentro un gradino, e solo lì, decide la distanza.
+// Chi legge questo file per capire cosa fa la E oggi non troverebbe
+// nessun indizio su dove guardare.
+//
+// In sella non cambia niente: E scende, R raddrizza, Spazio frena. Shift
+// non fa nulla, perché la bici ha una sola velocità massima — dare uno
+// scatto vorrebbe dire tenere Shift premuto per sempre, che è un comando
+// che si annulla da solo.
 
 export const CONTROLLI: { name: string; keys: string[] }[] = [
   { name: 'avanti', keys: ['ArrowUp', 'KeyW'] },

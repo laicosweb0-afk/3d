@@ -17,15 +17,35 @@ import {
   stepGazzella,
   type Npc,
 } from '@/lib/lugo/npc';
-import { runtime } from '@/lib/lugo/runtime';
+import { runtime, posGiocatore } from '@/lib/lugo/runtime';
+import {
+  stepIncontro,
+  incontroInCorso,
+  provocaIncontro,
+  statisticheMaranza,
+  descrizioneMaranza,
+  frasiDi,
+  particelle,
+  FUMO,
+  FRASI_ATLANTE,
+  oraGioco,
+  type ContestoIncontro,
+} from '@/lib/lugo/maranza';
 import { useLugo } from '@/lib/lugo/store';
+import { suonaEvento, parla } from '@/lib/lugo/audio';
 import { QA } from '@/lib/lugo/qa';
 
 const N_NPC = QA ? 30 : 130;
 
-// palette per tipo e variante
-const PELLI = ['#D9A67C', '#C08A5E', '#E8C09A', '#8A5A3C'];
-const TUTE_MARANZA = ['#1A1A20', '#E8E8EC', '#22366E', '#3A3A42'];
+// Palette per tipo e variante. Gli incarnati sono otto e coprono tutta la
+// scala, e si leggono da n.pelle e non più da n.variante: fra il colore
+// della pelle e il vestito non c'è nessuna correlazione, e due maranza
+// vicini non sono mai la stessa persona. Le tute sono sei e i cappellini
+// cinque, così il gruppetto si distingue anche di spalle.
+const PELLI = ['#F0CDA8', '#E8C09A', '#D9A67C', '#C89066', '#B87A4E', '#9A6038', '#7A4A2C', '#5C3720'];
+const TUTE_MARANZA = ['#1A1A20', '#E8E8EC', '#22366E', '#3A3A42', '#7A2233', '#2E5E4A'];
+const CAPPELLI_MARANZA = ['#16161C', '#E8E8EC', '#B03A2E', '#2E4E8E', '#D9A62E'];
+const CAPELLI = ['#1A1512', '#2E2620', '#4A3E30', '#6B4A2F', '#141014'];
 const GIACCHE_ANZIANO = ['#6B655B', '#4E5A66', '#7A6A58', '#55584E'];
 const FELPE_STUDENTE = ['#C0503F', '#2F6F8A', '#D9A62E', '#4A7A48'];
 const MAGLIE_CICLISTA = ['#E8E4DC', '#3E6FB0', '#D9603F', '#2E3540'];
@@ -48,6 +68,13 @@ interface Parti {
   biciRuotaA: THREE.InstancedMesh;
   biciRuotaP: THREE.InstancedMesh;
 }
+
+// Il contesto dell'incontro è un literal riusato: allocarne uno nuovo a
+// ogni fotogramma per dire le stesse otto cose sarebbe stato spazzatura
+// generata sessanta volte al secondo.
+const ctxIncontro: ContestoIncontro = {
+  x: 0, z: 0, v: 0, aPiedi: true, pannelloAperto: false, wanted: 0, missioneATempo: false, dt: 0,
+};
 
 const _m = new THREE.Matrix4();
 const _t = new THREE.Matrix4();
@@ -92,7 +119,14 @@ function coloreTorso(n: Npc): string {
 
 function coloreCopricapo(n: Npc): string {
   if (n.tipo === 'carabiniere') return DIVISA;
-  if (n.tipo === 'maranza') return n.variante % 2 ? '#E8E8EC' : '#16161C';
+  // chi non porta il cappellino usa la STESSA istanza per i capelli: una
+  // lastra più bassa e larga, colore capelli. Costa zero chiamate di
+  // disegno in più, e nel gruppetto si capisce subito chi è chi.
+  if (n.tipo === 'maranza') {
+    return n.senzaCappello
+      ? CAPELLI[n.cappello % CAPELLI.length]
+      : CAPPELLI_MARANZA[n.cappello % CAPPELLI_MARANZA.length];
+  }
   if (n.tipo === 'ciclista') return '#E8E4DC'; // il casco
   if (n.tipo === 'studente') return n.variante % 2 ? '#2E2620' : '#4A3E30';
   return '#3A342C';
@@ -109,8 +143,59 @@ export function Npcs() {
 
   useEffect(() => {
     const w = window as unknown as { __LUGO__?: Record<string, unknown> };
-    w.__LUGO__ = { ...(w.__LUGO__ ?? {}), npcCount: () => npcs.length };
-  }, [npcs]);
+    const rt = () => runtime.rt;
+    w.__LUGO__ = {
+      ...(w.__LUGO__ ?? {}),
+      npcCount: () => npcs.length,
+      // il ritratto dei maranza: dimostra che non sono quattro fotocopie
+      maranza: () => statisticheMaranza(npcs),
+      // Come il pannello li chiama, accanto a quello che hanno DAVVERO in
+      // testa. Serve al collaudo per tenere insieme le due cose: la riga
+      // del dialogo è l'unico appiglio che il giocatore ha per riconoscere
+      // chi gli sta parlando, e prometteva cappellini a gente a testa nuda
+      // perché la deduceva dal colore della tuta.
+      descrizioni: () =>
+        npcs
+          .filter((n) => n.tipo === 'maranza')
+          .map((n) => ({ testo: descrizioneMaranza(n), cappello: !n.senzaCappello })),
+      incontro: () => incontroInCorso(),
+      // Il collaudo non può aspettare che un maranza si decida: questo hook
+      // forza l'aggancio (e accende la sigaretta sul bersaglio), poi da lì
+      // in avanti è la macchina a stati vera a fare tutto.
+      provocaIncontro: () => {
+        const r = rt();
+        if (!r) return -1;
+        return provocaIncontro(npcs, r.persona.x, r.persona.z, r.persona.yaw, fisica);
+      },
+      fumo: () => ({ vivi: particelle.filter((q) => q.viva).length, max: FUMO.max }),
+      fumetti: () => {
+        const ora = oraGioco();
+        const testi = npcs
+          .filter((n) => n.frase >= 0 && n.fraseFino > ora)
+          .map((n) => FRASI_ATLANTE[n.frase]);
+        return { vivi: testi.length, testi };
+      },
+      frasi: (g: 'aggancio' | 'insistenza' | 'si' | 'pugno' | 'fuga' | 'gruppo') => frasiDi(g),
+      // un pedone qualunque, per provare che picchiare chi non ti ha fatto
+      // niente costa reputazione
+      npcVicino: () => {
+        const r = rt();
+        if (!r) return null;
+        let scelto: Npc | null = null;
+        let dMin = Infinity;
+        npcs.forEach((n) => {
+          if (n.tipo === 'maranza' || n.tipo === 'carabiniere') return;
+          const d = Math.hypot(n.x - r.persona.x, n.z - r.persona.z);
+          if (d < dMin) {
+            dMin = d;
+            scelto = n;
+          }
+        });
+        const q = scelto as Npc | null;
+        return q ? { tipo: q.tipo, x: q.x, z: q.z } : null;
+      },
+    };
+  }, [npcs, fisica]);
 
   // colori per instanza: una volta sola
   useEffect(() => {
@@ -119,7 +204,7 @@ export function Npcs() {
     const c = new THREE.Color();
     npcs.forEach((n, i) => {
       p.torso.setColorAt(i, c.set(coloreTorso(n)));
-      p.testa.setColorAt(i, c.set(PELLI[n.variante % PELLI.length]));
+      p.testa.setColorAt(i, c.set(PELLI[n.pelle % PELLI.length]));
       p.copricapo.setColorAt(i, c.set(coloreCopricapo(n)));
       const braccia = n.tipo === 'anziano' ? coloreTorso(n) : n.tipo === 'carabiniere' ? DIVISA : coloreTorso(n);
       p.braccioD.setColorAt(i, c.set(braccia));
@@ -158,11 +243,36 @@ export function Npcs() {
     if (!rt || !p.torso) return;
 
     if (st.fase === 'gioco') {
-      const esito = stepNpcs(npcs, dt, mondo, fisica, rt, st.mode === 'auto');
+      const esito = stepNpcs(npcs, dt, mondo, fisica, rt, st.mode);
       if (esito.frase && frame.clock.elapsedTime - ultimaFrase.current > 9) {
         ultimaFrase.current = frame.clock.elapsedTime;
         st.setAvviso(esito.frase);
       }
+
+      // ── l'incontro col maranza ────────────────────────────────────────
+      // Gira DOPO stepNpcs, cioè quando le posizioni del fotogramma sono
+      // già aggiornate, e qui e non altrove perché Npcs.tsx è già l'unico
+      // posto che legge e scrive lo store dentro il ciclo dei pedoni:
+      // l'incontro non aggiunge un secondo padrone dello stato.
+      ctxIncontro.x = rt.persona.x;
+      ctxIncontro.z = rt.persona.z;
+      ctxIncontro.v = rt.vPersona;
+      ctxIncontro.dt = dt;
+      ctxIncontro.aPiedi = st.mode === 'piedi';
+      ctxIncontro.pannelloAperto = Boolean(
+        st.dialogo || st.vetrina || st.bacheca || st.diario || st.guardaroba,
+      );
+      ctxIncontro.wanted = st.wanted;
+      ctxIncontro.missioneATempo = st.tempoResiduo !== null;
+      const inc = stepIncontro(npcs, ctxIncontro, fisica, mondo);
+      if (inc.apriDialogo) st.setDialogo(inc.apriDialogo);
+      // si chiude SOLO il pannello dell'incontro: azzerare il dialogo a
+      // scatola chiusa vorrebbe dire spegnere conversazioni di altri
+      else if (inc.chiudiDialogo && st.dialogo?.id.startsWith('sigaretta')) st.setDialogo(null);
+      if (inc.rep) st.addPunti(inc.rep);
+      if (inc.avviso) st.setAvviso(inc.avviso);
+      if (inc.suono) suonaEvento(inc.suono);
+      if (inc.voce) parla('maranza');
     }
     // i pedoni vivi, a disposizione del Player per i dialoghi
     runtime.npcs = npcs;
@@ -191,12 +301,46 @@ export function Npcs() {
         (n.tipo === 'anziano' ? 0.3 : n.tipo === 'maranza' ? 0.6 : inSella ? 0.75 : 0.45) *
         vNorm;
       const oscB = Math.sin(n.fase + Math.PI) * (n.tipo === 'maranza' ? 0.5 : 0.35) * vNorm;
+      // ── il braccio della sigaretta ────────────────────────────────────
+      // Chi fuma non sventola la mano camminando: il braccio destro resta
+      // quasi fermo, e si alza verso la faccia solo per la tirata (n.tiro
+      // fra 0 e −durataTiro). La curva sale e ridiscende con un seno, così
+      // la mano non torna giù di scatto.
+      const fumatore = n.tipo === 'maranza' && n.fuma;
+      let oscD = oscB;
+      if (fumatore) {
+        const tiro = n.tiro > -FUMO.durataTiro && n.tiro < 0 ? Math.sin((-n.tiro / FUMO.durataTiro) * Math.PI) : 0;
+        oscD = tiro > 0 ? 0.35 + (1.45 - 0.35) * tiro : 0.35 + oscB * 0.15;
+      }
 
       setParte(p.torso, i, base, 0, 1.06, 0, curva, rollio, 0, 0, 0, 1, n.tipo === 'anziano' ? 0.92 : 1, 1);
       setParte(p.testa, i, base, avantiTesta, n.tipo === 'anziano' ? 1.34 : 1.42, 0, 0, 0, 0, 0, 0);
-      setParte(p.copricapo, i, base, avantiTesta + (n.tipo === 'maranza' ? 0.03 : 0), (n.tipo === 'anziano' ? 1.34 : 1.42) + 0.14, 0, 0, 0, 0, 0, 0,
-        n.tipo === 'anziano' ? 1.25 : 1, n.tipo === 'carabiniere' ? 1.4 : 1, n.tipo === 'anziano' ? 1.25 : 1);
-      setParte(p.braccioD, i, base, avantiTesta * 0.7, 1.3, 0.24, 0, oscB, 0, -0.2, 0);
+      // a testa nuda la stessa scatola diventa una capigliatura: più bassa,
+      // più larga e calata di tre centimetri. Con la scala del cappellino
+      // un maranza senza cappello sembrava pettinato a caschetto quadrato.
+      const senzaCap = n.tipo === 'maranza' && n.senzaCappello;
+      setParte(p.copricapo, i, base, avantiTesta + (n.tipo === 'maranza' && !senzaCap ? 0.03 : 0),
+        (n.tipo === 'anziano' ? 1.34 : 1.42) + (senzaCap ? 0.11 : 0.14), 0, 0, 0, 0, 0, 0,
+        senzaCap ? 1.05 : n.tipo === 'anziano' ? 1.25 : 1,
+        senzaCap ? 0.55 : n.tipo === 'carabiniere' ? 1.4 : 1,
+        senzaCap ? 1.05 : n.tipo === 'anziano' ? 1.25 : 1);
+      setParte(p.braccioD, i, base, avantiTesta * 0.7, 1.3, 0.24, 0, oscD, 0, -0.2, 0);
+      if (fumatore) {
+        // La punta della sigaretta si misura QUI, dov'è appena stata
+        // costruita la matrice del braccio, con la convenzione di assi del
+        // resto del gioco (modello verso +X, rotation.y = −yaw). Chi
+        // cambierà l'animazione del braccio deve aggiornare queste tre
+        // righe: sono l'unico punto in cui la mano ha una posizione, e il
+        // fumo la legge invece di ricalcolarla.
+        const lx = avantiTesta * 0.7 + 0.44 * Math.sin(oscD);
+        const ly = 1.3 - 0.44 * Math.cos(oscD) + bob;
+        const lz = 0.24;
+        const cy = Math.cos(n.yaw);
+        const sy = Math.sin(n.yaw);
+        n.manoX = n.x + lx * cy - lz * sy;
+        n.manoY = ly;
+        n.manoZ = n.z + lx * sy + lz * cy;
+      }
       setParte(p.braccioS, i, base, avantiTesta * 0.7, 1.3, -0.24, 0, -oscB * (n.tipo === 'anziano' ? 0.4 : 1), 0, -0.2, 0);
       setParte(p.gambaD, i, base, 0, 0.85, 0.09, 0, oscG, 0, -0.38, 0);
       setParte(p.gambaS, i, base, 0, 0.85, -0.09, 0, -oscG, 0, -0.38, 0);
@@ -229,8 +373,12 @@ export function Npcs() {
     // gazzella di pattuglia (o d'inseguimento, se sei ricercato)
     if (gazzella && gruppoGazzella.current) {
       if (st.fase === 'gioco') {
-        const bersaglio =
-          runtime.caccia && st.mode === 'auto' ? { x: rt.auto.x, z: rt.auto.z } : undefined;
+        // La gazzella insegue CHIUNQUE sia ricercato, non solo chi è in
+        // auto: rubata una bici e scappati a piedi, prima i Carabinieri non
+        // partivano mai e la stella restava accesa senza che succedesse
+        // niente. Il fermo, col suo controllo di velocità, sta nel Player.
+        const g = posGiocatore(st.mode);
+        const bersaglio = runtime.caccia ? { x: g.x, z: g.z } : undefined;
         stepGazzella(gazzella, dt, bersaglio);
       }
       gruppoGazzella.current.position.set(gazzella.x, 0, gazzella.z);

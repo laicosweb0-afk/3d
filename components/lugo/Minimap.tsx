@@ -90,7 +90,15 @@ export function Minimap() {
         const t = s.mode === 'auto' ? rt.auto : rt.persona;
         const lato = LATO * dpr;
         // zoom dinamico: a piedi si vede vicino, in velocità più lontano
-        const finestraTarget = s.mode === 'piedi' ? 190 : 260 + Math.min(140, Math.abs(rt.vAuto) * 6);
+        // Il ternario è a TRE vie: senza, la bici userebbe lo zoom
+        // dell'auto letto su rt.vAuto, che in sella è fermo — cioè la mappa
+        // larga da automobile per un mezzo che va a trenta all'ora.
+        const finestraTarget =
+          s.mode === 'auto'
+            ? 260 + Math.min(140, Math.abs(rt.vAuto) * 6)
+            : s.mode === 'bici'
+              ? 215
+              : 190;
         finestraCorrente += (finestraTarget - finestraCorrente) * 0.12;
         const FINESTRA = finestraCorrente;
         const finestraPx = FINESTRA * SCALA_OFF;

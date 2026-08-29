@@ -474,8 +474,33 @@ function candidatePoi(id, nome, ring, tags) {
   poiCand.set(id, { id, nome, x: cx, z: cz, rot: rect ? rect.angle : 0, area });
 }
 
+// L'elenco delle attività si riempie da due parti: dalle AREE qui sotto e
+// dai NODI più in giù. Va dichiarato prima di tutte e due.
+const negozi = [];
+
 for (const w of ways.values()) {
   const tags = w.tags || {};
+
+  // Un'attività mappata come area: il supermercato, la banca, l'officina,
+  // l'albergo. Sono quasi tutte quelle grandi, ed erano l'unica categoria
+  // di botteghe che il gioco non vedeva proprio.
+  {
+    const att = attivitaDaTag(tags);
+    if (att) {
+      const anello = wayRing(w);
+      if (anello.length >= 3) {
+        let cx = 0;
+        let cz = 0;
+        for (const [px, pz] of anello) {
+          cx += px;
+          cz += pz;
+        }
+        cx /= anello.length;
+        cz /= anello.length;
+        negozi.push({ ...att, x: q(cx), z: q(cz) });
+      }
+    }
+  }
 
   // strade (le piazze pedonali ad area diventano aree "piazza")
   if (tags.highway) {
@@ -594,27 +619,64 @@ for (const b of relBuildings) {
 }
 for (const p of relPoi) candidatePoi('caserma', p.nome, p.ring, p.tags);
 
+/**
+ * Un'attività aperta al pubblico, riconosciuta dai suoi tag. Restituisce
+ * il tipo GREZZO di OpenStreetMap (che nel gioco sceglie il simbolo di
+ * mestiere: la tazzina, le forbici, la chiave inglese) e la categoria
+ * larga, che serve al listino e al colore.
+ *
+ * Prima questa logica viveva dentro il ciclo dei nodi e conosceva cinque
+ * categorie: quaranta botteghe su sessantacinque finivano in "negozio" e
+ * portavano tutte lo stesso sacchetto sull'insegna. E le attività mappate
+ * come AREA — il supermercato, la banca, l'officina, cioè quasi tutte
+ * quelle grandi — non venivano proprio viste.
+ */
+function attivitaDaTag(tags) {
+  const nome = tags.name;
+  if (!nome || nome.length > 34) return null;
+  const shop = tags.shop || '';
+  const amenity = tags.amenity || '';
+  const craft = tags.craft || '';
+  const office = tags.office || '';
+  const tourism = tags.tourism || '';
+  const leisure = tags.leisure || '';
+  const healthcare = tags.healthcare || '';
+  // il tipo grezzo: il primo che c'è, in ordine di specificità
+  const grezzo =
+    shop ||
+    (amenity && /^(cafe|bar|pub|restaurant|fast_food|ice_cream|pharmacy|bank|post_office|bureau_de_change|fuel|dentist|doctors|veterinary|driving_school|library|cinema|nightclub|internet_cafe)$/.test(amenity)
+      ? amenity
+      : '') ||
+    craft ||
+    (office ? 'office_' + office : '') ||
+    (tourism && /^(hotel|guest_house|museum|information)$/.test(tourism) ? tourism : '') ||
+    (leisure && /^(fitness_centre|sports_centre)$/.test(leisure) ? leisure : '') ||
+    (healthcare ? 'healthcare' : '');
+  if (!grezzo) return null;
+
+  // la categoria larga. Nove secchi invece di cinque: sotto ognuno il
+  // gioco sa che listino mettere in vetrina e di che colore fare l'insegna
+  let cat = 'negozio';
+  if (shop === 'tobacco' || /tabacch/i.test(nome)) cat = 'tabacchi';
+  else if (amenity === 'pharmacy' || shop === 'chemist' || healthcare || /^(dentist|doctors|veterinary)$/.test(amenity)) cat = 'farmacia';
+  else if (/^(cafe|bar|pub|ice_cream|nightclub)$/.test(amenity)) cat = 'bar';
+  else if (/^(restaurant|fast_food)$/.test(amenity) || /^(bakery|pastry|confectionery|butcher|greengrocer|deli|seafood|cheese|alcohol|wine|beverages|supermarket|convenience|grocery)$/.test(shop)) cat = 'cibo';
+  else if (office || craft || /^(bank|post_office|bureau_de_change|fuel|driving_school|library|cinema|internet_cafe)$/.test(amenity) || tourism || leisure) cat = 'servizi';
+  return { n: nome, c: cat, s: grezzo };
+}
+
 // POI da nodi: stazione, monumenti, bar/caffè, le botteghe vere e gli
 // arredi urbani mappati uno per uno (alberi, strisce, semafori, fermate)
 const barNodes = [];
-const negozi = [];
 const arredi = [];
 for (const n of nodes.values()) {
   const tags = n.tags || {};
   if (!Object.keys(tags).length) continue;
   const [x, z] = proj(n.lat, n.lon);
-  // insegne: TUTTI i negozi e locali con un nome, con la loro categoria
-  const nomeNegozio = tags.name;
-  if (nomeNegozio && (tags.shop || /^(cafe|bar|restaurant|pharmacy)$/.test(tags.amenity || ''))) {
-    if (nomeNegozio.length <= 30) {
-      let cat = 'negozio';
-      if (tags.shop === 'tobacco' || /tabac/i.test(nomeNegozio)) cat = 'tabacchi';
-      else if (tags.amenity === 'pharmacy' || tags.shop === 'chemist') cat = 'farmacia';
-      else if (tags.amenity === 'cafe' || tags.amenity === 'bar') cat = 'bar';
-      else if (tags.amenity === 'restaurant' || /^(bakery|pastry|butcher|greengrocer|deli|seafood)$/.test(tags.shop || '')) cat = 'cibo';
-      negozi.push({ n: nomeNegozio, c: cat, x: q(x), z: q(z) });
-    }
-  }
+  // insegne: TUTTE le attività con un nome, con la loro categoria e il loro
+  // tipo vero
+  const att = attivitaDaTag(tags);
+  if (att) negozi.push({ ...att, x: q(x), z: q(z) });
   if (tags.natural === 'tree') arredi.push({ t: 'albero', x: q(x), z: q(z) });
   else if (tags.highway === 'crossing') arredi.push({ t: 'zebre', x: q(x), z: q(z) });
   else if (tags.highway === 'traffic_signals') arredi.push({ t: 'semaforo', x: q(x), z: q(z) });
@@ -658,6 +720,28 @@ for (const c of poiCand.values()) {
 // ── output ──────────────────────────────────────────────────────────────────
 // le insegne più vicine al Pavaglione hanno la precedenza; ogni tipo di
 // arredo ha il suo tetto per non gonfiare il file
+// Le stesse insegne possono arrivare due volte: una dal nodo dentro il
+// locale e una dall'area del locale stesso, che su OpenStreetMap capita
+// spesso. Vince il nodo, che sta dove sta davvero la porta.
+{
+  const visti = new Map();
+  for (const a of negozi) {
+    const chiave = a.n.toLowerCase().trim();
+    const gia = visti.get(chiave);
+    if (!gia) {
+      visti.set(chiave, a);
+      continue;
+    }
+    // due attività con lo stesso nome a più di ottanta metri sono due
+    // filiali diverse, e restano tutte e due
+    if (Math.hypot(gia.x - a.x, gia.z - a.z) > 800) visti.set(chiave + '#' + a.x, a);
+  }
+  negozi.length = 0;
+  negozi.push(...visti.values());
+}
+
+// le più vicine al Pavaglione per prime: se il tetto taglia, taglia la
+// periferia e non il centro
 negozi.sort((a, b) => Math.hypot(a.x, a.z - 810) - Math.hypot(b.x, b.z - 810));
 const tettiArredi = { albero: 900, zebre: 240, semaforo: 80, bus: 90, fontana: 24, obelisco: 12 };
 const contatori = {};

@@ -17,7 +17,13 @@ import {
 } from './incarichi';
 
 export type QualitaTier = 'alta' | 'media' | 'bassa';
-export type Modalita = 'auto' | 'piedi';
+// Tre modi di stare al mondo, non due: a Lugo si gira anche in bici, e la
+// bici è una modalità vera e non un'andatura del pedone — ha una sua
+// fisica, una sua camera e un suo modello. La parola in più si propaga in
+// posGiocatore, stepNpcs, Minimap, Hud, Joystick e updateAudio: sono tutti
+// posti che oggi scrivevano `mode === 'auto' ? A : B` dando per scontato
+// che «non auto» volesse dire «a piedi».
+export type Modalita = 'auto' | 'piedi' | 'bici';
 export type FaseGioco = 'start' | 'gioco';
 export type StatoMissione = 'idle' | 'attiva' | 'completata' | 'fallita';
 
@@ -109,6 +115,23 @@ interface LugoState {
   denaro: number;
   /** Livello ricercato 0–3. */
   wanted: number;
+  /**
+   * Il VESTITO dell'auto che si sta guidando adesso, quando non è la
+   * propria: colore e sagoma dell'auto che si è portata via. Sta separato
+   * da tintaAuto/modelloAuto apposta — quelli sono la scelta fatta allo
+   * start, sono salvati, e sovrascriverli vorrebbe dire perdere per sempre
+   * il colore che il giocatore si era scelto solo perché una sera ha preso
+   * l'utilitaria di un altro.
+   */
+  veicoloRubato: { colore: string; carrozzeria: number } | null;
+  /**
+   * Quante bici e quante auto sono state portate via, da sempre. È un
+   * totale, non uno stato del mondo: si salva questo e nient'altro del
+   * furto — non l'auto che stai guidando, non le stelle, non quali auto
+   * mancano dai loro stalli. Al ricaricamento si riparte dalla Rocca con la
+   * propria auto e una Lugo intera, com'è sempre stato per le posizioni.
+   */
+  furti: { bici: number; auto: number };
 
   // missioni
   missioneId: string | null;
@@ -174,6 +197,12 @@ interface LugoState {
   avviso: string | null;
   /** Suggerimento contestuale persistente ("Premi E…"). */
   hint: string | null;
+  /**
+   * true quando il suggerimento in corso è un'azione che costa una stella
+   * (prendere un mezzo che non è tuo). È l'unico segnale che il giocatore
+   * ha PRIMA di premere: dopo, la stella è già accesa.
+   */
+  hintAllerta: boolean;
   /** Nome della via su cui ci si trova (stile GTA, in basso). */
   via: string | null;
 
@@ -189,6 +218,9 @@ interface LugoState {
   /** Aggiunge (o toglie, mai sotto zero) denaro. */
   addDenaro: (v: number) => void;
   setWanted: (v: number) => void;
+  setVeicoloRubato: (v: { colore: string; carrozzeria: number } | null) => void;
+  /** Somma uno al contatore giusto: nient'altro. */
+  contaFurto: (che: 'bici' | 'auto') => void;
   setMissione: (id: string | null, stato: StatoMissione, tappa?: number) => void;
   addMissioneFatta: (id: string) => void;
   setTempoResiduo: (s: number | null) => void;
@@ -220,7 +252,12 @@ interface LugoState {
   /** Segna un incarico come riscosso; false se era già stato incassato. */
   riscuotiIncarico: (id: string) => boolean;
   setAvviso: (msg: string | null) => void;
-  setHint: (msg: string | null) => void;
+  /**
+   * `allerta` si scrive INSIEME al testo: i chiamanti che non lo passano
+   * spengono il rosso da soli, che è esattamente quel che serve — un
+   * suggerimento normale non deve mai ereditare l'allarme di quello prima.
+   */
+  setHint: (msg: string | null, allerta?: boolean) => void;
   setVia: (nome: string | null) => void;
 }
 
@@ -236,6 +273,8 @@ export const useLugo = create<LugoState>((set, get) => ({
   punteggio: 0,
   denaro: 20,
   wanted: 0,
+  veicoloRubato: null,
+  furti: { bici: 0, auto: 0 },
   missioneId: null,
   statoMissione: 'idle',
   tappa: 0,
@@ -265,9 +304,12 @@ export const useLugo = create<LugoState>((set, get) => ({
   outfit: 0,
   avviso: null,
   hint: null,
+  hintAllerta: false,
   via: null,
 
-  avvia: () => set({ fase: 'gioco' }),
+  // una partita nuova comincia con l'auto che ti sei scelto, non con
+  // l'ultima che avevi portato via
+  avvia: () => set({ fase: 'gioco', veicoloRubato: null }),
   setMode: (mode) => set({ mode }),
   setQualita: (qualita) => set({ qualita }),
   setTintaAuto: (tintaAuto) => set({ tintaAuto }),
@@ -291,6 +333,9 @@ export const useLugo = create<LugoState>((set, get) => ({
       totali: v > 0 ? { ...s.totali, euro: s.totali.euro + v } : s.totali,
     })),
   setWanted: (wanted) => set({ wanted: Math.max(0, Math.min(3, wanted)) }),
+  setVeicoloRubato: (veicoloRubato) => set({ veicoloRubato }),
+  contaFurto: (che) =>
+    set((s) => ({ furti: { ...s.furti, [che]: s.furti[che] + 1 } })),
   setMissione: (missioneId, statoMissione, tappa = 0) =>
     set((s) => ({
       missioneId,
@@ -352,7 +397,7 @@ export const useLugo = create<LugoState>((set, get) => ({
     return true;
   },
   setAvviso: (avviso) => set({ avviso }),
-  setHint: (hint) => set({ hint }),
+  setHint: (hint, hintAllerta = false) => set({ hint, hintAllerta }),
   setVia: (via) => set({ via }),
 }));
 
