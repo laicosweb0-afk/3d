@@ -185,3 +185,127 @@
   text-transform: uppercase;
   color: rgba(244, 242, 237, 0.6);
 }
+
+/* ── La copertina: la key art È la schermata iniziale ─────────────────── */
+
+.lugo-start-keyart {
+  /* l'azzurro del cielo dell'illustrazione: riempie le bande quando
+     l'immagine non copre tutto lo schermo, così non si vede mai il nero */
+  background: linear-gradient(180deg, #1273d8 0%, #0d5aa8 55%, #0a3d72 100%);
+}
+
+.lugo-start-copertina {
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+}
+
+.lugo-start-copertina img {
+  width: 100%;
+  height: 100%;
+  /* in orizzontale si riempie lo schermo tagliando dal basso: il titolo
+     sta in alto e non va mai perso */
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+/* Il velo sotto: l'illustrazione resta leggibile e il testo bianco non si
+   perde sul lastricato chiaro. */
+.lugo-start-velo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent 34%, rgba(5, 9, 18, 0.22) 54%, rgba(5, 9, 18, 0.72) 74%, rgba(5, 9, 18, 0.95) 100%);
+}
+
+.lugo-start-keyart .lugo-start-inner {
+  position: relative;
+  justify-content: flex-end;
+  gap: 0;
+  padding-bottom: clamp(1rem, 3.5vh, 2.2rem);
+}
+
+.lugo-start-keyart .lugo-start-blocco {
+  margin-top: auto;
+  gap: 0.7rem;
+}
+
+.lugo-start-keyart .lugo-start-salvataggio {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+.lugo-start-keyart .lugo-start-piede {
+  margin-top: 0.9rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+/* In verticale l'illustrazione è troppo larga per lo schermo: si mostra
+   intera, agganciata in alto, e i tasti stanno nella fascia sotto — che
+   così diventa spazio utile invece di due bande vuote. */
+@media (orientation: portrait) {
+  .lugo-start-copertina img {
+    object-fit: contain;
+    object-position: center top;
+  }
+
+  .lugo-start-velo {
+    background: linear-gradient(to bottom, transparent 34%, rgba(5, 9, 18, 0.2) 48%, rgba(5, 9, 18, 0.86) 78%);
+  }
+}
+
+/* Telefono in orizzontale: schermo bassissimo, si stringe sul centro
+   dell'illustrazione dove ci sono titolo e personaggio. */
+@media (orientation: landscape) and (max-height: 480px) {
+  .lugo-start-copertina img {
+    object-position: center 14%;
+  }
+
+  .lugo-start-keyart .lugo-start-piede {
+    display: none;
+  }
+}
+
+/* Il marchietto che riempie la fascia libera sotto l'illustrazione:
+   si vede solo dove l'illustrazione non arriva a coprire lo schermo. */
+.lugo-start-marchietto {
+  display: none;
+}
+
+@media (orientation: portrait) {
+  .lugo-start-keyart .lugo-start-inner {
+    /* l'illustrazione è 4:3, quindi occupa 75vw di altezza: il resto è
+       spazio nostro e va centrato, non lasciato vuoto */
+    padding-top: 75vw;
+    justify-content: center;
+  }
+
+  .lugo-start-keyart .lugo-start-blocco {
+    margin-top: 0;
+  }
+
+  .lugo-start-marchietto {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.4rem;
+  }
+
+  .lugo-start-marchietto .lugo-stemma {
+    width: 2.9rem;
+    height: 2.9rem;
+    filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.5));
+  }
+
+  .lugo-start-marchietto .lugo-menu-marchio-testo strong {
+    font-size: 1.3rem;
+    letter-spacing: 0.14em;
+  }
+
+  .lugo-start-marchietto .lugo-menu-marchio-testo span {
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: none;
+  }
+}

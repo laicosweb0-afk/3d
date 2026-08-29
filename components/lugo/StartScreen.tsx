@@ -9,6 +9,7 @@ import { useLugo } from '@/lib/lugo/store';
 import { TINTE_AUTO } from '@/lib/lugo/palette';
 import { CARROZZERIE } from '@/lib/lugo/carrozzerie';
 import { setAudioAttivo, setVolumi } from '@/lib/lugo/audio';
+import { asset } from '@/lib/asset';
 
 /** Lo stemma LC dello scudo esagonale, in SVG: nitido a ogni dimensione. */
 export function Stemma({ classe = 'lugo-stemma' }: { classe?: string }) {
@@ -57,19 +58,31 @@ export function StartScreen() {
   const haSalvataggio = denaro > 0 || missioniFatte.length > 0;
 
   return (
-    <div className="lugo-start" data-hud="start">
-      <div className="lugo-start-scrim" />
+    <div className="lugo-start lugo-start-keyart" data-hud="start">
+      {/* La copertina di LUGO CITY: il titolo, il protagonista e la Piazza
+          dei Martiri stanno già nell'illustrazione, quindi qui sopra ci va
+          solo il tasto per entrare. WebP piccola sul telefono, WebP grande
+          altrove, JPEG per chi non legge WebP. */}
+      <picture className="lugo-start-copertina">
+        <source
+          srcSet={asset('/lugo/keyart-piccola.webp')}
+          type="image/webp"
+          media="(max-width: 760px)"
+        />
+        <source srcSet={asset('/lugo/keyart.webp')} type="image/webp" />
+        <img src={asset('/lugo/keyart.jpg')} alt="LUGO CITY — la tua città, il tuo gioco" />
+      </picture>
+      <div className="lugo-start-velo" />
       <div className="lugo-start-inner">
-        <header className="lugo-start-testata">
-          <div className="lugo-marchio">
-            <h1 className="lugo-marchio-riga lugo-marchio-lugo">LUGO</h1>
-            <div className="lugo-marchio-riga lugo-marchio-city">CITY</div>
-            <p className="lugo-marchio-claim">
-              La tua città. <b>Il tuo gioco.</b>
-            </p>
+        {/* Sul telefono tenuto in verticale l'illustrazione copre solo la
+            fascia alta: sotto ci va il marchio, non un buco azzurro. */}
+        <div className="lugo-start-marchietto">
+          <Stemma />
+          <div className="lugo-menu-marchio-testo">
+            <strong>LUGO CITY</strong>
+            <span>La tua città. Il tuo gioco.</span>
           </div>
-        </header>
-
+        </div>
         <div className="lugo-start-blocco">
           {haSalvataggio && (
             <p className="lugo-start-salvataggio">
