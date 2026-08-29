@@ -76,6 +76,8 @@ export interface NegozioMap {
   c?: string;
   x: number;
   z: number;
+  /** Valore grezzo di shop=* o amenity=*: sceglie il simbolo di mestiere. */
+  s?: string;
 }
 
 export type TipoArredo = 'albero' | 'zebre' | 'semaforo' | 'bus' | 'fontana' | 'obelisco';

@@ -659,6 +659,55 @@ try {
     await page.screenshot({ path: join(SHOTS, '04-missione.png') });
   }
 
+  // ── fase 3d: le insegne delle botteghe ────────────────────────────────
+  // Una bottega deve riconoscersi da lontano: la fascia col nome sulla
+  // cimasa vera del suo muro, il tendone, e il simbolo di mestiere sulla
+  // bandiera perpendicolare. E nessun logo di nessuno senza autorizzazione.
+  if ((await lugo('typeof L.insegne')) === 'function') {
+    const ins = await lugo('L.insegne()');
+    if (ins && ins.cartelli > 0) {
+      ok('insegne delle botteghe', `${ins.cartelli} botteghe, ${Object.keys(ins.simboli).length} simboli diversi`);
+    } else {
+      ko('insegne delle botteghe', 'nessuna insegna costruita');
+    }
+    if (ins && ins.sovrapposte === 0) ok('insegne che non si accavallano');
+    else ko('insegne che non si accavallano', `${ins?.sovrapposte} coppie sullo stesso muro`);
+    // qualche bottega di OpenStreetMap è un nodo in mezzo a un piazzale, con
+    // il palazzo più vicino a dieci metri buoni: quelle restano senza muro,
+    // ed è un dato, non un difetto. Se diventano tante, invece, è un difetto.
+    if (ins && ins.senzaMuro <= 3) ok('ogni insegna ha il suo muro', `${ins.senzaMuro} senza, su ${ins.cartelli}`);
+    else ko('ogni insegna ha il suo muro', `${ins?.senzaMuro} botteghe senza edificio`);
+    // la regola non negoziabile, misurata: nessun logo finché nessuno ha
+    // autorizzato niente
+    const aut = await lugo('L.autorizzazioni()');
+    if (ins && ins.loghi === 0 && aut.partner === 0) ok('nessun logo senza autorizzazione', '0 loghi a schermo');
+    else ko('nessun logo senza autorizzazione', `${ins?.loghi} loghi, ${aut.partner} partner`);
+
+    // le cartoline: la stessa bottega da tre distanze
+    const bot = await lugo('L.bottega(0)');
+    if (bot) {
+      await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+      for (const [nome, d, alt] of [['vicino', 9, 3.2], ['via', 24, 5], ['lontano', 55, 9]]) {
+        await page.evaluate(
+          ([b, dist, h]) =>
+            window.__LUGO__.fotocamera(
+              b.x + b.nx * dist,
+              h,
+              b.z + b.nz * dist,
+              b.x,
+              b.y + 0.3,
+              b.z,
+              4000,
+            ),
+          [bot, d, alt],
+        );
+        await page.waitForTimeout(800);
+        await page.screenshot({ path: join(SHOTS, `03-insegna-${nome}.png`) });
+      }
+      ok('cartoline delle insegne', `${bot.nome} · ${bot.simbolo}`);
+    }
+  }
+
   // ── fase 4b: le missioni che nascono dalle attività vere ──────────────
   // Un'attività di Lugo non deve essere solo un cartello: deve poter essere
   // il posto dove una missione ti manda. Qui si controlla che il registro

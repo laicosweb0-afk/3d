@@ -168,14 +168,23 @@ function normalizza(c: string | undefined): CategoriaAttivita {
  * (poiVisitati), il diario dichiarerebbe visitati posti mai visti. Qui si
  * ricava invece dal nome e dalla posizione, che in OSM non cambiano.
  */
-function idStabile(nome: string, x: number, z: number): string {
-  const chiave = `${nome}|${Math.round(x)}|${Math.round(z)}`;
+/**
+ * L'hash FNV-1a di una stringa. Nasce qui per fare gli id stabili delle
+ * attività, ma serve anche a chi deve dare a una bottega un colore tutto
+ * suo: lo stesso nome deve dare sempre lo stesso numero, su ogni computer
+ * e a ogni partita.
+ */
+export function hashNome(s: string): number {
   let h = 2166136261;
-  for (let i = 0; i < chiave.length; i++) {
-    h ^= chiave.charCodeAt(i);
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
     h = Math.imul(h, 16777619);
   }
-  return 'att_' + (h >>> 0).toString(36);
+  return h >>> 0;
+}
+
+function idStabile(nome: string, x: number, z: number): string {
+  return 'att_' + hashNome(`${nome}|${Math.round(x)}|${Math.round(z)}`).toString(36);
 }
 
 const cache = new WeakMap<MondoLugo, Attivita[]>();
@@ -225,7 +234,9 @@ export function registroAttivita(mondo: MondoLugo): Attivita[] {
       promo: sch?.partner === true ? (sch.promo ?? null) : null,
       logo: sch?.partner === true ? (sch.logo ?? null) : null,
       sito: sch?.sito ?? null,
-      insegna: sch?.insegna,
+      // anche i colori dell'insegna sono materiale dell'esercente: valgono
+      // solo se ha autorizzato, e solo sopra il livello NESSUNO
+      insegna: sch?.partner === true && livello !== 'NESSUNO' ? sch.insegna : undefined,
       // bar e locali ospitano missioni perché è la loro natura; le altre
       // categorie solo se l'esercente ha autorizzato quel livello
       missioni:
@@ -239,6 +250,32 @@ export function registroAttivita(mondo: MondoLugo): Attivita[] {
   });
   cache.set(mondo, out);
   return out;
+}
+
+/**
+ * L'UNICA porta da cui può uscire il percorso di un logo. Restituisce
+ * qualcosa solo se tutte insieme: l'attività è partner, il livello
+ * autorizzato è sopra NESSUNO, il percorso c'è, sta sotto /lugo/insegne/ e
+ * non contiene doppi punti o risalite di cartella.
+ *
+ * Non è pignoleria: un logo è il marchio di qualcuno, e finisce a schermo
+ * dentro un gioco. Se un giorno qualcuno scrive nel file dei dati il logo
+ * di un'attività che non ha autorizzato niente, deve non comparire — e il
+ * collaudo prova proprio questa funzione coi casi cattivi, non solo col
+ * caso buono.
+ */
+export function logoAutorizzato(a: {
+  partner: boolean;
+  livelloPartner: LivelloPartner;
+  logo: string | null;
+}): string | null {
+  if (a.partner !== true) return null;
+  if (!a.livelloPartner || a.livelloPartner === 'NESSUNO') return null;
+  const p = a.logo;
+  if (typeof p !== 'string' || p.length < 2 || p.length > 200) return null;
+  if (!p.startsWith('/lugo/insegne/')) return null;
+  if (p.includes('..') || p.includes('//') || p.includes(':')) return null;
+  return p;
 }
 
 /** L'attività più vicina entro `raggio`, o null. */
