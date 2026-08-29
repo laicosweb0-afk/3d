@@ -23,6 +23,7 @@ import {
   incontroInCorso,
   provocaIncontro,
   statisticheMaranza,
+  descrizioneMaranza,
   frasiDi,
   particelle,
   FUMO,
@@ -148,6 +149,15 @@ export function Npcs() {
       npcCount: () => npcs.length,
       // il ritratto dei maranza: dimostra che non sono quattro fotocopie
       maranza: () => statisticheMaranza(npcs),
+      // Come il pannello li chiama, accanto a quello che hanno DAVVERO in
+      // testa. Serve al collaudo per tenere insieme le due cose: la riga
+      // del dialogo è l'unico appiglio che il giocatore ha per riconoscere
+      // chi gli sta parlando, e prometteva cappellini a gente a testa nuda
+      // perché la deduceva dal colore della tuta.
+      descrizioni: () =>
+        npcs
+          .filter((n) => n.tipo === 'maranza')
+          .map((n) => ({ testo: descrizioneMaranza(n), cappello: !n.senzaCappello })),
       incontro: () => incontroInCorso(),
       // Il collaudo non può aspettare che un maranza si decida: questo hook
       // forza l'aggancio (e accende la sigaretta sul bersaglio), poi da lì

@@ -363,6 +363,14 @@ export function Player() {
     runtime.assi.ax = input.ax;
     runtime.assi.az = input.az;
 
+    // Il riposo fra due chiacchiere scorre SEMPRE, in tutte e tre le
+    // modalità. Stava dentro il ramo a piedi, cioè si fermava appena
+    // salivi in macchina: chi parlava con un maranza, saliva in auto e
+    // faceva mezza Lugo tornava giù con lo stesso conto alla rovescia di
+    // quarantacinque secondi ancora intero, e la E non gli apriva più
+    // nessuna conversazione senza che niente a schermo spiegasse perché.
+    cooldownDialogo.current -= dt;
+
     if (st.mode === 'auto') {
       const esito = stepAuto(rt.auto, input, dt, fisica, mondo.bounds);
       rt.vAuto = esito.v;
@@ -420,8 +428,23 @@ export function Player() {
         rt.auto.vz = 0;
       }
 
-      // discesa: solo quasi da fermi, in un punto libero a lato
-      if (input.interagisci && !interagiscePrima.current && Math.abs(esito.v) < 3) {
+      // Discesa: solo quasi da fermi, in un punto libero a lato.
+      //
+      // Il `!fuocoSuComando()` non è una copia per simmetria, è la toppa a
+      // un buco vero: la stessa guardia stava sul ramo a piedi e su quello
+      // in sella, ma NON qui, dove il commento più sotto la descriveva.
+      // Invio è insieme «interagisci» nel gioco e «premi il bottone» nel
+      // browser, e i tre bottoni in alto a destra — audio, diario,
+      // guardaroba — restano a schermo anche in guida: bastava cliccare
+      // l'altoparlante per silenziare la città e poi premere Invio per
+      // ritrovarsi in mezzo alla carreggiata, a motore acceso, senza aver
+      // mai chiesto di scendere.
+      if (
+        input.interagisci &&
+        !interagiscePrima.current &&
+        Math.abs(esito.v) < 3 &&
+        !fuocoSuComando()
+      ) {
         const latoX = -Math.sin(rt.auto.yaw);
         const latoZ = Math.cos(rt.auto.yaw);
         for (const lato of [1.7, -1.7, 0]) {
@@ -493,7 +516,6 @@ export function Player() {
       runtime.frenata = false;
 
       // salita: vicino all'auto. Altrimenti, E parla col maranza vicino.
-      cooldownDialogo.current -= dt;
       const dAuto = Math.hypot(rt.persona.x - rt.auto.x, rt.persona.z - rt.auto.z);
       // Invio è insieme «interagisci» nel gioco e «premi il bottone» nel
       // browser: con il fuoco su un tasto dello schermo faceva tutte e due
@@ -665,6 +687,17 @@ export function Player() {
       pugno.molesto = false;
       pugno.compagni = 0;
       suonaEvento('fallita');
+    }
+    // Un pugno cominciato a piedi non deve poter arrivare a segno da un
+    // sellino o da dietro un volante. La finestra dura 0,42 s e l'impatto
+    // cade a metà: fra la F e il colpo c'è tutto il tempo di premere E e
+    // saltare su una bici, e il pedone si vedeva volare via colpito da un
+    // ciclista con le mani sul manubrio. Salendo su un mezzo il colpo si
+    // ANNULLA — braccio compreso, perché Character mescola la posa del
+    // pugno solo finché `t` è vivo — invece di restare appeso.
+    if (pugno.t > 0 && st.mode !== 'piedi') {
+      pugno.t = 0;
+      pugno.colpito = true;
     }
     if (pugno.t > 0) {
       pugno.t = Math.max(0, pugno.t - dt);

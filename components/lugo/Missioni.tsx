@@ -180,8 +180,15 @@ export function Missioni() {
       const d = Math.hypot(g.x - target.x, g.z - target.z);
       const raggio = s.mode === 'auto' ? RAGGIO_AUTO : RAGGIO_PIEDI;
 
-      // tappa solo a piedi: se arrivi in auto, l'hint te lo dice
-      if (t.aPiedi && s.mode === 'auto' && d < RAGGIO_AUTO * 2.5) {
+      // Tappa solo a piedi: se ci arrivi su un mezzo, l'hint te lo dice.
+      //
+      // La condizione guardava `mode === 'auto'`, cioè dava per scontato
+      // che «non in auto» volesse dire «a piedi». Con la bici è nato un
+      // terzo caso, ed era il peggiore possibile: la tappa non si chiudeva
+      // (giustamente — `valida` qui sotto chiede mode === 'piedi') e
+      // nessuno diceva perché. Si pedalava avanti e indietro sopra il
+      // punto giusto guardando un obiettivo che non scattava mai.
+      if (t.aPiedi && s.mode !== 'piedi' && d < RAGGIO_AUTO * 2.5) {
         if (!hintPiedi.current) {
           hintPiedi.current = true;
           s.setAvviso('Qui si prosegue a piedi: premi E per scendere');

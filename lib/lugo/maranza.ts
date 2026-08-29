@@ -285,21 +285,47 @@ export function frasiDi(gruppo: MomentoFrase): readonly string[] {
   return FRASI_ATLANTE.slice(a, b);
 }
 
+/** Come si apre la riga: nessun tratto somatico, nessuna provenienza. */
+const CHI_E = [
+  'Un ragazzo',
+  'Una ragazza',
+  'Un tipo',
+  'Una tipa',
+  'Un ragazzo',
+  'Una ragazza',
+] as const;
+
+/** Cosa porta addosso chi il cappellino non ce l'ha. */
+const ADDOSSO = [
+  'in tuta',
+  'in tuta',
+  'in felpa',
+  'col marsupio',
+  'in felpa',
+  'in tuta',
+] as const;
+
 /**
  * Come lo chiama l'HUD. Solo vestiti: mai un tratto somatico, mai una
  * provenienza. Il colore della pelle non compare in nessuna condizione di
  * questo file, e questa funzione è il posto in cui sarebbe stato comodo
  * infilarcelo.
+ *
+ * Il cappellino si nomina SOLO quando c'è davvero, e lo si chiede a
+ * `n.senzaCappello`, che è il campo che decide cosa Npcs.tsx disegna sopra
+ * la testa. Prima l'intera riga usciva da `n.variante`, che è il colore
+ * della TUTA ed è un'estrazione tutta sua: due maranza su sei si
+ * chiamavano «col cappellino», ma il cappellino se lo mette (o no) un
+ * mazzo diverso, e circa uno su cinque va in giro a testa nuda. Il
+ * risultato era un pannello che descriveva un ragazzo diverso da quello
+ * che il giocatore aveva davanti — l'unica cosa che il pannello deve
+ * saper fare bene, dato che è lì per farti riconoscere chi ti parla.
  */
 export function descrizioneMaranza(n: Npc): string {
-  return [
-    'Un ragazzo in tuta',
-    'Una ragazza in tuta',
-    'Un ragazzo col cappellino',
-    'Un tipo col marsupio',
-    'Un ragazzo in felpa',
-    'Una ragazza col cappellino',
-  ][n.variante % 6];
+  const chi = CHI_E[n.variante % CHI_E.length];
+  return n.senzaCappello
+    ? `${chi} ${ADDOSSO[n.variante % ADDOSSO.length]}`
+    : `${chi} col cappellino`;
 }
 
 // ── la macchina a stati ──────────────────────────────────────────────────

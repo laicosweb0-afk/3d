@@ -253,12 +253,27 @@ export function prendiBici(mondo: MondoLugo, fisica: MondoFisico, i: number): bo
 }
 
 /**
- * Posa la bici che si stava guidando. Si prova il punto dove sei e poi i
- * quattro scostamenti laterali: se nessuno è libero la si appoggia lo
- * stesso dove sei, perché una bici non deve poter sparire — rifiutare la
- * posa vorrebbe dire tenersela addosso per sempre, e posarla dentro un
- * muro vorrebbe dire perderla per sempre. Meglio una bici un po' dentro
- * un gradino che una bici irrecuperabile.
+ * Posa la bici che si stava guidando, DI FIANCO a chi scende.
+ *
+ * I posti si provano in quest'ordine: prima i due fianchi, poi davanti al
+ * muso, e solo per ultimo il punto esatto in cui sei. L'ordine è tutto il
+ * senso di questa funzione. Prima si partiva da (x, z) — il punto dove sta
+ * il ciclista — e quel punto è sempre libero, perché ci sei sopra tu: la
+ * bici veniva quindi posata addosso al giocatore ogni singola volta, e
+ * scendendo ci si ritrovava in piedi DENTRO il telaio, con le due ruote a
+ * cavallo degli stinchi e il tubo che attraversa il bacino. Si vedeva
+ * benissimo, ed era la prima cosa che si vedeva del furto appena finito.
+ *
+ * Gli scostamenti sono nel riferimento della bici e non degli assi del
+ * mondo: appoggiarla «a ottanta centimetri verso est» in un vicolo che
+ * corre da nord a sud vuol dire appoggiarla nel muro, e la ricerca finiva
+ * a ripiegare sul punto del giocatore anche quando il fianco era libero.
+ *
+ * L'ultimo tentativo resta (x, z) e non fallisce mai: una bici non deve
+ * poter sparire. Rifiutare la posa vorrebbe dire tenersela addosso per
+ * sempre, e cercare un punto libero a oltranza vorrebbe dire perderla in
+ * fondo a un cortile. Meglio una bici un po' addosso che una bici
+ * irrecuperabile.
  */
 export function lasciaBici(
   mondo: MondoLugo,
@@ -274,16 +289,21 @@ export function lasciaBici(
   if (!o) return;
   let px = x;
   let pz = z;
-  for (const [ox, oz] of [
+  // avanti = il muso della bici, lato = la sua perpendicolare
+  const ax = Math.cos(yaw);
+  const az = Math.sin(yaw);
+  for (const [avanti, lato] of [
+    [0, 0.85],
+    [0, -0.85],
+    [0.9, 0],
     [0, 0],
-    [0.8, 0],
-    [-0.8, 0],
-    [0, 0.8],
-    [0, -0.8],
   ]) {
-    if (fisica.cerchioLibero(x + ox, z + oz, 0.7)) {
-      px = x + ox;
-      pz = z + oz;
+    const qx = x + ax * avanti - az * lato;
+    const qz = z + az * avanti + ax * lato;
+    // l'ultimo della lista è (0, 0): si accetta comunque, senza chiedere
+    if ((avanti === 0 && lato === 0) || fisica.cerchioLibero(qx, qz, 0.7)) {
+      px = qx;
+      pz = qz;
       break;
     }
   }
