@@ -265,8 +265,16 @@ try {
       await prova('D', ['KeyD'], 90);
       await prova('A', ['KeyA'], -90);
 
-      // il rilascio deve fermare davvero
-      await page.waitForTimeout(500);
+      // Il rilascio deve fermare davvero. La frenata è a tempo di GIOCO
+      // (2,3 m/s a 22 m/s² sono ~105 ms simulati), ma il banco headless va
+      // a singhiozzo: mezzo secondo d'orologio a volte vale due fotogrammi
+      // scarsi, e la fase dichiarava «non si ferma» un personaggio che
+      // stava ancora frenando. Si aspetta la quiete vera, con un tetto
+      // largo: quello che si misura è CHE si ferma, non quanto è veloce il
+      // computer che lo simula.
+      await page
+        .waitForFunction(() => window.__LUGO__.direzione().v < 0.05, null, { timeout: 8000 })
+        .catch(() => {});
       const fermo = await lugo('L.direzione().v');
       if (fermo < 0.05) ok('rilascio ferma il movimento', `v=${fermo.toFixed(3)} m/s`);
       else ko('rilascio ferma il movimento', `resta v=${fermo.toFixed(2)} m/s`);
@@ -332,6 +340,121 @@ try {
         await provaStick('destra', 42, 0, 90);
         await provaStick('sinistra', -42, 0, -90);
         await provaStick('diagonale', 30, -30, 45);
+
+        // ── fase 3a-bis: la banda analogica del pad, in metri al secondo ──
+        // Tre cure sul movimento a piedi, ognuna col suo metro:
+        //  1) UNA zona morta sola: la palla muove già a ~10 px (prima la
+        //     seconda soglia in character.ts mangiava la corsa fino a 13);
+        //  2) la camminata piena (2,3 m/s) si raggiunge col solo stick;
+        //  3) fra camminata e corsa NIENTE gradino: il regime cresce di al
+        //     massimo ~0,5 m/s per pixel di palla (prima saltava di +2,7
+        //     attraversando un pixel), e a fondo corsa restano i 5,2.
+        const cxPad = box2.x + box2.width / 2;
+        const cyPad = box2.y + box2.height / 2;
+        // porta la palla a `px` pixel verso l'alto e misura la velocità di
+        // regime: il massimo su più letture, perché le prime sono rampa e
+        // virata (chi gira rallenta di proposito, character.ts)
+        const regime = async (px) => {
+          await page.evaluate(([x, z]) => window.__LUGO__.teleport(x, z), [centro.x, centro.z]);
+          await page.waitForTimeout(250);
+          await page.mouse.move(cxPad, cyPad);
+          await page.mouse.down();
+          await page.mouse.move(cxPad, cyPad - px, { steps: 4 });
+          let v = 0;
+          for (let i = 0; i < 5; i++) {
+            await page.waitForTimeout(500);
+            v = Math.max(v, (await lugo('L.direzione()')).v);
+          }
+          await page.mouse.up();
+          await page.waitForTimeout(350);
+          return v;
+        };
+
+        const vPoco = await regime(10);
+        if (vPoco > 0.04 && vPoco < 0.6) ok('il pad muove già a 10 px', `${vPoco.toFixed(2)} m/s`);
+        else ko('il pad muove già a 10 px', `v=${vPoco.toFixed(2)} m/s (attesa piccola ma viva)`);
+
+        const vCamm = await regime(40);
+        if (vCamm > 2.05 && vCamm < 2.55) ok('camminata piena col solo stick', `${vCamm.toFixed(2)} m/s a 40 px`);
+        else ko('camminata piena col solo stick', `${vCamm.toFixed(2)} m/s a 40 px (attesi ~2.3)`);
+
+        // la scala per pixel: da 40 a 46 px il regime sale morbido fino a 5,2
+        const scala = [vCamm];
+        for (let px = 41; px <= 46; px++) scala.push(await regime(px));
+        let salto = 0;
+        for (let i = 1; i < scala.length; i++) salto = Math.max(salto, scala[i] - scala[i - 1]);
+        const vPiena = scala[scala.length - 1];
+        const traccia = scala.map((v) => v.toFixed(2)).join('/');
+        if (salto <= 0.85) ok('niente gradino fra camminata e corsa', `salto max ${salto.toFixed(2)} m/s per px · ${traccia}`);
+        else ko('niente gradino fra camminata e corsa', `salto ${salto.toFixed(2)} m/s per 1 px di palla · ${traccia}`);
+        if (vPiena > 4.85 && vPiena < 5.5) ok('corsa piena a fondo corsa', `${vPiena.toFixed(2)} m/s a 46 px`);
+        else ko('corsa piena a fondo corsa', `${vPiena.toFixed(2)} m/s (attesi 5.2)`);
+      }
+
+      // ── fase 3a-ter: niente sprint sul posto negli angoli concavi ─────
+      // Il difetto stava nella rientranza del bar Jolly (49.8, 77):
+      // incastrato con l'input a fondo corsa, la POSIZIONE restava
+      // congelata ma la velocità riportata saliva a ~4,7 m/s e ci restava
+      // — e l'animazione, che la legge, mostrava lo sprint completo coi
+      // piedi a frullare contro il muro. Qui ci si spinge nell'angolo di
+      // corsa in otto direzioni (le diagonali sono quelle che puntano il
+      // vertice e congelano davvero) e si misura su DUE soglie:
+      //  • finestra CONGELATA (< 2 cm): la velocità riportata deve essere
+      //    ~zero (< 0.5 m/s), che è il criterio della diagnosi;
+      //  • finestra quasi ferma (< 6 cm): mai una velocità da corsa
+      //    (< 2.2 m/s). Non si pretende zero qui perché è il caso vero e
+      //    misurato dello ZIG-ZAG: fra due pareti oblique il personaggio
+      //    scivola ~2,7 cm a fotogramma alternando parete, un moto REALE
+      //    che a passo di banco (dt saturato a 0,05 s) vale ~0,5 m/s di
+      //    equilibrio — a 60 fps sono ~0,2. Pretendere zero lì vorrebbe
+      //    dire bollare come bugia una velocità che dice il vero.
+      // Il caso «mai incastrato» è un fallimento della prova, non un
+      // successo: l'angolo esiste, e la prova deve mordere.
+      {
+        let bloccati = 0;
+        let congelati = 0;
+        const bugiardi = [];
+        const spinte = [
+          ['KeyW'], ['KeyD'], ['KeyS'], ['KeyA'],
+          ['KeyW', 'KeyD'], ['KeyW', 'KeyA'], ['KeyS', 'KeyD'], ['KeyS', 'KeyA'],
+        ];
+        for (const tasti of spinte) {
+          const nome = tasti.join('+');
+          await page.evaluate(() => window.__LUGO__.teleport(49.8, 77));
+          await page.waitForTimeout(300);
+          await page.keyboard.down('ShiftLeft');
+          for (const t of tasti) await page.keyboard.down(t);
+          // due secondi per arrivare al muro e assestarsi
+          await page.waitForTimeout(2000);
+          for (let finestra = 0; finestra < 3; finestra++) {
+            const p0 = await lugo('L.pos()');
+            await page.waitForTimeout(700);
+            const p1 = await lugo('L.pos()');
+            const v = (await lugo('L.direzione()')).v;
+            const mosso = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
+            if (mosso < 0.02) {
+              congelati++;
+              if (v > 0.5) bugiardi.push(`${nome}: congelato (${mosso.toFixed(3)} m) ma v=${v.toFixed(2)} m/s`);
+            }
+            if (mosso < 0.06) {
+              bloccati++;
+              if (v > 2.2) bugiardi.push(`${nome}: quasi fermo (${mosso.toFixed(3)} m) ma v da corsa ${v.toFixed(2)} m/s`);
+            }
+          }
+          for (const t of tasti) await page.keyboard.up(t);
+          await page.keyboard.up('ShiftLeft');
+          await page.waitForTimeout(400);
+        }
+        if (bloccati >= 1 && bugiardi.length === 0) {
+          ok(
+            'contro il muro la velocità dice il vero',
+            `${bloccati} finestre quasi ferme (${congelati} congelate), mai una v da corsa sul posto`,
+          );
+        } else if (bloccati === 0) {
+          ko('contro il muro la velocità dice il vero', 'mai incastrato al bar Jolly: la prova non ha morso');
+        } else {
+          ko('contro il muro la velocità dice il vero', bugiardi.join(' · '));
+        }
       }
 
       await page.evaluate(() => window.__LUGO__.tempoScorre(true));

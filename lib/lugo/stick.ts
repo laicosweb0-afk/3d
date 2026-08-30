@@ -35,8 +35,17 @@ export function resetStick() {
 
 /** Sotto questa spinta il joystick è considerato fermo (niente derive). */
 export const ZONA_MORTA = 0.18;
-/** Oltre questa spinta si scatta: a piedi è la corsa. */
-const SOGLIA_CORSA = 0.92;
+/**
+ * Da qui in su la corsa comincia a MONTARE, in sfumatura fino a fondo
+ * corsa. Il vecchio 0.92 era una soglia secca: a 43 px dei 46 della palla
+ * il bersaglio di velocità saltava da ~2,2 a ~4,8 m/s attraversando meno
+ * di un pixel di pollice, senza isteresi — sul bordo il personaggio poteva
+ * oscillare cammina/corri a ogni tremolio del dito, e la camminata piena
+ * (2,3 m/s) era irraggiungibile col solo stick. Con la sfumatura la soglia
+ * non esiste più come gradino: 0.87 lascia ~6 px di palla alla corsa, cioè
+ * al massimo ~0,5 m/s di bersaglio per pixel di dito.
+ */
+const SOGLIA_CORSA = 0.87;
 /** Da che spinta un asse conta come "tasto premuto" per l'auto. */
 const SOGLIA_BOOL = 0.2;
 
@@ -53,11 +62,21 @@ export function conStick(t: StatoInput): StatoInput {
   let az = (t.avanti ? 1 : 0) - (t.indietro ? 1 : 0);
 
   let spintaStick = 0;
+  let corsaStick = 0;
   if (stick.attivo) {
     const m = Math.hypot(stick.x, stick.y);
     if (m > ZONA_MORTA) {
-      // 0 al bordo della zona morta, 1 a fondo corsa: nessun salto
-      spintaStick = Math.min(1, (m - ZONA_MORTA) / (1 - ZONA_MORTA));
+      // 0 al bordo della zona morta, 1 alla soglia di corsa: nessun salto,
+      // e la banda della camminata copre TUTTA la sua corsa utile. Prima
+      // si riscalava fino a fondo corsa (1) mentre la corsa scattava a
+      // 0.92: la camminata piena non arrivava mai, e il tratto oltre la
+      // soglia era spinta sprecata.
+      spintaStick = Math.min(1, (m - ZONA_MORTA) / (SOGLIA_CORSA - ZONA_MORTA));
+      // l'ultimo tratto della palla è la corsa, in analogico: la spinta
+      // resta satura a 1 e a montare è `corsa`, così gli assi non calano
+      // mai spingendo di più (la bici li usa come gas: un tuffo del modulo
+      // a metà spinta sarebbe un colpo di freno fantasma)
+      if (m > SOGLIA_CORSA) corsaStick = Math.min(1, (m - SOGLIA_CORSA) / (1 - SOGLIA_CORSA));
       const k = spintaStick / m;
       ax += stick.x * k;
       az += -stick.y * k; // sullo schermo, giù = indietro
@@ -78,7 +97,10 @@ export function conStick(t: StatoInput): StatoInput {
     indietro: az < -SOGLIA_BOOL,
     sinistra: ax < -SOGLIA_BOOL,
     destra: ax > SOGLIA_BOOL,
-    corri: t.corri || stick.corriBtn || spintaStick > SOGLIA_CORSA,
+    corri: t.corri || stick.corriBtn || corsaStick > 0,
+    // il tasto (Shift o CORRI) vale 1 secco, lo stick sfuma: è questo
+    // numero — non il booleano — che il personaggio usa per il bersaglio
+    corsa: t.corri || stick.corriBtn ? 1 : corsaStick,
     freno: t.freno || stick.freno,
     interagisci: t.interagisci || stick.interagisci,
     reset: t.reset,

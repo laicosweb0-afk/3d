@@ -44,8 +44,18 @@ export const PERSONA = {
   decelerazione: 22,
   /** rad/s: quanto in fretta il personaggio si gira. */
   velRotazione: 11,
-  /** Sotto questo modulo l'input è considerato nullo. */
-  zonaMorta: 0.12,
+  /**
+   * Sotto questo modulo l'input è considerato nullo. Serve SOLO contro le
+   * derive numeriche: la tastiera manda 0 o 1 esatti, e il pad ha già la
+   * sua zona morta (ZONA_MORTA in stick.ts), che riporta la spinta a
+   * partire da zero. Il vecchio 0.12, applicato qui sulla spinta GIÀ
+   * riscalata, era una SECONDA zona morta: il movimento partiva solo a
+   * ~13 px di palla sui 46 (il 28% della corsa mangiato) e, quando
+   * partiva, lo faceva con un gradino di 0.12·2.3 = 0,28 m/s invece che
+   * da zero — esattamente lo scatto che il riscalo del pad prometteva di
+   * evitare.
+   */
+  zonaMorta: 0.02,
   raggio: 0.35,
 } as const;
 
@@ -79,7 +89,14 @@ export function stepPersona(
     const wx = az * cy - ax * sy;
     const wz = az * sy + ax * cy;
     yawTarget = Math.atan2(wz, wx);
-    vTarget = spinta * (input.corri ? PERSONA.vCorsa : PERSONA.vCammina);
+    // La corsa è ANALOGICA: 0 camminata, 1 sprint pieno. La tastiera manda
+    // 0 o 1 secchi (Shift), lo stick la sfuma nell'ultimo tratto della
+    // palla: così il bersaglio di velocità è CONTINUO fra 2,3 e 5,2 m/s e
+    // la rampa non riceve mai il gradino da +2,9 che faceva oscillare
+    // cammina/corri sul bordo della vecchia soglia. Chi non fornisce
+    // `corsa` (gli StatoInput costruiti a mano) vale il booleano di sempre.
+    const corsa = input.corsa ?? (input.corri ? 1 : 0);
+    vTarget = spinta * (PERSONA.vCammina + corsa * (PERSONA.vCorsa - PERSONA.vCammina));
   }
 
   // ── 2. rotazione morbida verso la direzione richiesta ────────────────
@@ -105,6 +122,9 @@ export function stepPersona(
   s.vz = Math.sin(s.yaw) * v;
 
   // ── 4. spostamento e collisione ──────────────────────────────────────
+  // da dove si parte: serve dopo, per misurare quanto ci si è mossi DAVVERO
+  const x0 = s.x;
+  const z0 = s.z;
   s.x += s.vx * dt;
   s.z += s.vz * dt;
 
@@ -120,15 +140,42 @@ export function stepPersona(
       s.vx -= nx * vn;
       s.vz -= nz * vn;
     }
+    // Negli ANGOLI CONCAVI la proiezione qui sopra non basta: risolviCerchio
+    // risolve la posizione contro TUTTI i collider ma ritorna UNA normale
+    // sola (l'ultima del suo ciclo), quindi la componente lungo l'altro
+    // muro sopravviveva intatta, la rampa la ripompava a ~4,9 a ogni frame
+    // e da fermi nella rientranza si "sprintava" a 4,7 m/s riportati — con
+    // l'animazione, che legge questa velocità, a frullare i piedi contro
+    // il muro. La verità sta nella POSIZIONE, che è risolta bene: la
+    // velocità che si tiene (e si riporta) non può superare lo spostamento
+    // davvero percorso nel fotogramma. Sul muro piatto e negli scivoli il
+    // percorso coincide con lo scivolo e questo taglio non tocca niente.
+    const percorso = Math.hypot(s.x - x0, s.z - z0);
+    const passoScivolo = Math.hypot(s.vx, s.vz) * dt;
+    if (passoScivolo > percorso) {
+      const r = passoScivolo > 1e-9 ? percorso / passoScivolo : 0;
+      // r al QUADRATO, non r semplice. Col rapporto semplice la velocità
+      // tenuta pareggiava sempre il passo del frame, la rampa ci rimetteva
+      // sopra la sua parte al frame dopo, e nell'angolo l'equilibrio era
+      // un vibrare sul posto a ~0,5 m/s riportati (misurato al bar Jolly:
+      // zig-zag di ~2,7 cm a frame fra le due pareti, spostamento netto
+      // quasi nullo). Il quadrato spegne la retroazione: a passo quasi
+      // pieno r²≈r≈1 e gli scivoli veri non cambiano di niente, a passo
+      // mangiato dal muro la velocità muore davvero invece di rimbalzare.
+      s.vx *= r * r;
+      s.vz *= r * r;
+    }
   }
 
   // ── 5. animazione al passo con la velocità reale ─────────────────────
-  // La fase avanza con la DISTANZA percorsa, non col tempo: così il passo
-  // resta agganciato al terreno. Il fattore è la falcata: con l'ampiezza
-  // d'anca di Character.tsx (±0.5 rad su una gamba di 0.94 m) un ciclo
-  // completo copre circa 1,8 m, cioè due passi da 90 cm. Con il vecchio 2.2
-  // il ciclo copriva 2,9 m e i piedi strisciavano sull'asfalto.
+  // La fase avanza con la DISTANZA percorsa — quella vera, misurata sulla
+  // posizione, non la velocità post-scivolo: contro un muro lo spostamento
+  // è zero e i piedi si fermano invece di strisciare. Il fattore è la
+  // falcata: con l'ampiezza d'anca di Character.tsx (±0.5 rad su una gamba
+  // di 0.94 m) un ciclo completo copre circa 1,8 m, cioè due passi da
+  // 90 cm. Con il vecchio 2.2 il ciclo copriva 2,9 m e i piedi
+  // strisciavano sull'asfalto.
   const vFinale = Math.hypot(s.vx, s.vz);
-  if (vFinale > 0.05) s.fase += vFinale * dt * FALCATA;
+  if (vFinale > 0.05) s.fase += Math.hypot(s.x - x0, s.z - z0) * FALCATA;
   return vFinale;
 }
