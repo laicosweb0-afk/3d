@@ -389,6 +389,83 @@ try {
         else ko('niente gradino fra camminata e corsa', `salto ${salto.toFixed(2)} m/s per 1 px di palla · ${traccia}`);
         if (vPiena > 4.85 && vPiena < 5.5) ok('corsa piena a fondo corsa', `${vPiena.toFixed(2)} m/s a 46 px`);
         else ko('corsa piena a fondo corsa', `${vPiena.toFixed(2)} m/s (attesi 5.2)`);
+
+        // ── fase 3a-quater: due dita vere, pad e CORRI insieme ──────────
+        // Il mouse è UN puntatore: tutte le prove qui sopra, per quanto
+        // strapazzino la palla, non possono dire niente sul caso che al
+        // telefono è la norma — un pollice sul pad e l'altro sul bottone.
+        // È il caso che mette alla prova la contabilità dei puntatori di
+        // Joystick.tsx (capture sul pad per il dito 1, capture sul bottone
+        // per il dito 2): se il rilascio del SECONDO dito azzerasse il pad,
+        // si camminerebbe a strappi ad ogni colpo di CORRI. Qui i tocchi
+        // sono veri, via CDP.
+        //
+        // Attenzione alle semantiche, verificate a banco: in touchEnd i
+        // touchPoints elencano i punti RILASCIATI, non quelli che restano.
+        // Elencare i superstiti rilascia il dito sbagliato — e la prova
+        // accuserebbe il gioco di un difetto che sta nel collaudo.
+        {
+          const cdp = await page.context().newCDPSession(page);
+          const tocco = (type, punti) =>
+            cdp.send('Input.dispatchTouchEvent', {
+              type,
+              touchPoints: punti.map(([id, x, y]) => ({ x, y, id })),
+            });
+          await page.evaluate(([x, z]) => window.__LUGO__.teleport(x, z), [centro.x, centro.z]);
+          await page.waitForTimeout(250);
+          const bCorri = await page.locator('button[aria-label="Corri"]').boundingBox();
+          const cx2 = box2.x + box2.width / 2;
+          const cy2 = box2.y + box2.height / 2;
+          const bx = bCorri.x + bCorri.width / 2;
+          const by = bCorri.y + bCorri.height / 2;
+          // il regime si campiona col massimo su più letture, come sopra:
+          // le prime sono rampa, non regime
+          const regime2 = async (letture = 4) => {
+            let v = 0;
+            for (let i = 0; i < letture; i++) {
+              await page.waitForTimeout(450);
+              v = Math.max(v, (await lugo('L.direzione()')).v);
+            }
+            return v;
+          };
+          // dito 1 sul pad, a 32 px: metà banda della camminata (~1,7 m/s)
+          await tocco('touchStart', [[1, cx2, cy2]]);
+          await tocco('touchMove', [[1, cx2, cy2 - 32]]);
+          const vDito = await regime2();
+          // dito 2 giù su CORRI: stessa spinta, bersaglio da sprint
+          await tocco('touchStart', [[1, cx2, cy2 - 32], [2, bx, by]]);
+          const vDue = await regime2();
+          // si molla SOLO il dito 2: il pad deve guidare ancora, alla
+          // stessa velocità di prima — zero vorrebbe dire stick morto.
+          // Si ASPETTA che la frenata dallo sprint sia finita (il banco
+          // headless va a singhiozzo, una finestra fissa misurava la
+          // rampa), poi si legge DUE volte a distanza: uno stick morto
+          // passa per ~1,7 mentre muore, ma alla seconda lettura è a zero.
+          await tocco('touchEnd', [[2, bx, by]]);
+          await page
+            .waitForFunction(() => window.__LUGO__.direzione().v < 2.05, null, { timeout: 8000 })
+            .catch(() => {});
+          const vRitorno = (await lugo('L.direzione()')).v;
+          await page.waitForTimeout(900);
+          const vTiene = (await lugo('L.direzione()')).v;
+          await tocco('touchEnd', [[1, cx2, cy2 - 32]]);
+          await page
+            .waitForFunction(() => window.__LUGO__.direzione().v < 0.05, null, { timeout: 8000 })
+            .catch(() => {});
+          const vFine = (await lugo('L.direzione()')).v;
+          const traccia2 = `${vDito.toFixed(2)} → ${vDue.toFixed(2)} → ${vRitorno.toFixed(2)}/${vTiene.toFixed(2)} → ${vFine.toFixed(3)} m/s`;
+          if (
+            vDito > 1.4 && vDito < 2.0 &&
+            vDue > vDito + 1.2 &&
+            Math.abs(vRitorno - vDito) < 0.5 &&
+            Math.abs(vTiene - vDito) < 0.5 &&
+            vFine < 0.05
+          ) {
+            ok('due dita: pad e CORRI insieme', traccia2);
+          } else {
+            ko('due dita: pad e CORRI insieme', traccia2 + ' (attesi ~1.7 → ~3.9 → ~1.7 → 0)');
+          }
+        }
       }
 
       // ── fase 3a-ter: niente sprint sul posto negli angoli concavi ─────
