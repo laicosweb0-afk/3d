@@ -59,6 +59,15 @@ export interface StatoInput {
   sinistra: boolean;
   destra: boolean;
   corri: boolean;
+  /**
+   * Quanto si corre, 0..1, in ANALOGICO. Lo produce `conStick`: Shift e il
+   * bottone CORRI valgono 1 secco, lo stick la sfuma nell'ultimo tratto di
+   * corsa della palla — così il bersaglio di velocità è CONTINUO e non
+   * salta di +2,9 m/s attraversando un pixel di pollice. Chi costruisce uno
+   * StatoInput a mano può ometterlo: vale allora la lettura del booleano
+   * `corri` (0 o 1), che è il comportamento di sempre.
+   */
+  corsa?: number;
   freno: boolean;
   interagisci: boolean;
   reset: boolean;
