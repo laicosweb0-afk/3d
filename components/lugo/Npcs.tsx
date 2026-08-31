@@ -1,8 +1,11 @@
 'use client';
 
 // Il popolo di Lugo, renderizzato a instanze: un InstancedMesh per parte
-// del corpo (11 draw call per TUTTI i pedoni). Le matrici si ricompongono
-// ogni frame dal ciclo di camminata; i colori si scrivono una volta sola.
+// del corpo, più bici e monopattino, e il conto resta una manciata di draw
+// call per TUTTI i pedoni. Le matrici si ricompongono ogni frame dal ciclo
+// di camminata; i colori si scrivono una volta sola. Le ruotine del
+// monopattino sono le ruote della bici scalate per istanza: ciclisti e
+// maranza non condividono mai lo stesso indice, quindi lo slot c'è già.
 // In coda, la gazzella dei Carabinieri che pattuglia i viali.
 
 import { useEffect, useMemo, useRef } from 'react';
@@ -15,13 +18,16 @@ import {
   stepNpcs,
   creaGazzella,
   stepGazzella,
+  registroOstacoli,
   type Npc,
 } from '@/lib/lugo/npc';
+import { geometriaMonopattino, MONOPATTINO } from '@/lib/lugo/monopattino';
 import { runtime, posGiocatore } from '@/lib/lugo/runtime';
 import {
   stepIncontro,
   incontroInCorso,
   provocaIncontro,
+  protestaOstacolo,
   statisticheMaranza,
   descrizioneMaranza,
   frasiDi,
@@ -67,6 +73,7 @@ interface Parti {
   biciTelaio: THREE.InstancedMesh;
   biciRuotaA: THREE.InstancedMesh;
   biciRuotaP: THREE.InstancedMesh;
+  monopattino: THREE.InstancedMesh;
 }
 
 // Il contesto dell'incontro è un literal riusato: allocarne uno nuovo a
@@ -157,16 +164,57 @@ export function Npcs() {
       descrizioni: () =>
         npcs
           .filter((n) => n.tipo === 'maranza')
-          .map((n) => ({ testo: descrizioneMaranza(n), cappello: !n.senzaCappello })),
+          .map((n) => ({
+            testo: descrizioneMaranza(n),
+            cappello: !n.senzaCappello,
+            monopattino: n.monopattino,
+          })),
       incontro: () => incontroInCorso(),
       // Il collaudo non può aspettare che un maranza si decida: questo hook
       // forza l'aggancio (e accende la sigaretta sul bersaglio), poi da lì
-      // in avanti è la macchina a stati vera a fare tutto.
-      provocaIncontro: () => {
+      // in avanti è la macchina a stati vera a fare tutto. Con `true` si
+      // pretende uno in monopattino, per la prova del pannello che nomina
+      // il mezzo.
+      provocaIncontro: (soloMonopattino?: boolean) => {
         const r = rt();
         if (!r) return -1;
-        return provocaIncontro(npcs, r.persona.x, r.persona.z, r.persona.yaw, fisica);
+        return provocaIncontro(
+          npcs,
+          r.persona.x,
+          r.persona.z,
+          r.persona.yaw,
+          fisica,
+          soloMonopattino === true,
+        );
       },
+      // i maranza su due ruote, con velocità e stato: la prova dell'andatura
+      // ha bisogno di uno in marcia, non del primo che passa
+      monopattini: () => {
+        const lista: { i: number; x: number; z: number; v: number; passo: number; stato: string }[] = [];
+        npcs.forEach((n, i) => {
+          if (n.tipo === 'maranza' && n.monopattino) {
+            lista.push({ i, x: n.x, z: n.z, v: n.v, passo: n.passo, stato: n.stato });
+          }
+        });
+        return lista;
+      },
+      // il registro degli ostacoli (frenate da contatto e passi ceduti) e
+      // l'elenco nudo dei pedoni: servono alle prove di auto e camminata
+      ostacoli: () => ({ ...registroOstacoli }),
+      pedoni: () =>
+        npcs.map((n, i) => ({
+          i,
+          tipo: n.tipo,
+          x: n.x,
+          z: n.z,
+          yaw: n.yaw,
+          stato: n.stato,
+          v: n.v,
+          monopattino: n.monopattino,
+        })),
+      // il pannello del dialogo com'è davvero nello store: il collaudo
+      // confronta il suo `chi` con quello che si vede in strada
+      dialogo: () => useLugo.getState().dialogo,
       fumo: () => ({ vivi: particelle.filter((q) => q.viva).length, max: FUMO.max }),
       fumetti: () => {
         const ora = oraGioco();
@@ -229,7 +277,21 @@ export function Npcs() {
       p.biciTelaio.setColorAt(i, c.set(telaio));
       p.biciRuotaA.setColorAt(i, c.set('#22222A'));
       p.biciRuotaP.setColorAt(i, c.set('#22222A'));
+      // due livree da sharing, CHIARE apposta: metà tute sono quasi nere e
+      // un mezzo scuro sotto una tuta scura spariva del tutto — il telaio
+      // si deve leggere anche in controluce, come quelli veri in strada
+      p.monopattino.setColorAt(i, c.set(n.variante % 2 ? '#A8AEB8' : '#7A2E2E'));
     });
+    // Il count della mesh del monopattino si ferma all'ULTIMO maranza su
+    // due ruote: i maranza nascono nei primi posti dell'array, quindi le
+    // istanze oltre quell'indice non si pagano, e con zero monopattini il
+    // count resta 0 e three salta l'intera chiamata di disegno — lo stesso
+    // patto dei due mesh di Maranza.tsx.
+    let ultimoMono = -1;
+    npcs.forEach((n, i) => {
+      if (n.tipo === 'maranza' && n.monopattino) ultimoMono = i;
+    });
+    p.monopattino.count = ultimoMono + 1;
     for (const mesh of Object.values(p)) {
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     }
@@ -248,6 +310,9 @@ export function Npcs() {
         ultimaFrase.current = frame.clock.elapsedTime;
         st.setAvviso(esito.frase);
       }
+      // chi ha ceduto il passo borbotta la sua nel fumetto: la battuta la
+      // sceglie maranza.ts, che è il proprietario dell'atlante delle frasi
+      if (esito.cede) protestaOstacolo(esito.cede);
 
       // ── l'incontro col maranza ────────────────────────────────────────
       // Gira DOPO stepNpcs, cioè quando le posizioni del fotogramma sono
@@ -282,16 +347,28 @@ export function Npcs() {
     const rot = new THREE.Matrix4();
     npcs.forEach((n, i) => {
       const vNorm = Math.min(1, n.v / Math.max(0.4, n.passo));
-      const bob = Math.abs(Math.sin(n.fase)) * 0.045 * vNorm;
       const inSella = n.tipo === 'ciclista';
-      // la bici resta a terra, il ciclista sopra: due basi, stessa rotazione
+      const inMono = n.tipo === 'maranza' && n.monopattino;
+      // in monopattino NIENTE rimbalzo del passo: si sta fermi in piedi
+      // sulla pedana, e un corpo che saltella a ruote ferme è la prima cosa
+      // che smaschera un ciclo di camminata rimasto acceso per sbaglio
+      const bob = inMono ? 0 : Math.abs(Math.sin(n.fase)) * 0.045 * vNorm;
+      // bici e monopattino restano a terra, chi li guida sopra: due basi,
+      // stessa rotazione
       baseTerra.makeTranslation(n.x, 0, n.z);
       rot.makeRotationY(-n.yaw);
       baseTerra.multiply(rot);
-      base.makeTranslation(n.x, bob + (inSella ? 0.5 : 0), n.z);
+      const alzo = bob + (inSella ? 0.5 : inMono ? MONOPATTINO.altezzaPedana : 0);
+      base.makeTranslation(n.x, alzo, n.z);
       base.multiply(rot);
-      // il maranza ciondola: rollio lento del busto
-      const rollio = n.tipo === 'maranza' ? Math.sin(n.fase * 0.5) * 0.1 : 0;
+      // il maranza ciondola: rollio lento del busto. Sul monopattino il
+      // ciondolio resta (sono maranza anche lì sopra) ma cresce con la
+      // marcia: è l'ondeggiamento di chi si dondola sul mezzo, non un tic
+      // da fermo davanti al semaforo.
+      const rollio =
+        n.tipo === 'maranza'
+          ? Math.sin(n.fase * 0.5) * (inMono ? 0.05 + 0.07 * vNorm : 0.1)
+          : 0;
       const curva =
         n.tipo === 'anziano' ? 0.32 : n.tipo === 'maranza' ? -0.06 : inSella ? 0.42 : 0;
       const avantiTesta = Math.sin(curva) * 0.42;
@@ -308,10 +385,18 @@ export function Npcs() {
       // la mano non torna giù di scatto.
       const fumatore = n.tipo === 'maranza' && n.fuma;
       let oscD = oscB;
+      // in monopattino le braccia stanno protese al manubrio, con una
+      // punta di dondolio in fase col rollio; la tirata della sigaretta
+      // VINCE sul manubrio (l'override sta dopo apposta): si guida con una
+      // mano sola, che è esattamente la scena che ci si aspetta da lui
+      if (inMono) oscD = MONOPATTINO.braccioAlManubrio + Math.sin(n.fase * 0.5) * 0.04;
       if (fumatore) {
         const tiro = n.tiro > -FUMO.durataTiro && n.tiro < 0 ? Math.sin((-n.tiro / FUMO.durataTiro) * Math.PI) : 0;
         oscD = tiro > 0 ? 0.35 + (1.45 - 0.35) * tiro : 0.35 + oscB * 0.15;
       }
+      const oscS = inMono
+        ? MONOPATTINO.braccioAlManubrio + Math.sin(n.fase * 0.5 + 1.9) * 0.04
+        : -oscB * (n.tipo === 'anziano' ? 0.4 : 1);
 
       setParte(p.torso, i, base, 0, 1.06, 0, curva, rollio, 0, 0, 0, 1, n.tipo === 'anziano' ? 0.92 : 1, 1);
       setParte(p.testa, i, base, avantiTesta, n.tipo === 'anziano' ? 1.34 : 1.42, 0, 0, 0, 0, 0, 0);
@@ -333,7 +418,7 @@ export function Npcs() {
         // righe: sono l'unico punto in cui la mano ha una posizione, e il
         // fumo la legge invece di ricalcolarla.
         const lx = avantiTesta * 0.7 + 0.44 * Math.sin(oscD);
-        const ly = 1.3 - 0.44 * Math.cos(oscD) + bob;
+        const ly = 1.3 - 0.44 * Math.cos(oscD) + alzo;
         const lz = 0.24;
         const cy = Math.cos(n.yaw);
         const sy = Math.sin(n.yaw);
@@ -341,9 +426,11 @@ export function Npcs() {
         n.manoY = ly;
         n.manoZ = n.z + lx * sy + lz * cy;
       }
-      setParte(p.braccioS, i, base, avantiTesta * 0.7, 1.3, -0.24, 0, -oscB * (n.tipo === 'anziano' ? 0.4 : 1), 0, -0.2, 0);
-      setParte(p.gambaD, i, base, 0, 0.85, 0.09, 0, oscG, 0, -0.38, 0);
-      setParte(p.gambaS, i, base, 0, 0.85, -0.09, 0, -oscG, 0, -0.38, 0);
+      setParte(p.braccioS, i, base, avantiTesta * 0.7, 1.3, -0.24, 0, oscS, 0, -0.2, 0);
+      // sul monopattino le gambe NON pedalano e non camminano: quasi
+      // dritte, una un filo avanti all'altra come si sta davvero in pedana
+      setParte(p.gambaD, i, base, inMono ? 0.1 : 0, 0.85, 0.09, 0, inMono ? 0.16 : oscG, 0, -0.38, 0);
+      setParte(p.gambaS, i, base, inMono ? -0.06 : 0, 0.85, -0.09, 0, inMono ? -0.05 : -oscG, 0, -0.38, 0);
 
       if (n.tipo === 'maranza') setParte(p.marsupio, i, base, 0.17, 1.0, 0, 0, -0.35, 0, 0, 0);
       else p.marsupio.setMatrixAt(i, ZERO);
@@ -353,10 +440,23 @@ export function Npcs() {
         setParte(p.biciTelaio, i, baseTerra, 0, 0.62, 0, 0, 0.15, 0, 0, 0);
         setParte(p.biciRuotaA, i, baseTerra, 0.62, 0.34, 0, Math.PI / 2, 0, 0, 0, 0);
         setParte(p.biciRuotaP, i, baseTerra, -0.62, 0.34, 0, Math.PI / 2, 0, 0, 0, 0);
+        p.monopattino.setMatrixAt(i, ZERO);
+      } else if (inMono) {
+        // le ruotine SONO le ruote della bici, rimpicciolite dalla scala
+        // per istanza: il ciclista e il maranza non condividono mai lo
+        // stesso indice, quindi lo slot in queste due mesh è già suo e il
+        // monopattino intero costa UNA sola chiamata di disegno in più
+        p.biciTelaio.setMatrixAt(i, ZERO);
+        setParte(p.biciRuotaA, i, baseTerra, MONOPATTINO.ruotaAvanti, MONOPATTINO.quotaRuota, 0,
+          Math.PI / 2, 0, 0, 0, 0, MONOPATTINO.scalaRuota, MONOPATTINO.spessoreRuota, MONOPATTINO.scalaRuota);
+        setParte(p.biciRuotaP, i, baseTerra, MONOPATTINO.ruotaDietro, MONOPATTINO.quotaRuota, 0,
+          Math.PI / 2, 0, 0, 0, 0, MONOPATTINO.scalaRuota, MONOPATTINO.spessoreRuota, MONOPATTINO.scalaRuota);
+        setParte(p.monopattino, i, baseTerra, 0, 0, 0, 0, 0, 0, 0, 0);
       } else {
         p.biciTelaio.setMatrixAt(i, ZERO);
         p.biciRuotaA.setMatrixAt(i, ZERO);
         p.biciRuotaP.setMatrixAt(i, ZERO);
+        p.monopattino.setMatrixAt(i, ZERO);
       }
       if (n.tipo === 'carabiniere') {
         setParte(p.bandaD, i, base, 0, 0.85, 0.152, 0, oscG, 0, -0.38, 0);
@@ -444,6 +544,20 @@ export function Npcs() {
       </instancedMesh>
       <instancedMesh ref={ref('biciRuotaP')} args={[undefined, undefined, N_NPC]} frustumCulled={false}>
         <cylinderGeometry args={[0.34, 0.34, 0.05, 10]} />
+        <meshLambertMaterial />
+      </instancedMesh>
+      {/* pedana+piantone+manubrio fusi in UNA geometria (cache di modulo in
+          monopattino.ts): un solo InstancedMesh per tutti i monopattini.
+          Il count lo scrive l'effetto dei colori e si ferma all'ultimo
+          maranza su due ruote (0 se non ce n'è): NON è un prop, perché un
+          re-render qualsiasi lo riporterebbe al valore scritto qui e i
+          monopattini sparirebbero senza un errore da nessuna parte. */}
+      <instancedMesh
+        ref={ref('monopattino')}
+        args={[geometriaMonopattino(), undefined, N_NPC]}
+        frustumCulled={false}
+        castShadow
+      >
         <meshLambertMaterial />
       </instancedMesh>
       <instancedMesh ref={ref('bandaS')} args={[undefined, undefined, N_NPC]} frustumCulled={false}>
