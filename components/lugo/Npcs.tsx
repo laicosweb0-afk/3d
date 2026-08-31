@@ -223,7 +223,7 @@ export function Npcs() {
           .map((n) => FRASI_ATLANTE[n.frase]);
         return { vivi: testi.length, testi };
       },
-      frasi: (g: 'aggancio' | 'insistenza' | 'si' | 'pugno' | 'fuga' | 'gruppo') => frasiDi(g),
+      frasi: (g: 'aggancio' | 'insistenza' | 'si' | 'pugno' | 'fuga' | 'gruppo' | 'ostacolo') => frasiDi(g),
       // un pedone qualunque, per provare che picchiare chi non ti ha fatto
       // niente costa reputazione
       npcVicino: () => {
@@ -283,10 +283,12 @@ export function Npcs() {
       p.monopattino.setColorAt(i, c.set(n.variante % 2 ? '#A8AEB8' : '#7A2E2E'));
     });
     // Il count della mesh del monopattino si ferma all'ULTIMO maranza su
-    // due ruote: i maranza nascono nei primi posti dell'array, quindi le
-    // istanze oltre quell'indice non si pagano, e con zero monopattini il
-    // count resta 0 e three salta l'intera chiamata di disegno — lo stesso
-    // patto dei due mesh di Maranza.tsx.
+    // due ruote: creaNpcs spawna prima i carabinieri e poi i maranza, quindi
+    // qualche slot iniziale resta vuoto ma le istanze OLTRE l'ultimo mezzo
+    // non si pagano, e con zero monopattini il count resta 0 e three salta
+    // l'intera chiamata di disegno — lo stesso patto dei due mesh di
+    // Maranza.tsx. La scansione è completa apposta: non fidarsi dell'ordine
+    // di spawn, che è già cambiato una volta.
     let ultimoMono = -1;
     npcs.forEach((n, i) => {
       if (n.tipo === 'maranza' && n.monopattino) ultimoMono = i;

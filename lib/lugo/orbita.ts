@@ -30,6 +30,19 @@ export const PITCH_MAX = 0.55;
 export const ZOOM_MIN = 0.6;
 export const ZOOM_MAX = 1.6;
 /**
+ * La rotellina non parla sempre in pixel: WheelEvent.deltaMode può valere
+ * DOM_DELTA_LINE — Firefox desktop con le impostazioni di fabbrica consegna
+ * ±3 "righe" per scatto — o DOM_DELTA_PAGE. Trattare le righe come pixel,
+ * come faceva la prima stesura, rendeva lo zoom quasi inerte proprio su
+ * Firefox (fattore ~1,003 a scatto: ~140 scatti per coprire il range).
+ * Prima della legge esponenziale i delta si riportano quindi a pixel:
+ * 33 px a riga, così lo scatto di Firefox (3 righe ≈ 100 px) ha lo stesso
+ * passo di quello di Chrome; una "pagina" vale qualche centinaio di px.
+ * Un delta esagerato non fa danni comunque: lo zoom è già clampato.
+ */
+const PX_PER_RIGA_ROTELLA = 33;
+const PX_PER_PAGINA_ROTELLA = 300;
+/**
  * Dopo l'ultimo rilascio il riallineo automatico dietro le spalle resta
  * fermo per questo tempo: senza la pausa, chi gira la visuale e riparte
  * subito dritto se la vedrebbe strappare via dalle mani dal riallineo.
@@ -173,7 +186,16 @@ export function attaccaOrbita(canvas: HTMLCanvasElement): () => void {
     // stesso zoom e stessi clamp del pinch; il preventDefault tiene la
     // rotellina sul gioco invece che sullo scroll della pagina
     e.preventDefault();
-    orbita.zoom = clampa(orbita.zoom * Math.exp(e.deltaY * 0.0011), ZOOM_MIN, ZOOM_MAX);
+    // qui la normalizzazione per deltaMode (vedi le costanti in testa al
+    // file): senza, su Firefox i delta arrivano in righe e la rotellina
+    // sembra rotta — un bug che Chromium headless non può far vedere
+    const pixel =
+      e.deltaMode === 1
+        ? e.deltaY * PX_PER_RIGA_ROTELLA
+        : e.deltaMode === 2
+          ? e.deltaY * PX_PER_PAGINA_ROTELLA
+          : e.deltaY;
+    orbita.zoom = clampa(orbita.zoom * Math.exp(pixel * 0.0011), ZOOM_MIN, ZOOM_MAX);
   };
 
   // qualunque uscita dalla finestra molla tutto, come fa il joystick: mai
