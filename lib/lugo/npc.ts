@@ -1,9 +1,13 @@
-// I pedoni di Lugo: maranza a gruppetti, anziani col bastone, carabinieri
-// in coppia attorno ai landmark, più la gazzella di pattuglia sui viali.
+// I pedoni di Lugo: maranza a gruppetti (metà in monopattino elettrico),
+// anziani col bastone, carabinieri in coppia attorno ai landmark, più la
+// gazzella di pattuglia sui viali.
 // Simulazione volutamente semplice: vagabondaggio a waypoint sulle strade,
 // collisione a cerchio con scivolamento, balzo laterale quando un veicolo
 // in corsa arriva addosso (il giocatore, il traffico civile, la gazzella).
-// Niente investimenti: qui al massimo ci si becca un'imprecazione.
+// Niente investimenti: qui al massimo ci si becca un'imprecazione. I pedoni
+// però NON sono trasparenti: chi li tocca con l'auto li vede balzare in
+// salvo ma paga in velocità, e chi gli cammina addosso a piedi li vede
+// cedere il passo di lato — il giocatore non viene mai spinto né bloccato.
 
 import type { MondoLugo } from './loadMap';
 import type { MondoFisico } from './physics';
@@ -53,6 +57,13 @@ export interface Npc {
   senzaCappello: boolean;
   /** Solo maranza: ha una sigaretta accesa in mano. */
   fuma: boolean;
+  /**
+   * Solo maranza: gira su un monopattino elettrico. Si decide alla nascita
+   * col mazzo di creaNpcs, mai a runtime: il mezzo fa parte dell'identità
+   * del pedone come la tuta, e il pannello del dialogo lo deve poter
+   * raccontare senza rischiare che al fotogramma dopo sia sparito.
+   */
+  monopattino: boolean;
   /** Secondi alla prossima tirata; fra 0 e −durataTiro il braccio è alzato. */
   tiro: number;
   /** Accumulatore del filo di fumo. */
@@ -89,6 +100,8 @@ export const RAGGIO_NPC = 0.3;
 export const PASSO_INCONTRO = {
   avvicina: 3.1,
   ritirata: 4.6,
+  /** In monopattino si riparte più svelti di chiunque a piedi. */
+  ritirataMonopattino: 5.8,
   /** Sotto `tieniMin` arretra, sopra `tieniMax` si rifà sotto. */
   arretra: 1.2,
   riavvicina: 1.6,
@@ -97,6 +110,14 @@ export const PASSO_INCONTRO = {
 } as const;
 
 const PASSO = { maranza: 1.5, anziano: 0.7, carabiniere: 1.1, studente: 1.7, ciclista: 4.2 } as const;
+
+/**
+ * L'andatura del monopattino elettrico: più del maranza a piedi (1,5) e
+ * meno del ciclista (4,2), così nel traffico dei marciapiedi le tre velocità
+ * si leggono a colpo d'occhio. La camminata del giocatore è 2,3: il
+ * monopattino la stacca, la corsa (5,2) lo stacca ancora.
+ */
+export const V_MONOPATTINO = 3.4;
 
 export const FRASI_BALZO = [
   'Uè! Sta’ attento!',
@@ -237,6 +258,45 @@ export function puntoStradaCasuale(
 }
 
 /**
+ * Il punto sul marciapiede OPPOSTO della via in cui ci si trova: la meta di
+ * un attraversamento. Il vagabondaggio normale tiene i pedoni sul proprio
+ * lato per decine di metri, quindi chi guida se li trovava sempre ai bordi
+ * e mai davvero davanti: ogni tanto uno deve tagliare la carreggiata, ed è
+ * questo a renderli un ostacolo per cui vale la pena frenare. Si specchia
+ * lo scostamento laterale rispetto all'asse del tratto più vicino, con un
+ * piccolo avanzamento lungo la via perché l'attraversamento venga in
+ * diagonale come quelli veri, non un dietrofront a novanta gradi.
+ */
+export function puntoOltreLaStrada(
+  mondo: MondoLugo,
+  x: number,
+  z: number,
+  seme: { s: number },
+): [number, number] | null {
+  let s: SegmentoPed | null = null;
+  let tBest = 0;
+  let d2Best = Infinity;
+  for (const seg of segmentiCamminabili(mondo)) {
+    const t = Math.max(0, Math.min(1, ((x - seg.ax) * seg.dx + (z - seg.az) * seg.dz) / (seg.l * seg.l)));
+    const qx = seg.ax + seg.dx * t - x;
+    const qz = seg.az + seg.dz * t - z;
+    const d2 = qx * qx + qz * qz;
+    if (d2 < d2Best) {
+      d2Best = d2;
+      s = seg;
+      tBest = t;
+    }
+  }
+  // lontani dalla rete (cortili, piazze): niente attraversamento forzato
+  if (!s || d2Best > 20 * 20) return null;
+  const scost =
+    (x - (s.ax + s.dx * tBest)) * (-s.dz / s.l) + (z - (s.az + s.dz * tBest)) * (s.dx / s.l);
+  const lato = (scost >= 0 ? -1 : 1) * s.larghezza * (0.45 + rand(seme) * 0.2);
+  const t = Math.max(0, Math.min(1, tBest + (rand(seme) - 0.35) * (8 / s.l)));
+  return suSegmento(s, t, lato);
+}
+
+/**
  * Estrazione SENZA rimpiazzo: si tiene un mazzo di `quante` carte, lo si
  * mescola e lo si distribuisce fino all'ultima prima di rimescolare.
  *
@@ -271,6 +331,7 @@ export function creaNpcs(mondo: MondoLugo, quanti: number): Npc[] {
   const mazzoTuta: number[] = [];
   const mazzoCappello: number[] = [];
   const mazzoFumo: number[] = [];
+  const mazzoMonopattino: number[] = [];
   const npcs: Npc[] = [];
   // stessa spatial hash di tutti gli altri sistemi (edifici + auto in sosta):
   // la posizione di nascita va validata come quella della discesa dall'auto
@@ -323,6 +384,7 @@ export function creaNpcs(mondo: MondoLugo, quanti: number): Npc[] {
       cappello: dalMazzo(mazzoCappello, 5, seme),
       senzaCappello: rand(seme) < 0.22,
       fuma: false,
+      monopattino: false,
       tiro: 2 + rand(seme) * 14,
       fumoAcc: 0,
       frase: -1,
@@ -368,6 +430,13 @@ export function creaNpcs(mondo: MondoLugo, quanti: number): Npc[] {
       // il mazzo garantisce la proporzione senza affidarla alla fortuna
       m.variante = dalMazzo(mazzoTuta, 6, seme);
       m.fuma = dalMazzo(mazzoFumo, 4, seme) < 2;
+      // metà esatta in monopattino elettrico, dallo stesso schema a mazzo:
+      // un sorteggio uniforme al 50% lasciava interi gruppetti tutti a piedi
+      // (o tutti in sella) una volta su quattro, e la richiesta è «circa
+      // metà», non «in media metà». Il passo si riscrive DOPO lo spawn
+      // perché lo spawn conosce solo l'andatura a piedi del tipo.
+      m.monopattino = dalMazzo(mazzoMonopattino, 2, seme) === 0;
+      if (m.monopattino) m.passo = V_MONOPATTINO * (0.96 + rand(seme) * 0.08);
       if (rand(seme) < 0.45) {
         m.stato = 'fermo'; // in posa col telefono
         m.timer = 6 + rand(seme) * 14;
@@ -405,7 +474,23 @@ export function creaNpcs(mondo: MondoLugo, quanti: number): Npc[] {
 export interface EsitoNpcs {
   /** Una frase da mostrare (balzo appena scattato), o null. */
   frase: string | null;
+  /**
+   * Il pedone che ha appena ceduto il passo al giocatore a piedi, o null.
+   * La battuta di disappunto gliela mette in bocca chi chiama (Npcs.tsx via
+   * maranza.ts): le frasi dei fumetti vivono nell'atlante di maranza.ts e
+   * questo modulo non può importarlo — l'importazione va in una direzione
+   * sola, maranza.ts → npc.ts, o nasce un ciclo.
+   */
+  cede: Npc | null;
 }
+
+/**
+ * Il registro degli ostacoli, per il collaudo: quante frenate da contatto
+ * auto-pedone (con la velocità prima e dopo l'ultima) e quanti pedoni hanno
+ * ceduto il passo. Contatori nudi, azzerati mai: le prove leggono le
+ * differenze, non i totali.
+ */
+export const registroOstacoli = { frenate: 0, vPrima: 0, vDopo: 0, cedute: 0 };
 
 const semeFrasi = { s: 777 };
 // Semi condivisi e persistenti: la partita resta deterministica ma la
@@ -424,7 +509,20 @@ export function stepNpcs(
   mode: Modalita,
 ): EsitoNpcs {
   let frase: string | null = null;
+  let cede: Npc | null = null;
   const out = { x: 0, z: 0 };
+
+  // L'asse dell'auto del giocatore, per il contatto vero (tre cerchi come
+  // in car.ts). Si calcola una volta sola fuori dal ciclo dei pedoni.
+  const inAuto = mode === 'auto';
+  const cosAuto = inAuto ? Math.cos(rt.auto.yaw) : 1;
+  const sinAuto = inAuto ? Math.sin(rt.auto.yaw) : 0;
+  // Il giocatore a piedi, per il cedere il passo: serve la sua direzione di
+  // marcia vera (vx/vz), non lo yaw — camminando all'indietro si urta con
+  // la schiena, e lo scarto deve andare via dal moto, non dallo sguardo.
+  const aPiedi = mode === 'piedi' && rt.vPersona > 0.8;
+  const mossaX = aPiedi ? rt.persona.vx / (rt.vPersona || 1) : 0;
+  const mossaZ = aPiedi ? rt.persona.vz / (rt.vPersona || 1) : 0;
 
   // Tutto ciò che corre per strada, non solo l'auto del giocatore: prima i
   // pedoni vedevano soltanto lui, così le sei auto civili e la gazzella li
@@ -457,6 +555,76 @@ export function stepNpcs(
   if (g) veicoli.push({ x: g.x, z: g.z, fx: Math.cos(g.yaw), fz: Math.sin(g.yaw) });
 
   for (const n of npcs) {
+    // ── l'ostacolo vero: il CONTATTO con l'auto del giocatore ───────────
+    // Il balzo d'allarme qui sotto scatta a 6,5 m e di solito li salva; chi
+    // viene toccato lo stesso (attraversava, era dietro un angolo, l'auto
+    // era troppo veloce) balza comunque in salvo — MAI nessuno a terra —
+    // ma l'auto paga: la velocità crolla e l'urto arriva alla camera. Il
+    // controllo gira anche su chi è GIÀ in balzo, altrimenti l'allarme dei
+    // 6,5 m «consumerebbe» il contatto e la frenata non partirebbe mai.
+    if (inAuto) {
+      const dxA = n.x - rt.auto.x;
+      const dzA = n.z - rt.auto.z;
+      if (Math.abs(dxA) < 3.4 && Math.abs(dzA) < 3.4) {
+        const lungo = dxA * cosAuto + dzA * sinAuto;
+        const lato = -dxA * sinAuto + dzA * cosAuto;
+        // distanza dal segmento dei tre cerchi di car.ts (mezzo passo 1,3 m,
+        // raggio 0,85) più il raggio del pedone: sotto 1,25 è contatto
+        const oltre = Math.max(0, Math.abs(lungo) - 1.3);
+        if (Math.hypot(oltre, lato) < 1.25) {
+          const verso = lato >= 0 ? 1 : -1;
+          n.stato = 'balzo';
+          n.timer = 0.38;
+          n.bx = -sinAuto * verso;
+          n.bz = cosAuto * verso;
+          if (frase === null) {
+            frase = FRASI_BALZO[Math.floor(rand(semeFrasi) * FRASI_BALZO.length)];
+          }
+          const vA = Math.hypot(rt.auto.vx, rt.auto.vz);
+          if (vA > 1.5) {
+            // la frenata morde la velocità vera (auto.vx/vz), non solo il
+            // numero da cruscotto: il prossimo stepAuto integra da qui.
+            // rt.vAuto e rt.urto si aggiornano per chi legge DOPO questo
+            // punto nel fotogramma — la camera dà lo scossone su rt.urto.
+            rt.auto.vx *= 0.45;
+            rt.auto.vz *= 0.45;
+            rt.vAuto *= 0.45;
+            rt.urto = Math.max(rt.urto, vA * 0.55);
+            registroOstacoli.frenate++;
+            registroOstacoli.vPrima = vA;
+            registroOstacoli.vDopo = vA * 0.45;
+          }
+        }
+      }
+    }
+
+    // ── cede il passo: chi cammina addosso a un pedone lo fa scartare ───
+    // Lo scarto è un balzo corto e lento: bx/bz portano il MODULO oltre
+    // alla direzione (il balzo integra a 6,5·|b| m/s), così non serve né un
+    // nuovo stato né una velocità dedicata. Il giocatore non si tocca: si
+    // sposta il pedone, mai chi cammina — il suo moto è materia del mandato
+    // movimento e qui nessuno scrive rt.persona.
+    if (
+      aPiedi &&
+      cede === null &&
+      (n.stato === 'cammina' || n.stato === 'fermo' || n.stato === 'ritirata')
+    ) {
+      const dxP = n.x - rt.persona.x;
+      const dzP = n.z - rt.persona.z;
+      const dP = Math.hypot(dxP, dzP);
+      // 0,9 m = raggio persona (0,35) + raggio pedone (0,3) + un quarto di
+      // passo di cortesia: si scansa un attimo PRIMA dello scontro vero
+      if (dP > 0.001 && dP < 0.9 && (dxP / dP) * mossaX + (dzP / dP) * mossaZ > 0.35) {
+        const verso = -mossaZ * dxP + mossaX * dzP >= 0 ? 1 : -1;
+        n.stato = 'balzo';
+        n.timer = 0.4;
+        n.bx = -mossaZ * verso * 0.38;
+        n.bz = mossaX * verso * 0.38;
+        registroOstacoli.cedute++;
+        cede = n;
+      }
+    }
+
     // un veicolo arriva addosso → balzo laterale
     if (n.stato !== 'balzo') {
       for (const v of veicoli) {
@@ -519,8 +687,12 @@ export function stepNpcs(
       const dz = n.targetZ - n.z;
       const d = Math.hypot(dx, dz);
       if (d > 0.05) {
-        vx = (dx / d) * PASSO_INCONTRO.avvicina;
-        vz = (dz / d) * PASSO_INCONTRO.avvicina;
+        // in monopattino ti si affianca rotolando alla SUA andatura, che è
+        // già sopra quella dell'aggancio a piedi: rallentarlo a 3,1 sarebbe
+        // un mezzo elettrico che frena per chiederti una sigaretta
+        const passo = n.monopattino ? Math.max(PASSO_INCONTRO.avvicina, n.passo) : PASSO_INCONTRO.avvicina;
+        vx = (dx / d) * passo;
+        vz = (dz / d) * passo;
       }
     } else if (n.stato === 'chiede') {
       // ti sta davanti e tiene la distanza: se gli cammini addosso arretra,
@@ -553,7 +725,10 @@ export function stepNpcs(
         const dz = n.targetZ - n.z;
         const d = Math.hypot(dx, dz);
         if (d > 0.6) {
-          const passo = n.timer > 2 ? PASSO_INCONTRO.ritirata : n.passo;
+          // in monopattino la ritirata riparte sul mezzo, più veloce di
+          // chiunque scappi a piedi: è la stessa scena, solo su due ruote
+          const aTutta = n.monopattino ? PASSO_INCONTRO.ritirataMonopattino : PASSO_INCONTRO.ritirata;
+          const passo = n.timer > 2 ? aTutta : n.passo;
           vx = (dx / d) * passo;
           vz = (dz / d) * passo;
         }
@@ -565,7 +740,18 @@ export function stepNpcs(
         // il seme deve avanzare, non ripartire dalla posizione: un NPC fermo
         // ricalcolava lo stesso seme a ogni scadenza e quindi la stessa meta,
         // restando immobile per tutta la partita
-        const [tx, tz] = puntoStradaCasuale(mondo, n.x, n.z, 130, semeVaganti);
+        //
+        // Una volta su cinque circa la meta non è il solito giro largo ma il
+        // marciapiede DI FRONTE: l'attraversamento della carreggiata. Il
+        // sorteggio pesca da semeVaganti, lo stesso LCG delle mete: resta
+        // deterministico e sporadico, e mette davvero qualcuno sulla
+        // traiettoria di chi guida. I gregari no: attraverserebbero
+        // lasciando il capo dall'altra parte della via.
+        const attraversa =
+          n.segue === undefined && rand(semeVaganti) < 0.18
+            ? puntoOltreLaStrada(mondo, n.x, n.z, semeVaganti)
+            : null;
+        const [tx, tz] = attraversa ?? puntoStradaCasuale(mondo, n.x, n.z, 130, semeVaganti);
         n.targetX = tx;
         n.targetZ = tz;
       }
@@ -573,6 +759,10 @@ export function stepNpcs(
       const dx = n.targetX - n.x;
       const dz = n.targetZ - n.z;
       const d = Math.hypot(dx, dz);
+      // il raggio d'arrivo del monopattino è più largo del suo raggio di
+      // sterzata (2,1 m a 3,4 m/s): sotto, un bersaglio mancato di poco lo
+      // faceva orbitare in tondo attorno alla meta senza arrivarci mai
+      const arrivo = n.monopattino ? 2.6 : 1.2;
       if (n.segue !== undefined) {
         // il gregario non si ferma mai a chiacchierare: tiene il passo
         if (d > 0.5) {
@@ -580,9 +770,21 @@ export function stepNpcs(
           vx = (dx / d) * n.passo * spinta;
           vz = (dz / d) * n.passo * spinta;
         }
-      } else if (d < 1.2) {
+      } else if (d < arrivo) {
         n.stato = 'fermo';
         n.timer = n.tipo === 'maranza' ? 3 + Math.random() * 10 : 1 + Math.random() * 4;
+      } else if (n.monopattino) {
+        // curve larghe e morbide: il monopattino non piroetta sul posto,
+        // sterza verso la meta ma AVANZA lungo il proprio muso. Il blocco
+        // di rotazione più sotto riceve una velocità già allineata allo
+        // yaw, quindi per lui è un'identità e non c'è doppio giro.
+        const voluto = Math.atan2(dz, dx);
+        let dy = voluto - n.yaw;
+        while (dy > Math.PI) dy -= Math.PI * 2;
+        while (dy < -Math.PI) dy += Math.PI * 2;
+        n.yaw += Math.max(-1.7 * dt, Math.min(1.7 * dt, dy));
+        vx = Math.cos(n.yaw) * n.passo;
+        vz = Math.sin(n.yaw) * n.passo;
       } else {
         vx = (dx / d) * n.passo;
         vz = (dz / d) * n.passo;
@@ -614,14 +816,17 @@ export function stepNpcs(
         let dy = targetYaw - n.yaw;
         while (dy > Math.PI) dy -= Math.PI * 2;
         while (dy < -Math.PI) dy += Math.PI * 2;
-        n.yaw += dy * Math.min(1, dt * 8);
+        // il monopattino si volta piano anche qui (avvicinamenti, balzi,
+        // ritirate): un mezzo con le ruote che scatta di 90 gradi in un
+        // decimo di secondo tradisce subito di essere un pupazzo
+        n.yaw += dy * Math.min(1, dt * (n.monopattino ? 3.5 : 8));
       }
     }
     n.v = Math.hypot(vx, vz);
     n.fase += n.v * dt * (n.tipo === 'anziano' ? 3.2 : 2.4);
   }
 
-  return { frase };
+  return { frase, cede };
 }
 
 /**
@@ -635,8 +840,10 @@ export function stepNpcs(
  * passante sparire dall'altra parte della piazza.
  *
  * La scelta è cieca a chi è: guarda soltanto la distanza. Restano fuori i
- * carabinieri (sono in servizio) e i ciclisti (lascerebbero la bici per
- * terra); nessun tipo, variante, colore o incarnato entra nella decisione.
+ * carabinieri (sono in servizio), i ciclisti (lascerebbero la bici per
+ * terra) e i maranza in monopattino (uno che scende da un'auto in piedi sul
+ * suo monopattino è un teletrasporto travestito); nessun tipo, variante,
+ * colore o incarnato entra nella decisione.
  */
 export function scendiEScappa(
   npcs: Npc[],
@@ -649,7 +856,7 @@ export function scendiEScappa(
   let scelto: Npc | null = null;
   let dMax = 45;
   for (const n of npcs) {
-    if (n.tipo === 'carabiniere' || n.tipo === 'ciclista') continue;
+    if (n.tipo === 'carabiniere' || n.tipo === 'ciclista' || n.monopattino) continue;
     const d = Math.hypot(n.x - daX, n.z - daZ);
     if (d > dMax) {
       dMax = d;

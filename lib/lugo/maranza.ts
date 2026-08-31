@@ -14,7 +14,7 @@
 //
 // ── REGOLE DI SCRITTURA DELLE BATTUTE, non negoziabili ────────────────────
 // Nessuna parolaccia, nessun insulto, nessuna minaccia. Nessun riferimento a
-// etnia, provenienza, religione o aspetto fisico: le 43 battute qui sotto
+// etnia, provenienza, religione o aspetto fisico: le 48 battute qui sotto
 // sono un repertorio UNICO, valido per tutti i maranza allo stesso modo, e
 // nessuna riga di questo file legge mai n.pelle. Il maranza è un ragazzo che
 // ti chiede una sigaretta con insistenza e poi si arrende: non è un
@@ -33,7 +33,14 @@ import type { MondoLugo } from './loadMap';
 import type { MondoFisico } from './physics';
 import { QA } from './qa';
 
-export type MomentoFrase = 'aggancio' | 'insistenza' | 'si' | 'pugno' | 'fuga' | 'gruppo';
+export type MomentoFrase =
+  | 'aggancio'
+  | 'insistenza'
+  | 'si'
+  | 'pugno'
+  | 'fuga'
+  | 'gruppo'
+  | 'ostacolo';
 
 /**
  * Le battute, in ordine: l'indice È la cella dell'atlante disegnato da
@@ -90,6 +97,14 @@ export const FRASI_ATLANTE: readonly string[] = [
   'Ma cosa gli è preso?',
   'Dai, non ne vale la pena: andiamo.',
   'Sta’ calmo eh, noi ce ne andiamo.',
+  // CEDE IL PASSO, urtato per strada — 43..47: disappunto breve, mai un
+  // insulto. Sono le battute di CHIUNQUE, non solo dei maranza: le dicono
+  // anche anziani e studenti, quindi ancora più miti di quelle del balzo.
+  'Uè, guarda avanti!',
+  'Oh! C’ero prima io, eh.',
+  'Ciò, che maniere...',
+  'Permesso... anzi, passa va’.',
+  'Ohi, un po’ d’occhio!',
 ];
 
 /** [primo, ultimo+1] dentro FRASI_ATLANTE. */
@@ -100,6 +115,7 @@ export const GRUPPI: Record<MomentoFrase, readonly [number, number]> = {
   pugno: [23, 30],
   fuga: [30, 37],
   gruppo: [37, 43],
+  ostacolo: [43, 48],
 };
 
 /**
@@ -254,7 +270,7 @@ function casoFumo(): number {
 }
 
 const ultima: Record<MomentoFrase, number> = {
-  aggancio: -1, insistenza: -1, si: -1, pugno: -1, fuga: -1, gruppo: -1,
+  aggancio: -1, insistenza: -1, si: -1, pugno: -1, fuga: -1, gruppo: -1, ostacolo: -1,
 };
 
 /**
@@ -283,6 +299,19 @@ function dilloTu(n: Npc, gruppo: MomentoFrase, durata: number): string {
 export function frasiDi(gruppo: MomentoFrase): readonly string[] {
   const [a, b] = GRUPPI[gruppo];
   return FRASI_ATLANTE.slice(a, b);
+}
+
+/**
+ * Il disappunto di chi ha appena ceduto il passo. Lo chiama Npcs.tsx quando
+ * stepNpcs segnala uno scarto: la scelta della battuta sta QUI e non in
+ * npc.ts perché gli indici dell'atlante vivono in questo file, e npc.ts non
+ * può importarlo senza creare il ciclo che tutta l'architettura evita.
+ * Se il pedone sta già dicendo qualcosa non lo si interrompe: due bolle che
+ * si sovrascrivono in mezzo secondo non si leggono nessuna delle due.
+ */
+export function protestaOstacolo(n: Npc): void {
+  if (n.frase >= 0 && n.fraseFino > orologio) return;
+  dilloTu(n, 'ostacolo', 2.2);
 }
 
 /** Come si apre la riga: nessun tratto somatico, nessuna provenienza. */
@@ -323,9 +352,13 @@ const ADDOSSO = [
  */
 export function descrizioneMaranza(n: Npc): string {
   const chi = CHI_E[n.variante % CHI_E.length];
-  return n.senzaCappello
+  const base = n.senzaCappello
     ? `${chi} ${ADDOSSO[n.variante % ADDOSSO.length]}`
     : `${chi} col cappellino`;
+  // il monopattino si nomina SOLO quando c'è: stessa disciplina del
+  // cappellino qui sopra — il pannello descrive quello che si vede, e il
+  // collaudo confronta le due cose alla lettera
+  return n.monopattino ? `${base}, in monopattino` : base;
 }
 
 // ── la macchina a stati ──────────────────────────────────────────────────
@@ -794,6 +827,11 @@ export function provocaIncontro(
   pz: number,
   pyaw: number,
   fisica: MondoFisico,
+  // con `true` si aggancia il più vicino IN MONOPATTINO: serve al collaudo
+  // per provare che il pannello nomina il mezzo, senza girare la mappa a
+  // caccia del ragazzo giusto. Senza argomento il comportamento è identico
+  // a prima, e le prove esistenti non si accorgono di niente.
+  soloMonopattino = false,
 ): number {
   gx = px;
   gz = pz;
@@ -802,6 +840,7 @@ export function provocaIncontro(
   for (let i = 0; i < npcs.length; i++) {
     const n = npcs[i];
     if (n.tipo !== 'maranza') continue;
+    if (soloMonopattino && !n.monopattino) continue;
     const d = Math.hypot(n.x - px, n.z - pz);
     if (d < dMin) {
       dMin = d;
@@ -835,12 +874,14 @@ export function provocaIncontro(
 /** Il ritratto dei maranza vivi: dimostra che non sono quattro fotocopie. */
 export function statisticheMaranza(npcs: Npc[]): {
   totali: number; fumatori: number; pelli: number; tute: number; senzaCappello: number;
+  monopattini: number;
 } {
   const pelli = new Set<number>();
   const tute = new Set<number>();
   let totali = 0;
   let fumatori = 0;
   let senzaCappello = 0;
+  let monopattini = 0;
   for (const n of npcs) {
     if (n.tipo !== 'maranza') continue;
     totali++;
@@ -848,8 +889,9 @@ export function statisticheMaranza(npcs: Npc[]): {
     tute.add(n.variante % 6);
     if (n.fuma) fumatori++;
     if (n.senzaCappello) senzaCappello++;
+    if (n.monopattino) monopattini++;
   }
-  return { totali, fumatori, pelli: pelli.size, tute: tute.size, senzaCappello };
+  return { totali, fumatori, pelli: pelli.size, tute: tute.size, senzaCappello, monopattini };
 }
 
 // ── il fumo ──────────────────────────────────────────────────────────────

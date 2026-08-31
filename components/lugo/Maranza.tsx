@@ -63,7 +63,9 @@ interface Atlante {
 let atlanteCache: Atlante | null | undefined;
 
 /**
- * Cuoce tutte le 43 battute in un canvas solo: una bolla per cella, testo
+ * Cuoce tutte le battute di FRASI_ATLANTE in un canvas solo (il numero non
+ * sta scritto qui apposta: è già cresciuto una volta e il conteggio a mano
+ * era rimasto indietro): una bolla per cella, testo
  * compreso. È la stessa strategia delle insegne — un atlante e una chiamata
  * di disegno — ma molto più piccola.
  */

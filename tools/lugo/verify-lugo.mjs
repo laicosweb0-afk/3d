@@ -1452,6 +1452,401 @@ try {
     }
   }
 
+  // ── fase 5c: i maranza in monopattino ─────────────────────────────────
+  // Metà del branco gira su due ruote. Qui si misura che i monopattini
+  // esistano davvero (e siano la metà promessa, non «circa»), che tengano
+  // l'andatura dichiarata — 3,4 m/s: più della camminata (2,3), meno della
+  // corsa (5,2), così da lontano si legge a colpo d'occhio chi è — e che il
+  // pannello del dialogo nomini il mezzo: la riga «chi ti parla» è l'unico
+  // appiglio che il giocatore ha per riconoscere la persona giusta.
+  if ((await lugo('typeof L.monopattini')) === 'function') {
+    for (let i = 0; i < 4 && (await lugo('L.mode()')) !== 'piedi'; i++) {
+      await page.keyboard.down('Space');
+      await page.waitForTimeout(1000);
+      await page.keyboard.up('Space');
+      await page.keyboard.press('KeyE', TENUTO);
+      await page.waitForTimeout(600);
+    }
+    await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+
+    const statMar = await lugo('L.maranza()');
+    const mono = await lugo('L.monopattini()');
+    if (
+      mono.length > 0 &&
+      mono.length === statMar.monopattini &&
+      Math.abs(mono.length * 2 - statMar.totali) <= 1
+    ) {
+      ok('metà dei maranza gira in monopattino', `${mono.length} su ${statMar.totali} maranza`);
+    } else {
+      ko(
+        'metà dei maranza gira in monopattino',
+        `monopattini() ne elenca ${mono.length}, maranza() ne dichiara ${statMar.monopattini} su ${statMar.totali}`,
+      );
+    }
+
+    if (mono.length > 0) {
+      // L'andatura di crociera si misura dallo SPOSTAMENTO in tempo di
+      // SIMULAZIONE: in headless il rasterizzatore software fa 2-3
+      // fotogrammi al secondo col dt tagliato a 0,05 s, quindi il mondo
+      // scorre a una frazione del tempo vero e i metri al secondo
+      // d'orologio direbbero una bugia (~1/8 del reale). Si campiona la
+      // posizione a ogni fotogramma via requestAnimationFrame e si divide
+      // il passo per il dt tagliato: quello È ciò che vede chi gioca a 60
+      // fps. E il bersaglio dev'essere in MARCIA: quasi metà dei pedoni
+      // nasce in posa col telefono, e misurare un fermo direbbe zero su un
+      // monopattino che funziona benissimo.
+      let andatura = null;
+      for (let giro = 0; giro < 6 && !andatura; giro++) {
+        // Il candidato deve MUOVERSI davvero, non solo dichiararsi in
+        // marcia: lo stato 'cammina' e la v di stato restano su anche per
+        // uno inchiodato contro uno spigolo dalla fisica (è successo: 15
+        // passi campionati, tutti da 0,00 m). Due letture a distanza e si
+        // pretende dello spostamento vero prima di sprecarci la misura.
+        let corsa = null;
+        for (let k = 0; k < 50 && !corsa; k++) {
+          const vivi = await lugo('L.monopattini()');
+          const inMarcia = vivi.filter((q) => q.stato === 'cammina' && q.v > 2);
+          if (inMarcia.length) {
+            await page.waitForTimeout(600);
+            const dopo = await lugo('L.monopattini()');
+            corsa =
+              inMarcia.find((q) => {
+                const d = dopo.find((w) => w.i === q.i);
+                return d && d.stato === 'cammina' && Math.hypot(d.x - q.x, d.z - q.z) > 0.05;
+              }) ?? null;
+          }
+          if (!corsa) await page.waitForTimeout(400);
+        }
+        if (!corsa) break;
+        const misura = await page.evaluate(async (idx) => {
+          const L = window.__LUGO__;
+          const righe = [];
+          await new Promise((fine) => {
+            const t0 = performance.now();
+            const giro2 = () => {
+              const p = L.pedoni()[idx];
+              righe.push([p.x, p.z, p.stato]);
+              if (performance.now() - t0 < 4000) requestAnimationFrame(giro2);
+              else fine();
+            };
+            requestAnimationFrame(giro2);
+          });
+          const passi = [];
+          for (let i = 1; i < righe.length; i++) {
+            if (righe[i][2] !== 'cammina' || righe[i - 1][2] !== 'cammina') continue;
+            passi.push(Math.hypot(righe[i][0] - righe[i - 1][0], righe[i][1] - righe[i - 1][1]) / 0.05);
+          }
+          return {
+            passi: passi.length,
+            vMedia: passi.length ? passi.reduce((a, b) => a + b, 0) / passi.length : 0,
+          };
+        }, corsa.i);
+        // una media quasi ferma è un candidato pinzato a metà misura, non
+        // un'andatura: si scarta e si riprova con un altro, il verdetto
+        // sull'intervallo 3,0–3,75 resta quello vero là sotto
+        if (misura.passi >= 3 && misura.vMedia > 1) andatura = misura;
+      }
+      // oltre allo spostamento misurato, il passo ASSEGNATO: 3,4 ±4% per
+      // tutti, così un futuro refactor che riportasse i monopattini al
+      // passo dei pedoni si vedrebbe anche coi maranza tutti in posa
+      const passiTarget = mono.map((m) => m.passo);
+      const targetGiusto = passiTarget.every((p) => p > 3.2 && p < 3.6);
+      if (andatura && andatura.vMedia > 3.0 && andatura.vMedia < 3.75 && targetGiusto) {
+        ok(
+          'il monopattino tiene i 3,4 al secondo',
+          `${andatura.vMedia.toFixed(2)} m/s da spostamento (${andatura.passi} passi) · passi assegnati ${Math.min(...passiTarget).toFixed(2)}–${Math.max(...passiTarget).toFixed(2)}`,
+        );
+      } else if (!andatura) {
+        ko('il monopattino tiene i 3,4 al secondo', 'nessun monopattino in marcia da misurare');
+      } else {
+        ko(
+          'il monopattino tiene i 3,4 al secondo',
+          `misurati ${andatura.vMedia.toFixed(2)} m/s su ${andatura.passi} passi, passi assegnati ${passiTarget.map((p) => p.toFixed(2)).join('/')}`,
+        );
+      }
+
+      // ── l'incontro con uno in monopattino: il pannello nomina il mezzo ─
+      await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+      await page.waitForTimeout(300);
+      const idxInc = await lugo('L.provocaIncontro(true)');
+      let arrivato = idxInc >= 0;
+      if (arrivato) {
+        try {
+          await page.waitForFunction(() => window.__LUGO__.incontro().fase === 'chiede', null, { timeout: 45000 });
+        } catch {
+          arrivato = false;
+        }
+      }
+      if (!arrivato) {
+        ko('il pannello nomina il monopattino', `l'incontro resta in fase ${await lugo('L.incontro().fase')}`);
+      } else {
+        const scelto = await lugo(`L.pedoni()[${idxInc}]`);
+        const chiStore = (await lugo('L.dialogo()'))?.chi ?? '';
+        const chiDom = (await page.textContent('.lugo-dialogo-chi').catch(() => '')) ?? '';
+        // e la descrizione non deve mentire in NESSUN verso: chi va a piedi
+        // non ha «, in monopattino» in coda, chi è sul mezzo ce l'ha
+        const righeDescr = (await lugo('L.descrizioni()')) ?? [];
+        const bugie = righeDescr.filter((r) => r.monopattino !== /monopattino/i.test(r.testo)).length;
+        if (scelto.monopattino === true && /monopattino/i.test(chiStore) && /monopattino/i.test(chiDom) && bugie === 0) {
+          ok('il pannello nomina il monopattino', `«${chiStore}» (store e schermo concordi, 0 descrizioni bugiarde)`);
+        } else {
+          ko(
+            'il pannello nomina il monopattino',
+            `npc.monopattino=${scelto.monopattino}, store «${chiStore}», schermo «${chiDom}», ${bugie} descrizioni bugiarde`,
+          );
+        }
+        await page.screenshot({ path: join(SHOTS, '11-monopattino-chiede.png') });
+
+        // «Tieni, prendi» → la ritirata riparte SUL MEZZO: 5,8 m/s, che
+        // nessuno a piedi tocca (la ritirata a piedi è 4,6). La soglia a 5
+        // sta nel mezzo apposta: sotto vorrebbe dire che il monopattino
+        // scappa a piedi, e la scena perderebbe il suo senso.
+        await page.click('[data-hud="dialogo-opzione-si"]', { noWaitAfter: true }).catch(() => {});
+        let vRitirata = 0;
+        for (let k = 0; k < 20; k++) {
+          await page.waitForTimeout(200);
+          const p = await lugo(`L.pedoni()[${idxInc}]`);
+          if (p.stato === 'ritirata') vRitirata = Math.max(vRitirata, p.v);
+          if (vRitirata > 5) break;
+        }
+        if (vRitirata > 5.0 && vRitirata < 6.1) {
+          ok('data la sigaretta, la ritirata riparte sul mezzo', `${vRitirata.toFixed(2)} m/s (a piedi sarebbero 4,6)`);
+        } else {
+          ko('data la sigaretta, la ritirata riparte sul mezzo', `v massima campionata ${vRitirata.toFixed(2)} m/s`);
+        }
+        await page.waitForTimeout(1200);
+        await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+      }
+    }
+  }
+
+  // ── fase 5d: i pedoni fanno ostacolo ──────────────────────────────────
+  // Due contatti, due contrappesi. In auto: toccare un pedone non lo
+  // stende MAI (balza in salvo), ma l'auto paga — la velocità crolla nel
+  // fotogramma del contatto. A piedi: camminare addosso a un passante lo
+  // fa scartare di lato e borbottare, senza che il giocatore venga
+  // spostato di un centimetro dalla propria rotta.
+  if ((await lugo('typeof L.ostacoli')) === 'function' && (await lugo('typeof L.pedoni')) === 'function') {
+    // in auto, col teleport a due tempi (come fase 10e): il primo porta
+    // giocatore e auto, il secondo mette il giocatore sopra l'auto
+    const quiOst = await lugo('L.pos()');
+    await page.evaluate((q) => window.__LUGO__.teleport(q[0], q[1]), quiOst);
+    await page.waitForTimeout(300);
+    await page.evaluate((q) => window.__LUGO__.teleport(q[0] + 3, q[1] + 3, undefined, false), quiOst);
+    await page.waitForTimeout(400);
+    for (let i = 0; i < 4 && (await lugo('L.mode()')) !== 'auto'; i++) {
+      await page.keyboard.press('KeyE', TENUTO);
+      await page.waitForTimeout(500);
+    }
+    if ((await lugo('L.mode()')) !== 'auto') {
+      ko("l'auto paga il pedone toccato", 'non si è risaliti in auto per la prova');
+    } else {
+      // Si cerca un pedone DAVVERO in carreggiata e ci si piazza 3 m più
+      // indietro lungo la strada: così il contatto arriva sotto i 4 m/s
+      // del balzo d'allarme dei 6,5 m, che altrimenti lo salverebbe prima
+      // del tocco — ed è giusto così, ma qui si vuole misurare il tocco.
+      const tuttiPed = await lugo('L.pedoni()');
+      const candidati = [];
+      for (const n of tuttiPed) {
+        if (n.stato !== 'fermo' && n.stato !== 'cammina') continue;
+        const su = await lugo(`L.suStrada(${n.x}, ${n.z})`);
+        if (!su) continue;
+        if (Math.hypot(su[0] - n.x, su[1] - n.z) < 1.2) candidati.push(n);
+        if (candidati.length >= 6) break;
+      }
+      let urto = null;
+      for (const cand of candidati) {
+        const rA = await lugo(`L.suStrada(${cand.x - 2}, ${cand.z})`);
+        const rB = await lugo(`L.suStrada(${cand.x + 2}, ${cand.z})`);
+        if (!rA || !rB) continue;
+        let sdx = rB[0] - rA[0];
+        let sdz = rB[1] - rA[1];
+        const sl = Math.hypot(sdx, sdz);
+        if (sl < 1) continue;
+        sdx /= sl;
+        sdz /= sl;
+        const p0 = await lugo(`L.pedoni()[${cand.i}]`);
+        if (p0.stato !== 'fermo' && p0.stato !== 'cammina') continue;
+        const ax = p0.x - sdx * 3.0;
+        const az = p0.z - sdz * 3.0;
+        await page.evaluate(
+          ([x, z, y]) => window.__LUGO__.teleport(x, z, y),
+          [ax, az, Math.atan2(p0.z - az, p0.x - ax)],
+        );
+        await page.waitForTimeout(300);
+        // Il filmino del contatto si gira DENTRO la pagina, un campione per
+        // fotogramma via requestAnimationFrame: le velocità si ricavano dal
+        // passo diviso il dt tagliato (0,05 s — su questo banco ogni
+        // fotogramma dura ben oltre il clamp), perché una lettura ogni
+        // tanto da fuori mancherebbe il fotogramma del contatto e
+        // misurerebbe la ripresa, non la frenata.
+        await page.keyboard.down('KeyW');
+        const film = await page.evaluate(async (idx) => {
+          const L = window.__LUGO__;
+          const base = L.ostacoli().frenate;
+          const righe = [];
+          let colpo = -1;
+          await new Promise((fine) => {
+            const t0 = performance.now();
+            const giro = () => {
+              const p = L.pos();
+              righe.push([p[0], p[1], L.ostacoli().frenate, L.pedoni()[idx].stato]);
+              if (colpo < 0 && righe[righe.length - 1][2] > base) colpo = righe.length - 1;
+              if ((colpo >= 0 && righe.length >= colpo + 3) || performance.now() - t0 > 25000) fine();
+              else requestAnimationFrame(giro);
+            };
+            requestAnimationFrame(giro);
+          });
+          return { righe, colpo, registro: L.ostacoli() };
+        }, cand.i);
+        await page.keyboard.up('KeyW');
+        await page.waitForTimeout(500);
+
+        const k = film.colpo;
+        if (k < 2 || film.righe.length <= k + 1) continue; // contatto mai visto: un altro candidato
+        const vAl = (i) =>
+          Math.hypot(film.righe[i][0] - film.righe[i - 1][0], film.righe[i][1] - film.righe[i - 1][1]) / 0.05;
+        const vPre = Math.max(vAl(k - 1), vAl(k));
+        const vPost = vAl(k + 1);
+        const balzo =
+          film.righe[k][3] === 'balzo' || film.righe[Math.min(k + 1, film.righe.length - 1)][3] === 'balzo';
+        urto = {
+          vPre,
+          vPost,
+          balzo,
+          registro: film.registro,
+          // Il registro scrive vDopo = vPrima·0,45 per costruzione: fidarsi
+          // di quel rapporto sarebbe un controllo che passa da solo. Qui si
+          // pretende che (1) il registro dica il VERO sulla velocità
+          // d'impatto (torna con quella misurata dallo spostamento) e (2)
+          // la velocità misurata CALI nel fotogramma del contatto NONOSTANTE
+          // il gas a tavoletta: senza frenata, con 13 m/s² di spinta, il
+          // fotogramma dopo sarebbe PIÙ veloce di +0,65, non più lento.
+          giusto:
+            balzo &&
+            film.registro.vPrima > 1.5 &&
+            Math.abs(film.registro.vPrima - vPre) < 0.9 &&
+            vPost < vPre - 0.1,
+        };
+        if (urto.giusto) break;
+      }
+      if (urto && urto.giusto) {
+        ok(
+          "l'auto paga il pedone toccato",
+          `v ${urto.vPre.toFixed(2)} → ${urto.vPost.toFixed(2)} m/s col gas giù · registro vPrima ${urto.registro.vPrima.toFixed(2)} · NPC in balzo, frenate ${urto.registro.frenate}`,
+        );
+      } else if (urto) {
+        ko(
+          "l'auto paga il pedone toccato",
+          `v ${urto.vPre.toFixed(2)} → ${urto.vPost.toFixed(2)} m/s, balzo=${urto.balzo}, registro ${JSON.stringify(urto.registro)}`,
+        );
+      } else {
+        ko("l'auto paga il pedone toccato", `nessun contatto ottenuto su ${candidati.length} pedoni in carreggiata`);
+      }
+    }
+
+    // ── a piedi: il pedone cede il passo, il giocatore tira dritto ──────
+    for (let i = 0; i < 4 && (await lugo('L.mode()')) !== 'piedi'; i++) {
+      await page.keyboard.down('Space');
+      await page.waitForTimeout(1000);
+      await page.keyboard.up('Space');
+      await page.keyboard.press('KeyE', TENUTO);
+      await page.waitForTimeout(600);
+    }
+    // Fino a quattro tentativi: il «fermo» scelto ogni tanto riparte
+    // proprio mentre la camera si assesta, e allora si prova col prossimo.
+    let cessione = null;
+    // si riprova anche se manca solo il fumetto: protestaOstacolo tace se
+    // l'NPC stava GIÀ dicendo una battuta sua, e un altro pedone non ha
+    // questo vincolo
+    for (let tentativo = 0; tentativo < 4 && !(cessione?.giusto && cessione?.borbotta); tentativo++) {
+      const ped2 = await lugo('L.pedoni()');
+      const me0 = await lugo('L.pos()');
+      const fermi = ped2
+        .filter((n) => n.stato === 'fermo')
+        .sort((a, b) => Math.hypot(a.x - me0[0], a.z - me0[1]) - Math.hypot(b.x - me0[0], b.z - me0[1]));
+      const n0 = fermi[tentativo % Math.max(1, fermi.length)];
+      if (!n0) break;
+      await page.evaluate(([x, z]) => window.__LUGO__.teleport(x - 2, z), [n0.x, n0.z]);
+      await page.waitForTimeout(1000);
+      const cam = (await lugo('L.direzione()')).camYaw;
+      const ancora = await lugo(`L.pedoni()[${n0.i}]`);
+      if (ancora.stato !== 'fermo') continue;
+      // ci si mette a 1,6 m ESATTI dietro di lui rispetto alla camera, già
+      // girati verso di lui: senza lo yaw giusto il primo tratto sarebbe
+      // una virata, e la retta di marcia da misurare non sarebbe una retta
+      const sx = ancora.x - Math.cos(cam) * 1.6;
+      const sz = ancora.z - Math.sin(cam) * 1.6;
+      await page.evaluate(([x, z, y]) => window.__LUGO__.teleport(x, z, y), [sx, sz, cam]);
+      await page.waitForTimeout(400);
+      const cedPrima = (await lugo('L.ostacoli()')).cedute;
+      const npcPrima = await lugo(`L.pedoni()[${n0.i}]`);
+      if (npcPrima.stato !== 'fermo') continue;
+      const rotta = [];
+      let fumettoCaldo = null;
+      await page.keyboard.down('KeyW');
+      let ceduto = false;
+      for (let k = 0; k < 40; k++) {
+        await page.waitForTimeout(150);
+        rotta.push(await lugo('L.pos()'));
+        if ((await lugo('L.ostacoli()')).cedute > cedPrima) {
+          ceduto = true;
+          fumettoCaldo = await lugo('L.fumetti()');
+          break;
+        }
+      }
+      await page.keyboard.up('KeyW');
+      await page.waitForTimeout(600);
+      const npcDopo = await lugo(`L.pedoni()[${n0.i}]`);
+      // la deviazione laterale del GIOCATORE dalla propria retta di
+      // marcia: l'NPC scarta, chi cammina no — rt.persona non si tocca
+      let latMax = 0;
+      if (rotta.length >= 2) {
+        const a = rotta[0];
+        const b = rotta[rotta.length - 1];
+        const ux = b[0] - a[0];
+        const uz = b[1] - a[1];
+        const ul = Math.hypot(ux, uz) || 1;
+        for (const p of rotta) {
+          latMax = Math.max(latMax, Math.abs((-(p[0] - a[0]) * uz + (p[1] - a[1]) * ux) / ul));
+        }
+      }
+      const fumetti2 = fumettoCaldo ?? (await lugo('L.fumetti()'));
+      const proteste = await lugo('L.frasi("ostacolo")');
+      const borbotta = (fumetti2?.testi ?? []).some((t) => proteste.includes(t));
+      cessione = {
+        ceduto,
+        spostamento: Math.hypot(npcDopo.x - npcPrima.x, npcDopo.z - npcPrima.z),
+        statoDopo: npcDopo.stato,
+        latMax,
+        borbotta,
+        giusto: false,
+      };
+      cessione.giusto = ceduto && cessione.spostamento > 0.4 && latMax < 0.2;
+    }
+    if (cessione && cessione.giusto) {
+      ok(
+        'a piedi il pedone cede il passo',
+        `scarta di ${cessione.spostamento.toFixed(2)} m (stato ${cessione.statoDopo}) e il giocatore devia di ${cessione.latMax.toFixed(3)} m`,
+      );
+    } else if (cessione) {
+      ko(
+        'a piedi il pedone cede il passo',
+        `ceduto=${cessione.ceduto}, NPC spostato ${cessione.spostamento.toFixed(2)} m, deviazione giocatore ${cessione.latMax.toFixed(3)} m`,
+      );
+    } else {
+      ko('a piedi il pedone cede il passo', 'nessun pedone fermo su cui provare');
+    }
+    // il borbottio è del gruppo nuovo dell'atlante, non una frase a caso
+    if (cessione && cessione.borbotta) {
+      ok('il pedone scansato borbotta la sua', 'fumetto dal gruppo «ostacolo»');
+    } else if (cessione && cessione.giusto) {
+      ko('il pedone scansato borbotta la sua', 'nessun fumetto del gruppo «ostacolo» a schermo dopo la cessione');
+    } else if (cessione) {
+      ko('il pedone scansato borbotta la sua', 'la cessione stessa non è riuscita (vedi sopra)');
+    }
+  }
+
   // ── fase 3e: la bici si prende, si pedala e si lascia ────────────────
   // Tre furti, tre fasi, e ognuna si accende da sola in base al proprio
   // hook: prima che il codice del furto esistesse questo blocco non c'era,
@@ -1604,7 +1999,27 @@ try {
       await page.waitForTimeout(600);
     }
     const presenti0 = (await lugo('L.parcheggi()')).presenti;
-    const p = await lugo('L.postoAuto()');
+    // Lo stallo si sceglie in modo che la E non abbia rivali. La E prende
+    // il bersaglio più vicino fra bici e auto, e il punto «a fianco» di un
+    // posteggio può capitare a un passo da una bici appoggiata a un muro:
+    // è successo — il collaudo saltava in sella alla bici e cinque
+    // controlli su un furto d'auto mai tentato andavano rossi. Qui ci si
+    // mette sul punto a fianco e si chiede al GIOCO chi prenderebbe la E
+    // (furtoQui): se non è proprio quel posteggio, ci si sposta in un'altra
+    // zona e si riprova — postoAuto dà sempre l'auto più vicina a dove sei.
+    let p = await lugo('L.postoAuto()');
+    for (let giro = 0; giro < 6 && p; giro++) {
+      await page.evaluate((q) => window.__LUGO__.teleport(q.lato[0], q.lato[1]), p);
+      await page.waitForTimeout(600);
+      const bersaglio = await lugo('L.furtoQui()');
+      if (bersaglio && bersaglio.tipo === 'posteggio' && bersaglio.i === p.i) break;
+      await page.evaluate(
+        ([x, z]) => window.__LUGO__.teleport(x, z),
+        [p.x + 90 + giro * 60, p.z + 45 - giro * 30],
+      );
+      await page.waitForTimeout(500);
+      p = await lugo('L.postoAuto()');
+    }
     if (!p) {
       ko('l’auto in sosta si prende', 'nessuna auto in sosta in mappa');
     } else {
@@ -2104,6 +2519,447 @@ try {
       const dopo = await lugo('L.mode()');
       if (dopo === 'auto') ok("l'Invio su un bottone non fa scendere dall'auto");
       else ko("l'Invio su un bottone non fa scendere dall'auto", `da auto a ${dopo}`);
+      // Il fuoco si toglie dal bottone, come fa già la fase 4d. Senza
+      // questa riga la guardia appena collaudata restava ARMATA per tutto
+      // il resto del collaudo: ogni E successiva era muta (fuocoSuComando),
+      // le fasi dopo non scendevano più dall'auto, e si sono viste
+      // «camminate» nel Pavaglione fatte in macchina e drag a piedi
+      // giudicati col metro dei mezzi. Il fuoco è stato di pagina: le fasi
+      // se lo passano come qualunque altro residuo.
+      await page.evaluate(() => document.activeElement instanceof HTMLElement && document.activeElement.blur());
+      await page.waitForTimeout(200);
+    }
+  }
+
+  // ── fase 11: dentro il Pavaglione a piedi ─────────────────────────────
+  // I quattro portali del quadriportico sono corridoi APERTI nel collider,
+  // e la corte non è più sigillata. Qui non ci si teletrasporta dentro:
+  // il teletrasporto porta solo DAVANTI al portale, 6 m fuori dalla
+  // facciata, e da lì si cammina con la tastiera vera fino a 4 m oltre il
+  // muro interno della corte — se il varco è murato, la camminata si
+  // incastra e la fase lo dice. Le coordinate sono i punti-varco della
+  // mappa vera (centro dei lati del rettangolo minimo del footprint, la
+  // stessa costruzione di gates.ts): la mappa è generata in CI e non
+  // cambia, come le altre coordinate cablate di questo collaudo.
+  if ((await lugo('typeof L.teleport')) === 'function' && (await lugo('typeof L.avviaMissione')) === 'function') {
+    // orologio fermo sulle 14: niente mercato in corte, come nella fase
+    // delle otto direzioni — un banco di piadine in mezzo al passaggio
+    // farebbe fallire una camminata su un varco che funziona benissimo
+    await page.evaluate(() => window.__LUGO__.tempoScorre(false));
+    await page.evaluate(() => window.__LUGO__.ora(14));
+    await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+    // il fuoco della tastiera si toglie da qualunque bottone PRIMA della E:
+    // con il fuoco su un comando la E è muta per progetto (fuocoSuComando)
+    // e questa fase «camminerebbe» restando al volante
+    await page.evaluate(() => document.activeElement instanceof HTMLElement && document.activeElement.blur());
+    for (let i = 0; i < 4 && (await lugo('L.mode()')) !== 'piedi'; i++) {
+      await page.keyboard.down('Space');
+      await page.waitForTimeout(1000);
+      await page.keyboard.up('Space');
+      await page.keyboard.press('KeyE', TENUTO);
+      await page.waitForTimeout(600);
+    }
+
+    // i due varchi OPPOSTI dell'asse lungo, più quello sud per la missione
+    const varchi = [
+      { nome: 'sud-ovest', fuori: [-87.09, 33.82], corte: [-61.25, 51.8], yaw: Math.atan2(0.5712, 0.8208) },
+      { nome: 'nord-est', fuori: [40.87, 122.86], corte: [13.06, 103.51], yaw: Math.atan2(-0.5712, -0.8208) },
+      { nome: 'sud', fuori: [6.62, 35.61], corte: [-7.86, 56.42], yaw: Math.atan2(0.8208, -0.5712) },
+    ];
+
+    // La camminata guidata: ogni ~300 ms si rilegge posizione e camYaw e
+    // si sceglie fra le otto direzioni della tastiera quella che punta il
+    // bersaglio. È lo stesso movimento della fase delle otto direzioni,
+    // solo in retroazione: nessun teletrasporto, nessuna spinta esterna.
+    const FRECCE = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+    let tastiGiu = new Set();
+    const premi = async (nuovi) => {
+      for (const t of FRECCE) {
+        const voglio = nuovi.has(t);
+        if (voglio && !tastiGiu.has(t)) await page.keyboard.down(t);
+        if (!voglio && tastiGiu.has(t)) await page.keyboard.up(t);
+      }
+      tastiGiu = nuovi;
+    };
+    const tastiPer = (relDeg) => {
+      const combos = [
+        [0, ['ArrowUp']], [45, ['ArrowUp', 'ArrowRight']], [90, ['ArrowRight']],
+        [135, ['ArrowDown', 'ArrowRight']], [180, ['ArrowDown']], [-135, ['ArrowDown', 'ArrowLeft']],
+        [-90, ['ArrowLeft']], [-45, ['ArrowUp', 'ArrowLeft']],
+      ];
+      let best = combos[0];
+      let errMin = 1e9;
+      for (const c of combos) {
+        let e = Math.abs(relDeg - c[0]);
+        if (e > 180) e = 360 - e;
+        if (e < errMin) {
+          errMin = e;
+          best = c;
+        }
+      }
+      return new Set(best[1]);
+    };
+    // Di corsa, perché in headless il tempo di gioco scorre a una frazione
+    // dell'orologio; «incastrato» dopo 25 finestre ferme è il modo in cui
+    // un varco murato si racconta invece di mangiarsi tutto il timeout.
+    const camminaVerso = async (tx, tz, arrivo = 1.3, timeoutMs = 180000) => {
+      const t0 = Date.now();
+      let prev = await lugo('L.pos()');
+      let metri = 0;
+      let fermi = 0;
+      await page.keyboard.down('ShiftLeft');
+      try {
+        while (Date.now() - t0 < timeoutMs) {
+          const p = await lugo('L.pos()');
+          const mosso = Math.hypot(p[0] - prev[0], p[1] - prev[1]);
+          metri += mosso;
+          prev = p;
+          const d = Math.hypot(tx - p[0], tz - p[1]);
+          if (d < arrivo) return { ok: true, metri, pos: p };
+          if (mosso < 0.03 && tastiGiu.size) fermi++;
+          else fermi = 0;
+          if (fermi > 25) return { ok: false, metri, pos: p, perche: 'incastrato' };
+          const dir = await lugo('L.direzione()');
+          let rel = ((Math.atan2(tz - p[1], tx - p[0]) - dir.camYaw) * 180) / Math.PI;
+          while (rel > 180) rel -= 360;
+          while (rel < -180) rel += 360;
+          await premi(tastiPer(rel));
+          await page.waitForTimeout(300);
+        }
+        return { ok: false, metri, pos: prev, perche: 'timeout' };
+      } finally {
+        await premi(new Set());
+        await page.keyboard.up('ShiftLeft');
+      }
+    };
+
+    for (const v of varchi.slice(0, 2)) {
+      await page.evaluate(([x, z, y]) => window.__LUGO__.teleport(x, z, y), [v.fuori[0], v.fuori[1], v.yaw]);
+      await page.waitForTimeout(500);
+      const beeline = Math.hypot(v.corte[0] - v.fuori[0], v.corte[1] - v.fuori[1]);
+      const esito = await camminaVerso(v.corte[0], v.corte[1]);
+      // Il verdetto pretende anche mode=piedi: la prima stesura non lo
+      // chiedeva, e un giro col fuoco rimasto su un bottone (E muta, mai
+      // scesi) ha attraversato i varchi IN AUTO passando la prova — il
+      // corridoio è più largo dell'auto, ma la promessa è la camminata.
+      // E il tetto sui metri non è pignoleria: senza, una camminata che
+      // aggira l'isolato ed entra da un ALTRO varco passerebbe la prova.
+      const modoFine = await lugo('L.mode()');
+      if (esito.ok && modoFine === 'piedi' && esito.metri < beeline * 1.8 + 6) {
+        ok(`varco ${v.nome}: in corte camminando`, `${esito.metri.toFixed(1)} m a piedi (retta ${beeline.toFixed(1)} m)`);
+      } else {
+        ko(
+          `varco ${v.nome}: in corte camminando`,
+          `mode=${modoFine} · ${esito.ok ? 'arrivato ma con ' + esito.metri.toFixed(1) + ' m di giro' : (esito.perche ?? '?') + ' a (' + esito.pos[0].toFixed(1) + ';' + esito.pos[1].toFixed(1) + '), ' + esito.metri.toFixed(1) + ' m'}`,
+        );
+      }
+    }
+    await page.screenshot({ path: join(SHOTS, '32-pavaglione-corte.png') });
+
+    // ── la missione della corte, completata camminando ──────────────────
+    // m05 «Entra nella corte a piedi»: la tappa sta nel POI dentro la
+    // corte, quindi si chiude solo se i varchi si attraversano davvero.
+    // Si parte da FUORI il varco sud e si arriva a piedi, senza teleport
+    // oltre quello iniziale; il premio in denaro deve tornare esatto.
+    const e0 = await lugo('L.denaro()');
+    const avviata = await page.evaluate(() => window.__LUGO__.avviaMissione('m05'));
+    await page.waitForTimeout(300);
+    const tappa = await lugo('L.tappaCorrente()');
+    if (!avviata || !tappa) {
+      ko('la missione della corte si completa a piedi', `avviata=${avviata}, tappa=${JSON.stringify(tappa)}`);
+    } else {
+      const vSud = varchi[2];
+      await page.evaluate(([x, z, y]) => window.__LUGO__.teleport(x, z, y), [vSud.fuori[0], vSud.fuori[1], vSud.yaw]);
+      await page.waitForTimeout(400);
+      const legA = await camminaVerso(vSud.corte[0], vSud.corte[1]);
+      const legB = legA.ok ? await camminaVerso(tappa.x, tappa.z, 1.2) : { ok: false, metri: 0 };
+      await page.waitForTimeout(900);
+      const statoFine = await lugo('L.statoMissione()');
+      const guadagno = (await lugo('L.denaro()')) - e0;
+      if (statoFine === 'completata' && legA.ok && legB.ok && Math.round(guadagno) === 15) {
+        ok(
+          'la missione della corte si completa a piedi',
+          `${(legA.metri + legB.metri).toFixed(1)} m camminati dal fuori del varco sud · +€${Math.round(guadagno)}`,
+        );
+      } else {
+        ko(
+          'la missione della corte si completa a piedi',
+          `stato ${statoFine}, tratte ${legA.ok}/${legB.ok} (${(legA.metri + legB.metri).toFixed(1)} m), +€${guadagno}`,
+        );
+      }
+    }
+    await page.evaluate(() => window.__LUGO__.tempoScorre(true));
+  }
+
+  // ── fase 12: la visuale a 360° col dito e col mouse ───────────────────
+  // Il drag sul canvas converte pixel in radianti (0,006 rad/px in
+  // orizzontale): a piedi gira DIRETTAMENTE il riferimento dei comandi, in
+  // auto è solo uno sguardo che decade al rilascio. Qui si misura tutto in
+  // radianti attesi, non «si è mosso qualcosa»: la conversione è esatta e
+  // il collaudo la pretende esatta.
+  if ((await lugo('typeof L.orbita')) === 'function') {
+    const normAng = (a) => {
+      while (a > Math.PI) a -= Math.PI * 2;
+      while (a < -Math.PI) a += Math.PI * 2;
+      return a;
+    };
+    // niente override della fotocamera e niente pannelli: il drag sotto
+    // override viene scartato apposta, e qui non lo si sta provando
+    await lugo('L.fotocamera(0, 0, 0, 0, 0, 0, 0) ?? true');
+    await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+    // via il fuoco da eventuali bottoni: con fuocoSuComando la E è muta e
+    // le prove «a piedi» qui sotto si ritroverebbero a giudicare l'auto
+    await page.evaluate(() => document.activeElement instanceof HTMLElement && document.activeElement.blur());
+    for (let i = 0; i < 4 && (await lugo('L.mode()')) !== 'piedi'; i++) {
+      await page.keyboard.down('Space');
+      await page.waitForTimeout(1000);
+      await page.keyboard.up('Space');
+      await page.keyboard.press('KeyE', TENUTO);
+      await page.waitForTimeout(600);
+    }
+    await page.waitForTimeout(400);
+
+    // ── drag orizzontale a piedi: 300 px = 1,800 rad, e yaw è l'unica
+    // verità (niente offset residuo) ──────────────────────────────────
+    {
+      const modeDrag = await lugo('L.mode()');
+      const y0 = (await lugo('L.orbita()')).yaw;
+      await page.mouse.move(480, 350);
+      await page.mouse.down();
+      await page.mouse.move(780, 350, { steps: 8 });
+      await page.mouse.up();
+      await page.waitForTimeout(400);
+      const o = await lugo('L.orbita()');
+      const delta = o.yaw - y0;
+      // il metro vale solo a piedi (nei mezzi il drag va nell'offset): il
+      // mode sta nel verdetto perché una volta questa prova è stata fatta
+      // per sbaglio al volante e diceva Δyaw=0 su un'orbita sanissima
+      if (modeDrag === 'piedi' && Math.abs(delta - 1.8) < 0.06 && Math.abs(o.offset) < 1e-6) {
+        ok('drag orizzontale: 300 px → 1,8 rad di visuale', `Δyaw=${delta.toFixed(3)} rad, offset=${o.offset}`);
+      } else {
+        ko('drag orizzontale: 300 px → 1,8 rad di visuale', `mode=${modeDrag}, Δyaw=${delta.toFixed(3)} rad, offset=${o.offset}`);
+      }
+    }
+
+    // ── drag verticale: il pitch si ferma esattamente ai clamp ─────────
+    {
+      await page.mouse.move(640, 200);
+      await page.mouse.down();
+      await page.mouse.move(640, 700, { steps: 8 });
+      await page.mouse.up();
+      await page.waitForTimeout(250);
+      const giu = (await lugo('L.orbita()')).pitch;
+      for (let k = 0; k < 2; k++) {
+        await page.mouse.move(640, 700);
+        await page.mouse.down();
+        await page.mouse.move(640, 100, { steps: 8 });
+        await page.mouse.up();
+        await page.waitForTimeout(250);
+      }
+      const su = (await lugo('L.orbita()')).pitch;
+      if (Math.abs(giu - 0.55) < 1e-6 && Math.abs(su + 0.12) < 1e-6) {
+        ok('il pitch si ferma ai suoi clamp', `in giù ${giu}, in su ${su}`);
+      } else {
+        ko('il pitch si ferma ai suoi clamp', `in giù ${giu} (atteso 0.55), in su ${su} (atteso −0.12)`);
+      }
+      // si riporta lo sguardo in piano per le prove dopo (−0,12 + 27·0,0045)
+      await page.mouse.move(640, 400);
+      await page.mouse.down();
+      await page.mouse.move(640, 427, { steps: 3 });
+      await page.mouse.up();
+      await page.waitForTimeout(250);
+    }
+
+    // ── mezzo giro e W: si cammina verso il NUOVO avanti ───────────────
+    // È la prova che il drag gira davvero il riferimento dei comandi e
+    // non solo l'inquadratura: dopo ~π di trascinamento, W deve portare
+    // dove ADESSO si guarda. In headless si aspetta il regime (giravolta
+    // finita) prima di misurare, o si misurerebbe la virata.
+    {
+      const dove = await lugo('L.pos()');
+      const inStrada2 = await lugo(`L.suStrada(${dove[0]}, ${dove[1]})`);
+      if (inStrada2) {
+        await page.evaluate((q) => window.__LUGO__.teleport(q[0], q[1]), inStrada2);
+        await page.waitForTimeout(400);
+      }
+      const y0 = (await lugo('L.direzione()')).camYaw;
+      for (let k = 0; k < 2; k++) {
+        await page.mouse.move(480, 350);
+        await page.mouse.down();
+        await page.mouse.move(742, 350, { steps: 8 });
+        await page.mouse.up();
+        await page.waitForTimeout(200);
+      }
+      const y1 = (await lugo('L.direzione()')).camYaw;
+      const mezzo = normAng(y1 - y0);
+      await page.keyboard.down('KeyW');
+      await page
+        .waitForFunction(
+          () => {
+            const d = window.__LUGO__.direzione();
+            let s = d.yaw - d.camYaw;
+            while (s > Math.PI) s -= Math.PI * 2;
+            while (s < -Math.PI) s += Math.PI * 2;
+            return d.v > 2.1 && Math.abs(s) < 0.08;
+          },
+          null,
+          { timeout: 25000 },
+        )
+        .catch(() => {});
+      const p0 = await lugo('L.pos()');
+      await page.waitForTimeout(1500);
+      const p1 = await lugo('L.pos()');
+      const dir = await lugo('L.direzione()');
+      await page.keyboard.up('KeyW');
+      const mosso = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
+      const scarto = Math.abs(normAng(Math.atan2(p1[1] - p0[1], p1[0] - p0[0]) - dir.camYaw));
+      // 524 px · 0,006 = 3,144 ≈ π: il drag deve valere il mezzo giro, e
+      // il moto deve seguire il nuovo avanti (con la tolleranza della
+      // finestra corta: a passo di banco 1,5 s sono pochi fotogrammi)
+      if (Math.abs(Math.abs(mezzo) - 3.144) < 0.08 && mosso > 0.3 && scarto < 0.3) {
+        ok('dopo mezzo giro la W va verso il nuovo avanti', `drag=${mezzo.toFixed(3)} rad, ${mosso.toFixed(2)} m con scarto ${scarto.toFixed(3)} rad`);
+      } else {
+        ko('dopo mezzo giro la W va verso il nuovo avanti', `drag=${mezzo.toFixed(3)} rad, mosso=${mosso.toFixed(2)} m, scarto=${scarto.toFixed(3)} rad`);
+      }
+      await page.waitForTimeout(400);
+    }
+
+    // ── in auto: il drag è uno sguardo che non tocca la guida e decade ──
+    {
+      const qui2 = await lugo('L.pos()');
+      await page.evaluate((q) => window.__LUGO__.teleport(q[0], q[1]), qui2);
+      await page.waitForTimeout(300);
+      await page.evaluate((q) => window.__LUGO__.teleport(q[0] + 3, q[1] + 3, undefined, false), qui2);
+      await page.waitForTimeout(400);
+      let modeA = await lugo('L.mode()');
+      for (let i = 0; i < 4 && modeA !== 'auto'; i++) {
+        await page.keyboard.press('KeyE', TENUTO);
+        await page.waitForTimeout(500);
+        modeA = await lugo('L.mode()');
+      }
+      if (modeA !== 'auto') {
+        ko('in auto il drag è solo uno sguardo', 'non si è risaliti in auto per la prova');
+      } else {
+        await page.waitForTimeout(300);
+        const camPrima = (await lugo('L.direzione()')).camYaw;
+        await page.mouse.move(480, 350);
+        await page.mouse.down();
+        await page.mouse.move(720, 350, { steps: 8 });
+        await page.waitForTimeout(300);
+        const oGiu = await lugo('L.orbita()');
+        const camDurante = (await lugo('L.direzione()')).camYaw;
+        await page.mouse.up();
+        if (Math.abs(oGiu.offset - 1.44) < 0.08 && Math.abs(normAng(camDurante - camPrima)) < 0.02) {
+          ok('in auto il drag è solo uno sguardo', `offset=${oGiu.offset.toFixed(3)} rad col dito giù, riferimento di guida fermo`);
+        } else {
+          ko('in auto il drag è solo uno sguardo', `offset=${oGiu.offset.toFixed(3)} (atteso 1.44), Δguida=${normAng(camDurante - camPrima).toFixed(4)}`);
+        }
+        // Il rientro decade con dtRaw VERO (non clampato): ~2,5 s a
+        // orologio anche su questo banco in slow-motion — è il punto
+        // della cura, e si misura proprio così.
+        await page.waitForTimeout(3200);
+        const oSu = await lugo('L.orbita()');
+        if (Math.abs(oSu.offset) < 0.02) {
+          ok('al rilascio lo sguardo rientra dietro al mezzo', `offset=${oSu.offset.toFixed(4)} dopo 3,2 s`);
+        } else {
+          ko('al rilascio lo sguardo rientra dietro al mezzo', `offset=${oSu.offset.toFixed(4)} dopo 3,2 s`);
+        }
+        // si scende per le prove col tocco
+        await page.keyboard.press('KeyE', TENUTO);
+        await page.waitForTimeout(600);
+      }
+    }
+
+    // ── pinch a due dita e rotellina: lo zoom vive nei clamp ───────────
+    // Semantica CDP verificata a banco (vedi fase 3a-quater): in touchEnd
+    // si elencano i punti RILASCIATI, non i superstiti.
+    {
+      const cdpO = await page.context().newCDPSession(page);
+      const toccoO = (type, punti) =>
+        cdpO.send('Input.dispatchTouchEvent', { type, touchPoints: punti.map(([id, x, y]) => ({ x, y, id })) });
+      const z0 = (await lugo('L.orbita()')).zoom;
+      await toccoO('touchStart', [[1, 600, 400], [2, 680, 400]]);
+      for (let i = 1; i <= 8; i++) await toccoO('touchMove', [[1, 600 - i * 19, 400], [2, 680 + i * 19, 400]]);
+      await page.waitForTimeout(200);
+      const zIn = (await lugo('L.orbita()')).zoom;
+      await toccoO('touchEnd', [[1, 448, 400], [2, 832, 400]]);
+      await page.waitForTimeout(150);
+      await toccoO('touchStart', [[1, 448, 400], [2, 832, 400]]);
+      for (let i = 1; i <= 8; i++) await toccoO('touchMove', [[1, 448 + i * 21, 400], [2, 832 - i * 21, 400]]);
+      await page.waitForTimeout(200);
+      const zOut = (await lugo('L.orbita()')).zoom;
+      await toccoO('touchEnd', [[1, 616, 400], [2, 664, 400]]);
+      await page.waitForTimeout(150);
+      if (zIn < z0 && Math.abs(zIn - 0.6) < 1e-6 && Math.abs(zOut - 1.6) < 1e-6) {
+        ok('il pinch zooma dentro i clamp', `allargando ${z0.toFixed(2)} → ${zIn}, stringendo → ${zOut}`);
+      } else {
+        ko('il pinch zooma dentro i clamp', `da ${z0.toFixed(3)}: allargando ${zIn} (atteso 0.6), stringendo ${zOut} (atteso 1.6)`);
+      }
+      // la rotellina segue la stessa legge esponenziale del pinch: da 1,6
+      // uno scroll di −600 px deve dare esattamente 1,6·e^(−0,66)
+      await page.mouse.move(640, 400);
+      await page.mouse.wheel(0, -600);
+      await page.waitForTimeout(250);
+      const zW = (await lugo('L.orbita()')).zoom;
+      const attesoW = 1.6 * Math.exp(-600 * 0.0011);
+      if (Math.abs(zW - attesoW) < 0.02) {
+        ok('la rotellina segue la stessa legge', `zoom=${zW.toFixed(3)} = 1,6·e^(−0,66)`);
+      } else {
+        ko('la rotellina segue la stessa legge', `zoom=${zW.toFixed(3)}, atteso ${attesoW.toFixed(3)}`);
+      }
+      // si torna a zoom ~1 per non falsare le inquadrature che seguono
+      await page.mouse.wheel(0, Math.round(Math.log(1 / zW) / 0.0011));
+      await page.waitForTimeout(200);
+
+      // ── due dita insieme: il pad cammina, il canvas orbita ────────────
+      // È il gesto da telefono: pollice sinistro sul pad, destro che gira
+      // la visuale. Se la contabilità dei puntatori facesse confusione, il
+      // rilascio del dito del canvas azzererebbe il pad (o viceversa).
+      const padO = await page.locator('[data-hud="joystick-pad"]').boundingBox();
+      if (padO) {
+        const pcx = padO.x + padO.width / 2;
+        const pcy = padO.y + padO.height / 2;
+        await toccoO('touchStart', [[1, pcx, pcy]]);
+        await toccoO('touchMove', [[1, pcx, pcy - 30]]);
+        await page
+          .waitForFunction(() => window.__LUGO__.direzione().v > 1.2, null, { timeout: 10000 })
+          .catch(() => {});
+        const vSolo = (await lugo('L.direzione()')).v;
+        const yaw0 = (await lugo('L.orbita()')).yaw;
+        await toccoO('touchStart', [[1, pcx, pcy - 30], [2, 480, 350]]);
+        let vMin = 99;
+        for (let i = 1; i <= 10; i++) {
+          await toccoO('touchMove', [[1, pcx, pcy - 30], [2, 480 + i * 30, 350]]);
+          if (i % 3 === 0) {
+            const v = (await lugo('L.direzione()')).v;
+            if (v < vMin) vMin = v;
+          }
+        }
+        await page.waitForTimeout(200);
+        const oDue = await lugo('L.orbita()');
+        await toccoO('touchEnd', [[2, 780, 350]]); // si molla SOLO il dito del canvas
+        await page.waitForTimeout(700);
+        const vResta = (await lugo('L.direzione()')).v;
+        const oResta = await lugo('L.orbita()');
+        await toccoO('touchEnd', [[1, pcx, pcy - 30]]);
+        await page
+          .waitForFunction(() => window.__LUGO__.direzione().v < 0.05, null, { timeout: 10000 })
+          .catch(() => {});
+        const vFine = (await lugo('L.direzione()')).v;
+        const dettaglioDita = `v ${vSolo.toFixed(2)} (min ${vMin.toFixed(2)}) → canvas Δyaw=${(oDue.yaw - yaw0).toFixed(3)} → mollato il canvas v=${vResta.toFixed(2)} → mollato il pad v=${vFine.toFixed(3)}`;
+        if (
+          vSolo > 1.2 &&
+          vMin > 1.0 &&
+          Math.abs(oDue.yaw - yaw0 - 1.8) < 0.35 &&
+          vResta > 1.0 &&
+          oResta.attiva === false &&
+          vFine < 0.05
+        ) {
+          ok('pad e orbita insieme, due dita vere', dettaglioDita);
+        } else {
+          ko('pad e orbita insieme, due dita vere', dettaglioDita + ' (attesi pad vivo, 300 px → ~1,8 rad, stop solo al rilascio del pad)');
+        }
+      }
     }
   }
 

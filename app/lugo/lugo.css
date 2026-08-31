@@ -31,6 +31,14 @@
 
 .lugo-root canvas {
   display: block;
+  /* il canvas è la superficie dell'orbita a 360°: senza touch-action il
+     primo trascinamento col dito diventa uno scroll (o un pinch-zoom)
+     della PAGINA e il browser tronca il gesto con un pointercancel a
+     metà giro — la visuale partiva e si piantava */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .lugo-caricamento {

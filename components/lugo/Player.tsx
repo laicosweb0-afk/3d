@@ -16,6 +16,7 @@ import { BICI, lasciaBici, stepBici } from '@/lib/lugo/bici';
 import { bersaglioFurto, compiFurto, hookFurti, vistoDaiCarabinieri } from '@/lib/lugo/furti';
 import { fuocoSuComando, type StatoInput } from '@/lib/lugo/input';
 import { conStick } from '@/lib/lugo/stick';
+import { consumaDeltaYaw, orbita, orbitaRecente } from '@/lib/lugo/orbita';
 import { attivitaVicina, registroAttivita } from '@/lib/lugo/attivita';
 import { bachecaVicina, offerteBacheca } from '@/lib/lugo/bacheche';
 import { poiDaScoprire, puntiInteresse } from '@/lib/lugo/poi';
@@ -68,6 +69,10 @@ function ChaseCamera({ rt }: { rt: RuntimeGioco }) {
     const override = runtime.cameraOverride;
     if (override) {
       if (performance.now() < override.fino) {
+        // l'override del QA ha la precedenza su tutto, orbita compresa: i
+        // radianti trascinati NEL FRATTEMPO si buttano via, o al rientro
+        // la visuale salterebbe di colpo di tutto il drag accumulato
+        consumaDeltaYaw();
         camera.position.set(override.x, override.y, override.z);
         mira.set(override.tx, override.ty, override.tz);
         camera.lookAt(mira);
@@ -77,6 +82,10 @@ function ChaseCamera({ rt }: { rt: RuntimeGioco }) {
     }
     const mode = useLugo.getState().mode;
     const t = mode === 'auto' ? rt.auto : rt.persona;
+    // i radianti trascinati col dito o col mouse dall'ultimo fotogramma:
+    // il modulo orbita converte i pixel, ma DOVE applicarli si decide qui,
+    // perché solo qui si sa in che modalità si sta giocando
+    const dOrb = consumaDeltaYaw();
 
     // ── l'orientamento della camera è STATO, non una misura della
     // posizione: se lo si ricavasse dal vettore camera→giocatore si
@@ -91,15 +100,24 @@ function ChaseCamera({ rt }: { rt: RuntimeGioco }) {
       let avantiAuto = rt.auto.yaw;
       if (rt.vAuto < -0.5) avantiAuto += Math.PI;
       rt.cameraYaw = avantiAuto;
-    } else {
+    } else if (mode === 'piedi') {
+      // A PIEDI il drag gira DIRETTAMENTE rt.cameraYaw, che è l'unica
+      // fonte di verità del riferimento comandi: girata la visuale,
+      // "avanti" diventa dove si guarda. Un eventuale sguardo residuo dei
+      // mezzi si RIPIEGA qui dentro invece di azzerarsi: scendendo
+      // dall'auto mentre si guardava di lato la visuale non salta, e i
+      // comandi corrispondono da subito a quello che si vede.
+      rt.cameraYaw += dOrb + orbita.offsetYaw;
+      orbita.offsetYaw = 0;
       // la camera si rimette dietro le spalle SOLO mentre cammini dritto
       // in avanti. Se lo facesse anche di lato ruoterebbe il riferimento
       // dei comandi mentre li stai usando (diagonali storte), e se lo
       // facesse andando indietro inseguirebbe chi le cammina incontro,
       // ribaltando la direzione: sono i due modi in cui il movimento si
-      // invertiva. Andando dritti facing e camera coincidono già, quindi
-      // qui non c'è nessuna deriva: solo una correzione che converge.
-      if (runtime.assi.az > 0.35 && Math.abs(runtime.assi.ax) < 0.3) {
+      // invertiva. E deve stare fermo anche mentre si orbita col dito (e
+      // per un attimo dopo il rilascio): sono due mani sullo stesso
+      // volante, e il riallineo strapperebbe via la visuale appena girata.
+      if (runtime.assi.az > 0.35 && Math.abs(runtime.assi.ax) < 0.3 && !orbitaRecente()) {
         let scarto = rt.persona.yaw - rt.cameraYaw;
         while (scarto > Math.PI) scarto -= Math.PI * 2;
         while (scarto < -Math.PI) scarto += Math.PI * 2;
@@ -117,10 +135,39 @@ function ChaseCamera({ rt }: { rt: RuntimeGioco }) {
       while (scarto < -Math.PI) scarto += Math.PI * 2;
       rt.cameraYaw += scarto * (1 - Math.exp(-7 * dt));
     }
-    const dirX = Math.cos(rt.cameraYaw);
-    const dirZ = Math.sin(rt.cameraYaw);
+    // IN AUTO e IN BICI il drag è uno SGUARDO temporaneo: un offset che si
+    // somma alla camera ma non tocca né lo sterzo né rt.cameraYaw, che
+    // resta il riferimento di guida. Al rilascio decade a zero da solo e
+    // la visuale torna dietro al mezzo. L'avvolgimento in (−π, π] serve al
+    // decadimento: dopo un giro quasi completo l'offset deve rientrare dal
+    // lato corto, non ripercorrere all'indietro tutto il giro fatto.
+    if (mode !== 'piedi') {
+      orbita.offsetYaw += dOrb;
+      while (orbita.offsetYaw > Math.PI) orbita.offsetYaw -= Math.PI * 2;
+      while (orbita.offsetYaw < -Math.PI) orbita.offsetYaw += Math.PI * 2;
+      if (orbita.dita === 0 && orbita.offsetYaw !== 0) {
+        // il rientro usa il dt VERO, non quello clampato a 0,05: un
+        // decadimento esponenziale non può esplodere con un dt grande (al
+        // massimo arriva a zero), mentre col clamp, su un telefono che
+        // arranca a pochi FPS, i "2-3 secondi" del rientro diventavano
+        // dieci e la camera sembrava rimasta incantata di lato
+        orbita.offsetYaw *= Math.exp(-2.5 * dtRaw);
+        // la coda asintotica si taglia, come per rt.sella: senza il taglio
+        // l'offset resta per sempre a un millesimo di radiante e la camera
+        // non è mai davvero "dietro al mezzo"
+        if (Math.abs(orbita.offsetYaw) < 0.002) orbita.offsetYaw = 0;
+      }
+    }
+    // la direzione di vista è quella ORBITATA: la usa anche il probing dei
+    // muri qui sotto, così pure guardandosi alle spalle la camera non
+    // entra nelle facciate
+    const yawVista = rt.cameraYaw + orbita.offsetYaw;
+    const dirX = Math.cos(yawVista);
+    const dirZ = Math.sin(yawVista);
 
-    const dist = mode === 'auto' ? 8.5 : mode === 'bici' ? 6.0 : 4.2;
+    // il pinch e la rotellina scalano la distanza della modalità: il
+    // fattore sta in orbita.zoom, già clampato fra il 60% e il 160%
+    const dist = (mode === 'auto' ? 8.5 : mode === 'bici' ? 6.0 : 4.2) * orbita.zoom;
     const alt = mode === 'auto' ? 3.4 : mode === 'bici' ? 2.7 : 2.1;
 
     // La camera non attraversa i muri. Nelle vie strette di Lugo, e appena
@@ -146,7 +193,13 @@ function ChaseCamera({ rt }: { rt: RuntimeGioco }) {
     const d = distanzaViva.current;
     // avvicinandosi si abbassa anche lo sguardo, o si finisce sui tetti
     const altViva = alt * (0.55 + 0.45 * (d / dist));
-    desiderata.set(t.x - dirX * d, altViva, t.z - dirZ * d);
+    // Il pitch alza (o abbassa) la QUOTA della camera in proporzione alla
+    // distanza: è la geometria dell'orbita verticale. Il pavimento a 0,6 m
+    // è la rete di sicurezza: coi clamp del pitch non si tocca mai, ma un
+    // solo fotogramma con la camera sotto l'asfalto basta a vedere il
+    // rovescio della città.
+    const quota = Math.max(0.6, altViva + d * Math.tan(orbita.pitch));
+    desiderata.set(t.x - dirX * d, quota, t.z - dirZ * d);
 
     if (!avviata.current) {
       camera.position.copy(desiderata);
@@ -157,7 +210,14 @@ function ChaseCamera({ rt }: { rt: RuntimeGioco }) {
     }
 
     const avantiMira = mode === 'auto' ? 5 : mode === 'bici' ? 2.6 : 1.2;
-    mira.set(t.x + dirX * avantiMira, 1.4, t.z + dirZ * avantiMira);
+    // l'altra metà dell'orbita verticale: guardando in giù la mira si
+    // abbassa (e viceversa), smorzata a 0,6 perché la quota qui sopra fa
+    // già la sua parte — a piena forza il player uscirebbe dall'inquadratura
+    mira.set(
+      t.x + dirX * avantiMira,
+      1.4 - avantiMira * Math.tan(orbita.pitch) * 0.6,
+      t.z + dirZ * avantiMira,
+    );
     camera.lookAt(mira);
 
     // FOV dinamico: in velocità il campo si allarga, piano piano
@@ -273,6 +333,17 @@ export function Player() {
         vx: rt.persona.vx,
         vz: rt.persona.vz,
         v: Math.hypot(rt.persona.vx, rt.persona.vz),
+      }),
+      // la visuale a 360° vista da fuori: yaw del riferimento comandi,
+      // sguardo temporaneo dei mezzi, pitch, fattore zoom e se un dito (o
+      // il mouse) sta orbitando IN QUESTO MOMENTO
+      orbita: () => ({
+        yaw: rt.cameraYaw,
+        offset: orbita.offsetYaw,
+        pitch: orbita.pitch,
+        zoom: orbita.zoom,
+        attiva: orbita.dita > 0,
+        dita: orbita.dita,
       }),
       attivita: () => registroAttivitaHook(),
       // guardia sulle regole commerciali: senza autorizzazione scritta
