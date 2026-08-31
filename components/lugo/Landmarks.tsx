@@ -12,7 +12,14 @@ import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { useMondo, type MondoLugo, type EdificioRT } from '@/lib/lugo/loadMap';
 import { Accumulo } from '@/lib/lugo/citygen';
-import { puntiVarco, vicinoAVarco, rettangoloMinimo } from '@/lib/lugo/gates';
+import {
+  puntiVarco,
+  vicinoAVarco,
+  rettangoloMinimo,
+  corridoiVarco,
+  dentroCorridoio,
+  spezzaConVarchi,
+} from '@/lib/lugo/gates';
 import { puntoStradaVicino } from '@/lib/lugo/car';
 import { infraGioco } from '@/lib/lugo/veicoli';
 import { GazzellaMesh } from './Npcs';
@@ -157,6 +164,10 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
   const acc = new Accumulo();
   const fp = b.fp;
   const varchi = puntiVarco(fp);
+  // gli stessi corridoi che loadMap usa per aprire il collider: muro
+  // disegnato e muro solido devono spezzarsi negli STESSI punti, o si
+  // cammina contro il vetro (o attraverso l'intonaco)
+  const corridoi = corridoiVarco(fp, corte);
   const H = 8.4;
   const H_ARCO = 5.3;
   const rect = rettangoloMinimo(fp);
@@ -168,12 +179,25 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
   for (const [x1, z1, x2, z2] of anelloSegmenti(fp)) {
     const mx = (x1 + x2) / 2;
     const mz = (z1 + z2) / 2;
-    const alVarco = vicinoAVarco(mx, mz, varchi);
-    if (alVarco) {
-      // ai portali l'arco reale sale quasi al cornicione
-      muro(acc, x1, z1, x2, z2, 7.2, H, TERRACOTTA);
-    } else {
-      muro(acc, x1, z1, x2, z2, 0, H, TERRACOTTA);
+    // il muro si spezza sugli stessi corridoi del collider: prima si apriva
+    // il segmento INTERO quando il suo punto medio cadeva vicino a un varco,
+    // e il lato lungo 110 m del Pavaglione spariva dal primo all'ultimo
+    // metro, mentre il varco sud (punto medio del suo lato a 16 m) restava
+    // murato con tanto di portale monumentale disegnato sopra
+    const tratti = spezzaConVarchi(x1, z1, x2, z2, corridoi);
+    const sub = (t0: number, t1: number): [number, number, number, number] => [
+      x1 + (x2 - x1) * t0, z1 + (z2 - z1) * t0,
+      x1 + (x2 - x1) * t1, z1 + (z2 - z1) * t1,
+    ];
+    for (const [t0, t1] of tratti.fuori) {
+      const [ax, az, bx, bz] = sub(t0, t1);
+      muro(acc, ax, az, bx, bz, 0, H, TERRACOTTA);
+    }
+    for (const [t0, t1] of tratti.dentro) {
+      // sopra il passaggio resta solo l'architrave: l'arco reale del
+      // portale sale quasi al cornicione
+      const [ax, az, bx, bz] = sub(t0, t1);
+      muro(acc, ax, az, bx, bz, 7.2, H, TERRACOTTA);
     }
     const L = Math.hypot(x2 - x1, z2 - z1);
     if (L < 3) continue;
@@ -190,8 +214,10 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
       nz = -nz;
     }
     // il marcapiano crema continuo che chiude il registro rosso in basso
-    if (!alVarco) {
-      muro(acc, x1 + nx * 0.06, z1 + nz * 0.06, x2 + nx * 0.06, z2 + nz * 0.06, 5.32, 5.7, CREMA);
+    // (si interrompe solo sopra i passaggi, dove taglierebbe l'arco)
+    for (const [t0, t1] of tratti.fuori) {
+      const [ax, az, bx, bz] = sub(t0, t1);
+      muro(acc, ax + nx * 0.06, az + nz * 0.06, bx + nx * 0.06, bz + nz * 0.06, 5.32, 5.7, CREMA);
     }
     const nCampi = Math.max(1, Math.round(L / 4.3));
     for (let k = 0; k <= nCampi; k++) {
@@ -245,11 +271,13 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
   }
 
   // il fondale chiaro della loggia: rivestimento interno con le porte
-  // scure, così dalla corte non si vede il retro rosso del muro esterno
+  // scure, così dalla corte non si vede il retro rosso del muro esterno.
+  // Anche lui si taglia sui corridoi: prima saltava il segmento intero se
+  // il punto medio era al varco, quindi sui lati lunghi il rivestimento
+  // attraversava il passaggio come una parete piena
   for (const [x1, z1, x2, z2] of anelloSegmenti(fp)) {
     const mx = (x1 + x2) / 2;
     const mz = (z1 + z2) / 2;
-    if (vicinoAVarco(mx, mz, varchi)) continue;
     const L = Math.hypot(x2 - x1, z2 - z1);
     if (L < 2) continue;
     const ex = (x2 - x1) / L;
@@ -264,10 +292,20 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
       nz = -nz;
     }
     // verso la corte = -n
-    muro(acc, x1 - nx * 0.18, z1 - nz * 0.18, x2 - nx * 0.18, z2 - nz * 0.18, 0.1, H_ARCO, SOFFITTO);
+    for (const [t0, t1] of spezzaConVarchi(x1, z1, x2, z2, corridoi).fuori) {
+      const ax = x1 + (x2 - x1) * t0;
+      const az = z1 + (z2 - z1) * t0;
+      const bx = x1 + (x2 - x1) * t1;
+      const bz = z1 + (z2 - z1) * t1;
+      muro(acc, ax - nx * 0.18, az - nz * 0.18, bx - nx * 0.18, bz - nz * 0.18, 0.1, H_ARCO, SOFFITTO);
+    }
     const giroY = Math.atan2(ez, ex);
     for (let s = 3.5; s < L - 2; s += 7) {
-      box(acc, x1 + ex * s - nx * 0.24, 1.7, z1 + ez * s - nz * 0.24, 2.2, 3.2, 0.05, new THREE.Color('#3E362E'), giroY);
+      const px = x1 + ex * s - nx * 0.24;
+      const pz = z1 + ez * s - nz * 0.24;
+      // niente porte sospese in mezzo al passaggio
+      if (dentroCorridoio(px, pz, corridoi, 1.4)) continue;
+      box(acc, px, 1.7, pz, 2.2, 3.2, 0.05, new THREE.Color('#3E362E'), giroY);
     }
   }
 
@@ -303,7 +341,11 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
       const t = k / nPil;
       const px = x1 + (x2 - x1) * t;
       const pz = z1 + (z2 - z1) * t;
-      if (vicinoAVarco(px, pz, varchi, 4)) {
+      // il passaggio attraversa l'arcata dove il corridoio buca la corte:
+      // il vecchio test sulla distanza dal varco (4 m) non scattava MAI,
+      // perché il muro della corte sta a 15-24 m dai varchi — e i pilastri
+      // si piantavano in mezzo all'ingresso appena aperto
+      if (dentroCorridoio(px, pz, corridoi, 1.1)) {
         posPil.push(null);
         continue;
       }

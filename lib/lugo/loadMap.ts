@@ -7,7 +7,7 @@
 
 import { use } from 'react';
 import { asset } from '@/lib/asset';
-import { puntiVarco, vicinoAVarco } from './gates';
+import { corridoiVarco, spezzaConVarchi } from './gates';
 import { caricaSchedeAttivita } from './attivita';
 import type { LugoMap, ClasseStrada, PoiMap, TipoArredo } from './types';
 
@@ -134,20 +134,33 @@ function colliderDa(
   }
   // segmenti dal perimetro esterno E dai bordi dei cortili: dentro la corte
   // si cammina, contro i muri (anche interni) si sbatte. Il Pavaglione ha i
-  // varchi veri al centro dei lati: lì il muro si apre.
-  const varchi = b.landmark === 'pavaglione' ? puntiVarco(fp) : null;
+  // varchi veri al centro dei lati: lì il muro si apre lungo un CORRIDOIO
+  // che va da fuori la facciata fino a dentro la corte. Il vecchio criterio
+  // («salta il segmento se il suo punto medio è vicino al varco») buttava
+  // via un lato intero di 110 m — si passava attraverso la facciata — e non
+  // apriva mai il muro della corte, che sta a 15-24 m dai varchi: sotto la
+  // loggia si entrava, ma nella corte no.
+  const corridoi = b.landmark === 'pavaglione' ? corridoiVarco(fp, fori[0] ?? null) : null;
   const anelli = [fp, ...fori];
   const segArr: number[] = [];
   for (const a of anelli) {
     const n = a.length / 2;
     for (let i = 0; i < n; i++) {
       const j = (i + 1) % n;
-      if (varchi) {
-        const mx = (a[i * 2] + a[j * 2]) / 2;
-        const mz = (a[i * 2 + 1] + a[j * 2 + 1]) / 2;
-        if (vicinoAVarco(mx, mz, varchi)) continue;
+      const ax = a[i * 2];
+      const az = a[i * 2 + 1];
+      const bx = a[j * 2];
+      const bz = a[j * 2 + 1];
+      if (corridoi) {
+        for (const [t0, t1] of spezzaConVarchi(ax, az, bx, bz, corridoi).fuori) {
+          segArr.push(
+            ax + (bx - ax) * t0, az + (bz - az) * t0,
+            ax + (bx - ax) * t1, az + (bz - az) * t1,
+          );
+        }
+        continue;
       }
-      segArr.push(a[i * 2], a[i * 2 + 1], a[j * 2], a[j * 2 + 1]);
+      segArr.push(ax, az, bx, bz);
     }
   }
   const segs = new Float32Array(segArr);
