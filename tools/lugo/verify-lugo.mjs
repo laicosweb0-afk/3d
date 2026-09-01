@@ -112,6 +112,209 @@ try {
     ok('start screen', 'bottone GIOCA premuto');
   }
 
+  // ── il camminatore guidato, in comune ─────────────────────────────────
+  // Ogni ~300 ms si rilegge posizione e camYaw e si sceglie fra le otto
+  // direzioni della tastiera quella che punta il bersaglio: lo stesso
+  // movimento della fase delle otto direzioni, solo in retroazione. Nato
+  // dentro la fase 11, è salito quassù quando anche la missione 01 ha
+  // avuto bisogno di camminare davvero: due copie sarebbero due verità.
+  const FRECCE = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+  let tastiGiu = new Set();
+  const premi = async (nuovi) => {
+    for (const t of FRECCE) {
+      const voglio = nuovi.has(t);
+      if (voglio && !tastiGiu.has(t)) await page.keyboard.down(t);
+      if (!voglio && tastiGiu.has(t)) await page.keyboard.up(t);
+    }
+    tastiGiu = nuovi;
+  };
+  const tastiPer = (relDeg) => {
+    const combos = [
+      [0, ['ArrowUp']], [45, ['ArrowUp', 'ArrowRight']], [90, ['ArrowRight']],
+      [135, ['ArrowDown', 'ArrowRight']], [180, ['ArrowDown']], [-135, ['ArrowDown', 'ArrowLeft']],
+      [-90, ['ArrowLeft']], [-45, ['ArrowUp', 'ArrowLeft']],
+    ];
+    let best = combos[0];
+    let errMin = 1e9;
+    for (const c of combos) {
+      let e = Math.abs(relDeg - c[0]);
+      if (e > 180) e = 360 - e;
+      if (e < errMin) {
+        errMin = e;
+        best = c;
+      }
+    }
+    return new Set(best[1]);
+  };
+  // Di corsa, perché in headless il tempo di gioco scorre a una frazione
+  // dell'orologio; «incastrato» dopo 25 finestre ferme è il modo in cui
+  // un muro si racconta invece di mangiarsi tutto il timeout.
+  const camminaVerso = async (tx, tz, arrivo = 1.3, timeoutMs = 180000) => {
+    const t0 = Date.now();
+    let prev = await lugo('L.pos()');
+    let metri = 0;
+    let fermi = 0;
+    await page.keyboard.down('ShiftLeft');
+    try {
+      while (Date.now() - t0 < timeoutMs) {
+        const p = await lugo('L.pos()');
+        const mosso = Math.hypot(p[0] - prev[0], p[1] - prev[1]);
+        metri += mosso;
+        prev = p;
+        const d = Math.hypot(tx - p[0], tz - p[1]);
+        if (d < arrivo) return { ok: true, metri, pos: p };
+        if (mosso < 0.03 && tastiGiu.size) fermi++;
+        else fermi = 0;
+        if (fermi > 25) return { ok: false, metri, pos: p, perche: 'incastrato' };
+        const dir = await lugo('L.direzione()');
+        let rel = ((Math.atan2(tz - p[1], tx - p[0]) - dir.camYaw) * 180) / Math.PI;
+        while (rel > 180) rel -= 360;
+        while (rel < -180) rel += 360;
+        await premi(tastiPer(rel));
+        await page.waitForTimeout(300);
+      }
+      return { ok: false, metri, pos: prev, perche: 'timeout' };
+    } finally {
+      await premi(new Set());
+      await page.keyboard.up('ShiftLeft');
+    }
+  };
+
+  // ── fase 1b: la missione 01 «Sei nuovo?» ──────────────────────────────
+  // La prima scena del gioco, collaudata nell'ordine in cui un giocatore
+  // vero la incontra: il cancello tiene ferma la vecchia catena, l'anziano
+  // col pacchetto aspetta nel parcheggio, «Magari dopo» non incastra
+  // nessuno, la consegna si cammina fino al bar vero, il premio arriva
+  // UNA volta sola — anche ricaricando la pagina — e a missione fatta la
+  // catena di sempre riparte da sola.
+  if ((await lugo('typeof L.primoIncontro')) === 'object') {
+    // il cancello: per mezzo minuto NESSUNA missione deve partire da sola
+    // (prima mvp1 arrivava dopo 3 secondi di gioco, e avrebbe parlato
+    // sopra all'anziano)
+    let scappata = null;
+    for (let i = 0; i < 12 && !scappata; i++) {
+      await page.waitForTimeout(2500);
+      const st = await lugo('L.statoMissione()');
+      if (st === 'attiva' || st === 'completata') scappata = st;
+    }
+    const pi0 = await lugo('L.primoIncontro.stato()');
+    if (!scappata) ok('il cancello tiene ferma la catena', `30 s senza missioni auto-avviate`);
+    else ko('il cancello tiene ferma la catena', `una missione è partita da sola: ${scappata}`);
+    if (pi0 && pi0.disponibile) ok("l'anziano col pacchetto è al suo posto", `(${pi0.x.toFixed(1)};${pi0.z.toFixed(1)}), fase ${pi0.fase}`);
+    else ko("l'anziano col pacchetto è al suo posto", JSON.stringify(pi0));
+
+    // si scende dall'auto: fuoco via da qualunque bottone, o la E è muta
+    await page.evaluate(() => document.activeElement instanceof HTMLElement && document.activeElement.blur());
+    for (let i = 0; i < 4 && (await lugo('L.mode()')) !== 'piedi'; i++) {
+      await page.keyboard.down('Space');
+      await page.waitForTimeout(900);
+      await page.keyboard.up('Space');
+      await page.keyboard.press('KeyE', TENUTO);
+      await page.waitForTimeout(600);
+    }
+
+    // primo giro: si rifiuta, e si deve poter riprovare senza incastri
+    await page.evaluate(() => window.__LUGO__.primoIncontro.forzaDialogo());
+    await page.waitForFunction(() => document.querySelector('[data-hud="dialogo-opzione-dopo"]'), null, { timeout: 20000 }).catch(() => {});
+    if (await page.locator('[data-hud="dialogo-opzione-dopo"]').count()) {
+      await page.click('[data-hud="dialogo-opzione-dopo"]');
+      await page.waitForTimeout(700);
+      const dopoRifiuto = await lugo('L.primoIncontro.stato()');
+      const chiuso = (await page.locator('[data-hud="dialogo"]').count()) === 0;
+      if (chiuso && dopoRifiuto && dopoRifiuto.rifiutato) ok('«Magari dopo» chiude senza incastrare', 'pannello chiuso, anziano riprovabile');
+      else ko('«Magari dopo» chiude senza incastrare', `chiuso=${chiuso} rifiutato=${dopoRifiuto && dopoRifiuto.rifiutato}`);
+    } else {
+      ko('«Magari dopo» chiude senza incastrare', 'il dialogo non si è aperto');
+    }
+
+    // secondo giro: si accetta — «Sì» e poi «Volentieri»
+    const soldi0 = await lugo('L.denaro()');
+    const rep0 = await lugo('L.punteggio()');
+    await page.evaluate(() => window.__LUGO__.primoIncontro.forzaDialogo());
+    await page.waitForFunction(() => document.querySelector('[data-hud="dialogo-opzione-si"]'), null, { timeout: 20000 }).catch(() => {});
+    await page.click('[data-hud="dialogo-opzione-si"]').catch(() => {});
+    await page.waitForFunction(() => document.querySelector('[data-hud="dialogo-opzione-volentieri"]'), null, { timeout: 15000 }).catch(() => {});
+    await page.click('[data-hud="dialogo-opzione-volentieri"]').catch(() => {});
+    await page.waitForTimeout(900);
+    const st1 = await lugo('L.statoMissione()');
+    const pi1 = await lugo('L.primoIncontro.stato()');
+    const obiettivo = (await page.textContent('[data-hud="obiettivo"]').catch(() => '')) ?? '';
+    if (st1 === 'attiva' && pi1 && pi1.paccoGiocatore && /consegna/i.test(obiettivo)) {
+      ok('la commissione parte col pacco in mano', `«${obiettivo.trim()}» verso ${pi1.nomeBar}`);
+    } else {
+      ko('la commissione parte col pacco in mano', `stato=${st1} pacco=${pi1 && pi1.paccoGiocatore} obiettivo «${obiettivo}»`);
+    }
+    await page.screenshot({ path: join(SHOTS, '00-sei-nuovo.png') });
+
+    // la consegna: teletrasporto VICINO al bar, l'ultimo tratto è cammino
+    // vero; quattro accostamenti provati, il primo che non si incastra vince
+    const t = await lugo('L.tappaCorrente()');
+    let arrivo = { ok: false, metri: 0 };
+    if (t) {
+      for (const [dx, dz] of [[11, 0], [0, 11], [-11, 0], [0, -11]]) {
+        await page.evaluate(([x, z]) => window.__LUGO__.teleport(x, z), [t.x + dx, t.z + dz]);
+        await page.waitForTimeout(400);
+        arrivo = await camminaVerso(t.x, t.z, 1.5, 60000);
+        if (arrivo.ok) break;
+      }
+    }
+    await page.waitForTimeout(1300);
+    const stFine = await lugo('L.statoMissione()');
+    const guadagno = (await lugo('L.denaro()')) - soldi0;
+    const repDelta = (await lugo('L.punteggio()')) - rep0;
+    if (await page.locator('[data-hud="dialogo-opzione-sivede"]').count()) {
+      ok('il barista piazza la battuta', (await page.textContent('[data-hud="dialogo-testo"]').catch(() => '')) ?? '');
+      await page.click('[data-hud="dialogo-opzione-sivede"]').catch(() => {});
+      await page.waitForTimeout(400);
+    } else {
+      ko('il barista piazza la battuta', 'nessun dialogo di arrivo a schermo');
+    }
+    if (arrivo.ok && stFine === 'completata' && Math.round(guadagno) === 20 && repDelta >= 5) {
+      ok('consegna a piedi pagata: +€20 e +5 REP', `${arrivo.metri.toFixed(1)} m camminati, +€${Math.round(guadagno)}, +${repDelta} REP`);
+    } else {
+      ko('consegna a piedi pagata: +€20 e +5 REP', `arrivo=${arrivo.ok} stato=${stFine} +€${guadagno} +${repDelta} REP`);
+    }
+
+    // il premio non si ripete nella stessa partita: rigiocarla paga zero
+    const soldiPieni = await lugo('L.denaro()');
+    const bis = await page.evaluate(() => window.__LUGO__.avviaMissione('m00'));
+    if (bis && t) {
+      await page.evaluate(([x, z]) => window.__LUGO__.teleport(x, z), [t.x, t.z]);
+      await page.waitForTimeout(1300);
+    }
+    const dopoBis = await lugo('L.denaro()');
+    if (Math.round(dopoBis) === Math.round(soldiPieni)) ok('il premio si paga una volta sola', `€${dopoBis} invariati rigiocandola`);
+    else ko('il premio si paga una volta sola', `€${soldiPieni} → €${dopoBis} al secondo giro`);
+    await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+
+    // la prova del reload: il salvataggio ricorda, il premio non raddoppia,
+    // l'anziano resta a riposo e la catena di sempre riparte da sola
+    await page.goto(URL, { waitUntil: 'networkidle' });
+    await page.waitForFunction(() => window.__LUGO__ && window.__LUGO__.pronto === true, null, { timeout: 30000 }).catch(() => {});
+    if (await page.locator('[data-hud="salta-intro"]').count()) await page.click('[data-hud="salta-intro"]');
+    await page.waitForTimeout(300);
+    if (await page.locator('[data-hud="gioca"]').count()) await page.click('[data-hud="gioca"]');
+    await page.waitForTimeout(1000);
+    const soldiReload = await lugo('L.denaro()');
+    const piR = await lugo('L.primoIncontro.stato()');
+    if (Math.round(soldiReload) === Math.round(dopoBis) && piR && piR.fase === 'finita') {
+      ok('ricaricando non si ripaga niente', `€${soldiReload} come prima, anziano a riposo`);
+    } else {
+      ko('ricaricando non si ripaga niente', `€${dopoBis} → €${soldiReload}, fase anziano=${piR && piR.fase}`);
+    }
+    let ripartita = false;
+    for (let i = 0; i < 30 && !ripartita; i++) {
+      await page.waitForTimeout(2000);
+      if ((await lugo('L.statoMissione()')) === 'attiva') ripartita = true;
+    }
+    if (ripartita) ok('a missione fatta la catena riparte', 'la proposta arriva da sola dopo il reload');
+    else ko('a missione fatta la catena riparte', '60 s senza proposte a cancello aperto');
+    await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+    await page.waitForTimeout(300);
+  } else {
+    ko('missione 01 «Sei nuovo?»', 'hook primoIncontro assente');
+  }
+
   // ── fase 2: guida ─────────────────────────────────────────────────────
   if ((await lugo('typeof L.pos')) === 'function') {
     // L'auto parte da ferma e la scena, in headless, gira molto più piano
@@ -2567,72 +2770,9 @@ try {
       { nome: 'sud', fuori: [6.62, 35.61], corte: [-7.86, 56.42], yaw: Math.atan2(0.8208, -0.5712) },
     ];
 
-    // La camminata guidata: ogni ~300 ms si rilegge posizione e camYaw e
-    // si sceglie fra le otto direzioni della tastiera quella che punta il
-    // bersaglio. È lo stesso movimento della fase delle otto direzioni,
-    // solo in retroazione: nessun teletrasporto, nessuna spinta esterna.
-    const FRECCE = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
-    let tastiGiu = new Set();
-    const premi = async (nuovi) => {
-      for (const t of FRECCE) {
-        const voglio = nuovi.has(t);
-        if (voglio && !tastiGiu.has(t)) await page.keyboard.down(t);
-        if (!voglio && tastiGiu.has(t)) await page.keyboard.up(t);
-      }
-      tastiGiu = nuovi;
-    };
-    const tastiPer = (relDeg) => {
-      const combos = [
-        [0, ['ArrowUp']], [45, ['ArrowUp', 'ArrowRight']], [90, ['ArrowRight']],
-        [135, ['ArrowDown', 'ArrowRight']], [180, ['ArrowDown']], [-135, ['ArrowDown', 'ArrowLeft']],
-        [-90, ['ArrowLeft']], [-45, ['ArrowUp', 'ArrowLeft']],
-      ];
-      let best = combos[0];
-      let errMin = 1e9;
-      for (const c of combos) {
-        let e = Math.abs(relDeg - c[0]);
-        if (e > 180) e = 360 - e;
-        if (e < errMin) {
-          errMin = e;
-          best = c;
-        }
-      }
-      return new Set(best[1]);
-    };
-    // Di corsa, perché in headless il tempo di gioco scorre a una frazione
-    // dell'orologio; «incastrato» dopo 25 finestre ferme è il modo in cui
-    // un varco murato si racconta invece di mangiarsi tutto il timeout.
-    const camminaVerso = async (tx, tz, arrivo = 1.3, timeoutMs = 180000) => {
-      const t0 = Date.now();
-      let prev = await lugo('L.pos()');
-      let metri = 0;
-      let fermi = 0;
-      await page.keyboard.down('ShiftLeft');
-      try {
-        while (Date.now() - t0 < timeoutMs) {
-          const p = await lugo('L.pos()');
-          const mosso = Math.hypot(p[0] - prev[0], p[1] - prev[1]);
-          metri += mosso;
-          prev = p;
-          const d = Math.hypot(tx - p[0], tz - p[1]);
-          if (d < arrivo) return { ok: true, metri, pos: p };
-          if (mosso < 0.03 && tastiGiu.size) fermi++;
-          else fermi = 0;
-          if (fermi > 25) return { ok: false, metri, pos: p, perche: 'incastrato' };
-          const dir = await lugo('L.direzione()');
-          let rel = ((Math.atan2(tz - p[1], tx - p[0]) - dir.camYaw) * 180) / Math.PI;
-          while (rel > 180) rel -= 360;
-          while (rel < -180) rel += 360;
-          await premi(tastiPer(rel));
-          await page.waitForTimeout(300);
-        }
-        return { ok: false, metri, pos: prev, perche: 'timeout' };
-      } finally {
-        await premi(new Set());
-        await page.keyboard.up('ShiftLeft');
-      }
-    };
-
+    // La camminata guidata è il camminatore in comune definito in testa al
+    // collaudo (nato qui, promosso quando anche la missione 01 ha avuto
+    // bisogno di camminare): nessun teletrasporto, nessuna spinta esterna.
     for (const v of varchi.slice(0, 2)) {
       await page.evaluate(([x, z, y]) => window.__LUGO__.teleport(x, z, y), [v.fuori[0], v.fuori[1], v.yaw]);
       await page.waitForTimeout(500);
@@ -2687,6 +2827,41 @@ try {
           `stato ${statoFine}, tratte ${legA.ok}/${legB.ok} (${(legA.metri + legB.metri).toFixed(1)} m), +€${guadagno}`,
         );
       }
+    }
+    // ── l'arcata non-portale, e il fondale che resta muro ───────────────
+    // La verità nuova del porticato: fra pilastro e pilastro si passa
+    // OVUNQUE l'arco è aperto, non solo nei 4 corridoi; e dove il disegno
+    // mostra muro (il fondale delle botteghe, la facciata cieca) non si
+    // passa. I punti si derivano dal varco sud: 18 m di scarto lungo il
+    // lato mettono l'ingresso in piena arcata, ben lontano dal corridoio,
+    // e restano dentro il lato (che è lungo più di 80 m).
+    {
+      const vS = varchi[2];
+      const perp = [0.8208, 0.5712]; // il lato, perpendicolare all'asse del passaggio
+      const mid = [(vS.fuori[0] + vS.corte[0]) / 2, (vS.fuori[1] + vS.corte[1]) / 2];
+      const yawInCorte = Math.atan2(vS.corte[1] - vS.fuori[1], vS.corte[0] - vS.fuori[0]);
+      let arcata = { ok: false, metri: 0 };
+      for (const s of [18, 21]) {
+        const sotto = [mid[0] + s * perp[0], mid[1] + s * perp[1]];
+        const inCorte = [vS.corte[0] + s * perp[0], vS.corte[1] + s * perp[1]];
+        await page.evaluate(([x, z, y]) => window.__LUGO__.teleport(x, z, y), [sotto[0], sotto[1], yawInCorte]);
+        await page.waitForTimeout(400);
+        arcata = await camminaVerso(inCorte[0], inCorte[1], 1.3, 60000);
+        if (arcata.ok) break; // un pilastro preso in pieno merita un secondo scarto, non un rosso
+      }
+      const modoArc = await lugo('L.mode()');
+      if (arcata.ok && modoArc === 'piedi') ok("in corte da un'arcata non-portale", `${arcata.metri.toFixed(1)} m fra i pilastri`);
+      else ko("in corte da un'arcata non-portale", `mode=${modoArc} · ${arcata.perche ?? 'giro largo'} a (${arcata.pos?.[0]?.toFixed(1)};${arcata.pos?.[1]?.toFixed(1)}), ${arcata.metri.toFixed(1)} m`);
+
+      // anti-fantasma: dal portico verso FUORI, dove la facciata è
+      // disegnata piena, la camminata deve incastrarsi — non passare
+      const sotto = [mid[0] + 18 * perp[0], mid[1] + 18 * perp[1]];
+      const oltreIlMuro = [vS.fuori[0] + 18 * perp[0], vS.fuori[1] + 18 * perp[1]];
+      await page.evaluate(([x, z]) => window.__LUGO__.teleport(x, z), [sotto[0], sotto[1]]);
+      await page.waitForTimeout(400);
+      const muro = await camminaVerso(oltreIlMuro[0], oltreIlMuro[1], 1.3, 45000);
+      if (!muro.ok && muro.perche === 'incastrato') ok('il fondale resta solido', `fermato dopo ${muro.metri.toFixed(1)} m, come dev'essere`);
+      else ko('il fondale resta solido', muro.ok ? `passato ATTRAVERSO la facciata cieca (${muro.metri.toFixed(1)} m)` : `esito strano: ${muro.perche}`);
     }
     await page.evaluate(() => window.__LUGO__.tempoScorre(true));
   }
