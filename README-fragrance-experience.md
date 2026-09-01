@@ -1,8 +1,13 @@
 # The Fragrance Experience — prototipo quiz mobile
 
-Prototipo cliccabile, mobile-first (390×844), della pagina raggiunta dal QR
-sul coupon nei pacchi di Woman Parfume Store. Percorso: annusa → indovina →
-scopri → ricevi il credito. Nessun backend: tutto lo stato vive in memoria.
+Prototipo cliccabile, mobile-first, della pagina raggiunta dal QR sul
+coupon nei pacchi di WO•MAN Perfume Store. Percorso: landing con la
+fialetta «?» → quiz di 4 domande (una alla volta, progress 01/04) →
+risultato → credito €15 e 3 raccomandazioni → email → busta da
+consegnare → chiusura. Nessun backend: tutto lo stato vive in memoria.
+Direzione visiva: editoriale/luxury su fondo chiaro, Inter dominante,
+serif solo come dettaglio (il «?», i nomi delle fragranze), rosa WO•MAN
+usato come accento.
 
 ## Come avviare
 
@@ -28,18 +33,20 @@ tracciati (`scan_opened`, `quiz_answered`, `result_shown`,
 `families_selected`, `email_saved`, `envelope_named`, `flow_completed`),
 ognuno con timestamp e codice coupon. Nessun dato viene inviato altrove.
 
-## Come cambiare fragranza e famiglie
+## Come cambiare fragranza, domande e raccomandazioni
 
-Tutto in **`data/fragrances.ts`**: nome, maison, famiglia corretta, note,
-nota "trabocchetto" e percentuale mostrata a chi non indovina; l'array
-`FAMILIES` definisce le quattro risposte del quiz e la griglia di scelta
-delle fialette.
+Tutto in **`data/fragrances.ts`**: la fragranza misteriosa (`MYSTERY`),
+le famiglie olfattive (`FAMILIES`), le quattro domande del quiz
+(`QUESTIONS` — quella con `scoring: true` decide se la fragranza è stata
+riconosciuta) e il catalogo (`CATALOG`) da cui vengono pescate le tre
+raccomandazioni in base alle risposte.
 
 ## Testi e colori
 
 - Tutte le stringhe: **`content/quiz/copy.ts`** (struttura pronta per
   aggiungere lingue: si aggiunge una chiave a `COPY` e si cambia `LANG`).
-- Palette del brief: **`app/s/colors.css`** (valori esatti, da non toccare).
+- Design tokens (colori, scala tipografica, spaziature, transizioni):
+  **`app/s/colors.css`**.
 - Stili delle schermate: `app/s/quiz.css`.
 - Logo: `public/WOMAN-logo.png` (fondi chiari) e
   `public/WOMAN-logo-white.png` (fondi scuri), altezza fissa 22 px.

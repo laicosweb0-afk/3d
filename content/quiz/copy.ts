@@ -1,16 +1,17 @@
-// Tutte le stringhe del prototipo The Fragrance Experience (BRIEF §9).
+// Tutte le stringhe del prototipo The Fragrance Experience.
 // Il flusso legge solo `copy` (lingua attiva): per aggiungere una lingua
 // basta aggiungere una chiave a `COPY` e cambiare `LANG`, senza toccare
 // i componenti.
 
 const it = {
   meta: {
-    title: 'The Fragrance Experience — Woman',
+    title: 'The Fragrance Experience — WO•MAN',
     description: 'Annusa. Indovina. Condividi.',
   },
 
   claim: 'SMELL. GUESS. SHARE.',
   claimSub: 'Annusa. Indovina. Condividi.',
+  eyebrow: 'The Fragrance Experience',
 
   levels: {
     curioso: 'Naso Curioso',
@@ -19,63 +20,66 @@ const it = {
   },
   levelLabel: 'Il tuo livello',
 
-  s0: {
-    coupon: {
-      title: 'Hai in mano una fragranza senza nome.',
-      subtitle: 'Annusala. Poi prova a riconoscerla.',
-    },
+  landing: {
+    title: 'Riconosci la fragranza?',
+    sub: 'Annusa la tua fialetta.\nPoi prova a indovinare.',
     busta: {
       // {nome} e {mittente} vengono sostituiti a runtime
       title: 'Ciao {nome}.',
-      subtitle:
-        '{mittente} ha annusato questa fragranza e ha pensato che dovessi sentirla anche tu.',
-      // Riga obbligatoria: è la trasparenza dovuta (BRIEF §4, S0-B).
+      sub: '{mittente} ha annusato questa fragranza e ha pensato che dovessi sentirla anche tu.',
+      // Riga obbligatoria: è la trasparenza dovuta.
       transparency: '{mittente} saprà che l’hai aperta.',
       defaultNome: 'Giulia',
       defaultMittente: 'Marco',
     },
-    cta: 'Inizia',
+    cta: 'Inizia il quiz',
   },
 
-  s1: {
-    eyebrow: 'Prima di scoprirlo.',
-    question: 'Cosa hai sentito?',
+  warmup: 'Partiamo.',
+
+  quiz: {
+    counter: '{n} / {total}', // es. 01 / 04
   },
 
-  s2: {
-    guessed: {
-      eyebrow: 'Naso allenato',
-      byMaison: 'di {maison}',
+  result: {
+    eyebrow: 'Your result',
+    almost: 'Ci siamo quasi.',
+    right: {
+      title: 'Esatto.',
+      sub: 'Hai riconosciuto la fragranza.',
     },
-    missed: {
-      eyebrow: 'Il tuo naso ti ha portato altrove',
-      trick: 'E non è un caso: sotto c’è un accordo di {trickNote} che confonde quasi tutti.',
-      pct: 'Il {pct}% ha risposto come te.',
+    wrong: {
+      title: 'Non era questa.',
+      sub: 'Ma il bello è proprio scoprire cosa ti piace.',
+      chosen: 'Abbiamo scelto 3 fragranze per te.',
     },
-    reveal: 'È {name}.',
-    credit: 'Hai 15 € in fialette. Tre fialette da 5 €, tue con il prossimo ordine.',
-    creditSub: 'Una l’hai già annusata. Le altre tre ti aspettano.',
-    cta: 'Scegli le tue fragranze',
+    reveal: 'È {name}, di {maison}.',
+    pct: 'Il {pct}% ha risposto come te.',
+    cta: 'Scopri le tue 3 fragranze',
   },
 
-  s3: {
-    title: 'Le tue tre fialette.',
-    guessedSub: 'Scegli tu.',
-    missedSub: 'Le abbiamo scelte per te, in base a quello che hai sentito.',
-    change: 'cambiale',
-    summaryLabel: 'Le tue tre',
-    cta: 'Conferma',
+  reward: {
+    amount: '€15',
+    label: 'di credito',
+    sub: 'Da utilizzare per scoprire 3 nuove fragranze.',
+    note: 'Tue con il prossimo ordine.',
   },
 
-  s4: {
+  recs: {
+    titleRight: 'Le tue 3 fragranze.',
+    titleWrong: 'Scelte per te.',
+    cta: 'Salva il tuo credito',
+  },
+
+  email: {
     title: 'Dove ti mandiamo il tuo credito?',
-    emailPlaceholder: 'La tua email',
+    placeholder: 'La tua email',
     consent: 'Acconsento a ricevere il credito via email.',
     privacyLink: 'Privacy policy',
     cta: 'Salva le mie fialette',
   },
 
-  s5: {
+  envelope: {
     title: 'Hai una busta da consegnare.',
     text: 'Dentro c’è un’altra fragranza senza nome. Decidi tu a chi darla.',
     namePlaceholder: 'Il suo nome (facoltativo)',

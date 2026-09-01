@@ -4,18 +4,20 @@ import { copy } from '@/content/quiz/copy';
 import './colors.css';
 import './quiz.css';
 
-const serif = Playfair_Display({
+// Sans dominante: tutta la UI è Inter. Il serif esiste solo come
+// dettaglio editoriale (il «?» della fialetta, i nomi delle fragranze).
+const sans = Inter({
   subsets: ['latin'],
-  weight: ['400', '500'],
-  style: ['normal', 'italic'],
-  variable: '--fx-font-serif',
+  weight: ['300', '400', '500'],
+  variable: '--fx-font-sans',
   display: 'swap',
 });
 
-const sans = Inter({
+const serif = Playfair_Display({
   subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--fx-font-sans',
+  weight: ['400'],
+  style: ['normal', 'italic'],
+  variable: '--fx-font-serif',
   display: 'swap',
 });
 
@@ -29,9 +31,9 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#0F0E12',
+  themeColor: '#FAF8F4',
 };
 
 export default function QuizLayout({ children }: { children: React.ReactNode }) {
-  return <div className={`fx-stage ${serif.variable} ${sans.variable}`}>{children}</div>;
+  return <div className={`fx-stage ${sans.variable} ${serif.variable}`}>{children}</div>;
 }

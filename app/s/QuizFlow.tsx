@@ -2,14 +2,32 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { FAMILIES, MYSTERY, type Family } from '@/data/fragrances';
+import {
+  CATALOG,
+  FAMILIES,
+  MYSTERY,
+  QUESTIONS,
+  type CatalogEntry,
+  type Family,
+  type QuizOption,
+} from '@/data/fragrances';
 import { copy, fill } from '@/content/quiz/copy';
 
 /* ------------------------------------------------------------------ */
 /* Tipi                                                                */
 /* ------------------------------------------------------------------ */
 
-type Step = 's0' | 's1' | 's2' | 's3' | 's4' | 's5' | 'end';
+type Step =
+  | 'landing'
+  | 'warmup'
+  | 'quiz'
+  | 'moment'
+  | 'result'
+  | 'recs'
+  | 'email'
+  | 'envelope'
+  | 'end';
+
 type Entry = 'coupon' | 'busta';
 type ForcedOutcome = 'off' | 'right' | 'wrong';
 
@@ -20,16 +38,64 @@ type TrackedEvent = {
   code: string;
 };
 
+const pad = (n: number) => String(n).padStart(2, '0');
+
 /* ------------------------------------------------------------------ */
-/* Logo                                                                */
+/* Elementi ricorrenti                                                 */
 /* ------------------------------------------------------------------ */
 
-function Logo({ onInk }: { onInk: boolean }) {
+function Logo() {
   return (
-    <header className="fx-logo">
+    <div className="fx-logo">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={onInk ? '/WOMAN-logo-white.png' : '/WOMAN-logo.png'} alt="Woman Parfume Store" />
-    </header>
+      <img src="/WOMAN-logo.png" alt="WO•MAN Perfume Store" />
+    </div>
+  );
+}
+
+/* La fialetta: solo linea e un «?». Nessun logo sopra. */
+function Vial() {
+  return (
+    <figure className="fx-vial" aria-hidden="true">
+      <svg width="90" height="180" viewBox="0 0 90 180" fill="none">
+        <g stroke="currentColor" strokeWidth="1.5">
+          <rect x="33" y="2" width="24" height="20" rx="3" />
+          <path d="M36 22v8M54 22v8" />
+          <rect x="26" y="30" width="38" height="146" rx="17" />
+        </g>
+        <text className="fx-vial-mark" x="45" y="112" textAnchor="middle">
+          ?
+        </text>
+      </svg>
+    </figure>
+  );
+}
+
+function Cta({
+  children,
+  onClick,
+  disabled,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button className="fx-cta" onClick={onClick} disabled={disabled}>
+      {children} <span>→</span>
+    </button>
+  );
+}
+
+function Reward() {
+  return (
+    <div className="fx-reward">
+      <p className="fx-reward-amount">{copy.reward.amount}</p>
+      <p className="fx-reward-label">{copy.reward.label}</p>
+      <p className="fx-reward-sub">
+        {copy.reward.sub} {copy.reward.note}
+      </p>
+    </div>
   );
 }
 
@@ -41,13 +107,15 @@ export default function QuizFlow() {
   const params = useSearchParams();
   const code = params.get('c') || '—';
   const urlEntry: Entry = params.get('from') === 'busta' ? 'busta' : 'coupon';
-  const urlNome = params.get('nome') || copy.s0.busta.defaultNome;
+  const urlNome = params.get('nome') || copy.landing.busta.defaultNome;
 
   const [entry, setEntry] = useState<Entry>(urlEntry);
-  const [step, setStep] = useState<Step>('s0');
-  const [answer, setAnswer] = useState<Family | null>(null);
+  const [step, setStep] = useState<Step>('landing');
+  const [qIndex, setQIndex] = useState(0);
+  const [answers, setAnswers] = useState<QuizOption[]>([]);
+  const [active, setActive] = useState<string | null>(null);
   const [guessed, setGuessed] = useState(false);
-  const [selected, setSelected] = useState<Family[]>([]);
+  const [recs, setRecs] = useState<CatalogEntry[]>([]);
   const [envelopeDone, setEnvelopeDone] = useState(false);
   const [events, setEvents] = useState<TrackedEvent[]>([]);
   const [forced, setForced] = useState<ForcedOutcome>('off');
@@ -71,61 +139,79 @@ export default function QuizFlow() {
   const restart = useCallback(
     (nextEntry: Entry) => {
       setEntry(nextEntry);
-      setStep('s0');
-      setAnswer(null);
+      setStep('landing');
+      setQIndex(0);
+      setAnswers([]);
+      setActive(null);
       setGuessed(false);
-      setSelected([]);
+      setRecs([]);
       setEnvelopeDone(false);
       track('scan_opened', nextEntry === 'busta' ? 'da busta' : 'da coupon');
     },
     [track],
   );
 
-  /* --- S1: il tap sulla risposta avanza --- */
-  const answered = useRef(false);
-  const onAnswer = (family: Family) => {
-    if (answered.current) return;
-    answered.current = true;
-    const natural = family === MYSTERY.family;
-    const hit = forced === 'right' ? true : forced === 'wrong' ? false : natural;
-    setAnswer(family);
-    setGuessed(hit);
-    track('quiz_answered', `${family} · ${hit ? 'indovinato' : 'non indovinato'}`);
-    window.setTimeout(() => {
-      answered.current = false;
-      setStep('s2');
-    }, 240);
-  };
-
-  /* --- S3: preselezione per chi non ha indovinato --- */
-  const startChoice = () => {
-    if (!guessed) {
-      const pre: Family[] = [];
-      for (const f of [answer, MYSTERY.family, ...FAMILIES]) {
-        if (f && !pre.includes(f)) pre.push(f);
-        if (pre.length === 3) break;
-      }
-      setSelected(pre);
+  /* --- passaggi automatici: «Partiamo.» e «Ci siamo quasi.» --- */
+  useEffect(() => {
+    if (step === 'warmup') {
+      const t = window.setTimeout(() => setStep('quiz'), 1100);
+      return () => window.clearTimeout(t);
     }
-    setStep('s3');
+    if (step === 'moment') {
+      const t = window.setTimeout(() => setStep('result'), 1300);
+      return () => window.clearTimeout(t);
+    }
+  }, [step]);
+
+  const resultShown = useRef(false);
+  useEffect(() => {
+    if (step === 'result' && !resultShown.current) {
+      resultShown.current = true;
+      track('result_shown', guessed ? 'indovinato' : 'non indovinato');
+    }
+    if (step === 'landing') resultShown.current = false;
+  }, [step, guessed, track]);
+
+  /* --- risposta a una domanda: il tap avanza --- */
+  const answering = useRef(false);
+  const onAnswer = (option: QuizOption) => {
+    if (answering.current) return;
+    answering.current = true;
+    setActive(option.label);
+
+    const question = QUESTIONS[qIndex];
+    let detail = `${pad(qIndex + 1)} · ${option.label}`;
+    let hit = guessed;
+    if (question.scoring) {
+      const natural = option.family === MYSTERY.family;
+      hit = forced === 'right' ? true : forced === 'wrong' ? false : natural;
+      setGuessed(hit);
+      detail += ` · ${hit ? 'indovinato' : 'non indovinato'}`;
+    }
+    track('quiz_answered', detail);
+    const nextAnswers = [...answers, option];
+    setAnswers(nextAnswers);
+
+    window.setTimeout(() => {
+      answering.current = false;
+      setActive(null);
+      if (qIndex + 1 < QUESTIONS.length) {
+        setQIndex(qIndex + 1);
+      } else {
+        setRecs(computeRecs(nextAnswers));
+        setStep('moment');
+      }
+    }, 260);
   };
 
-  const toggleFamily = (f: Family) => {
-    setSelected((prev) => {
-      if (prev.includes(f)) return prev.filter((x) => x !== f);
-      if (prev.length >= 3) return prev;
-      return [...prev, f];
-    });
-  };
-
-  const confirmChoice = () => {
-    track('families_selected', selected.join(' · '));
-    setStep('s4');
+  const confirmRecs = () => {
+    track('families_selected', recs.map((r) => r.name).join(' · '));
+    setStep('email');
   };
 
   const saveEmail = (email: string) => {
     track('email_saved', email);
-    setStep('s5');
+    setStep('envelope');
   };
 
   const finish = (name: string | null) => {
@@ -138,41 +224,27 @@ export default function QuizFlow() {
   };
 
   /* --- livello simbolico --- */
-  const baseLevel = guessed ? copy.levels.allenato : copy.levels.curioso;
   const finalLevel = envelopeDone
     ? guessed
       ? copy.levels.esperto
       : copy.levels.allenato
-    : baseLevel;
+    : guessed
+      ? copy.levels.allenato
+      : copy.levels.curioso;
 
-  const onInk = step === 's0' || step === 's2' || step === 'end';
+  const stepKey = step === 'quiz' ? `quiz-${qIndex}` : step;
 
   return (
-    <main className="fx-frame">
-      <div className="fx-screen" data-bg={onInk ? 'ink' : undefined} key={step}>
-        <Logo onInk={onInk} />
-        {step === 's0' && (
-          <Intro entry={entry} nome={urlNome} onStart={() => setStep('s1')} />
-        )}
-        {step === 's1' && <Question answer={answer} onAnswer={onAnswer} />}
-        {step === 's2' && (
-          <Reveal
-            guessed={guessed}
-            level={baseLevel}
-            onShown={() => track('result_shown', guessed ? 'indovinato' : 'non indovinato')}
-            onNext={startChoice}
-          />
-        )}
-        {step === 's3' && (
-          <Choice
-            guessed={guessed}
-            selected={selected}
-            onToggle={toggleFamily}
-            onConfirm={confirmChoice}
-          />
-        )}
-        {step === 's4' && <Email onSave={saveEmail} />}
-        {step === 's5' && <Envelope onFinish={finish} />}
+    <>
+      <div className={`fx-step${step === 'landing' ? ' fx-step--landing' : ''}`} key={stepKey}>
+        {step === 'landing' && <Landing entry={entry} nome={urlNome} onStart={() => setStep('warmup')} />}
+        {step === 'warmup' && <Interlude title={copy.warmup} />}
+        {step === 'quiz' && <Question index={qIndex} active={active} onAnswer={onAnswer} />}
+        {step === 'moment' && <Interlude eyebrow={copy.result.eyebrow} title={copy.result.almost} />}
+        {step === 'result' && <Result guessed={guessed} onNext={() => setStep('recs')} />}
+        {step === 'recs' && <Recs guessed={guessed} recs={recs} onNext={confirmRecs} />}
+        {step === 'email' && <Email onSave={saveEmail} />}
+        {step === 'envelope' && <Envelope onFinish={finish} />}
         {step === 'end' && <Closing level={finalLevel} />}
       </div>
 
@@ -187,15 +259,29 @@ export default function QuizFlow() {
         onForced={setForced}
         onRestart={() => restart(entry)}
       />
-    </main>
+    </>
   );
 }
 
+/* Le tre raccomandazioni: famiglie più votate nelle risposte
+ * (la domanda che conta pesa doppio), poi il catalogo in quell'ordine. */
+function computeRecs(answers: QuizOption[]): CatalogEntry[] {
+  const score = new Map<Family, number>(FAMILIES.map((f) => [f, 0]));
+  answers.forEach((option, i) => {
+    if (option.family) {
+      score.set(option.family, (score.get(option.family) ?? 0) + (QUESTIONS[i]?.scoring ? 2 : 1));
+    }
+  });
+  const ranked = [...FAMILIES].sort((a, b) => (score.get(b) ?? 0) - (score.get(a) ?? 0));
+  const rank = (f: Family) => ranked.indexOf(f);
+  return [...CATALOG].sort((a, b) => rank(a.family) - rank(b.family)).slice(0, 3);
+}
+
 /* ------------------------------------------------------------------ */
-/* S0 — Ingresso                                                       */
+/* Landing                                                             */
 /* ------------------------------------------------------------------ */
 
-function Intro({
+function Landing({
   entry,
   nome,
   onStart,
@@ -204,207 +290,174 @@ function Intro({
   nome: string;
   onStart: () => void;
 }) {
-  const mittente = copy.s0.busta.defaultMittente;
+  const mittente = copy.landing.busta.defaultMittente;
   return (
     <>
-      <div className="fx-body">
-        {entry === 'coupon' ? (
-          <>
-            <h1 className="fx-title fx-title--xl">{copy.s0.coupon.title}</h1>
-            <p className="fx-sub">{copy.s0.coupon.subtitle}</p>
-          </>
-        ) : (
-          <>
-            <h1 className="fx-title fx-title--xl">{fill(copy.s0.busta.title, { nome })}</h1>
-            <p className="fx-sub">{fill(copy.s0.busta.subtitle, { mittente })}</p>
-            <p className="fx-note" style={{ marginTop: 18 }}>
-              {fill(copy.s0.busta.transparency, { mittente })}
-            </p>
-          </>
-        )}
+      <div className="fx-top">
+        <Logo />
       </div>
-      <div className="fx-actions">
-        <button className="fx-btn" onClick={onStart}>
-          {copy.s0.cta}
-        </button>
+      <div className="fx-main">
+        <div className="fx-hero">
+          <p className="fx-eyebrow">{copy.eyebrow}</p>
+          {entry === 'coupon' ? (
+            <>
+              <h1 className="fx-h1 fx-h1--display">{copy.landing.title}</h1>
+              <p className="fx-lede">{copy.landing.sub}</p>
+            </>
+          ) : (
+            <>
+              <h1 className="fx-h1 fx-h1--display">{fill(copy.landing.busta.title, { nome })}</h1>
+              <p className="fx-lede">{fill(copy.landing.busta.sub, { mittente })}</p>
+              <p className="fx-note" style={{ marginTop: 'var(--fx-space-3)' }}>
+                {fill(copy.landing.busta.transparency, { mittente })}
+              </p>
+            </>
+          )}
+        </div>
+        <Vial />
+      </div>
+      <div className="fx-bottom">
+        <Cta onClick={onStart}>{copy.landing.cta}</Cta>
       </div>
     </>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* S1 — La domanda                                                     */
+/* Passaggi intermedi («Partiamo.», «Ci siamo quasi.»)                 */
+/* ------------------------------------------------------------------ */
+
+function Interlude({ eyebrow, title }: { eyebrow?: string; title: string }) {
+  return (
+    <>
+      <div className="fx-top" />
+      <div className="fx-main">
+        {eyebrow && <p className="fx-eyebrow">{eyebrow}</p>}
+        <h1 className="fx-h1 fx-h1--display">{title}</h1>
+      </div>
+      <div className="fx-bottom" />
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Domanda                                                             */
 /* ------------------------------------------------------------------ */
 
 function Question({
-  answer,
+  index,
+  active,
   onAnswer,
 }: {
-  answer: Family | null;
-  onAnswer: (f: Family) => void;
+  index: number;
+  active: string | null;
+  onAnswer: (o: QuizOption) => void;
 }) {
+  const question = QUESTIONS[index];
+  const progress = ((index + 1) / QUESTIONS.length) * 100;
   return (
     <>
-      <div className="fx-body">
-        <p className="fx-eyebrow">{copy.s1.eyebrow}</p>
-        <h1 className="fx-title">{copy.s1.question}</h1>
+      <div className="fx-top">
+        <p className="fx-counter">
+          {fill(copy.quiz.counter, { n: pad(index + 1), total: pad(QUESTIONS.length) })}
+        </p>
+        <div className="fx-bar">
+          <i style={{ width: `${progress}%` }} />
+        </div>
       </div>
-      <div className="fx-actions">
-        <div className="fx-answers">
-          {FAMILIES.map((f) => (
+      <div className="fx-main">
+        <h1 className="fx-h1">{question.text}</h1>
+        <div className="fx-opts">
+          {question.options.map((o) => (
             <button
-              key={f}
-              className="fx-answer"
-              data-active={answer === f}
-              onClick={() => onAnswer(f)}
+              key={o.label}
+              className="fx-opt"
+              data-active={active === o.label}
+              onClick={() => onAnswer(o)}
             >
-              {f}
+              {o.label}
             </button>
           ))}
         </div>
       </div>
+      <div className="fx-bottom" />
     </>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* S2 — La rivelazione                                                 */
+/* Risultato                                                           */
 /* ------------------------------------------------------------------ */
 
-function Reveal({
+function Result({ guessed, onNext }: { guessed: boolean; onNext: () => void }) {
+  return (
+    <>
+      <div className="fx-top" />
+      <div className="fx-main">
+        <p className={`fx-eyebrow${guessed ? '' : ' fx-eyebrow--muted'}`}>{copy.result.eyebrow}</p>
+        <h1 className="fx-h1 fx-h1--display">
+          {guessed ? copy.result.right.title : copy.result.wrong.title}
+        </h1>
+        <p className="fx-lede">{guessed ? copy.result.right.sub : copy.result.wrong.sub}</p>
+        <p className="fx-reveal-name">
+          {fill(copy.result.reveal, { name: MYSTERY.name, maison: MYSTERY.maison })}
+        </p>
+        {!guessed && (
+          <p className="fx-note" style={{ marginTop: 'var(--fx-space-2)' }}>
+            {fill(copy.result.pct, { pct: MYSTERY.guessedPct })}
+          </p>
+        )}
+        {/* Il credito è identico nei due esiti: cambia il racconto, mai il valore. */}
+        <Reward />
+      </div>
+      <div className="fx-bottom">
+        <Cta onClick={onNext}>{copy.result.cta}</Cta>
+      </div>
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Raccomandazioni                                                     */
+/* ------------------------------------------------------------------ */
+
+function Recs({
   guessed,
-  level,
-  onShown,
+  recs,
   onNext,
 }: {
   guessed: boolean;
-  level: string;
-  onShown: () => void;
+  recs: CatalogEntry[];
   onNext: () => void;
 }) {
-  const [shown, setShown] = useState(false);
-  const notified = useRef(false);
-
-  useEffect(() => {
-    // 600 ms di attesa prima del risultato (BRIEF §4, S2)
-    const t = window.setTimeout(() => {
-      setShown(true);
-      if (!notified.current) {
-        notified.current = true;
-        onShown();
-      }
-    }, 600);
-    return () => window.clearTimeout(t);
-  }, [onShown]);
-
-  if (!shown) return <div className="fx-body" />;
-
   return (
     <>
-      <div className="fx-body fx-reveal">
-        <p className={`fx-eyebrow${guessed ? ' fx-eyebrow--magenta' : ''}`}>
-          {guessed ? copy.s2.guessed.eyebrow : copy.s2.missed.eyebrow}
-        </p>
-        <h1 className="fx-title">{fill(copy.s2.reveal, { name: MYSTERY.name })}</h1>
-        {guessed ? (
-          <>
-            <p className="fx-sub">{fill(copy.s2.guessed.byMaison, { maison: MYSTERY.maison })}</p>
-            <p className="fx-notes">{MYSTERY.notes.join(' · ')}</p>
-          </>
-        ) : (
-          <>
-            <p className="fx-sub">{fill(copy.s2.missed.trick, { trickNote: MYSTERY.trickNote })}</p>
-            <p className="fx-notes">{fill(copy.s2.missed.pct, { pct: MYSTERY.guessedPct })}</p>
-          </>
-        )}
-        <div className="fx-credit">
-          <p>{copy.s2.credit}</p>
-          <p className="fx-note" style={{ marginTop: 8 }}>
-            {copy.s2.creditSub}
-          </p>
-        </div>
-        <p className="fx-level">
-          {copy.levelLabel}: {level}
-        </p>
+      <div className="fx-top" />
+      <div className="fx-main">
+        <p className="fx-eyebrow">{copy.eyebrow}</p>
+        <h1 className="fx-h1">{guessed ? copy.recs.titleRight : copy.recs.titleWrong}</h1>
+        {!guessed && <p className="fx-lede">{copy.result.wrong.chosen}</p>}
+        <ul className="fx-recs">
+          {recs.map((r) => (
+            <li className="fx-rec" key={r.name}>
+              <p className="fx-rec-name">{r.name}</p>
+              <p className="fx-rec-maison">
+                {r.maison} · {r.family}
+              </p>
+              <p className="fx-rec-notes">{r.notes.join(' · ')}</p>
+            </li>
+          ))}
+        </ul>
       </div>
-      <div className="fx-actions">
-        <button className="fx-btn" onClick={onNext}>
-          {copy.s2.cta}
-        </button>
+      <div className="fx-bottom">
+        <Cta onClick={onNext}>{copy.recs.cta}</Cta>
       </div>
     </>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* S3 — La scelta                                                      */
-/* ------------------------------------------------------------------ */
-
-function Choice({
-  guessed,
-  selected,
-  onToggle,
-  onConfirm,
-}: {
-  guessed: boolean;
-  selected: Family[];
-  onToggle: (f: Family) => void;
-  onConfirm: () => void;
-}) {
-  // Chi non ha indovinato vede le tre proposte; la griglia si apre col
-  // link «cambiale». Chi ha indovinato sceglie subito dalla griglia.
-  const [editing, setEditing] = useState(guessed);
-  const ready = selected.length === 3;
-
-  return (
-    <>
-      <div className="fx-body">
-        <h1 className="fx-title">{copy.s3.title}</h1>
-        <p className="fx-sub">{guessed ? copy.s3.guessedSub : copy.s3.missedSub}</p>
-
-        {editing ? (
-          <div className="fx-grid">
-            {FAMILIES.map((f) => (
-              <button
-                key={f}
-                className="fx-family"
-                data-selected={selected.includes(f)}
-                onClick={() => onToggle(f)}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <>
-            <ul className="fx-picked">
-              {selected.map((f) => (
-                <li key={f}>{f}</li>
-              ))}
-            </ul>
-            <button className="fx-ghost" style={{ marginTop: 14 }} onClick={() => setEditing(true)}>
-              {copy.s3.change}
-            </button>
-          </>
-        )}
-      </div>
-      <div className="fx-actions">
-        {editing && (
-          <div>
-            <p className="fx-summary">{copy.s3.summaryLabel}</p>
-            <p className="fx-note">{ready ? selected.join(' · ') : `${selected.length} / 3`}</p>
-          </div>
-        )}
-        <button className="fx-btn" disabled={!ready} onClick={onConfirm}>
-          {copy.s3.cta}
-        </button>
-      </div>
-    </>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* S4 — Il salvataggio                                                 */
+/* Email                                                               */
 /* ------------------------------------------------------------------ */
 
 function Email({ onSave }: { onSave: (email: string) => void }) {
@@ -414,40 +467,39 @@ function Email({ onSave }: { onSave: (email: string) => void }) {
 
   return (
     <>
-      <div className="fx-body">
-        <h1 className="fx-title">{copy.s4.title}</h1>
+      <div className="fx-top" />
+      <div className="fx-main">
+        <h1 className="fx-h1">{copy.email.title}</h1>
       </div>
-      <div className="fx-actions">
-        <div>
-          <input
-            className="fx-field"
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            placeholder={copy.s4.emailPlaceholder}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <label className="fx-consent">
-            <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-            <span>
-              {copy.s4.consent}{' '}
-              <a href="#" onClick={(e) => e.preventDefault()}>
-                {copy.s4.privacyLink}
-              </a>
-            </span>
-          </label>
-        </div>
-        <button className="fx-btn" disabled={!valid} onClick={() => onSave(email)}>
-          {copy.s4.cta}
-        </button>
+      <div className="fx-bottom">
+        <input
+          className="fx-field"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          placeholder={copy.email.placeholder}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <label className="fx-consent">
+          <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+          <span>
+            {copy.email.consent}{' '}
+            <a href="#" onClick={(e) => e.preventDefault()}>
+              {copy.email.privacyLink}
+            </a>
+          </span>
+        </label>
+        <Cta onClick={() => onSave(email)} disabled={!valid}>
+          {copy.email.cta}
+        </Cta>
       </div>
     </>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* S5 — La busta                                                       */
+/* La busta                                                            */
 /* ------------------------------------------------------------------ */
 
 function Envelope({ onFinish }: { onFinish: (name: string | null) => void }) {
@@ -455,23 +507,22 @@ function Envelope({ onFinish }: { onFinish: (name: string | null) => void }) {
 
   return (
     <>
-      <div className="fx-body">
-        <h1 className="fx-title">{copy.s5.title}</h1>
-        <p className="fx-sub">{copy.s5.text}</p>
+      <div className="fx-top" />
+      <div className="fx-main">
+        <h1 className="fx-h1">{copy.envelope.title}</h1>
+        <p className="fx-lede">{copy.envelope.text}</p>
       </div>
-      <div className="fx-actions">
+      <div className="fx-bottom">
         <input
           className="fx-field"
           type="text"
-          placeholder={copy.s5.namePlaceholder}
+          placeholder={copy.envelope.namePlaceholder}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <button className="fx-btn" onClick={() => onFinish(name.trim())}>
-          {copy.s5.cta}
-        </button>
+        <Cta onClick={() => onFinish(name.trim())}>{copy.envelope.cta}</Cta>
         <button className="fx-ghost" onClick={() => onFinish(null)}>
-          {copy.s5.later}
+          {copy.envelope.later}
         </button>
       </div>
     </>
@@ -484,21 +535,27 @@ function Envelope({ onFinish }: { onFinish: (name: string | null) => void }) {
 
 function Closing({ level }: { level: string }) {
   return (
-    <div className="fx-body" style={{ textAlign: 'center' }}>
-      <h1 className="fx-claim">{copy.claim}</h1>
-      <p className="fx-claim-sub">{copy.claimSub}</p>
-      <p className="fx-level" style={{ marginTop: 34 }}>
-        {copy.levelLabel}: {level}
-      </p>
-      <p className="fx-note" style={{ marginTop: 10 }}>
-        {copy.end.creditSaved}
-      </p>
-    </div>
+    <>
+      <div className="fx-top">
+        <Logo />
+      </div>
+      <div className="fx-main">
+        <h1 className="fx-claim">{copy.claim}</h1>
+        <p className="fx-claim-sub">{copy.claimSub}</p>
+        <p className="fx-level">
+          {copy.levelLabel}: {level}
+        </p>
+        <p className="fx-note" style={{ marginTop: 'var(--fx-space-2)' }}>
+          {copy.end.creditSaved}
+        </p>
+      </div>
+      <div className="fx-bottom" />
+    </>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* Pannello demo (BRIEF §6)                                            */
+/* Pannello demo                                                       */
 /* ------------------------------------------------------------------ */
 
 function DemoPanel({

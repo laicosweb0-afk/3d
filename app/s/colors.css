@@ -1,10 +1,36 @@
-/* The Fragrance Experience — palette (BRIEF §3, valori esatti, non toccare) */
+/* The Fragrance Experience — design tokens.
+ * Palette coerente con WO•MAN: off-white, nero, rosa come accento,
+ * grigi caldi molto chiari. Il rosa non è mai un fondo. */
 :root {
-  --fx-ink: #0f0e12; /* fondo scuro, testo principale su chiaro */
-  --fx-magenta: #e966b5; /* colore del logo — accenti, stati attivi */
-  --fx-magenta-deep: #bd3a66; /* testi di accento, bordi, titoli secondari */
-  --fx-ivory: #f3ece0; /* fondo chiaro caldo */
-  --fx-ivory-soft: #faf6ef; /* superfici, card su fondo chiaro */
-  --fx-line: #e3d8cc; /* bordi e separatori */
-  --fx-muted: #8a7f6f; /* testo secondario */
+  /* colore */
+  --fx-ink: #141216; /* testo principale, CTA piena */
+  --fx-bg: #faf8f4; /* fondo off-white caldo — mai bianco puro pieno */
+  --fx-surface: #ffffff; /* superfici puntuali (input, hover) */
+  --fx-line: #e7e1d7; /* hairline e separatori */
+  --fx-muted: #8a837a; /* testo secondario */
+  --fx-magenta: #e966b5; /* rosa WO•MAN — solo accento */
+  --fx-magenta-deep: #bd3a66; /* accento leggibile su fondo chiaro */
+
+  /* tipografia — scala */
+  --fx-text-xs: 0.6875rem; /* 11px — eyebrow, label */
+  --fx-text-sm: 0.8125rem; /* 13px — note, didascalie */
+  --fx-text-base: 1.0625rem; /* 17px — corpo */
+  --fx-text-lg: 1.375rem; /* 22px — nomi fragranza, sottotitoli */
+  --fx-text-xl: clamp(2rem, 6.5vw, 2.75rem); /* headline */
+  --fx-text-2xl: clamp(2.5rem, 9vw, 4rem); /* headline display */
+  --fx-tracking-caps: 0.18em;
+
+  /* spaziatura — scala */
+  --fx-space-1: 0.5rem;
+  --fx-space-2: 0.875rem;
+  --fx-space-3: 1.5rem;
+  --fx-space-4: 2.5rem;
+  --fx-space-5: 4rem;
+  --fx-space-6: 6rem;
+
+  /* forma e movimento */
+  --fx-radius: 2px;
+  --fx-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --fx-dur: 480ms;
+  --fx-dur-fast: 240ms;
 }
