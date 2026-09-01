@@ -1896,14 +1896,22 @@ try {
       // indietro lungo la strada: così il contatto arriva sotto i 4 m/s
       // del balzo d'allarme dei 6,5 m, che altrimenti lo salverebbe prima
       // del tocco — ed è giusto così, ma qui si vuole misurare il tocco.
-      const tuttiPed = await lugo('L.pedoni()');
+      // La retata dei candidati si ripete nel tempo: chi sta in carreggiata
+      // in un dato istante è questione di fortuna (gli attraversamenti sono
+      // il 18% dei cambi di meta), e un colpo secco ha già trovato ZERO
+      // pedoni sulla strada in un giro intero. Aspettarli è la cosa vera:
+      // nel gioco attraversano davvero, basta dare loro un minuto.
       const candidati = [];
-      for (const n of tuttiPed) {
-        if (n.stato !== 'fermo' && n.stato !== 'cammina') continue;
-        const su = await lugo(`L.suStrada(${n.x}, ${n.z})`);
-        if (!su) continue;
-        if (Math.hypot(su[0] - n.x, su[1] - n.z) < 1.2) candidati.push(n);
-        if (candidati.length >= 6) break;
+      for (let retata = 0; retata < 8 && candidati.length === 0; retata++) {
+        if (retata > 0) await page.waitForTimeout(6000);
+        const tuttiPed = await lugo('L.pedoni()');
+        for (const n of tuttiPed) {
+          if (n.stato !== 'fermo' && n.stato !== 'cammina') continue;
+          const su = await lugo(`L.suStrada(${n.x}, ${n.z})`);
+          if (!su) continue;
+          if (Math.hypot(su[0] - n.x, su[1] - n.z) < 1.2) candidati.push(n);
+          if (candidati.length >= 6) break;
+        }
       }
       let urto = null;
       for (const cand of candidati) {
