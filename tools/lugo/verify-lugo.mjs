@@ -757,8 +757,16 @@ try {
           mvp5: [1000, 500],
         };
         let chiuse = 0;
+        let rigiocate = 0;
         for (const id of Object.keys(attesi)) {
           const e0 = await lugo('L.denaro()');
+          // La guardia del premio unico cambia l'aspettativa: una missione
+          // che risulta GIÀ fatta (capita: la catena la propone da sola e
+          // la si chiude per caso guidando nelle fasi prima) rigiocata
+          // paga ZERO per progetto — pretendere il premio pieno qui
+          // scambierebbe la regola per un bug. Prima della guardia il
+          // doppio pagamento passava inosservato, ed era quello il bug.
+          const giaFatta = ((await lugo('L.missioniFatte()')) ?? []).includes(id);
           if (!(await page.evaluate((m) => window.__LUGO__.avviaMissione(m), id))) continue;
           if (id === 'mvp4') {
             const att = await lugo('L.attivita()');
@@ -777,11 +785,19 @@ try {
           }
           const stato = await lugo('L.statoMissione()');
           const guadagno = (await lugo('L.denaro()')) - e0;
-          if (stato === 'completata' && Math.round(guadagno) === attesi[id][0]) chiuse++;
-          else ko(`missione ${id}`, `stato ${stato}, +€${Math.round(guadagno)} invece di ${attesi[id][0]}`);
+          const attesa = giaFatta ? 0 : attesi[id][0];
+          if (stato === 'completata' && Math.round(guadagno) === attesa) {
+            chiuse++;
+            if (giaFatta) rigiocate++;
+          } else {
+            ko(`missione ${id}`, `stato ${stato}, +€${Math.round(guadagno)} invece di ${attesa}${giaFatta ? ' (già fatta: rigiocata)' : ''}`);
+          }
         }
         if (chiuse === Object.keys(attesi).length) {
-          ok('catena d\'ingresso', `${chiuse} missioni completate coi premi giusti`);
+          ok(
+            'catena d\'ingresso',
+            `${chiuse} missioni completate coi premi giusti${rigiocate ? ` (${rigiocate} rigiocate a €0, come da premio unico)` : ''}`,
+          );
         }
       }
 
@@ -1138,6 +1154,11 @@ try {
 
   // ── fase 4: missioni ──────────────────────────────────────────────────
   if ((await lugo('typeof L.avviaMissione')) === 'function') {
+    // anche qui vale il premio unico: se la catena ha già fatto chiudere
+    // m01 per caso nelle fasi prima, rigiocarla deve pagare ZERO — la
+    // prova che i punti fluiscono davvero la danno la fase 1b (+5 REP) e
+    // la catena d'ingresso, non questa
+    const m01Fatta = ((await lugo('L.missioniFatte()')) ?? []).includes('m01');
     const esito = await page.evaluate(async () => {
       const L = window.__LUGO__;
       const prima = L.punteggio();
@@ -1147,8 +1168,9 @@ try {
       await new Promise((r) => setTimeout(r, 1500));
       return { prima, dopo: L.punteggio(), stato: L.statoMissione() };
     });
-    if (esito.dopo > esito.prima) ok('missione completabile', `+${esito.dopo - esito.prima} punti`);
-    else ko('missione completabile', JSON.stringify(esito));
+    if (!m01Fatta && esito.dopo > esito.prima) ok('missione completabile', `+${esito.dopo - esito.prima} punti`);
+    else if (m01Fatta && esito.stato === 'completata' && esito.dopo === esito.prima) ok('missione completabile', 'm01 già chiusa prima: rigiocata senza doppio premio');
+    else ko('missione completabile', JSON.stringify({ ...esito, m01Fatta }));
     const hud = await page.locator('[data-hud="missione"]').count();
     if (hud) ok('HUD missione presente');
     await page.screenshot({ path: join(SHOTS, '04-missione.png') });
@@ -2105,6 +2127,14 @@ try {
         }
         return await lugo('L.render()');
       };
+      // Prima di misurare si aspetta che la catena abbia PROPOSTO la sua
+      // missione: il segnalino (anello + fascio, due chiamate) deve stare
+      // acceso in ENTRAMBE le misure, o spento in entrambe — se si accende
+      // nel mezzo, la differenza addebita alla bici due chiamate che sono
+      // del segnalino. È successo: 133 → 137 con la bici che ne costa due.
+      for (let i = 0; i < 18 && (await lugo('L.statoMissione()')) !== 'attiva'; i++) {
+        await page.waitForTimeout(2500);
+      }
       // il costo del fotogramma A PIEDI, qui davanti alla bici: è il
       // termine di paragone dell'unica cosa che la bici aggiunge
       const rPiedi = await stabile();
