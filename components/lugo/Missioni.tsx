@@ -12,6 +12,7 @@ import {
   attivitaConMissioni,
   creaMissioneAttivita,
   missioneById,
+  pontePrimoIncontro,
   posTappa,
   prossimaMissione,
   registraAttivitaConMissioni,
@@ -54,6 +55,9 @@ export function Missioni() {
   // l'invito alla bacheca si dice una volta, non ogni sei secondi
   const invito = useRef(false);
   const chiaveTappa = useRef('');
+  // da quanti secondi il giocatore è lontano dall'anziano del primo
+  // incontro: è il paracadute che sblocca la catena anche senza l'm00
+  const lontanoDaAnziano = useRef(0);
 
   // Le attività vere di Lugo diventano posti dove si va a fare qualcosa: il
   // registro passa alle missioni nome, categoria e posizione — dati già
@@ -103,6 +107,21 @@ export function Missioni() {
       punteggio: () => useLugo.getState().punteggio,
       statoMissione: () => useLugo.getState().statoMissione,
       tempoResiduo: () => useLugo.getState().tempoResiduo,
+      // per il collaudo del primo incontro e della guardia dei pagamenti:
+      // cosa risulta già fatto, che scheda d'apertura c'è a schermo e quale
+      // avviso sta passando (lo sblocco «Lugo è tua» arriva da lì)
+      missioniFatte: () => [...useLugo.getState().missioniFatte],
+      intro: () => useLugo.getState().intro,
+      avviso: () => useLugo.getState().avviso,
+      // lo stato VERO del segnalino 3D (l'anello con il fascio), non quello
+      // dedotto dallo store: è servito a scovare il marker rimasto acceso su
+      // una tappa morta quando il cancello dell'm00 usciva dal frame prima
+      // del blocco che lo spegne
+      segnalino: () => {
+        const g = marker.current;
+        if (!g) return null;
+        return { visibile: g.visible, x: g.position.x, z: g.position.z };
+      },
       // dove stanno davvero le bacheche, dopo lo spostamento sul primo
       // punto libero: il collaudo controlla che siano raggiungibili
       bacheche: () => postiBacheca(mondo).map((p) => ({ id: p.bacheca.id, x: p.x, z: p.z })),
@@ -166,7 +185,17 @@ export function Missioni() {
     if (s.fase !== 'gioco') return;
 
     if (s.statoMissione === 'attiva' && s.missioneId) {
-      const m = missioneById(s.missioneId)!;
+      const m = missioneById(s.missioneId);
+      // Una dinamica può evaporare dal registro LRU (quaranta aperture di
+      // bacheca bastano): prima qui c'era un `!` e il frame sarebbe
+      // esploso su `.tappe` di undefined. La missione orfana si archivia e
+      // la catena riparte con la pausa normale — brutto, ma mai un crash.
+      if (!m) {
+        s.setMissione(null, 'idle');
+        s.setTempoResiduo(null);
+        attesa.current = PAUSA_CATENA;
+        return;
+      }
       // una missione accettata alla bacheca parte da fuori di qui: il conto
       // alla rovescia va caricato adesso, o resterebbe a zero e la missione
       // fallirebbe al primo fotogramma
@@ -223,7 +252,16 @@ export function Missioni() {
         } else {
           conclusa = true;
           s.setMissione(m.id, 'completata', s.tappa);
-          s.addPunti(m.ricompensa);
+          // ── la guardia del pagamento ──────────────────────────────────
+          // Una missione di STORIA paga una volta sola nella vita del
+          // salvataggio: senza questo controllo, rigiocare un classico
+          // preso dalla bacheca riaccreditava denaro e reputazione ogni
+          // volta — una stampante di soldi involontaria. Le consegne e i
+          // lavori delle attività sono ripetibili per natura e pagano
+          // sempre; la scheda di esito mostra le cifre DAVVERO pagate,
+          // così pannello e portafoglio raccontano la stessa storia.
+          const giaPagata = m.tipo === 'storia' && s.missioniFatte.includes(m.id);
+          if (!giaPagata) s.addPunti(m.ricompensa);
           // le consegne pagano di più chi arriva prima, mancia compresa
           let euro = m.denaro;
           let extra: string | undefined;
@@ -237,7 +275,7 @@ export function Missioni() {
               extra = `MANCIA €${mancia}`;
             }
           }
-          s.addDenaro(euro);
+          if (!giaPagata) s.addDenaro(euro);
           // Solo la storia entra nel salvataggio per id: le consegne sono
           // infinite e riempirebbero localStorage. Ma vanno CONTATE, perché
           // il distintivo del rider chiede otto consegne e prima leggeva
@@ -250,7 +288,12 @@ export function Missioni() {
           if (m.distintivo && !s.distintivi.includes(m.distintivo)) {
             s.setDistintivi([...s.distintivi, m.distintivo]);
           }
-          s.setEsito({ titolo: m.titolo, denaro: euro, rep: m.ricompensa, extra });
+          s.setEsito({
+            titolo: m.titolo,
+            denaro: giaPagata ? 0 : euro,
+            rep: giaPagata ? 0 : m.ricompensa,
+            extra: giaPagata ? undefined : extra,
+          });
           s.setTempoResiduo(null);
           suonaEvento('successo');
           attesa.current = PAUSA_CATENA;
@@ -274,6 +317,36 @@ export function Missioni() {
       // catena: idle → prima missione; completata → prossima; fallita →
       // retry per la storia, consegna nuova per le consegne
       attesa.current -= dt;
+
+      // ── il cancello del primo incontro ────────────────────────────────
+      // Finché l'anziano col pacchetto (m00, PrimoIncontro.tsx) non è
+      // stato ascoltato, la catena NON propone mvp1: partirebbe tre
+      // secondi dopo il via e la scheda parlerebbe sopra al dialogo della
+      // scena d'apertura. Il cancello però ha un PARACADUTE, perché il
+      // gioco non deve mai restare senza missioni per colpa nostra: se il
+      // giocatore ha già detto «Magari dopo», o se ne sta lontano
+      // dall'anziano (>150 m) da più di 90 secondi, la catena riparte
+      // comunque e l'm00 resta lì, riprovabile quando gli va. Un salvataggio
+      // veterano (storia già finita, m00 mai vista perché non esisteva) non
+      // passa di qui: a lui il cancello toglierebbe solo l'invito in bacheca.
+      if (!s.missioniFatte.includes('m00') && !storiaFinita(s.missioniFatte)) {
+        const g = posGiocatore(s.mode);
+        const dAnziano = Math.hypot(g.x - pontePrimoIncontro.x, g.z - pontePrimoIncontro.z);
+        if (dAnziano > 150) lontanoDaAnziano.current += dt;
+        else lontanoDaAnziano.current = 0;
+        if (!pontePrimoIncontro.rifiutato && lontanoDaAnziano.current < 90) {
+          // Il segnalino va spento QUI, prima di uscire: il blocco in fondo
+          // al frame è l'unico che tocca marker.visible, e questo `return`
+          // non lo fa mai raggiungere. Senza lo spegnimento, una consegna
+          // presa in bacheca prima dell'm00 lasciava l'anello acceso per
+          // sempre sul punto della tappa appena chiusa — una bussola che
+          // indica un obiettivo morto. Spegnere equivale a quel blocco: col
+          // cancello chiuso non c'è missione attiva e la storia non è
+          // finita, quindi lì il bersaglio sarebbe comunque null.
+          if (marker.current) marker.current.visible = false;
+          return;
+        }
+      }
       // Finita la storia, le missioni non piovono più dal cielo: si va a
       // prenderle. Il Pavaglione, la Rocca, la stazione e piazza Baracca
       // hanno la loro bacheca, e il segnalino della città ti porta lì.

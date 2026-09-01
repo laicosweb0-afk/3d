@@ -13,6 +13,7 @@ import { Missioni } from './Missioni';
 import { Npcs } from './Npcs';
 import { Maranza } from './Maranza';
 import { Player } from './Player';
+import { PrimoIncontro } from './PrimoIncontro';
 import { Props } from './Props';
 import { Veicoli } from './Veicoli';
 import { Insegne } from './Insegne';
@@ -453,6 +454,10 @@ export function World() {
       {/* dopo <Npcs />, non prima: fumo e fumetti leggono le posizioni dei
           pedoni dello stesso fotogramma invece di rincorrerle di uno */}
       <Maranza />
+      {/* dopo <Npcs /> (guida un pedone di quel mazzo) e PRIMA di
+          <Missioni />: se la missione m00 è stata sfrattata dal registro
+          LRU, il rientro deve avvenire prima che la macchina la cerchi */}
+      <PrimoIncontro />
       <Missioni />
       <HookVerifica />
     </>

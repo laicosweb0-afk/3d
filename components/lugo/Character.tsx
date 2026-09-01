@@ -18,11 +18,12 @@
 //  - il ginocchio si piegava in avanti come quello di un fenicottero:
 //    la gamba si piega verso il tallone, quindi con segno negativo.
 
-import { forwardRef, useMemo, useRef } from 'react';
+import { forwardRef, useMemo, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { RuntimeGioco } from './Player';
 import { runtime } from '@/lib/lugo/runtime';
+import { pontePrimoIncontro } from '@/lib/lugo/missions';
 import { useLugo } from '@/lib/lugo/store';
 import { tessituraStemma } from '@/lib/lugo/marchio';
 import { TINTE_CAPELLI, TINTE_PELLE, tintaDi, type Avatar } from '@/lib/lugo/avatar';
@@ -227,6 +228,7 @@ function Braccio({
   colPelle,
   orologio,
   colpisce = false,
+  porta = false,
 }: {
   z: number;
   fase: number;
@@ -236,15 +238,27 @@ function Braccio({
   colPelle: string;
   orologio: boolean;
   colpisce?: boolean;
+  /** true col pacco della missione fra le mani: le braccia lo reggono. */
+  porta?: boolean;
 }) {
   const spalla = useRef<THREE.Group>(null);
   const gomito = useRef<THREE.Group>(null);
   const manicaCorta = top === 'tshirt';
+  // quanto le braccia sono «in presa» sul pacco (0..1): la posa si MESCOLA
+  // come quella della sella, o al sì dell'anziano le mani scatterebbero in
+  // avanti in un fotogramma solo
+  const presa = useRef(0);
 
-  useFrame(() => {
+  useFrame((_, dtRaw) => {
     if (!spalla.current) return;
+    const dt = Math.min(dtRaw, 0.05);
     const v = Math.min(1, rt.vPersona / 2.3);
     const corsa = Math.min(1, Math.max(0, (rt.vPersona - 2.6) / 2.6));
+    // la presa sul pacco sale e scende morbida, con la coda tagliata come
+    // rt.sella: senza il taglio resterebbe per sempre a 0,997
+    const versoPresa = porta ? 1 : 0;
+    presa.current += (versoPresa - presa.current) * (1 - Math.exp(-8 * dt));
+    if (Math.abs(versoPresa - presa.current) < 0.01) presa.current = versoPresa;
     const p = colpisce ? avanzamentoPugno() : 0;
     if (p > 0) {
       // ── il pugno, in tre tratti ────────────────────────────────────────
@@ -285,12 +299,24 @@ function Braccio({
     // sembrava passare sotto uno che cammina nel vuoto.
     const sella = rt.sella;
     const camminata = Math.sin(rt.persona.fase + fase) * (0.42 + corsa * 0.34) * v;
-    spalla.current.rotation.z = camminata * (1 - sella) + 1.05 * sella;
+    // ── il pacco fra le mani ─────────────────────────────────────────────
+    // Con la consegna in corso le braccia stanno AVANTI a reggere la
+    // scatola: niente pendolo del passo, come le mani sul manubrio. La
+    // posa in sella VINCE sulla presa (il peso lo prende il manubrio, e il
+    // pacco «sparisce» nella finzione come lo zaino sotto il giubbotto):
+    // per questo la presa si pesa con (1 − sella). Il pugno resta sopra a
+    // tutto — il ramo del colpo esce prima di arrivare qui.
+    const inPresa = presa.current * (1 - sella);
+    const spallaBase = camminata * (1 - sella) + 1.05 * sella;
+    spalla.current.rotation.z = spallaBase * (1 - inPresa) + 0.32 * inPresa;
     // in corsa il gomito resta piegato, da vero podista; il braccio si
     // piega all'indietro, quindi negativo
     if (gomito.current) {
       const camminaGomito = -(0.14 + corsa * 1.05) - (1 - v) * 0.06;
-      gomito.current.rotation.z = camminaGomito * (1 - sella) + -0.2 * sella;
+      const gomitoBase = camminaGomito * (1 - sella) + -0.2 * sella;
+      // il gomito della presa si piega in AVANTI (positivo): l'avambraccio
+      // sale orizzontale sotto il fondo della scatola
+      gomito.current.rotation.z = gomitoBase * (1 - inPresa) + 0.78 * inPresa;
     }
   });
 
@@ -341,6 +367,12 @@ export const Character = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function 
   const corpo = useRef<THREE.Group>(null);
   const testa = useRef<THREE.Group>(null);
   const avatar = useLugo((s) => s.avatar) as Avatar;
+  // Il pacco del primo incontro. Il ponte di missions.ts cambia fuori da
+  // React, quindi lo si fotografa in uno stato locale dentro il frame:
+  // cambia due volte a missione (al sì e all'arrivo), e ogni cambio
+  // ricuoce i pezzi del busto — il costo giusto per ZERO chiamate di
+  // disegno in più, lo stesso patto dello zaino qui sotto.
+  const [conPacco, setConPacco] = useState(false);
 
   const colPelle = TINTE_PELLE[avatar.pelle % TINTE_PELLE.length];
   const colCapelli = TINTE_CAPELLI[avatar.capelliTinta % TINTE_CAPELLI.length];
@@ -406,8 +438,21 @@ export const Character = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function 
     if (avatar.accessorio === 'catenina') {
       out.push({ p: [0.11, Q.collo - 0.06, 0], s: [0.05, 0.09, 0.14], col: '#E8C86A' });
     }
+    // ── il pacco della missione «Sei nuovo?» ────────────────────────────
+    // Sta nei pezzi FUSI del busto (opzione A, come lo zaino) e non in un
+    // Blocco a sé: un Blocco sarebbe una chiamata di disegno in più sempre
+    // a schermo, per un oggetto che esiste novanta secondi a partita. Il
+    // busto ruota attorno alla vita insieme alle braccia, quindi scatola e
+    // mani restano solidali anche correndo col pacco. La quota (1,06)
+    // combacia con la posa di presa delle braccia (spalla 0,32 + gomito
+    // 0,78 in Braccio): chi ritocca una delle due deve ritoccare l'altra.
+    if (conPacco) {
+      out.push({ p: [0.34, 1.06, 0], s: [0.3, 0.24, 0.42], col: '#B8925A' });
+      out.push({ p: [0.34, 1.185, 0], s: [0.31, 0.014, 0.09], col: '#8A6B3F' });
+      out.push({ p: [0.495, 1.08, 0.1], s: [0.006, 0.08, 0.12], col: '#F2EFE7' });
+    }
     return out;
-  }, [avatar.top, avatar.accessorio, colTop, colPant]);
+  }, [avatar.top, avatar.accessorio, colTop, colPant, conPacco]);
 
   // lo stemma LC sulla schiena della felpa, come nella key art
   const stemma = useMemo(() => {
@@ -423,6 +468,12 @@ export const Character = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function 
     const v = Math.min(1, rt.vPersona / 2.3);
     const corsa = Math.min(1, Math.max(0, (rt.vPersona - 2.6) / 2.6));
     const t = clock.elapsedTime;
+
+    // la fotografia del ponte: un setState solo quando il pacco cambia di
+    // mano, non un aggiornamento a fotogramma
+    if (pontePrimoIncontro.paccoGiocatore !== conPacco) {
+      setConPacco(pontePrimoIncontro.paccoGiocatore);
+    }
 
     // in sella non si rimbalza a ogni passo e non si sposta il peso da un
     // piede all'altro: si pende con la bici, tutti e due attorno alla
@@ -486,8 +537,8 @@ export const Character = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function 
               </mesh>
             )}
 
-            <Braccio z={0.29} fase={Math.PI} rt={rt} top={avatar.top} colTop={colTop} colPelle={colPelle} orologio={avatar.accessorio === 'orologio'} />
-            <Braccio z={-0.29} fase={0} rt={rt} top={avatar.top} colTop={colTop} colPelle={colPelle} orologio={false} colpisce />
+            <Braccio z={0.29} fase={Math.PI} rt={rt} top={avatar.top} colTop={colTop} colPelle={colPelle} orologio={avatar.accessorio === 'orologio'} porta={conPacco} />
+            <Braccio z={-0.29} fase={0} rt={rt} top={avatar.top} colTop={colTop} colPelle={colPelle} orologio={false} colpisce porta={conPacco} />
 
             {/* collo e testa */}
             <Blocco p={[0, Q.collo + 0.02, 0]} s={[0.115, 0.09, 0.125]} col={colPelle} ombra={false} />

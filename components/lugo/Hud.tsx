@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { useLugo } from '@/lib/lugo/store';
-import { missioneById } from '@/lib/lugo/missions';
+import { missioneById, pontePrimoIncontro } from '@/lib/lugo/missions';
 import { setAudioAttivo, suonaEvento } from '@/lib/lugo/audio';
 import { orologio } from '@/lib/lugo/tempo';
 import { Minimap } from './Minimap';
@@ -189,6 +189,17 @@ export function Hud() {
   // raccontavano due cose diverse: a schermo «grazie», e in strada il
   // maranza che continuava a insistere.
   const rispondi = (id: string) => {
+    // I dialoghi del primo incontro (m00-*): stessa disciplina del
+    // maranza — qui si scrive solo la scelta sul ponte di missions.ts e
+    // si chiude il pannello; conseguenze (pacco, missione, fumetti) le
+    // applica PrimoIncontro nel ciclo di gioco, che è l'unico padrone
+    // della scena. Prima di questo ramo qualunque id non-sigaretta faceva
+    // solo setDialogo(null), e il «Volentieri» sarebbe andato perduto.
+    if (dialogo?.id.startsWith('m00-')) {
+      pontePrimoIncontro.scelta = id;
+      setDialogo(null);
+      return;
+    }
     if (dialogo?.id === 'sigaretta' || dialogo?.id === 'sigaretta-insiste') {
       if (id === 'pugno') {
         // riusa il ponte del pulsante ✊ che esiste già, invece di

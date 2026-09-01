@@ -14,7 +14,7 @@
 //
 // ── REGOLE DI SCRITTURA DELLE BATTUTE, non negoziabili ────────────────────
 // Nessuna parolaccia, nessun insulto, nessuna minaccia. Nessun riferimento a
-// etnia, provenienza, religione o aspetto fisico: le 48 battute qui sotto
+// etnia, provenienza, religione o aspetto fisico: le battute qui sotto
 // sono un repertorio UNICO, valido per tutti i maranza allo stesso modo, e
 // nessuna riga di questo file legge mai n.pelle. Il maranza è un ragazzo che
 // ti chiede una sigaretta con insistenza e poi si arrende: non è un
@@ -40,7 +40,8 @@ export type MomentoFrase =
   | 'pugno'
   | 'fuga'
   | 'gruppo'
-  | 'ostacolo';
+  | 'ostacolo'
+  | 'missione';
 
 /**
  * Le battute, in ordine: l'indice È la cella dell'atlante disegnato da
@@ -105,6 +106,16 @@ export const FRASI_ATLANTE: readonly string[] = [
   'Ciò, che maniere...',
   'Permesso... anzi, passa va’.',
   'Ohi, un po’ d’occhio!',
+  // MISSIONE, il primo incontro — 48..53: le battute dell'anziano col
+  // pacchetto (components/lugo/PrimoIncontro.tsx). L'ORDINE dentro il
+  // gruppo è un contratto: chi le mette in bocca all'NPC le indirizza per
+  // scostamento dall'inizio del gruppo, quindi anche qui solo append.
+  'Ohi! Scendi un attimo!',
+  'Ohi! Sì, dico a te!',
+  'Grazie! Mi salvi la giornata.',
+  'Va bene, va bene: tanto sto qui.',
+  'Mi raccomando, che è fragile!',
+  'Ciò, che gioventù gentile.',
 ];
 
 /** [primo, ultimo+1] dentro FRASI_ATLANTE. */
@@ -116,6 +127,7 @@ export const GRUPPI: Record<MomentoFrase, readonly [number, number]> = {
   fuga: [30, 37],
   gruppo: [37, 43],
   ostacolo: [43, 48],
+  missione: [48, 54],
 };
 
 /**
@@ -270,7 +282,7 @@ function casoFumo(): number {
 }
 
 const ultima: Record<MomentoFrase, number> = {
-  aggancio: -1, insistenza: -1, si: -1, pugno: -1, fuga: -1, gruppo: -1, ostacolo: -1,
+  aggancio: -1, insistenza: -1, si: -1, pugno: -1, fuga: -1, gruppo: -1, ostacolo: -1, missione: -1,
 };
 
 /**

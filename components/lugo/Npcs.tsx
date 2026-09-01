@@ -38,6 +38,7 @@ import {
   type ContestoIncontro,
 } from '@/lib/lugo/maranza';
 import { useLugo } from '@/lib/lugo/store';
+import { pontePrimoIncontro } from '@/lib/lugo/missions';
 import { suonaEvento, parla } from '@/lib/lugo/audio';
 import { QA } from '@/lib/lugo/qa';
 
@@ -211,6 +212,7 @@ export function Npcs() {
           stato: n.stato,
           v: n.v,
           monopattino: n.monopattino,
+          fisso: n.fisso,
         })),
       // il pannello del dialogo com'è davvero nello store: il collaudo
       // confronta il suo `chi` con quello che si vede in strada
@@ -223,7 +225,7 @@ export function Npcs() {
           .map((n) => FRASI_ATLANTE[n.frase]);
         return { vivi: testi.length, testi };
       },
-      frasi: (g: 'aggancio' | 'insistenza' | 'si' | 'pugno' | 'fuga' | 'gruppo' | 'ostacolo') => frasiDi(g),
+      frasi: (g: 'aggancio' | 'insistenza' | 'si' | 'pugno' | 'fuga' | 'gruppo' | 'ostacolo' | 'missione') => frasiDi(g),
       // un pedone qualunque, per provare che picchiare chi non ti ha fatto
       // niente costa reputazione
       npcVicino: () => {
@@ -232,7 +234,10 @@ export function Npcs() {
         let scelto: Npc | null = null;
         let dMin = Infinity;
         npcs.forEach((n) => {
-          if (n.tipo === 'maranza' || n.tipo === 'carabiniere') return;
+          // il fisso del primo incontro non fa da bersaglio di prova: un
+          // pugno del collaudo in mezzo alla sua scena la manderebbe di
+          // traverso proprio mentre un'altra fase la sta misurando
+          if (n.tipo === 'maranza' || n.tipo === 'carabiniere' || n.fisso) return;
           const d = Math.hypot(n.x - r.persona.x, n.z - r.persona.z);
           if (d < dMin) {
             dMin = d;
@@ -269,7 +274,9 @@ export function Npcs() {
                 : '#3E3B36';
       p.gambaD.setColorAt(i, c.set(gambe));
       p.gambaS.setColorAt(i, c.set(gambe));
-      p.marsupio.setColorAt(i, c.set('#101014'));
+      // lo slot del marsupio è anche il PACCHETTO dell'anziano del primo
+      // incontro: per lui il colore è cartone, non nylon nero
+      p.marsupio.setColorAt(i, c.set(n.fisso ? '#B8925A' : '#101014'));
       p.bastone.setColorAt(i, c.set('#6E5537'));
       p.bandaD.setColorAt(i, c.set(ROSSO_BANDA));
       p.bandaS.setColorAt(i, c.set(ROSSO_BANDA));
@@ -396,9 +403,18 @@ export function Npcs() {
         const tiro = n.tiro > -FUMO.durataTiro && n.tiro < 0 ? Math.sin((-n.tiro / FUMO.durataTiro) * Math.PI) : 0;
         oscD = tiro > 0 ? 0.35 + (1.45 - 0.35) * tiro : 0.35 + oscB * 0.15;
       }
-      const oscS = inMono
+      let oscS = inMono
         ? MONOPATTINO.braccioAlManubrio + Math.sin(n.fase * 0.5 + 1.9) * 0.04
         : -oscB * (n.tipo === 'anziano' ? 0.4 : 1);
+      // L'anziano del primo incontro regge il pacchetto con tutte e due le
+      // mani: braccia avanti, ferme, finché il pacco è suo. Il flag arriva
+      // dal ponte di missions.ts, che è l'unica verità sul pacco — se qui
+      // si guardasse un altro stato, mani e scatola potrebbero separarsi.
+      const reggePacco = n.fisso && pontePrimoIncontro.paccoAnziano;
+      if (reggePacco) {
+        oscD = 0.8;
+        oscS = 0.8;
+      }
 
       setParte(p.torso, i, base, 0, 1.06, 0, curva, rollio, 0, 0, 0, 1, n.tipo === 'anziano' ? 0.92 : 1, 1);
       setParte(p.testa, i, base, avantiTesta, n.tipo === 'anziano' ? 1.34 : 1.42, 0, 0, 0, 0, 0, 0);
@@ -435,8 +451,14 @@ export function Npcs() {
       setParte(p.gambaS, i, base, inMono ? -0.06 : 0, 0.85, -0.09, 0, inMono ? -0.05 : -oscG, 0, -0.38, 0);
 
       if (n.tipo === 'maranza') setParte(p.marsupio, i, base, 0.17, 1.0, 0, 0, -0.35, 0, 0, 0);
-      else p.marsupio.setMatrixAt(i, ZERO);
-      if (n.tipo === 'anziano') setParte(p.bastone, i, base, 0.15, 1.05, -0.26, 0.08, -oscB * 0.4 - 0.12, 0, -0.4, 0);
+      else if (reggePacco) {
+        // il pacchetto È l'istanza del marsupio, riscalata: l'anziano e i
+        // maranza non condividono mai lo stesso indice, quindi lo slot è
+        // suo e il pacco costa ZERO chiamate di disegno in più
+        setParte(p.marsupio, i, base, 0.3, 1.0, 0, 0, 0, 0, 0, 0, 2.0, 2.0, 1.35);
+      } else p.marsupio.setMatrixAt(i, ZERO);
+      // col pacco in mano niente bastone: le mani sono due, e sono occupate
+      if (n.tipo === 'anziano' && !reggePacco) setParte(p.bastone, i, base, 0.15, 1.05, -0.26, 0.08, -oscB * 0.4 - 0.12, 0, -0.4, 0);
       else p.bastone.setMatrixAt(i, ZERO);
       if (inSella) {
         setParte(p.biciTelaio, i, baseTerra, 0, 0.62, 0, 0, 0.15, 0, 0, 0);
