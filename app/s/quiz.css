@@ -1,6 +1,7 @@
 /* The Fragrance Experience — stili della route /s.
- * Direzione: editoriale, chiara, ariosa. Sans dominante, serif come
- * dettaglio, rosa solo come accento. Il vuoto è parte del design. */
+ * Direzione premium/Apple: superfici bianche a raggio generoso su fondo
+ * neutro, CTA a pillola, tipografia medium con tracking negativo,
+ * hairline come unico ornamento. Il vuoto è parte del design. */
 
 body:has(.fx-stage) {
   background: var(--fx-bg);
@@ -10,7 +11,7 @@ body:has(.fx-stage) {
   min-height: 100dvh;
   background: var(--fx-bg);
   color: var(--fx-ink);
-  font-family: var(--fx-font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI',
+  font-family: var(--fx-font-sans), -apple-system, BlinkMacSystemFont, 'SF Pro Display',
     'Helvetica Neue', sans-serif;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
@@ -36,7 +37,7 @@ body:has(.fx-stage) {
 @keyframes fx-up {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -111,19 +112,19 @@ body:has(.fx-stage) {
 
 .fx-h1 {
   font-size: var(--fx-text-xl);
-  font-weight: 300;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: var(--fx-tracking-tight);
   margin: 0;
 }
 .fx-h1--display {
   font-size: var(--fx-text-2xl);
-  line-height: 1.12;
+  line-height: 1.08;
 }
 
 .fx-lede {
   font-size: var(--fx-text-base);
-  line-height: 1.65;
+  line-height: 1.5;
   color: var(--fx-muted);
   margin: var(--fx-space-3) 0 0;
   white-space: pre-line;
@@ -137,50 +138,44 @@ body:has(.fx-stage) {
   margin: 0;
 }
 
-/* ---- CTA ---- */
+/* ---- CTA: pillola piena, sentence case ---- */
 
 .fx-cta {
   appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75em;
   width: 100%;
-  min-height: 58px;
+  min-height: 54px;
   padding: 0 2rem;
-  border: 1px solid var(--fx-ink);
-  border-radius: var(--fx-radius);
-  background: transparent;
-  color: var(--fx-ink);
+  border: none;
+  border-radius: var(--fx-radius-pill);
+  background: var(--fx-ink);
+  color: #fff;
   font-family: inherit;
-  font-size: 0.75rem;
+  font-size: 1rem;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: var(--fx-tracking-caps);
+  letter-spacing: -0.01em;
   cursor: pointer;
   transition: background-color var(--fx-dur-fast) var(--fx-ease),
-    color var(--fx-dur-fast) var(--fx-ease), opacity var(--fx-dur-fast) var(--fx-ease);
+    transform var(--fx-dur-fast) var(--fx-ease), opacity var(--fx-dur-fast) var(--fx-ease);
 }
 .fx-cta:hover {
-  background: var(--fx-ink);
-  color: var(--fx-bg);
+  background: var(--fx-ink-soft);
 }
 .fx-cta:active {
-  transform: scale(0.99);
+  transform: scale(0.975);
 }
 .fx-cta:disabled {
-  opacity: 0.3;
+  opacity: 0.35;
   cursor: default;
-  background: transparent;
-  color: var(--fx-ink);
-}
-.fx-cta span {
-  font-weight: 300;
+  background: var(--fx-ink);
+  transform: none;
 }
 @media (min-width: 640px) {
   .fx-cta {
     width: auto;
-    min-width: 280px;
+    min-width: 260px;
   }
 }
 
@@ -188,27 +183,32 @@ body:has(.fx-stage) {
   appearance: none;
   border: none;
   background: none;
-  padding: 0.5rem;
+  padding: 0.625rem;
   font-family: inherit;
-  font-size: var(--fx-text-sm);
+  font-size: 0.9375rem;
   color: var(--fx-muted);
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  text-decoration-color: var(--fx-line);
   cursor: pointer;
+  transition: color var(--fx-dur-fast) var(--fx-ease);
+}
+.fx-ghost:hover {
+  color: var(--fx-ink);
 }
 
-/* ---- fialetta ---- */
+/* ---- fialetta: oggetto, non icona ---- */
 
 .fx-vial {
   margin: var(--fx-space-5) 0 0;
   display: flex;
   justify-content: center;
   color: var(--fx-ink);
+  filter: drop-shadow(0 18px 28px rgba(29, 29, 31, 0.1));
 }
 .fx-vial svg {
   display: block;
   overflow: visible;
+}
+.fx-vial .fx-vial-body {
+  fill: var(--fx-surface);
 }
 .fx-vial .fx-vial-mark {
   font-family: var(--fx-font-serif), Georgia, serif;
@@ -227,65 +227,73 @@ body:has(.fx-stage) {
 }
 .fx-bar {
   width: 100%;
-  max-width: 220px;
-  height: 1px;
+  max-width: 200px;
+  height: 2px;
+  border-radius: 2px;
   background: var(--fx-line);
   margin-top: 0.875rem;
+  overflow: hidden;
 }
 .fx-bar i {
   display: block;
-  height: 1px;
+  height: 100%;
+  border-radius: 2px;
   background: var(--fx-magenta);
   transition: width var(--fx-dur) var(--fx-ease);
 }
 
-/* ---- opzioni: scelte editoriali, non card ---- */
+/* ---- opzioni: superfici bianche, quiete ---- */
 
 .fx-opts {
   width: 100%;
   margin-top: var(--fx-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
 }
 .fx-opt {
   appearance: none;
   display: block;
   width: 100%;
-  padding: 1.35rem 0.5rem;
-  border: none;
-  border-top: 1px solid var(--fx-line);
-  background: transparent;
+  min-height: 60px;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--fx-line);
+  border-radius: var(--fx-radius);
+  background: var(--fx-surface);
   color: var(--fx-ink);
   font-family: inherit;
-  font-size: 1.1875rem;
-  font-weight: 300;
-  letter-spacing: 0.01em;
+  font-size: var(--fx-text-base);
+  font-weight: 400;
   cursor: pointer;
-  transition: background-color var(--fx-dur-fast) var(--fx-ease),
-    color var(--fx-dur-fast) var(--fx-ease);
-}
-.fx-opt:last-child {
-  border-bottom: 1px solid var(--fx-line);
+  transition: border-color var(--fx-dur-fast) var(--fx-ease),
+    box-shadow var(--fx-dur-fast) var(--fx-ease), transform var(--fx-dur-fast) var(--fx-ease);
 }
 .fx-opt:hover {
-  background: var(--fx-surface);
+  border-color: #c9c7c1;
+}
+.fx-opt:active {
+  transform: scale(0.985);
 }
 .fx-opt[data-active='true'] {
-  color: var(--fx-magenta-deep);
+  border-color: var(--fx-ink);
+  box-shadow: inset 0 0 0 1px var(--fx-ink);
 }
 
-/* ---- premio ---- */
+/* ---- premio: pannello quieto ---- */
 
 .fx-reward {
   width: 100%;
   margin-top: var(--fx-space-4);
-  padding: var(--fx-space-4) 0;
-  border-top: 1px solid var(--fx-line);
-  border-bottom: 1px solid var(--fx-line);
+  padding: var(--fx-space-4) var(--fx-space-3);
+  background: var(--fx-surface);
+  border: 1px solid var(--fx-line);
+  border-radius: var(--fx-radius-lg);
 }
 .fx-reward-amount {
-  font-size: clamp(3rem, 11vw, 4.25rem);
-  font-weight: 300;
+  font-size: clamp(3.25rem, 12vw, 4.25rem);
+  font-weight: 500;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   margin: 0;
 }
 .fx-reward-label {
@@ -302,20 +310,24 @@ body:has(.fx-stage) {
   margin: 0.875rem 0 0;
 }
 
-/* ---- raccomandazioni ---- */
+/* ---- raccomandazioni: lista raggruppata ---- */
 
 .fx-recs {
   width: 100%;
   margin: var(--fx-space-4) 0 0;
   padding: 0;
   list-style: none;
+  background: var(--fx-surface);
+  border: 1px solid var(--fx-line);
+  border-radius: var(--fx-radius-lg);
+  text-align: left;
+  overflow: hidden;
 }
 .fx-rec {
-  padding: 1.4rem 0;
-  border-top: 1px solid var(--fx-line);
+  padding: 1.25rem 1.5rem;
 }
-.fx-rec:last-child {
-  border-bottom: 1px solid var(--fx-line);
+.fx-rec + .fx-rec {
+  border-top: 1px solid var(--fx-line);
 }
 .fx-rec-name {
   font-family: var(--fx-font-serif), Georgia, serif;
@@ -329,27 +341,28 @@ body:has(.fx-stage) {
   text-transform: uppercase;
   letter-spacing: var(--fx-tracking-caps);
   color: var(--fx-muted);
-  margin: 0.4rem 0 0;
+  margin: 0.375rem 0 0;
 }
 .fx-rec-notes {
   font-size: var(--fx-text-sm);
   color: var(--fx-muted);
-  margin: 0.4rem 0 0;
+  margin: 0.375rem 0 0;
 }
 
 /* ---- campi ---- */
 
 .fx-field {
   width: 100%;
-  height: 58px;
+  height: 54px;
   border: 1px solid var(--fx-line);
   border-radius: var(--fx-radius);
   background: var(--fx-surface);
   color: var(--fx-ink);
   font-family: inherit;
-  font-size: 1rem;
+  font-size: var(--fx-text-base);
   text-align: center;
-  padding: 0 1rem;
+  padding: 0 1.25rem;
+  transition: border-color var(--fx-dur-fast) var(--fx-ease);
 }
 .fx-field::placeholder {
   color: var(--fx-muted);
@@ -371,10 +384,13 @@ body:has(.fx-stage) {
 }
 .fx-consent input {
   margin-top: 3px;
-  accent-color: var(--fx-magenta-deep);
+  accent-color: var(--fx-ink);
 }
 .fx-consent a {
   color: var(--fx-magenta-deep);
+  text-decoration: none;
+}
+.fx-consent a:hover {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -400,8 +416,8 @@ body:has(.fx-stage) {
 
 .fx-claim {
   font-size: clamp(1.75rem, 7vw, 2.5rem);
-  font-weight: 300;
-  letter-spacing: 0.06em;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   margin: 0;
 }
 .fx-claim-sub {
@@ -458,6 +474,7 @@ body:has(.fx-stage) {
   cursor: pointer;
   opacity: 0.5;
   z-index: 20;
+  transition: opacity var(--fx-dur-fast) var(--fx-ease);
 }
 .fx-demo-toggle:hover {
   opacity: 1;
@@ -473,10 +490,12 @@ body:has(.fx-stage) {
   max-height: 62dvh;
   display: flex;
   flex-direction: column;
-  background: var(--fx-surface);
+  background: rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  backdrop-filter: blur(20px) saturate(1.6);
   border: 1px solid var(--fx-line);
-  border-radius: 4px;
-  box-shadow: 0 16px 48px rgba(20, 18, 22, 0.1);
+  border-radius: var(--fx-radius-lg);
+  box-shadow: 0 24px 60px rgba(29, 29, 31, 0.14);
   padding: 1rem;
   z-index: 19;
   color: var(--fx-ink);
@@ -509,30 +528,30 @@ body:has(.fx-stage) {
   appearance: none;
   border: 1px solid var(--fx-line);
   background: none;
-  border-radius: var(--fx-radius);
-  padding: 6px 10px;
+  border-radius: 999px;
+  padding: 6px 12px;
   font-family: inherit;
   font-size: 12px;
   color: var(--fx-ink);
   cursor: pointer;
 }
 .fx-seg button[data-on='true'] {
-  border-color: var(--fx-magenta);
-  color: var(--fx-magenta-deep);
+  border-color: var(--fx-ink);
+  background: var(--fx-ink);
+  color: #fff;
 }
 .fx-demo-restart {
   appearance: none;
   border: 1px solid var(--fx-line);
   background: none;
-  border-radius: var(--fx-radius);
-  padding: 8px 12px;
+  border-radius: 999px;
+  padding: 8px 14px;
   font-family: inherit;
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-size: 12px;
   color: var(--fx-magenta-deep);
   cursor: pointer;
   margin: 0.25rem 0 0.75rem;
+  align-self: flex-start;
 }
 .fx-events {
   border-top: 1px solid var(--fx-line);

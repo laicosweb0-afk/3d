@@ -58,10 +58,10 @@ function Vial() {
   return (
     <figure className="fx-vial" aria-hidden="true">
       <svg width="90" height="180" viewBox="0 0 90 180" fill="none">
-        <g stroke="currentColor" strokeWidth="1.5">
-          <rect x="33" y="2" width="24" height="20" rx="3" />
+        <g stroke="currentColor" strokeWidth="1.25">
+          <rect className="fx-vial-body" x="33" y="2" width="24" height="20" rx="3" />
           <path d="M36 22v8M54 22v8" />
-          <rect x="26" y="30" width="38" height="146" rx="17" />
+          <rect className="fx-vial-body" x="26" y="30" width="38" height="146" rx="17" />
         </g>
         <text className="fx-vial-mark" x="45" y="112" textAnchor="middle">
           ?
@@ -82,7 +82,7 @@ function Cta({
 }) {
   return (
     <button className="fx-cta" onClick={onClick} disabled={disabled}>
-      {children} <span>→</span>
+      {children}
     </button>
   );
 }
