@@ -1,0 +1,10 @@
+/* The Fragrance Experience — palette (BRIEF §3, valori esatti, non toccare) */
+:root {
+  --fx-ink: #0f0e12; /* fondo scuro, testo principale su chiaro */
+  --fx-magenta: #e966b5; /* colore del logo — accenti, stati attivi */
+  --fx-magenta-deep: #bd3a66; /* testi di accento, bordi, titoli secondari */
+  --fx-ivory: #f3ece0; /* fondo chiaro caldo */
+  --fx-ivory-soft: #faf6ef; /* superfici, card su fondo chiaro */
+  --fx-line: #e3d8cc; /* bordi e separatori */
+  --fx-muted: #8a7f6f; /* testo secondario */
+}
