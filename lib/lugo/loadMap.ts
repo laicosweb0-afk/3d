@@ -7,7 +7,7 @@
 
 import { use } from 'react';
 import { asset } from '@/lib/asset';
-import { corridoiVarco, spezzaConVarchi } from './gates';
+import { corridoiVarco, filePilastriCorte, segmentiPilastro, spezzaConVarchi } from './gates';
 import { caricaSchedeAttivita } from './attivita';
 import type { LugoMap, ClasseStrada, PoiMap, TipoArredo } from './types';
 
@@ -134,16 +134,21 @@ function colliderDa(
   }
   // segmenti dal perimetro esterno E dai bordi dei cortili: dentro la corte
   // si cammina, contro i muri (anche interni) si sbatte. Il Pavaglione ha i
-  // varchi veri al centro dei lati: lì il muro si apre lungo un CORRIDOIO
-  // che va da fuori la facciata fino a dentro la corte. Il vecchio criterio
-  // («salta il segmento se il suo punto medio è vicino al varco») buttava
-  // via un lato intero di 110 m — si passava attraverso la facciata — e non
-  // apriva mai il muro della corte, che sta a 15-24 m dai varchi: sotto la
-  // loggia si entrava, ma nella corte no.
+  // varchi veri al centro dei lati: lì la facciata si apre lungo un
+  // CORRIDOIO che va da fuori fino a dentro la corte. L'anello della corte,
+  // invece, di muro non ne ha PROPRIO: il loggiato è disegnato aperto fra i
+  // pilastri su tutte le arcate, e la versione precedente — muro continuo
+  // con quattro tagli — faceva sbattere il giocatore contro un vetro
+  // invisibile sotto ogni arco che vedeva spalancato. Ora il collider dice
+  // la stessa cosa del disegno: la facciata piena resta piena (le arcate
+  // esterne sono CIECHE, con le vetrine), i pilastri sono solidi uno per
+  // uno, e fra pilastro e pilastro si passa.
   const corridoi = b.landmark === 'pavaglione' ? corridoiVarco(fp, fori[0] ?? null) : null;
-  const anelli = [fp, ...fori];
+  // la corte del Pavaglione è ad arcata aperta: niente muro al suo posto
+  const anelloAperto = corridoi && fori.length > 0 ? fori[0] : null;
   const segArr: number[] = [];
-  for (const a of anelli) {
+  for (const a of [fp, ...fori]) {
+    if (a === anelloAperto) continue;
     const n = a.length / 2;
     for (let i = 0; i < n; i++) {
       const j = (i + 1) % n;
@@ -161,6 +166,13 @@ function colliderDa(
         continue;
       }
       segArr.push(ax, az, bx, bz);
+    }
+  }
+  if (corridoi && anelloAperto) {
+    // gli STESSI pilastri che Landmarks disegna, quadrato per quadrato
+    for (const fila of filePilastriCorte(fp, anelloAperto, corridoi)) {
+      for (const p of fila.fronte) if (p) segmentiPilastro(p, segArr);
+      for (const p of fila.arretrata) if (p) segmentiPilastro(p, segArr);
     }
   }
   const segs = new Float32Array(segArr);

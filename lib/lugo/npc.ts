@@ -86,9 +86,29 @@ export interface Npc {
   manoX: number;
   manoY: number;
   manoZ: number;
+  /**
+   * true per il pedone di scena guidato da un sistema esterno (l'anziano
+   * del primo incontro, components/lugo/PrimoIncontro.tsx). Un NPC fisso
+   * NON vagabonda, non balza davanti ai veicoli, non cede il passo e non
+   * viene mai riciclato da scendiEScappa: se il caso potesse spostarlo o
+   * portarselo via, il giocatore nuovo troverebbe lo spiazzo vuoto proprio
+   * nella scena pensata per accoglierlo. Gli restano la fisica a cerchio e
+   * gli stati dell'incontro ('avvicina'/'chiede'), che sono il modo in cui
+   * chi lo guida lo fa camminare.
+   */
+  fisso: boolean;
 }
 
 export const RAGGIO_NPC = 0.3;
+
+/**
+ * Dove aspetta l'anziano del primo incontro: lo spiazzo del parcheggio
+ * dietro la Rocca, a sette metri da dove si scende dall'auto allo spawn, in
+ * inquadratura dal primo fotogramma. È una POSIZIONE FISSA validata con la
+ * fisica in creaNpcs — niente puntoStradaCasuale: la prima scena del gioco
+ * deve essere identica per tutti, non un'estrazione.
+ */
+export const ANCORA_PRIMO_INCONTRO = { x: 70.6, z: -51.7 } as const;
 
 /**
  * Le andature dei tre stati dell'incontro. Stanno qui e non in maranza.ts
@@ -394,6 +414,7 @@ export function creaNpcs(mondo: MondoLugo, quanti: number): Npc[] {
       manoX: 0,
       manoY: 0,
       manoZ: 0,
+      fisso: false,
     };
     const [tx, tz] = puntoStradaCasuale(mondo, x, z, 120, seme);
     npc.targetX = tx;
@@ -459,6 +480,58 @@ export function creaNpcs(mondo: MondoLugo, quanti: number): Npc[] {
     const [ax, az] = ancore[Math.floor(rand(seme) * ancore.length)];
     const c = spawn('ciclista', ax, az, 260);
     c.stato = 'cammina'; // in bici non ci si ferma a chiacchierare
+  }
+
+  // ── l'anziano del primo incontro ──────────────────────────────────────
+  // Nasce PRIMA del riempimento degli anziani, così il totale resta dentro
+  // `quanti` e nessuna matrice scrive oltre la capienza degli InstancedMesh.
+  // Non pesca dal LCG condiviso: i suoi tratti sono fissi apposta, e così
+  // non sposta di un'estrazione la sequenza di tutti i pedoni dopo di lui.
+  // La posizione è l'ancora validata con la fisica: se un domani il
+  // parcheggio si riempisse di collider, la spinta lo mette nel punto
+  // libero più vicino invece di lasciarlo murato in un'auto in sosta.
+  {
+    let fx: number = ANCORA_PRIMO_INCONTRO.x;
+    let fz: number = ANCORA_PRIMO_INCONTRO.z;
+    if (!fisica.cerchioLibero(fx, fz, RAGGIO_NPC) && fisica.risolviCerchio(fx, fz, RAGGIO_NPC, fuori)) {
+      fx = fuori.x;
+      fz = fuori.z;
+    }
+    npcs.push({
+      tipo: 'anziano',
+      x: fx,
+      z: fz,
+      // guarda verso il punto in cui si scende dall'auto allo spawn
+      yaw: 0.68,
+      // arzillo: più svelto degli altri anziani (0,6–0,8), sotto la
+      // camminata del giocatore (2,3) — ti raggiunge, non ti insegue
+      passo: 1.25,
+      fase: 0,
+      stato: 'fermo',
+      timer: 5,
+      targetX: fx,
+      targetZ: fz,
+      variante: 1,
+      bx: 0,
+      bz: 0,
+      v: 0,
+      fermoDa: 0,
+      pelle: 3,
+      cappello: 2,
+      senzaCappello: false,
+      fuma: false,
+      monopattino: false,
+      tiro: 1e9,
+      fumoAcc: 0,
+      frase: -1,
+      fraseDa: 0,
+      fraseFino: 0,
+      chiesto: -1e9,
+      manoX: 0,
+      manoY: 0,
+      manoZ: 0,
+      fisso: true,
+    });
   }
 
   // anziani: sparsi, lenti
@@ -562,7 +635,10 @@ export function stepNpcs(
     // ma l'auto paga: la velocità crolla e l'urto arriva alla camera. Il
     // controllo gira anche su chi è GIÀ in balzo, altrimenti l'allarme dei
     // 6,5 m «consumerebbe» il contatto e la frenata non partirebbe mai.
-    if (inAuto) {
+    // L'NPC fisso del primo incontro è escluso da contatto, cedere il passo
+    // e balzo (i tre blocchi qui sotto): la sua scena la conduce
+    // PrimoIncontro.tsx, e un balzo lo strapperebbe via dal dialogo.
+    if (inAuto && !n.fisso) {
       const dxA = n.x - rt.auto.x;
       const dzA = n.z - rt.auto.z;
       if (Math.abs(dxA) < 3.4 && Math.abs(dzA) < 3.4) {
@@ -607,6 +683,7 @@ export function stepNpcs(
     if (
       aPiedi &&
       cede === null &&
+      !n.fisso &&
       (n.stato === 'cammina' || n.stato === 'fermo' || n.stato === 'ritirata')
     ) {
       const dxP = n.x - rt.persona.x;
@@ -626,7 +703,7 @@ export function stepNpcs(
     }
 
     // un veicolo arriva addosso → balzo laterale
-    if (n.stato !== 'balzo') {
+    if (n.stato !== 'balzo' && !n.fisso) {
       for (const v of veicoli) {
         const dx = n.x - v.x;
         const dz = n.z - v.z;
@@ -689,8 +766,14 @@ export function stepNpcs(
       if (d > 0.05) {
         // in monopattino ti si affianca rotolando alla SUA andatura, che è
         // già sopra quella dell'aggancio a piedi: rallentarlo a 3,1 sarebbe
-        // un mezzo elettrico che frena per chiederti una sigaretta
-        const passo = n.monopattino ? Math.max(PASSO_INCONTRO.avvicina, n.passo) : PASSO_INCONTRO.avvicina;
+        // un mezzo elettrico che frena per chiederti una sigaretta.
+        // L'anziano fisso invece a 3,1 m/s sembrerebbe uno scattista: viene
+        // incontro a 1,8 — svelto, ma sotto la camminata del giocatore.
+        const passo = n.fisso
+          ? Math.max(1.8, n.passo)
+          : n.monopattino
+            ? Math.max(PASSO_INCONTRO.avvicina, n.passo)
+            : PASSO_INCONTRO.avvicina;
         vx = (dx / d) * passo;
         vz = (dz / d) * passo;
       }
@@ -734,7 +817,13 @@ export function stepNpcs(
         }
       }
     } else if (n.stato === 'fermo') {
-      n.timer -= dt;
+      // Il pedone fisso da fermo RESTA fermo: niente scadenza del timer,
+      // niente meta nuova — e soprattutto niente estrazione dal LCG
+      // condiviso, che sposterebbe le mete di tutti i pedoni dopo di lui.
+      // Non si esce dal giro con un continue: vx/vz restano a zero e più
+      // sotto n.v e la fase del passo si azzerano come per chiunque si
+      // ferma, o l'animazione continuerebbe a camminare sul posto.
+      n.timer -= n.fisso ? 0 : dt;
       if (n.timer <= 0) {
         n.stato = 'cammina';
         // il seme deve avanzare, non ripartire dalla posizione: un NPC fermo
@@ -755,6 +844,10 @@ export function stepNpcs(
         n.targetX = tx;
         n.targetZ = tz;
       }
+    } else if (n.fisso) {
+      // rete di sicurezza: se qualcosa lo mette a 'cammina' (non dovrebbe
+      // succedere), il fisso non vagabonda — torna semplicemente fermo
+      n.stato = 'fermo';
     } else {
       const dx = n.targetX - n.x;
       const dz = n.targetZ - n.z;
@@ -856,7 +949,9 @@ export function scendiEScappa(
   let scelto: Npc | null = null;
   let dMax = 45;
   for (const n of npcs) {
-    if (n.tipo === 'carabiniere' || n.tipo === 'ciclista' || n.monopattino) continue;
+    // il fisso del primo incontro non si ricicla MAI: sparirebbe dallo
+    // spiazzo proprio la scena che deve accogliere il giocatore nuovo
+    if (n.tipo === 'carabiniere' || n.tipo === 'ciclista' || n.monopattino || n.fisso) continue;
     const d = Math.hypot(n.x - daX, n.z - daZ);
     if (d > dMax) {
       dMax = d;

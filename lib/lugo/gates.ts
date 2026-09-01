@@ -187,6 +187,144 @@ export function dentroCorridoio(x: number, z: number, corridoi: CorridoioVarco[]
   return false;
 }
 
+// ── I pilastri dell'arcata sulla corte ──────────────────────────────────────
+// Il loggiato del Pavaglione è DISEGNATO aperto fra i pilastri su tutto
+// l'anello della corte: da sotto il portico si vede il lastricato attraverso
+// ogni arcata. Il collider però trattava quell'anello come un muro continuo
+// con quattro tagli, e chi puntava un'arcata qualsiasi — cioè quasi tutte —
+// sbatteva contro un muro invisibile. Qui le POSIZIONI dei pilastri vivono
+// in un posto solo: Landmarks le disegna, loadMap le trasforma in quadrati
+// di fisica. Calcolate due volte in due file, prima o poi un round-off le
+// avrebbe fatte divergere di mezzo pilastro.
+
+/** Mezzo lato del fusto disegnato in prima fila (box 0.72×0.72). */
+export const MEZZO_PILASTRO = 0.36;
+/** Mezzo lato del fusto della seconda fila sui lati corti (box 0.6×0.6). */
+export const MEZZO_PILASTRO_ARRETRATO = 0.3;
+/** Arretramento della seconda fila verso la loggia, in metri. */
+export const ARRETRAMENTO_FILA = 3.1;
+/** Il ritmo delle arcate vere: un pilastro ogni ~3,6 m. */
+const PASSO_PILASTRI = 3.6;
+/** Margine con cui i pilastri si scansano dai corridoi dei varchi. */
+const SCANSO_VARCO = 1.1;
+
+export interface PostoPilastro {
+  x: number;
+  z: number;
+  /** Mezzo lato del fusto: il quadrato di fisica è LO STESSO del disegno. */
+  mezzo: number;
+}
+
+export interface FilaPilastri {
+  /** Estremi del segmento della corte su cui corre la fila. */
+  x1: number;
+  z1: number;
+  x2: number;
+  z2: number;
+  /** Pilastri sul filo della corte, in ordine; null dove passa un varco. */
+  fronte: (PostoPilastro | null)[];
+  /** La seconda fila arretrata dei lati corti; null dove manca. */
+  arretrata: (PostoPilastro | null)[];
+}
+
+/**
+ * Le file di pilastri dell'anello della corte, una per segmento. I fusti
+ * disegnati sono scatole ALLINEATE AGLI ASSI (box senza rotazione), quindi
+ * anche il collider è il quadrato assiale dello stesso lato: il cerchio del
+ * giocatore contro i 4 segmenti dà esattamente la sagoma vista, gonfiata
+ * del suo raggio. `corridoi` si può passare per non ricalcolarlo; se manca
+ * si ricava dagli stessi ingressi, così i due chiamanti non divergono.
+ */
+export function filePilastriCorte(
+  fp: Float32Array,
+  corte: Float32Array,
+  corridoi?: CorridoioVarco[],
+): FilaPilastri[] {
+  const vie = corridoi ?? corridoiVarco(fp, corte);
+  const rect = rettangoloMinimo(fp);
+  const lungoX = Math.cos(rect.angle);
+  const lungoZ = Math.sin(rect.angle);
+  let ccx = 0;
+  let ccz = 0;
+  const nV = corte.length / 2;
+  for (let i = 0; i < nV; i++) {
+    ccx += corte[i * 2];
+    ccz += corte[i * 2 + 1];
+  }
+  ccx /= nV;
+  ccz /= nV;
+  const file: FilaPilastri[] = [];
+  for (let i = 0; i < nV; i++) {
+    const j = (i + 1) % nV;
+    const x1 = corte[i * 2];
+    const z1 = corte[i * 2 + 1];
+    const x2 = corte[j * 2];
+    const z2 = corte[j * 2 + 1];
+    const fronte: (PostoPilastro | null)[] = [];
+    const arretrata: (PostoPilastro | null)[] = [];
+    const L = Math.hypot(x2 - x1, z2 - z1);
+    if (L < 2) {
+      file.push({ x1, z1, x2, z2, fronte, arretrata });
+      continue;
+    }
+    const mx = (x1 + x2) / 2;
+    const mz = (z1 + z2) / 2;
+    const dx = (x2 - x1) / L;
+    const dz = (z2 - z1) / L;
+    // il lato è "corto" se corre perpendicolare all'asse lungo del
+    // rettangolo minimo: lì le fonti mostrano l'arcata doppia
+    const doppia = Math.abs(dx * lungoX + dz * lungoZ) < 0.5;
+    // verso la loggia = via dal centro della corte
+    let fx = ccx - mx;
+    let fz = ccz - mz;
+    const fl = Math.hypot(fx, fz) || 1;
+    fx = -fx / fl;
+    fz = -fz / fl;
+    const nPil = Math.max(1, Math.round(L / PASSO_PILASTRI));
+    for (let k = 0; k <= nPil; k++) {
+      const t = k / nPil;
+      const px = x1 + (x2 - x1) * t;
+      const pz = z1 + (z2 - z1) * t;
+      // il pilastro si scansa dove il corridoio del varco buca l'arcata:
+      // il passaggio deve restare largo quanto il portale, non quanto
+      // capita fra due fusti piantati a caso sul suo bordo
+      fronte.push(
+        dentroCorridoio(px, pz, vie, SCANSO_VARCO)
+          ? null
+          : { x: px, z: pz, mezzo: MEZZO_PILASTRO },
+      );
+      if (doppia) {
+        const ax = px + fx * ARRETRAMENTO_FILA;
+        const az = pz + fz * ARRETRAMENTO_FILA;
+        arretrata.push(
+          dentroCorridoio(ax, az, vie, SCANSO_VARCO)
+            ? null
+            : { x: ax, z: az, mezzo: MEZZO_PILASTRO_ARRETRATO },
+        );
+      } else {
+        arretrata.push(null);
+      }
+    }
+    file.push({ x1, z1, x2, z2, fronte, arretrata });
+  }
+  return file;
+}
+
+/**
+ * Il quadrato di fisica di un pilastro, come 4 segmenti [x1,z1,x2,z2]
+ * accodati a `out`. Assiale come il fusto disegnato: contro le facce ci si
+ * appoggia dove si vede il bianco, e fra un fusto e l'altro si passa.
+ */
+export function segmentiPilastro(p: PostoPilastro, out: number[]): void {
+  const m = p.mezzo;
+  out.push(
+    p.x - m, p.z - m, p.x + m, p.z - m,
+    p.x + m, p.z - m, p.x + m, p.z + m,
+    p.x + m, p.z + m, p.x - m, p.z + m,
+    p.x - m, p.z + m, p.x - m, p.z - m,
+  );
+}
+
 /**
  * Spezza il segmento sui corridoi: `fuori` sono i tratti che restano muro
  * (o collider), `dentro` quelli che attraversano un passaggio. Entrambi

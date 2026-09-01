@@ -269,6 +269,24 @@ export function attivitaConMissioni(): readonly {
 
 /** Registro delle missioni generate al volo (consegne). */
 const DINAMICHE = new Map<string, Missione>();
+
+/**
+ * Inserisce (o REinserisce) una missione dinamica nel registro. La Map fa da
+ * LRU per anzianità di inserimento: reinserire una missione la sposta in
+ * coda, così una missione ancora viva (m00 attiva, per esempio) non viene
+ * sfrattata da quaranta aperture di bacheca. Il taglio non tocca mai la
+ * missione appena inserita: con la mappa piena di una sola voce, il "primo"
+ * sarebbe proprio lei.
+ */
+export function registraDinamica(m: Missione): void {
+  DINAMICHE.delete(m.id);
+  DINAMICHE.set(m.id, m);
+  if (DINAMICHE.size > 40) {
+    const primo = DINAMICHE.keys().next().value;
+    if (primo && primo !== m.id) DINAMICHE.delete(primo);
+  }
+}
+
 let contatoreConsegne = 0;
 /** Quante missioni sono state proposte a storia finita: fa girare la rotazione. */
 let contatoreProposte = 0;
@@ -322,11 +340,7 @@ export function creaConsegna(mondo: MondoLugo): Missione {
     denaro: 8,
     bonusVelocita: true,
   };
-  DINAMICHE.set(m.id, m);
-  if (DINAMICHE.size > 40) {
-    const primo = DINAMICHE.keys().next().value;
-    if (primo) DINAMICHE.delete(primo);
-  }
+  registraDinamica(m);
   return m;
 }
 
@@ -433,11 +447,7 @@ export function creaMissioneAttivita(
     ripetibile: true,
     ...(st.secondi ? { tempoLimite: st.secondi, bonusVelocita: true, semeMancia: contatoreAttivita } : {}),
   };
-  DINAMICHE.set(m.id, m);
-  if (DINAMICHE.size > 40) {
-    const primo = DINAMICHE.keys().next().value;
-    if (primo) DINAMICHE.delete(primo);
-  }
+  registraDinamica(m);
   return m;
 }
 
@@ -445,6 +455,104 @@ let contatoreAttivita = 0;
 
 export function missioneById(id: string): Missione | undefined {
   return MISSIONI.find((m) => m.id === id) ?? DINAMICHE.get(id);
+}
+
+// ── Il primo incontro: la missione m00 «Sei nuovo?» ─────────────────────────
+// La primissima missione del gioco non sta nell'array MISSIONI apposta: è
+// una DINAMICA registrata a runtime da PrimoIncontro.tsx. Così la tappa
+// punta all'attività VERA presa dal registro del mondo (mai coordinate
+// cieche nel codice), storiaFinita non la conta e le bacheche non la
+// ripescano mai fra i classici. Chiusa una volta, 'm00' finisce comunque in
+// missioniFatte — che è già salvato e validato — e non riparte più.
+
+/**
+ * Il ponte fra il primo incontro e il resto del gioco, nello stesso schema
+ * di lib/lugo/stick.ts e della `risposta` di maranza.ts: chi sa una cosa la
+ * scrive qui, chi ne ha bisogno la legge nel proprio giro di frame. Non è
+ * un campo dello store apposta — il pacco fra le mani e la posizione
+ * dell'anziano cambiano col ciclo di gioco, e passare da React vorrebbe
+ * dire un re-render per ogni passo di un pedone.
+ */
+export const pontePrimoIncontro = {
+  /** L'anziano è pronto a parlare: lo scrive PrimoIncontro, lo legge la E del Player. */
+  disponibile: false,
+  /** Dove sta l'anziano in questo momento (per la distanza della E e del paracadute). */
+  x: 0,
+  z: 0,
+  /** Il Player ha premuto E davanti a lui: PrimoIncontro apre il pannello nel suo giro. */
+  parla: false,
+  /** La scelta fatta nel pannello del dialogo (la scrive Hud.rispondi, la consuma PrimoIncontro). */
+  scelta: null as string | null,
+  /** Il pacco è nelle mani del giocatore, dal «Volentieri» all'arrivo al bar. */
+  paccoGiocatore: false,
+  /** L'anziano ha ancora il pacchetto fra le mani (lo disegna Npcs.tsx). */
+  paccoAnziano: true,
+  /** Il giocatore ha detto «Magari dopo» almeno una volta: apre il paracadute della catena. */
+  rifiutato: false,
+  /** Il nome vero del bar di destinazione, risolto dal registro (per i dialoghi). */
+  // il ripiego è senza articolo: finisce sempre dopo un «al …»
+  nomeBar: 'bar del centro',
+};
+
+/**
+ * Costruisce e registra la missione del primo incontro. Il bar di
+ * destinazione si risolve A RUNTIME dai negozi del mondo — prima per nome
+ * (il «Roccà», il bar a due passi dallo spiazzo dietro la Rocca), poi, se
+ * un giorno OSM cambiasse, col bar o posto da mangiare più vicino al punto
+ * dell'incontro. Del locale vero si usano SOLO nome e categoria, già
+ * pubblici su OpenStreetMap: niente promo, niente prezzi, niente
+ * sponsorizzazioni — il barista che ringrazia è un personaggio di fantasia.
+ */
+export function creaMissionePrimoIncontro(
+  mondo: MondoLugo,
+  ax: number,
+  az: number,
+  /** `fisica.cerchioLibero`, passato da fuori per non legare questo modulo alla fisica. */
+  libero?: (x: number, z: number, raggio: number) => boolean,
+): Missione {
+  let dest: { nome: string; x: number; z: number } | null =
+    mondo.negozi.find((n) => n.nome === 'Roccà' && n.categoria === 'bar') ?? null;
+  if (!dest) {
+    let dMin = Infinity;
+    for (const n of mondo.negozi) {
+      if (n.categoria !== 'bar' && n.categoria !== 'cibo') continue;
+      const d = Math.hypot(n.x - ax, n.z - az);
+      if (d < dMin) {
+        dMin = d;
+        dest = n;
+      }
+    }
+  }
+  // il ripiego è senza articolo: il nome finisce sempre dopo un «al …»
+  const nome = dest?.nome || 'bar del centro';
+  pontePrimoIncontro.nomeBar = nome;
+  // La tappa sta SULLA PORTA del bar quando il nodo OSM è in aria libera
+  // (per il Roccà lo è: sta nella zona pedonale davanti alla Rocca). La
+  // proiezione con puntoStradaVicino è solo il ripiego per un nodo murato:
+  // quella funzione ignora le strade pedonali (serve ai respawn dell'auto)
+  // e per il Roccà spediva la consegna sulla carreggiata più vicina, a 53
+  // metri dal bancone — un obiettivo che diceva «al bar» e portava altrove.
+  const inAria = dest && libero ? libero(dest.x, dest.z, 0.6) : false;
+  const p = dest
+    ? inAria
+      ? { x: dest.x, z: dest.z }
+      : puntoStradaVicino(mondo, dest.x, dest.z)
+    : puntoStradaVicino(mondo, ax, az);
+  const m: Missione = {
+    id: 'm00',
+    tipo: 'storia',
+    categoria: 'introduzione',
+    difficolta: 'facile',
+    livelloRichiesto: 1,
+    titolo: 'Sei nuovo?',
+    descrizione: `Un signore ti ha affidato un pacchetto: va portato al ${nome}, qui a due passi.`,
+    frase: '“È qui dietro, due minuti. Con le mie gambe, capisci…”',
+    tappe: [{ poi: `xz:${p.x.toFixed(1)}:${p.z.toFixed(1)}`, titolo: `Porta la consegna al ${nome}` }],
+    ricompensa: 5,
+    denaro: 20,
+  };
+  registraDinamica(m);
+  return m;
 }
 
 /** Risolve la posizione di una tappa; i "viali-*" e gli "xz:*" si calcolano. */

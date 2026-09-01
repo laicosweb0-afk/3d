@@ -18,6 +18,7 @@ import {
   rettangoloMinimo,
   corridoiVarco,
   dentroCorridoio,
+  filePilastriCorte,
   spezzaConVarchi,
 } from '@/lib/lugo/gates';
 import { puntoStradaVicino } from '@/lib/lugo/car';
@@ -173,6 +174,16 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
   const rect = rettangoloMinimo(fp);
   const [ccx, ccz] = centroDi(corte);
 
+  // un pannello appoggiato alla facciata (vetrina, cornice, finestra) largo
+  // 2·mezza non deve sbordare nel vano del portale: il test sul solo centro
+  // non basta, perché un pannello col centro a 3,3 m dal varco arriva col
+  // lembo dentro il corridoio (mezza-larghezza 2,6) e resta lì, sospeso a
+  // mezz'aria nel passaggio che il giocatore attraversa
+  const lembiNelVarco = (px: number, pz: number, ex: number, ez: number, mezza: number) =>
+    dentroCorridoio(px, pz, corridoi, 0.2) ||
+    dentroCorridoio(px + ex * mezza, pz + ez * mezza, corridoi, 0.2) ||
+    dentroCorridoio(px - ex * mezza, pz - ez * mezza, corridoi, 0.2);
+
   // perimetro esterno come nelle foto: campiture terracotta ritmate da
   // lesene crema, finestre con persiane verdi al piano nobile
   const [pcx, pcz] = centroDi(fp);
@@ -234,7 +245,9 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
         const ta = (k + 0.5) / nCampi;
         const ax2 = x1 + (x2 - x1) * ta;
         const az2 = z1 + (z2 - z1) * ta;
-        if (!vicinoAVarco(ax2, az2, varchi, 3.2)) {
+        // 1,55 = la cornice crema più larga (lesena a ±1,32 più il suo
+        // mezzo spessore): è il lembo che sbordava per primo nel portale
+        if (!vicinoAVarco(ax2, az2, varchi, 3.2) && !lembiNelVarco(ax2, az2, ex, ez, 1.55)) {
           const giroY = Math.atan2(ez, ex);
           // vetrina in bruno caldo sopra lo zoccolo, mai un buco nero
           box(acc, ax2 + nx * 0.05, 1.95, az2 + nz * 0.05, 2.3, 3.1, 0.04, new THREE.Color('#4E413A'), giroY);
@@ -250,7 +263,9 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
         const tw = (k + 0.5) / nCampi;
         const wx = x1 + (x2 - x1) * tw;
         const wz = z1 + (z2 - z1) * tw;
-        if (vicinoAVarco(wx, wz, varchi, 3.2)) continue;
+        // anche qui i LEMBI, non solo il centro: l'arco del portale sale a
+        // 7,2 m e una finestra sbordata resterebbe appesa nel vano
+        if (vicinoAVarco(wx, wz, varchi, 3.2) || lembiNelVarco(wx, wz, ex, ez, 0.95)) continue;
         const ox = nx * 0.07;
         const oz = nz * 0.07;
         const giroY = Math.atan2(ez, ex);
@@ -309,11 +324,17 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
     }
   }
 
-  // arcate sulla corte: pilastri ritmati + fascia degli archi;
-  // sui lati corti (fonti: arcate doppie) una seconda fila arretrata
-  const dirLungoX = Math.cos(rect.angle);
-  const dirLungoZ = Math.sin(rect.angle);
-  for (const [x1, z1, x2, z2] of anelloSegmenti(corte)) {
+  // arcate sulla corte: pilastri ritmati + fascia degli archi; sui lati
+  // corti (fonti: arcate doppie) una seconda fila arretrata. Le POSIZIONI
+  // dei fusti arrivano da gates.ts, le stesse che loadMap trasforma in
+  // quadrati di fisica: ogni pilastro che si vede è solido, e ogni campata
+  // che si vede aperta si attraversa davvero. Prima l'anello della corte
+  // era un muro invisibile con quattro tagli, e il giocatore che puntava
+  // col pollice un arco spalancato ci sbatteva contro e concludeva —
+  // giustamente — che nel Pavaglione non si entra.
+  const IMPOSTA = 4.15;
+  for (const fila of filePilastriCorte(fp, corte, corridoi)) {
+    const { x1, z1, x2, z2 } = fila;
     const mx = (x1 + x2) / 2;
     const mz = (z1 + z2) / 2;
     const L = Math.hypot(x2 - x1, z2 - z1);
@@ -322,10 +343,7 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
     if (L < 2) continue;
     const dx = (x2 - x1) / L;
     const dz = (z2 - z1) / L;
-    // il lato è "corto" se corre perpendicolare all'asse lungo del rettangolo
-    const lungoIlLungo = Math.abs(dx * dirLungoX + dz * dirLungoZ);
-    const doppia = lungoIlLungo < 0.5;
-    // fuori dalla corte = verso la loggia
+    // fuori dalla corte = verso la loggia (per le finestrelle del registro)
     let fx = ccx - mx;
     let fz = ccz - mz;
     const fl = Math.hypot(fx, fz) || 1;
@@ -333,47 +351,36 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
     fz = -fz / fl;
     // pilastri fino alla linea d'imposta, poi gli ARCHI: pennacchi curvi
     // che salgono dal capitello alla fascia — è il ritmo vero del Pavaglione
-    const IMPOSTA = 4.15;
-    // il ritmo fitto delle arcate vere: un pilastro ogni ~3.6 m
-    const nPil = Math.max(1, Math.round(L / 3.6));
-    const posPil: (null | [number, number])[] = [];
-    for (let k = 0; k <= nPil; k++) {
-      const t = k / nPil;
-      const px = x1 + (x2 - x1) * t;
-      const pz = z1 + (z2 - z1) * t;
-      // il passaggio attraversa l'arcata dove il corridoio buca la corte:
-      // il vecchio test sulla distanza dal varco (4 m) non scattava MAI,
-      // perché il muro della corte sta a 15-24 m dai varchi — e i pilastri
-      // si piantavano in mezzo all'ingresso appena aperto
-      if (dentroCorridoio(px, pz, corridoi, 1.1)) {
-        posPil.push(null);
-        continue;
+    const nCampate = fila.fronte.length - 1;
+    for (let k = 0; k < fila.fronte.length; k++) {
+      const p = fila.fronte[k];
+      if (p) {
+        box(acc, p.x, IMPOSTA / 2, p.z, p.mezzo * 2, IMPOSTA, p.mezzo * 2, BIANCO);
+        box(acc, p.x, IMPOSTA + 0.08, p.z, 0.9, 0.16, 0.9, BIANCO); // capitello
       }
-      posPil.push([px, pz]);
-      box(acc, px, IMPOSTA / 2, pz, 0.72, IMPOSTA, 0.72, BIANCO);
-      box(acc, px, IMPOSTA + 0.08, pz, 0.9, 0.16, 0.9, BIANCO); // capitello
-      if (doppia) box(acc, px + fx * 3.1, IMPOSTA / 2, pz + fz * 3.1, 0.6, IMPOSTA, 0.6, BIANCO);
+      const arr = fila.arretrata[k];
+      if (arr) box(acc, arr.x, IMPOSTA / 2, arr.z, arr.mezzo * 2, IMPOSTA, arr.mezzo * 2, BIANCO);
       // la finestrella del registro sopra ogni campata, verso la corte
-      if (k < nPil) {
-        const tf = (k + 0.5) / nPil;
+      if (k < nCampate) {
+        const tf = (k + 0.5) / nCampate;
         const fxm = x1 + (x2 - x1) * tf;
         const fzm = z1 + (z2 - z1) * tf;
         box(acc, fxm - fx * 0.06, 6.6, fzm - fz * 0.06, 0.9, 0.7, 0.05, new THREE.Color('#3A342C'), Math.atan2(dz, dx));
       }
     }
-    for (let k = 0; k + 1 < posPil.length; k++) {
-      const pa = posPil[k];
-      const pb = posPil[k + 1];
+    for (let k = 0; k + 1 < fila.fronte.length; k++) {
+      const pa = fila.fronte[k];
+      const pb = fila.fronte[k + 1];
       if (!pa || !pb) continue;
       const salita = H_ARCO - IMPOSTA;
       const passi = 6;
       for (let s2 = 0; s2 < passi; s2++) {
         const tA = s2 / passi;
         const tB = (s2 + 1) / passi;
-        const xa = pa[0] + (pb[0] - pa[0]) * tA;
-        const za = pa[1] + (pb[1] - pa[1]) * tA;
-        const xb = pa[0] + (pb[0] - pa[0]) * tB;
-        const zb = pa[1] + (pb[1] - pa[1]) * tB;
+        const xa = pa.x + (pb.x - pa.x) * tA;
+        const za = pa.z + (pb.z - pa.z) * tA;
+        const xb = pa.x + (pb.x - pa.x) * tB;
+        const zb = pa.z + (pb.z - pa.z) * tB;
         const ya = IMPOSTA + salita * Math.sin(Math.PI * tA);
         const yb = IMPOSTA + salita * Math.sin(Math.PI * tB);
         // il pennacchio riempie dall'arco fino alla fascia: crema come i
@@ -577,6 +584,15 @@ function geometriaPavaglione(b: EdificioRT): THREE.BufferGeometry | null {
       );
     }
   }
+
+  // il pavimento della loggia: prima sotto il portico affiorava il suolo
+  // verdastro di default, come se il quadriportico fosse piantato in un
+  // prato — e col loggiato ormai percorribile tutto in giro si vedeva
+  // eccome. Un lastrico continuo di pietra chiara su tutto l'anello; la
+  // fisica è piatta, quindi nessun gradino invisibile: quota diversa dal
+  // lastricato della corte (0,16) e dal camminamento esterno (0,165) solo
+  // per non farli lottare a z-fighting sulle linee di confine
+  piano(acc, fp, [corte], 0.17, new THREE.Color('#DCD2BC'));
 
   // lastrico della corte: sabbia quasi bianca, con la croce dei
   // camminamenti che unisce i quattro varchi
@@ -1088,6 +1104,21 @@ export function Landmarks() {
     }
     return { x: gx, z: gz };
   }, [mondo]);
+
+  // l'ingombro della giostra nella fisica: è un cilindro pieno di sedili e
+  // colonna alto più di una persona, ma finora ci si camminava ATTRAVERSO
+  // come un fantasma — l'inverso esatto del muro invisibile, e inganna il
+  // giocatore allo stesso modo. Un OBB quadrato sul nocciolo (colonna +
+  // sedili, r≈3,3): il bordo basso della pedana resta fuori, che a caviglia
+  // ci si sale con lo sguardo. Il collider si toglie allo smontaggio,
+  // perché la hash della fisica confronta per identità: se ne restasse uno
+  // orfano sarebbe un fantasma solido in mezzo alla piazza.
+  useEffect(() => {
+    if (!giostra) return;
+    const infra = infraGioco(mondo);
+    const c = infra.fisica.aggiungiObb(giostra.x, giostra.z, 3.3, 3.3, 0);
+    return () => infra.fisica.rimuoviCollider(c);
+  }, [giostra, mondo]);
 
   // il tetto a spicchi bianchi e rosa della giostra, come nelle foto
   const tettoGiostra = useMemo(() => {

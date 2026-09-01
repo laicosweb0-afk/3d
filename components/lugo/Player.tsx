@@ -26,6 +26,7 @@ import {
   incontroInCorso,
   subisciPugno,
 } from '@/lib/lugo/maranza';
+import { pontePrimoIncontro } from '@/lib/lugo/missions';
 import type { Npc } from '@/lib/lugo/npc';
 import { runtime, type RuntimeGioco } from '@/lib/lugo/runtime';
 import { updateAudio, suonaEvento, updateAmbiente, parla, campanello } from '@/lib/lugo/audio';
@@ -680,6 +681,18 @@ export function Player() {
             articoli: bottega.articoli,
           });
           suonaEvento('tappa');
+        } else if (
+          pontePrimoIncontro.disponibile &&
+          !st.dialogo &&
+          Math.hypot(pontePrimoIncontro.x - rt.persona.x, pontePrimoIncontro.z - rt.persona.z) < 3.4
+        ) {
+          // L'anziano del primo incontro: un gradino SOPRA il maranza —
+          // la sua è una missione, quella dell'altro una chiacchiera — e
+          // sotto bacheche e vetrine, che restano la regola dei luoghi.
+          // Qui si scrive solo la richiesta sul ponte: il pannello lo apre
+          // PrimoIncontro nel suo giro di frame, che è l'unico padrone
+          // della scena (stesso schema del pugno via stick.ts).
+          pontePrimoIncontro.parla = true;
         } else if (!st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
           // ULTIMO gradino della precedenza della E, e ci sta apposta: è
           // l'unica interazione che sa avviarsi da sola, quindi qui la E è
@@ -935,7 +948,16 @@ export function Player() {
         // col maranza addosso il suggerimento cambia: quello che serve
         // sapere non è più «puoi parlargli», è come uscirne
         if (incontroInCorso().attivo) hint = 'F · sganciagli un pugno · oppure corri via';
-        else if (!hint && !st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
+        else if (
+          !hint &&
+          !st.dialogo &&
+          pontePrimoIncontro.disponibile &&
+          Math.hypot(pontePrimoIncontro.x - rt.persona.x, pontePrimoIncontro.z - rt.persona.z) < 3.4
+        ) {
+          // lo stesso gradino della E, letto a schermo: l'anziano della
+          // missione vince sul maranza, come nella scala qui sopra
+          hint = 'Premi E per parlare col signore del pacchetto';
+        } else if (!hint && !st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
           for (const n of runtime.npcs) {
             if (n.tipo !== 'maranza') continue;
             if (Math.hypot(n.x - rt.persona.x, n.z - rt.persona.z) < 3.4) {
