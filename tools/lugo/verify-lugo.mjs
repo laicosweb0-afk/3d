@@ -1937,8 +1937,21 @@ try {
         if (k < 2 || film.righe.length <= k + 1) continue; // contatto mai visto: un altro candidato
         const vAl = (i) =>
           Math.hypot(film.righe[i][0] - film.righe[i - 1][0], film.righe[i][1] - film.righe[i - 1][1]) / 0.05;
+        // Col gas a tavoletta i contatti possono essere PIÙ D'UNO nella
+        // stessa finestra (tocco, frenata, ripresa, ritocco): il registro
+        // fotografa sempre l'ULTIMO, quindi la sua coerenza va misurata
+        // sull'ultimo scatto del contatore, non sul primo — confrontarla
+        // col primo contatto ha bocciato una frenata perfettamente vera
+        // (3,07 misurati al primo tocco contro l'1,99 registrato al
+        // secondo). La frenata-nonostante-il-gas, invece, si giudica al
+        // PRIMO contatto, l'unico col rincorso pulito alle spalle.
+        let kU = k;
+        for (let i = k + 1; i < film.righe.length; i++) {
+          if (film.righe[i][2] > film.righe[i - 1][2]) kU = i;
+        }
         const vPre = Math.max(vAl(k - 1), vAl(k));
         const vPost = vAl(k + 1);
+        const vAllUltimo = Math.max(vAl(kU - 1), vAl(kU));
         const balzo =
           film.righe[k][3] === 'balzo' || film.righe[Math.min(k + 1, film.righe.length - 1)][3] === 'balzo';
         urto = {
@@ -1949,14 +1962,16 @@ try {
           // Il registro scrive vDopo = vPrima·0,45 per costruzione: fidarsi
           // di quel rapporto sarebbe un controllo che passa da solo. Qui si
           // pretende che (1) il registro dica il VERO sulla velocità
-          // d'impatto (torna con quella misurata dallo spostamento) e (2)
-          // la velocità misurata CALI nel fotogramma del contatto NONOSTANTE
-          // il gas a tavoletta: senza frenata, con 13 m/s² di spinta, il
-          // fotogramma dopo sarebbe PIÙ veloce di +0,65, non più lento.
+          // d'impatto (torna con quella misurata dallo spostamento
+          // all'ULTIMO contatto, quello che il registro fotografa) e (2) la
+          // velocità misurata CALI nel fotogramma del PRIMO contatto
+          // NONOSTANTE il gas a tavoletta: senza frenata, con 13 m/s² di
+          // spinta, il fotogramma dopo sarebbe PIÙ veloce di +0,65, non
+          // più lento.
           giusto:
             balzo &&
             film.registro.vPrima > 1.5 &&
-            Math.abs(film.registro.vPrima - vPre) < 0.9 &&
+            Math.abs(film.registro.vPrima - vAllUltimo) < 0.9 &&
             vPost < vPre - 0.1,
         };
         if (urto.giusto) break;
