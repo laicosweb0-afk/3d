@@ -1797,13 +1797,33 @@ try {
       }
 
       // ── l'incontro con uno in monopattino: il pannello nomina il mezzo ─
-      await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
-      await page.waitForTimeout(300);
-      const idxInc = await lugo('L.provocaIncontro(true)');
-      let arrivato = idxInc >= 0;
-      if (arrivato) {
+      // Con i tentativi, non con un colpo secco: a questo punto del
+      // collaudo il giocatore sta dove l'hanno lasciato le prove
+      // dell'andatura, e un incontro provocato col muso contro una
+      // facciata (o col ciclo maranza ancora in coda dalla fase prima)
+      // muore in «nessuno» — è lo stesso vizio già curato per la fuga,
+      // e falliva allo stesso modo: a intermittenza.
+      let idxInc = -1;
+      let arrivato = false;
+      for (let tentativo = 0; tentativo < 3 && !arrivato; tentativo++) {
+        await page.evaluate(() => window.__LUGO__.chiudiPannelli?.());
+        await page
+          .waitForFunction(() => window.__LUGO__.incontro().fase === 'nessuno', null, { timeout: 12000 })
+          .catch(() => {});
+        const quiInc = await lugo('L.pos()');
+        const stradaInc = await lugo(`L.suStrada(${quiInc[0]}, ${quiInc[1]})`);
+        if (stradaInc) {
+          await page.evaluate((q) => window.__LUGO__.teleport(q[0], q[1]), stradaInc);
+          await page.waitForTimeout(500);
+        }
+        idxInc = await lugo('L.provocaIncontro(true)');
+        if (idxInc < 0) {
+          await page.waitForTimeout(2500);
+          continue;
+        }
         try {
           await page.waitForFunction(() => window.__LUGO__.incontro().fase === 'chiede', null, { timeout: 45000 });
+          arrivato = true;
         } catch {
           arrivato = false;
         }
@@ -2142,14 +2162,20 @@ try {
         }
         return await lugo('L.render()');
       };
-      // Prima di misurare si aspetta che la catena abbia PROPOSTO la sua
-      // missione: il segnalino (anello + fascio, due chiamate) deve stare
-      // acceso in ENTRAMBE le misure, o spento in entrambe — se si accende
-      // nel mezzo, la differenza addebita alla bici due chiamate che sono
-      // del segnalino. È successo: 133 → 137 con la bici che ne costa due.
-      for (let i = 0; i < 18 && (await lugo('L.statoMissione()')) !== 'attiva'; i++) {
-        await page.waitForTimeout(2500);
-      }
+      // Le due pesate si fanno con la CAMERA FISSA A PIOMBO sul giocatore:
+      // la chase camera cambia orientamento montando in sella, e il
+      // segnalino di missione (anello + fascio, due chiamate) entrava nel
+      // frustum in una misura sola — 133 → 137 con la bici che ne costa
+      // due, a intermittenza, secondo dove guardava la camera e quando la
+      // catena proponeva. Da 16 metri dritti in giù il cono copre ~8 metri
+      // di raggio: la tappa di qualunque missione resta fuori inquadratura
+      // in ENTRAMBE le misure, accesa o spenta che sia.
+      const quiBici = await lugo('L.pos()');
+      await page.evaluate(
+        ([x, z]) => window.__LUGO__.fotocamera(x, 16, z + 0.1, x, 0, z, 40000),
+        quiBici,
+      );
+      await page.waitForTimeout(400);
       // il costo del fotogramma A PIEDI, qui davanti alla bici: è il
       // termine di paragone dell'unica cosa che la bici aggiunge
       const rPiedi = await stabile();
