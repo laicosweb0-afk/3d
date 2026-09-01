@@ -98,9 +98,14 @@ try {
   // eventuale start screen: si parte
   // l'intro copre tutto finché non la si salta: la prova entra nel gioco,
   // il filmato lo si guarda da giocatori
+  // Il click sul SALTA è col paracadute: l'intro può finire DA SOLA proprio
+  // mentre Playwright clicca, il bottone si smonta a metà click e un click
+  // senza timeout resta appeso 30 secondi su un elemento morto per poi
+  // ammazzare tutto il collaudo — è successo. L'esito è comunque lo stesso:
+  // intro chiusa, con o senza il nostro aiuto.
   const salta = page.locator('[data-hud="salta-intro"]');
   if (await salta.count()) {
-    await salta.click();
+    await salta.click({ timeout: 5000 }).catch(() => {});
     await page.waitForTimeout(400);
     ok('intro di apertura', 'filmato mostrato e saltabile');
   }
@@ -291,9 +296,10 @@ try {
     // l'anziano resta a riposo e la catena di sempre riparte da sola
     await page.goto(URL, { waitUntil: 'networkidle' });
     await page.waitForFunction(() => window.__LUGO__ && window.__LUGO__.pronto === true, null, { timeout: 30000 }).catch(() => {});
-    if (await page.locator('[data-hud="salta-intro"]').count()) await page.click('[data-hud="salta-intro"]');
+    // stesso paracadute della fase 1: l'intro può smontarsi a metà click
+    if (await page.locator('[data-hud="salta-intro"]').count()) await page.click('[data-hud="salta-intro"]', { timeout: 5000 }).catch(() => {});
     await page.waitForTimeout(300);
-    if (await page.locator('[data-hud="gioca"]').count()) await page.click('[data-hud="gioca"]');
+    if (await page.locator('[data-hud="gioca"]').count()) await page.click('[data-hud="gioca"]', { timeout: 5000 }).catch(() => {});
     await page.waitForTimeout(1000);
     const soldiReload = await lugo('L.denaro()');
     const piR = await lugo('L.primoIncontro.stato()');
