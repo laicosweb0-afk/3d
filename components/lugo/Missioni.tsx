@@ -32,6 +32,7 @@ import {
 } from '@/lib/lugo/incarichi';
 import { runtime, posGiocatore } from '@/lib/lugo/runtime';
 import { suonaEvento } from '@/lib/lugo/audio';
+import { capitoliCompleti, capitoloCorrente } from '@/lib/lugo/capitoli';
 import { useLugo } from '@/lib/lugo/store';
 
 const RAGGIO_AUTO = 4;
@@ -155,6 +156,20 @@ export function Missioni() {
       // un incarico senza doverci giocare mezz'ora
       avanzaIncarico: (metrica: Metrica, quanto: number) =>
         useLugo.getState().contaTotale(metrica, quanto),
+      // il filo dei capitoli, per il collaudo: capitolo corrente coi numeri
+      // vivi del traguardo e l'elenco dei capitoli già chiusi. Si deriva
+      // dallo stato con le stesse identiche funzioni dell'HUD: se le due
+      // letture divergessero, il collaudo se ne accorgerebbe subito
+      capitolo: () => {
+        const stato = useLugo.getState();
+        const c = capitoloCorrente(stato);
+        return {
+          n: c.n,
+          nome: c.nome,
+          traguardo: c.prossimoPasso(stato),
+          completi: capitoliCompleti(stato),
+        };
+      },
       // quante attività vere di Lugo possono ospitare una missione
       attivitaConMissioni: () => attivitaConMissioni().length,
       // genera la missione di un'attività vera e ne restituisce la scheda
