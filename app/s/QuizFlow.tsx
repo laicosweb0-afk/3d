@@ -25,6 +25,10 @@ type TrackedEvent = {
  * a S0 si vede lo stato finale, senza rigiocarla. */
 let introPlayed = false;
 
+/* L'animazione del risultato parte una sola volta per giro: tornando
+ * sulla schermata è già completa. Ricomincia la riabilita. */
+let resultPlayed = false;
+
 /* ------------------------------------------------------------------ */
 /* Elementi ricorrenti                                                 */
 /* ------------------------------------------------------------------ */
@@ -61,14 +65,57 @@ function Cta({
   );
 }
 
-function Reward() {
+const easeOutExpo = (t: number) => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t));
+
+function Reward({ animate }: { animate: boolean }) {
+  const [count, setCount] = useState(animate ? 0 : copy.reward.value);
+
+  /* 1100ms: la cifra sale da 0 a 15 in 900ms (easeOutExpo, rAF);
+   * 2000ms: vibrazione breve, se supportata. Il simbolo € resta fermo. */
+  useEffect(() => {
+    if (!animate) return;
+    let raf = 0;
+    const timer = window.setTimeout(() => {
+      const t0 = performance.now();
+      const tick = (now: number) => {
+        const t = Math.min((now - t0) / 900, 1);
+        setCount(Math.round(copy.reward.value * easeOutExpo(t)));
+        if (t < 1) {
+          raf = window.requestAnimationFrame(tick);
+        } else {
+          try {
+            navigator.vibrate?.(12);
+          } catch {
+            /* niente vibrazione, nessun problema */
+          }
+        }
+      };
+      raf = window.requestAnimationFrame(tick);
+    }, 1100);
+    return () => {
+      window.clearTimeout(timer);
+      window.cancelAnimationFrame(raf);
+    };
+  }, [animate]);
+
   return (
-    <div className="fx-reward">
-      <p className="fx-reward-amount">{copy.reward.amount}</p>
-      <p className="fx-reward-label">{copy.reward.label}</p>
-      <p className="fx-reward-sub">
+    <div className={`fx-reward${animate ? ' fx-card-in' : ''}`}>
+      <p className="fx-reward-amount">
+        {copy.reward.symbol}
+        <span>{count}</span>
+      </p>
+      <p className={`fx-reward-label${animate ? ' fx-r5' : ''}`}>{copy.reward.label}</p>
+      <p className={`fx-reward-sub${animate ? ' fx-r5' : ''}`}>
         {copy.reward.sub} {copy.reward.note}
       </p>
+      <p className={`fx-terms${animate ? ' fx-r5' : ''}`}>{copy.reward.terms}</p>
+      {animate && (
+        <span aria-hidden="true">
+          <i className="fx-particle" style={{ left: '32%', animationDelay: '2000ms' }} />
+          <i className="fx-particle" style={{ left: '52%', animationDelay: '2200ms' }} />
+          <i className="fx-particle" style={{ left: '68%', animationDelay: '2400ms' }} />
+        </span>
+      )}
     </div>
   );
 }
@@ -116,6 +163,7 @@ export default function QuizFlow() {
       setGuessed(false);
       setRecs([]);
       setEnvelopeDone(false);
+      resultPlayed = false;
       track('scan_opened', nextEntry === 'busta' ? 'da busta' : 'da coupon');
     },
     [track],
@@ -259,7 +307,7 @@ function Landing({
     const timeout = new Promise<never>((_, reject) => {
       window.setTimeout(() => reject(new Error('timeout')), 2500);
     });
-    Promise.race([Promise.all([load('/rabbit-sprite.png'), load('/watch.png')]), timeout])
+    Promise.race([load('/rabbit-sprite.png'), timeout])
       .then(() => {
         if (cancelled) return;
         introPlayed = true;
@@ -320,26 +368,9 @@ function Landing({
       <div className="fx-top">
         <Logo onDark />
       </div>
-      <div className="fx-main">
-        {hero}
-        <div className={`fx-watchwrap${hidden}`}>
-          <button
-            className={`fx-watch${playing ? ' fx-watch--fall' : ''}`}
-            onClick={onStart}
-            aria-label={copy.landing.cta}
-          >
-            <span className="fx-watch-idle">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/watch.png" alt="" width="140" height="191" />
-            </span>
-          </button>
-          <p className={`fx-hint${late}`}>{copy.landing.tapWatch}</p>
-        </div>
-      </div>
+      <div className="fx-main">{hero}</div>
       <div className={`fx-bottom${late}${hidden}`}>
-        <button className="fx-ghost" onClick={onStart}>
-          {copy.landing.cta}
-        </button>
+        <Cta onClick={onStart}>{copy.landing.cta}</Cta>
       </div>
       {playing && (
         <div className="fx-intro" aria-hidden="true">
@@ -412,33 +443,66 @@ function Question({
 /* ------------------------------------------------------------------ */
 
 function Result({ guessed, onNext }: { guessed: boolean; onNext: () => void }) {
+  // L'animazione parte una sola volta per giro; con prefers-reduced-motion
+  // tutto è già allo stato finale, cifra inclusa.
+  const [animate] = useState(() => {
+    if (resultPlayed) return false;
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+      return false;
+    return true;
+  });
+  useEffect(() => {
+    resultPlayed = true;
+  }, []);
+
+  const stagger = (i: number) =>
+    animate ? { className: ' fx-ra', style: { animationDelay: `${500 + i * 80}ms` } } : { className: '', style: undefined };
+
+  const rows = guessed
+    ? [
+        <p key="e" className={`fx-eyebrow${stagger(0).className}`} style={stagger(0).style}>
+          {copy.result.guessed.eyebrow}
+        </p>,
+        <h1 key="t" className={`fx-h1${stagger(1).className}`} style={stagger(1).style}>
+          {fill(copy.result.guessed.title, { name: MYSTERY.name })}
+        </h1>,
+        <p key="m" className={`fx-lede${stagger(2).className}`} style={stagger(2).style}>
+          {fill(copy.result.guessed.byMaison, { maison: MYSTERY.maison })}
+        </p>,
+        <p key="n" className={`fx-notes${stagger(3).className}`} style={stagger(3).style}>
+          {MYSTERY.notes.join(' · ')}
+        </p>,
+        <p
+          key="p"
+          className={`fx-note${stagger(4).className}`}
+          style={{ marginTop: 'var(--fx-space-2)', ...stagger(4).style }}
+        >
+          {fill(copy.result.guessed.pct, { pct: MYSTERY.guessedPct })}
+        </p>,
+      ]
+    : [
+        <p key="e" className={`fx-eyebrow fx-eyebrow--muted${stagger(0).className}`} style={stagger(0).style}>
+          {copy.result.missed.eyebrow}
+        </p>,
+        <h1 key="t" className={`fx-h1${stagger(1).className}`} style={stagger(1).style}>
+          {fill(copy.result.missed.title, { name: MYSTERY.name })}
+        </h1>,
+        <p key="x" className={`fx-lede${stagger(2).className}`} style={stagger(2).style}>
+          {fill(copy.result.missed.trick, { trickNote: MYSTERY.trickNote })}
+        </p>,
+      ];
+
   return (
     <>
       <div className="fx-top">
         <Logo />
       </div>
       <div className="fx-main">
-        {guessed ? (
-          <>
-            <p className="fx-eyebrow">{copy.result.guessed.eyebrow}</p>
-            <h1 className="fx-h1">{fill(copy.result.guessed.title, { name: MYSTERY.name })}</h1>
-            <p className="fx-lede">{fill(copy.result.guessed.byMaison, { maison: MYSTERY.maison })}</p>
-            <p className="fx-notes">{MYSTERY.notes.join(' · ')}</p>
-            <p className="fx-note" style={{ marginTop: 'var(--fx-space-2)' }}>
-              {fill(copy.result.guessed.pct, { pct: MYSTERY.guessedPct })}
-            </p>
-          </>
-        ) : (
-          <>
-            <p className="fx-eyebrow fx-eyebrow--muted">{copy.result.missed.eyebrow}</p>
-            <h1 className="fx-h1">{fill(copy.result.missed.title, { name: MYSTERY.name })}</h1>
-            <p className="fx-lede">{fill(copy.result.missed.trick, { trickNote: MYSTERY.trickNote })}</p>
-          </>
-        )}
+        {rows}
         {/* Il credito è identico nei due esiti: cambia il racconto, mai il valore. */}
-        <Reward />
+        <Reward animate={animate} />
       </div>
-      <div className="fx-bottom">
+      <div className={`fx-bottom${animate ? ' fx-r5' : ''}`}>
         <Cta onClick={onNext}>{copy.result.cta}</Cta>
       </div>
     </>

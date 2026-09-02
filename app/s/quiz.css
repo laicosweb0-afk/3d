@@ -54,9 +54,12 @@ body:has(.fx-stage) {
   .fx-step,
   .fx-rabbit-track,
   .fx-rabbit,
-  .fx-watch--fall,
-  .fx-watch-idle,
-  .fx-reveal {
+  .fx-reveal,
+  .fx-ra,
+  .fx-r5,
+  .fx-card-in,
+  .fx-card-in::after,
+  .fx-particle {
     animation: none !important;
   }
 }
@@ -291,85 +294,9 @@ body:has(.fx-stage) {
   }
 }
 
-/* l'orologio: cade, rimbalza di 8px, poi oscilla ed e il tap di avvio */
-.fx-watchwrap {
-  margin: var(--fx-gap-isle) 0 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.fx-watch {
-  appearance: none;
-  border: none;
-  background: none;
-  padding: 0;
-  cursor: pointer;
-  will-change: transform;
-}
-.fx-watch:focus-visible {
-  outline: 2px solid var(--fx-magenta);
-  outline-offset: 6px;
-  border-radius: 50%;
-}
-.fx-watch img {
-  display: block;
-  width: 140px;
-  height: auto;
-  filter: drop-shadow(0 18px 28px rgba(15, 14, 18, 0.35));
-}
-.fx-watch--fall {
-  animation: fx-fall 750ms 550ms both;
-}
-@keyframes fx-fall {
-  0% {
-    opacity: 0;
-    transform: translateY(-38vh) rotate(25deg);
-    animation-timing-function: cubic-bezier(0.34, 0.02, 0.62, 1);
-  }
-  8% {
-    opacity: 1;
-  }
-  84% {
-    transform: translateY(0) rotate(0deg);
-    animation-timing-function: ease-out;
-  }
-  92% {
-    transform: translateY(-8px) rotate(0deg);
-    animation-timing-function: ease-in;
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) rotate(0deg);
-  }
-}
-.fx-watch-idle {
-  display: block;
-  transform-origin: 50% 6%;
-  animation: fx-swing 3s ease-in-out infinite alternate;
-}
-.fx-watch--fall .fx-watch-idle {
-  animation-delay: 1.3s;
-}
-@keyframes fx-swing {
-  from {
-    transform: rotate(-2deg);
-  }
-  to {
-    transform: rotate(2deg);
-  }
-}
-.fx-hint {
-  margin: 1rem 0 0;
-  font-size: var(--fx-text-eyebrow);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.22em;
-  color: var(--fx-light-soft);
-}
-
-/* il contenuto arriva per ultimo: fade + 12px, 400ms, a 1.5s */
+/* il contenuto arriva appena il coniglio è uscito: fade + 12px, 400ms */
 .fx-reveal {
-  animation: fx-late 400ms var(--fx-ease) 1.5s both;
+  animation: fx-late 400ms var(--fx-ease) 1.2s both;
 }
 @keyframes fx-late {
   from {
@@ -451,6 +378,89 @@ body:has(.fx-stage) {
   font-size: var(--fx-text-note);
   letter-spacing: 0.08em;
   color: var(--fx-sub);
+  margin: 0.875rem 0 0;
+}
+
+/* ---- S2: sequenza del risultato ---- */
+
+/* testi in entrata sfalsata (delay inline, 80ms l'uno dall'altro) */
+.fx-ra {
+  animation: fx-stagger 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes fx-stagger {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+/* la card del credito entra dal basso; l'ombra sfuma su un ::after
+ * così si anima solo opacity */
+.fx-card-in {
+  position: relative;
+  box-shadow: none;
+  animation: fx-card 600ms cubic-bezier(0.16, 1, 0.3, 1) 900ms both;
+}
+@keyframes fx-card {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+  }
+}
+.fx-card-in::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow: 0 12px 48px rgba(15, 14, 18, 0.07);
+  animation: fx-shadow 600ms linear 900ms both;
+}
+@keyframes fx-shadow {
+  from {
+    opacity: 0;
+  }
+}
+
+/* coda della sequenza: label, testi e bottone in solo fade */
+.fx-r5 {
+  animation: fx-fade 400ms ease 2100ms both;
+}
+@keyframes fx-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* tre particelle rosa, mai simultanee, salgono e svaniscono */
+.fx-particle {
+  position: absolute;
+  top: 34%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e966b5;
+  opacity: 0;
+  pointer-events: none;
+  /* fill none: prima e dopo l'animazione la particella non esiste */
+  animation: fx-rise 1.2s ease-out none;
+}
+@keyframes fx-rise {
+  0% {
+    opacity: 0.5;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-60px);
+  }
+}
+
+/* condizioni del credito: leggibili dove appare il premio */
+.fx-terms {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #8a7f6f;
   margin: 0.875rem 0 0;
 }
 
@@ -555,34 +565,6 @@ body:has(.fx-stage) {
 }
 
 /* ---- desktop: stessa esperienza, più aria ---- */
-
-@media (min-width: 960px) {
-  .fx-step--landing .fx-main {
-    max-width: 1080px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 6rem;
-    text-align: left;
-  }
-  .fx-step--landing .fx-hero {
-    justify-self: start;
-    max-width: 560px;
-  }
-  .fx-step--landing .fx-lede {
-    margin-left: 0;
-  }
-  .fx-step--landing .fx-watchwrap {
-    margin: 0 4rem 0 0;
-  }
-  .fx-step--landing .fx-watch img {
-    width: 170px;
-  }
-  .fx-step--landing .fx-bottom {
-    max-width: 1080px;
-    align-items: flex-start;
-  }
-}
 
 /* ---- pannello demo ---- */
 

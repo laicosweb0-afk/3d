@@ -33,7 +33,6 @@ const it = {
       defaultMittente: 'Marco',
     },
     cta: 'Inizia il quiz',
-    tapWatch: 'Tocca l\u2019orologio',
   },
 
   warmup: 'Partiamo.',
@@ -60,10 +59,13 @@ const it = {
   },
 
   reward: {
-    amount: '€15',
+    symbol: '€',
+    value: 15,
     label: 'di credito',
     sub: 'Da utilizzare per scoprire 3 nuove fragranze.',
     note: 'Tue con il prossimo ordine.',
+    // Le condizioni si leggono nel momento in cui il premio appare.
+    terms: 'Valido 90 giorni · non cumulabile con altre promozioni',
   },
 
   recs: {
