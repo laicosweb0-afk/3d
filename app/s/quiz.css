@@ -248,19 +248,6 @@ body:has(.fx-stage) {
   display: block;
   overflow: visible;
 }
-.fx-vial .fx-vial-body {
-  fill: var(--fx-base);
-  stroke: rgba(15, 14, 18, 0.35);
-}
-.fx-vial .fx-vial-line {
-  stroke: rgba(15, 14, 18, 0.35);
-}
-.fx-vial .fx-vial-mark {
-  font-family: var(--fx-font-sans), sans-serif;
-  font-weight: 300;
-  font-size: 30px;
-  fill: var(--fx-magenta);
-}
 
 /* ---- risposte del quiz: vetro leggero ---- */
 
@@ -460,8 +447,8 @@ body:has(.fx-stage) {
     margin: 0 4rem 0 0;
   }
   .fx-step--landing .fx-vial svg {
-    width: 126px;
-    height: 252px;
+    width: 110px;
+    height: 263px;
   }
   .fx-step--landing .fx-bottom {
     max-width: 1080px;

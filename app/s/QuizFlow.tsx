@@ -34,19 +34,59 @@ function Logo({ onDark = false }: { onDark?: boolean }) {
   );
 }
 
-/* La fialetta: solo linea e un «?». Nessun logo sopra. */
+/* La fialetta del pacco, ricreata: vetro, liquido dorato, tappo spray
+ * nero a coste, etichetta bianca con il solo «?». Nessun logo sopra. */
 function Vial() {
   return (
     <figure className="fx-vial" aria-hidden="true">
-      <svg width="90" height="180" viewBox="0 0 90 180" fill="none">
-        <g strokeWidth="1.25">
-          <rect className="fx-vial-body" x="33" y="2" width="24" height="20" rx="3" />
-          <path className="fx-vial-line" d="M36 22v8M54 22v8" />
-          <rect className="fx-vial-body" x="26" y="30" width="38" height="146" rx="17" />
+      <svg width="82" height="196" viewBox="0 0 96 230" fill="none">
+        <defs>
+          <linearGradient id="fxCap" x1="31" y1="0" x2="65" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stopColor="#17171b" />
+            <stop offset="0.3" stopColor="#4a4a52" />
+            <stop offset="0.55" stopColor="#232329" />
+            <stop offset="1" stopColor="#0c0c10" />
+          </linearGradient>
+          <linearGradient id="fxGlass" x1="28" y1="0" x2="68" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stopColor="#ffffff" stopOpacity="0.30" />
+            <stop offset="0.35" stopColor="#ffffff" stopOpacity="0.10" />
+            <stop offset="0.6" stopColor="#ffffff" stopOpacity="0.05" />
+            <stop offset="1" stopColor="#ffffff" stopOpacity="0.24" />
+          </linearGradient>
+          <linearGradient id="fxLiquid" x1="0" y1="78" x2="0" y2="221" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stopColor="#f4e3c0" stopOpacity="0.7" />
+            <stop offset="1" stopColor="#e6c893" stopOpacity="0.8" />
+          </linearGradient>
+        </defs>
+        {/* tappo spray */}
+        <rect x="34" y="2" width="28" height="22" rx="4" fill="url(#fxCap)" />
+        <rect x="31" y="24" width="34" height="16" rx="2" fill="url(#fxCap)" />
+        <g stroke="#ffffff" strokeOpacity="0.10" strokeWidth="1">
+          <path d="M35 25v14M40 25v14M45 25v14M50 25v14M55 25v14M60 25v14" />
         </g>
-        <text className="fx-vial-mark" x="45" y="112" textAnchor="middle">
+        <rect x="34" y="2" width="28" height="22" rx="4" stroke="#ffffff" strokeOpacity="0.18" />
+        {/* collo in vetro */}
+        <rect x="38" y="40" width="20" height="9" fill="#ffffff" fillOpacity="0.22" />
+        {/* corpo in vetro */}
+        <rect x="28" y="48" width="40" height="176" rx="15" fill="url(#fxGlass)" stroke="#ffffff" strokeOpacity="0.35" />
+        {/* liquido */}
+        <rect x="31.5" y="78" width="33" height="143" rx="12" fill="url(#fxLiquid)" />
+        <ellipse cx="48" cy="79" rx="16" ry="2.6" fill="#ffffff" fillOpacity="0.45" />
+        {/* etichetta con il «?» */}
+        <rect x="30" y="104" width="36" height="58" rx="3" fill="#fdfdfb" />
+        <text
+          x="48"
+          y="143"
+          textAnchor="middle"
+          fontFamily="var(--fx-font-sans), sans-serif"
+          fontWeight="700"
+          fontSize="26"
+          fill="#17171b"
+        >
           ?
         </text>
+        {/* riflesso del vetro */}
+        <rect x="33" y="54" width="4.5" height="164" rx="2.2" fill="#ffffff" fillOpacity="0.30" />
       </svg>
     </figure>
   );
