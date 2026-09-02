@@ -33,6 +33,7 @@ const it = {
       defaultMittente: 'Marco',
     },
     cta: 'Inizia il quiz',
+    tapWatch: 'Tocca l\u2019orologio',
   },
 
   warmup: 'Partiamo.',

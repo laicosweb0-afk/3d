@@ -21,6 +21,10 @@ type TrackedEvent = {
   code: string;
 };
 
+/* L'animazione d'ingresso gira una sola volta per sessione: se si torna
+ * a S0 si vede lo stato finale, senza rigiocarla. */
+let introPlayed = false;
+
 /* ------------------------------------------------------------------ */
 /* Elementi ricorrenti                                                 */
 /* ------------------------------------------------------------------ */
@@ -31,64 +35,6 @@ function Logo({ onDark = false }: { onDark?: boolean }) {
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={onDark ? '/WOMAN-logo-white.png' : '/WOMAN-logo.png'} alt="WO•MAN Perfume Store" />
     </div>
-  );
-}
-
-/* La fialetta del pacco, ricreata: vetro, liquido dorato, tappo spray
- * nero a coste, etichetta bianca con il solo «?». Nessun logo sopra. */
-function Vial() {
-  return (
-    <figure className="fx-vial" aria-hidden="true">
-      <svg width="82" height="196" viewBox="0 0 96 230" fill="none">
-        <defs>
-          <linearGradient id="fxCap" x1="31" y1="0" x2="65" y2="0" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stopColor="#17171b" />
-            <stop offset="0.3" stopColor="#4a4a52" />
-            <stop offset="0.55" stopColor="#232329" />
-            <stop offset="1" stopColor="#0c0c10" />
-          </linearGradient>
-          <linearGradient id="fxGlass" x1="28" y1="0" x2="68" y2="0" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stopColor="#ffffff" stopOpacity="0.30" />
-            <stop offset="0.35" stopColor="#ffffff" stopOpacity="0.10" />
-            <stop offset="0.6" stopColor="#ffffff" stopOpacity="0.05" />
-            <stop offset="1" stopColor="#ffffff" stopOpacity="0.24" />
-          </linearGradient>
-          <linearGradient id="fxLiquid" x1="0" y1="78" x2="0" y2="221" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stopColor="#f4e3c0" stopOpacity="0.7" />
-            <stop offset="1" stopColor="#e6c893" stopOpacity="0.8" />
-          </linearGradient>
-        </defs>
-        {/* tappo spray */}
-        <rect x="34" y="2" width="28" height="22" rx="4" fill="url(#fxCap)" />
-        <rect x="31" y="24" width="34" height="16" rx="2" fill="url(#fxCap)" />
-        <g stroke="#ffffff" strokeOpacity="0.10" strokeWidth="1">
-          <path d="M35 25v14M40 25v14M45 25v14M50 25v14M55 25v14M60 25v14" />
-        </g>
-        <rect x="34" y="2" width="28" height="22" rx="4" stroke="#ffffff" strokeOpacity="0.18" />
-        {/* collo in vetro */}
-        <rect x="38" y="40" width="20" height="9" fill="#ffffff" fillOpacity="0.22" />
-        {/* corpo in vetro */}
-        <rect x="28" y="48" width="40" height="176" rx="15" fill="url(#fxGlass)" stroke="#ffffff" strokeOpacity="0.35" />
-        {/* liquido */}
-        <rect x="31.5" y="78" width="33" height="143" rx="12" fill="url(#fxLiquid)" />
-        <ellipse cx="48" cy="79" rx="16" ry="2.6" fill="#ffffff" fillOpacity="0.45" />
-        {/* etichetta con il «?» */}
-        <rect x="30" y="104" width="36" height="58" rx="3" fill="#fdfdfb" />
-        <text
-          x="48"
-          y="143"
-          textAnchor="middle"
-          fontFamily="var(--fx-font-sans), sans-serif"
-          fontWeight="700"
-          fontSize="26"
-          fill="#17171b"
-        >
-          ?
-        </text>
-        {/* riflesso del vetro */}
-        <rect x="33" y="54" width="4.5" height="164" rx="2.2" fill="#ffffff" fillOpacity="0.30" />
-      </svg>
-    </figure>
   );
 }
 
@@ -293,35 +239,115 @@ function Landing({
   nome: string;
   onStart: () => void;
 }) {
+  // loading: precarico i PNG · playing: sequenza · done: stato finale ·
+  // fallback: asset mancanti, si torna al bottone classico
+  const [phase, setPhase] = useState<'loading' | 'playing' | 'done' | 'fallback'>(() =>
+    introPlayed ? 'done' : 'loading',
+  );
+
+  useEffect(() => {
+    if (phase !== 'loading') return;
+    let cancelled = false;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const load = (src: string) =>
+      new Promise<void>((resolve, reject) => {
+        const im = new window.Image();
+        im.onload = () => resolve();
+        im.onerror = () => reject(new Error(src));
+        im.src = src;
+      });
+    const timeout = new Promise<never>((_, reject) => {
+      window.setTimeout(() => reject(new Error('timeout')), 2500);
+    });
+    Promise.race([Promise.all([load('/rabbit-sprite.png'), load('/watch.png')]), timeout])
+      .then(() => {
+        if (cancelled) return;
+        introPlayed = true;
+        setPhase(reduced ? 'done' : 'playing');
+      })
+      .catch(() => {
+        if (cancelled) return;
+        introPlayed = true;
+        setPhase('fallback');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [phase]);
+
   const mittente = copy.landing.busta.defaultMittente;
+  const playing = phase === 'playing';
+  const waiting = phase === 'loading';
+  const late = playing ? ' fx-reveal' : '';
+  const hidden = waiting ? ' fx-prewait' : '';
+
+  const hero = (
+    <div className={`fx-hero${late}${hidden}`}>
+      <p className="fx-eyebrow">{copy.eyebrow}</p>
+      {entry === 'coupon' ? (
+        <>
+          <h1 className="fx-h1">{copy.landing.title}</h1>
+          <p className="fx-lede">{copy.landing.sub}</p>
+        </>
+      ) : (
+        <>
+          <h1 className="fx-h1">{fill(copy.landing.busta.title, { nome })}</h1>
+          <p className="fx-lede">{fill(copy.landing.busta.sub, { mittente })}</p>
+          <p className="fx-note" style={{ marginTop: 'var(--fx-space-3)' }}>
+            {fill(copy.landing.busta.transparency, { mittente })}
+          </p>
+        </>
+      )}
+    </div>
+  );
+
+  if (phase === 'fallback') {
+    return (
+      <>
+        <div className="fx-top">
+          <Logo onDark />
+        </div>
+        <div className="fx-main">{hero}</div>
+        <div className="fx-bottom">
+          <Cta onClick={onStart}>{copy.landing.cta}</Cta>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <div className="fx-top">
         <Logo onDark />
       </div>
       <div className="fx-main">
-        <div className="fx-hero">
-          <p className="fx-eyebrow">{copy.eyebrow}</p>
-          {entry === 'coupon' ? (
-            <>
-              <h1 className="fx-h1 fx-h1--display">{copy.landing.title}</h1>
-              <p className="fx-lede">{copy.landing.sub}</p>
-            </>
-          ) : (
-            <>
-              <h1 className="fx-h1 fx-h1--display">{fill(copy.landing.busta.title, { nome })}</h1>
-              <p className="fx-lede">{fill(copy.landing.busta.sub, { mittente })}</p>
-              <p className="fx-note" style={{ marginTop: 'var(--fx-space-3)' }}>
-                {fill(copy.landing.busta.transparency, { mittente })}
-              </p>
-            </>
-          )}
+        {hero}
+        <div className={`fx-watchwrap${hidden}`}>
+          <button
+            className={`fx-watch${playing ? ' fx-watch--fall' : ''}`}
+            onClick={onStart}
+            aria-label={copy.landing.cta}
+          >
+            <span className="fx-watch-idle">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/watch.png" alt="" width="140" height="191" />
+            </span>
+          </button>
+          <p className={`fx-hint${late}`}>{copy.landing.tapWatch}</p>
         </div>
-        <Vial />
       </div>
-      <div className="fx-bottom">
-        <Cta onClick={onStart}>{copy.landing.cta}</Cta>
+      <div className={`fx-bottom${late}${hidden}`}>
+        <button className="fx-ghost" onClick={onStart}>
+          {copy.landing.cta}
+        </button>
       </div>
+      {playing && (
+        <div className="fx-intro" aria-hidden="true">
+          <div className="fx-rabbit-track">
+            <div className="fx-rabbit" />
+          </div>
+        </div>
+      )}
     </>
   );
 }
