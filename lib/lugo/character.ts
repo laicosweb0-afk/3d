@@ -29,6 +29,14 @@ export interface StatoPersona {
   vz: number;
   /** Fase del passo per l'animazione (cresce con la distanza percorsa). */
   fase: number;
+  /**
+   * Quota da terra in metri: 0 al suolo, sale solo durante il salto. È una
+   * dimensione IN PIÙ, non un cambio del moto orizzontale: gli assi, la
+   * rampa e lo yaw non la guardano mai.
+   */
+  y: number;
+  /** Velocità verticale (m/s), viva solo in aria. */
+  vy: number;
 }
 
 /** Tutti i numeri del movimento in un posto solo, facili da ritoccare. */
@@ -57,6 +65,15 @@ export const PERSONA = {
    */
   zonaMorta: 0.02,
   raggio: 0.35,
+  /**
+   * m/s d'impulso verticale del salto. Con la gravità qui sotto l'apice è
+   * ~0,59 m e si sta in aria ~0,7 s: quanto basta per un muretto da mezzo
+   * metro senza sembrare sulla luna. Niente coyote-time e niente buffering:
+   * si salta da terra, punto.
+   */
+  saltoImpulso: 3.4,
+  /** m/s²: la gravità del salto (quella vera, non quella dei platform). */
+  gravita: 9.8,
 } as const;
 
 /** Differenza fra due angoli, riportata in (−π, π]. */
@@ -73,6 +90,14 @@ export function stepPersona(
   dt: number,
   fisica: MondoFisico,
   cameraYaw: number,
+  /**
+   * true nell'ISTANTE in cui si chiede il salto (il fronte del tasto lo fa
+   * il Player, che è l'unico a sapere di fuoco e bottoni dello schermo).
+   * Sta a parte e non dentro StatoInput per la stessa ragione per cui
+   * `corsa` è opzionale: gli StatoInput costruiti a mano dai banchi di
+   * prova non devono cambiare di una virgola.
+   */
+  salta = false,
 ): number {
   // ── 1. l'input nel riferimento della camera ──────────────────────────
   // avanti = dove guarda la camera; destra = avanti ruotato di +90° nel
@@ -121,6 +146,26 @@ export function stepPersona(
   s.vx = Math.cos(s.yaw) * v;
   s.vz = Math.sin(s.yaw) * v;
 
+  // ── 3b. il salto: la quota, e SOLO la quota ──────────────────────────
+  // Si stacca da terra solo da terra (y = 0): in aria il tasto non fa
+  // niente, quindi il doppio salto non esiste per costruzione. Il moto
+  // orizzontale qui sopra non è stato toccato di una riga: in volo la
+  // rampa, lo yaw e le zone morte lavorano identici, e l'unica cosa che
+  // cambia è che risolviCerchio riceve la quota e lascia passare sopra
+  // gli ostacoli bassi. Il confronto è `=== 0` e non `<= 0` per pigrizia
+  // difensiva: uno stato costruito a mano senza `y` resta a terra.
+  if (salta && s.y === 0) s.vy = PERSONA.saltoImpulso;
+  if (s.y > 0 || s.vy > 0) {
+    s.vy -= PERSONA.gravita * dt;
+    s.y += s.vy * dt;
+    // all'atterraggio si torna ESATTAMENTE a zero: niente code asintotiche,
+    // il terreno di Lugo è piatto e y è anche la chiave del "sono a terra"
+    if (s.y <= 0) {
+      s.y = 0;
+      s.vy = 0;
+    }
+  }
+
   // ── 4. spostamento e collisione ──────────────────────────────────────
   // da dove si parte: serve dopo, per misurare quanto ci si è mossi DAVVERO
   const x0 = s.x;
@@ -129,7 +174,9 @@ export function stepPersona(
   s.z += s.vz * dt;
 
   const out = { x: 0, z: 0 };
-  const contatto = fisica.risolviCerchio(s.x, s.z, PERSONA.raggio, out);
+  // la quota entra nella fisica: a terra (y=0) panchine e fioriere sono
+  // muri come tutto il resto, in volo si scavalcano se si è sopra la loro h
+  const contatto = fisica.risolviCerchio(s.x, s.z, PERSONA.raggio, out, s.y);
   if (contatto) {
     s.x = out.x;
     s.z = out.z;
@@ -176,6 +223,10 @@ export function stepPersona(
   // 90 cm. Con il vecchio 2.2 il ciclo copriva 2,9 m e i piedi
   // strisciavano sull'asfalto.
   const vFinale = Math.hypot(s.vx, s.vz);
-  if (vFinale > 0.05) s.fase += Math.hypot(s.x - x0, s.z - z0) * FALCATA;
+  // In aria la fase si CONGELA: le gambe sono raccolte (Character le piega
+  // apposta) e un ciclo di camminata che avanza a mezz'aria si rivedrebbe
+  // all'atterraggio come uno scatto del passo. La guardia è !(y > 0) e non
+  // y === 0, così uno stato senza `y` continua a camminare come sempre.
+  if (vFinale > 0.05 && !(s.y > 0)) s.fase += Math.hypot(s.x - x0, s.z - z0) * FALCATA;
   return vFinale;
 }

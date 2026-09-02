@@ -972,6 +972,13 @@
   color: var(--testo);
 }
 
+/* il bottone SALTO: la freccia in su accanto a CORRI e al pugno */
+.lugo-pulsante-salto {
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--testo);
+}
+
 /* i cursori del mixer audio */
 .lugo-imp-etichetta {
   min-width: 5.5rem;
@@ -1737,4 +1744,117 @@
   font-size: 0.68rem;
   font-variant-numeric: tabular-nums;
   color: var(--accento);
+}
+
+/* ── i capitoli della vita a Lugo ──────────────────────────────────────── */
+
+/* La colonna in alto a sinistra: pannello missione sopra, riga del
+   capitolo sotto. Sta al posto esatto del vecchio pannello (1rem/1rem):
+   qui dentro il pannello passa a `static` e i suoi top/left storici
+   smettono di contare, così la riga del capitolo può stargli sotto senza
+   dover indovinare quanto è alto — l'altezza cambia col timer e coi
+   titoli che vanno a capo, e ogni offset fisso provato finiva o
+   sovrapposto o a mezz'aria. */
+.lugo-capitolo-colonna {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.lugo-capitolo-colonna .lugo-missione {
+  position: static;
+}
+
+/* la riga del capitolo: sobria, di vetro come tutto l'HUD, mai un blocco.
+   Il tetto di larghezza fa entrare per intero il traguardo doppio del
+   capitolo 2 («Prove in bottega… · Consegne fatte…») senza però arrivare
+   sotto la scheda SCOPERTO, che sta centrata a 21rem: con 28rem su uno
+   schermo da 1280 le due si sfiorano e basta. */
+.lugo-capitolo {
+  max-width: min(28rem, 70vw);
+  padding: 0.3rem 0.75rem 0.34rem;
+  background: var(--vetro);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid var(--bordo);
+  border-radius: 10px;
+  box-shadow: var(--ombra);
+  font-size: 0.72rem;
+  color: var(--muto);
+  /* i traguardi doppi («Prove in bottega… · Consegne…») possono essere
+     lunghi: la riga resta una riga e quel che avanza diventa un'ellissi,
+     lo stesso rimedio dell'avviso e del cartello della via */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lugo-capitolo-n {
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--accento);
+}
+
+.lugo-capitolo-nome {
+  font-weight: 700;
+  color: var(--testo);
+}
+
+/* ── la scheda «CAPITOLO COMPLETATO» ─────────────────────────────────────
+   Riusa la base .lugo-scheda ma vive in una fascia PIÙ BASSA: quando il
+   capitolo si chiude insieme all'ultima missione, l'esito compare al suo
+   16% di sempre e questa scheda gli fa da seconda riga, mai da sipario.
+   L'offset è in rem sotto il 16%, non una percentuale a sé: così le due
+   schede non si toccano nemmeno sugli schermi bassi, dove i punti
+   percentuali valgono pochi pixel e un 34% «a occhio» finiva dentro
+   l'esito. */
+.lugo-scheda-capitolo {
+  top: calc(16% + 9rem);
+  border-left-color: #ffd08a;
+  /* la sfumatura parte più tardi di quella dell'esito (4,2s): la scheda
+     del capitolo resta l'ultima a spegnersi, com'è giusto per il
+     traguardo più grosso; il timer in Hud.tsx la toglie dal DOM a 6,4s */
+  animation: lugo-scheda-entra 0.4s cubic-bezier(0.2, 0.9, 0.3, 1) both, lugo-sfuma 0.7s ease-in 5.6s forwards;
+}
+
+.lugo-capitolo-etichetta {
+  color: #ffd08a;
+}
+
+.lugo-capitolo-avanti {
+  margin-top: 0.45rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--bordo);
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.lugo-capitolo-avanti-n {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--accento);
+}
+
+.lugo-capitolo-avanti-motto {
+  font-size: 0.88rem;
+  font-style: italic;
+  color: var(--muto);
+}
+
+/* sui telefoni la riga si stringe come il pannello missione (56vw) e la
+   scheda segue il 12% delle altre schede cinematografiche */
+@media (max-width: 700px) {
+  .lugo-capitolo {
+    max-width: 56vw;
+    font-size: 0.68rem;
+  }
+  .lugo-scheda-capitolo {
+    top: calc(12% + 8rem);
+  }
 }

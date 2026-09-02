@@ -168,13 +168,21 @@ function Gamba({
     // a 88 giri al minuto senza nessun contatore nuovo.
     const sella = rt.sella;
     const pedalata = 0.62 + Math.sin(rt.persona.fase + fase) * 0.3;
-    anca.current.rotation.z = camminata * (1 - sella) + pedalata * sella;
+    // In ARIA le gambe si raccolgono: coscia avanti e ginocchio piegato
+    // forte, niente ciclo del passo a mezz'aria. Il peso della posa è la
+    // quota stessa saturata a 22 cm — un numero CONTINUO per costruzione
+    // (y sale e scende senza salti), quindi la piega entra ed esce morbida
+    // senza nessuno stato di mescola in più da tagliare.
+    const aria = Math.min(1, Math.max(0, rt.persona.y / 0.22));
+    const passoAnca = camminata * (1 - sella) + pedalata * sella;
+    anca.current.rotation.z = passoAnca * (1 - aria) + 0.55 * aria;
     if (ginocchio.current) {
       // il ginocchio va all'indietro, verso il tallone: angolo NEGATIVO
       const piega = Math.max(0, -Math.sin(rt.persona.fase + fase - 0.5));
       const camminaGin = -piega * (0.7 + corsa * 0.6) * v;
       const pedalaGin = -(0.95 + Math.sin(rt.persona.fase + fase + 1.9) * 0.45);
-      ginocchio.current.rotation.z = camminaGin * (1 - sella) + pedalaGin * sella;
+      const passoGin = camminaGin * (1 - sella) + pedalaGin * sella;
+      ginocchio.current.rotation.z = passoGin * (1 - aria) + -1.15 * aria;
     }
   });
 
@@ -307,8 +315,12 @@ function Braccio({
     // per questo la presa si pesa con (1 − sella). Il pugno resta sopra a
     // tutto — il ramo del colpo esce prima di arrivare qui.
     const inPresa = presa.current * (1 - sella);
+    // in aria le braccia salgono un poco, come per tenersi in equilibrio:
+    // stesso peso continuo delle gambe (la quota saturata), niente pendolo
+    const aria = Math.min(1, Math.max(0, rt.persona.y / 0.22));
     const spallaBase = camminata * (1 - sella) + 1.05 * sella;
-    spalla.current.rotation.z = spallaBase * (1 - inPresa) + 0.32 * inPresa;
+    const spallaTerra = spallaBase * (1 - inPresa) + 0.32 * inPresa;
+    spalla.current.rotation.z = spallaTerra * (1 - aria) + 0.5 * aria;
     // in corsa il gomito resta piegato, da vero podista; il braccio si
     // piega all'indietro, quindi negativo
     if (gomito.current) {
@@ -316,7 +328,8 @@ function Braccio({
       const gomitoBase = camminaGomito * (1 - sella) + -0.2 * sella;
       // il gomito della presa si piega in AVANTI (positivo): l'avambraccio
       // sale orizzontale sotto il fondo della scatola
-      gomito.current.rotation.z = gomitoBase * (1 - inPresa) + 0.78 * inPresa;
+      const gomitoTerra = gomitoBase * (1 - inPresa) + 0.78 * inPresa;
+      gomito.current.rotation.z = gomitoTerra * (1 - aria) + -0.3 * aria;
     }
   });
 
@@ -480,11 +493,15 @@ export const Character = forwardRef<THREE.Group, { rt: RuntimeGioco }>(function 
     // stessa linea a terra (rotation.x positivo = verso destra, come il
     // rollio dell'auto)
     const sella = rt.sella;
-    // il corpo intero sale e scende col passo; da fermo respira appena
+    // il corpo intero sale e scende col passo; da fermo respira appena.
+    // In ARIA né l'uno né l'altro: la quota vera la mette il Player sul
+    // gruppo esterno, e un rimbalzo del passo sommato al volo si leggerebbe
+    // come un singhiozzo a mezz'aria.
+    const aria = Math.min(1, Math.max(0, rt.persona.y / 0.22));
     if (corpo.current) {
       const rimbalzo = Math.abs(Math.sin(rt.persona.fase)) * 0.045 * v;
       const respiro = (1 - v) * Math.sin(t * 1.5) * 0.008;
-      corpo.current.position.y = (rimbalzo + respiro) * (1 - sella);
+      corpo.current.position.y = (rimbalzo + respiro) * (1 - sella) * (1 - aria);
       // da fermo il peso si sposta piano da un piede all'altro
       corpo.current.rotation.x =
         (1 - v) * Math.sin(t * 0.8) * 0.035 * (1 - sella) + rt.piega * sella;

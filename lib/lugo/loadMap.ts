@@ -32,6 +32,18 @@ export interface ColliderRT {
   sin: number;
   /** Segmenti del perimetro [x1,z1,x2,z2]×n (solo tipo 'edges'). */
   segs: Float32Array | null;
+  /**
+   * Altezza dell'ostacolo in metri, ed è la marcatura degli OSTACOLI BASSI:
+   * ASSENTE vuol dire infinita, cioè invalicabile. Tutto il costruito —
+   * edifici, recinzioni, pilastri del Pavaglione, auto in sosta — nasce
+   * senza `h` e resta un muro anche per chi salta: nessun chiamante
+   * esistente deve toccare una riga. La ricevono SOLO gli arredi bassi
+   * scavalcabili (panchine, fioriere), con la misura presa dalla geometria
+   * disegnata in imperfezioni.ts, e chi risolve le collisioni dichiarando
+   * la propria quota (risolviCerchio con quotaY) ci passa sopra quando
+   * quota ≥ h.
+   */
+  h?: number;
   // bbox per la spatial hash
   minX: number;
   minZ: number;
