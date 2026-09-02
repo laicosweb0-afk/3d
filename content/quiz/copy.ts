@@ -9,7 +9,7 @@ const it = {
     description: 'Annusa. Indovina. Condividi.',
   },
 
-  claim: 'SMELL. GUESS. SHARE.',
+  claim: 'SMELL. GUESS.\nSHARE.',
   claimSub: 'Annusa. Indovina. Condividi.',
   eyebrow: 'The Fragrance Experience',
 
@@ -21,11 +21,11 @@ const it = {
   levelLabel: 'Il tuo livello',
 
   landing: {
-    title: 'Riconosci la fragranza?',
+    title: 'Riconosci la\nfragranza?',
     sub: 'Annusa la tua fialetta.\nPoi prova a indovinare.',
     busta: {
       // {nome} e {mittente} vengono sostituiti a runtime
-      title: 'Ciao {nome}.',
+      title: 'Ciao\n{nome}.',
       sub: '{mittente} ha annusato questa fragranza e ha pensato che dovessi sentirla anche tu.',
       // Riga obbligatoria: è la trasparenza dovuta.
       transparency: '{mittente} saprà che l’hai aperta.',
@@ -39,20 +39,20 @@ const it = {
 
   quiz: {
     eyebrow: 'Prima di scoprirlo.',
-    question: 'Cosa hai sentito?',
+    question: 'Cosa hai\nsentito?',
   },
 
   result: {
     guessed: {
       eyebrow: 'Naso allenato',
-      title: 'È esattamente {name}.',
+      title: 'È esattamente\n{name}.',
       byMaison: 'di {maison}',
       // mostrata solo a chi indovina
       pct: 'Il {pct}% ha risposto come te.',
     },
     missed: {
       eyebrow: 'Il tuo naso ti ha portato altrove',
-      title: 'È {name}.',
+      title: 'È\n{name}.',
       trick: 'E non è un caso: sotto c’è un accordo di {trickNote} che confonde quasi tutti.',
     },
     cta: 'Scopri le tue 3 fragranze',
@@ -66,14 +66,14 @@ const it = {
   },
 
   recs: {
-    titleRight: 'Le tue 3 fragranze.',
-    titleWrong: 'Scelte per te.',
+    titleRight: 'Le tue\n3 fragranze.',
+    titleWrong: 'Scelte\nper te.',
     subWrong: 'Abbiamo scelto 3 fragranze per te.',
     cta: 'Salva il tuo credito',
   },
 
   email: {
-    title: 'Dove ti mandiamo il tuo credito?',
+    title: 'Dove ti mandiamo\nil tuo credito?',
     placeholder: 'La tua email',
     consent: 'Acconsento a ricevere il credito via email.',
     privacyLink: 'Privacy policy',
@@ -81,7 +81,7 @@ const it = {
   },
 
   envelope: {
-    title: 'Hai una busta da consegnare.',
+    title: 'Hai una busta\nda consegnare.',
     text: 'Dentro c’è un’altra fragranza senza nome. Decidi tu a chi darla.',
     namePlaceholder: 'Il suo nome (facoltativo)',
     cta: 'Fatto',

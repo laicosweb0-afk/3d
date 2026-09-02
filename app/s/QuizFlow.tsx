@@ -25,11 +25,11 @@ type TrackedEvent = {
 /* Elementi ricorrenti                                                 */
 /* ------------------------------------------------------------------ */
 
-function Logo() {
+function Logo({ onDark = false }: { onDark?: boolean }) {
   return (
     <div className="fx-logo">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/WOMAN-logo.png" alt="WO•MAN Perfume Store" />
+      <img src={onDark ? '/WOMAN-logo-white.png' : '/WOMAN-logo.png'} alt="WO•MAN Perfume Store" />
     </div>
   );
 }
@@ -39,9 +39,9 @@ function Vial() {
   return (
     <figure className="fx-vial" aria-hidden="true">
       <svg width="90" height="180" viewBox="0 0 90 180" fill="none">
-        <g stroke="currentColor" strokeWidth="1.25">
+        <g strokeWidth="1.25">
           <rect className="fx-vial-body" x="33" y="2" width="24" height="20" rx="3" />
-          <path d="M36 22v8M54 22v8" />
+          <path className="fx-vial-line" d="M36 22v8M54 22v8" />
           <rect className="fx-vial-body" x="26" y="30" width="38" height="146" rx="17" />
         </g>
         <text className="fx-vial-mark" x="45" y="112" textAnchor="middle">
@@ -56,14 +56,21 @@ function Cta({
   children,
   onClick,
   disabled,
+  fill = false,
 }: {
   children: React.ReactNode;
   onClick: () => void;
   disabled?: boolean;
+  fill?: boolean;
 }) {
   return (
-    <button className="fx-cta" onClick={onClick} disabled={disabled}>
+    <button
+      className={`fx-cta${fill ? ' fx-cta--fill' : ''}`}
+      onClick={onClick}
+      disabled={disabled}
+    >
       {children}
+      {!fill && <span className="fx-arrow">→</span>}
     </button>
   );
 }
@@ -192,7 +199,11 @@ export default function QuizFlow() {
 
   return (
     <>
-      <div className={`fx-step${step === 'landing' ? ' fx-step--landing' : ''}`} key={step}>
+      <div
+        className={`fx-step${step === 'landing' ? ' fx-step--landing' : ''}`}
+        data-bg={step === 'landing' || step === 'end' ? 'dark' : undefined}
+        key={step}
+      >
         {step === 'landing' && <Landing entry={entry} nome={urlNome} onStart={() => setStep('warmup')} />}
         {step === 'warmup' && <Interlude title={copy.warmup} />}
         {step === 'quiz' && <Question answer={answer} onAnswer={onAnswer} />}
@@ -246,7 +257,7 @@ function Landing({
   return (
     <>
       <div className="fx-top">
-        <Logo />
+        <Logo onDark />
       </div>
       <div className="fx-main">
         <div className="fx-hero">
@@ -282,7 +293,9 @@ function Landing({
 function Interlude({ title }: { title: string }) {
   return (
     <>
-      <div className="fx-top" />
+      <div className="fx-top">
+        <Logo />
+      </div>
       <div className="fx-main">
         <h1 className="fx-h1 fx-h1--display">{title}</h1>
       </div>
@@ -304,7 +317,9 @@ function Question({
 }) {
   return (
     <>
-      <div className="fx-top" />
+      <div className="fx-top">
+        <Logo />
+      </div>
       <div className="fx-main">
         <p className="fx-eyebrow">{copy.quiz.eyebrow}</p>
         <h1 className="fx-h1">{copy.quiz.question}</h1>
@@ -333,7 +348,9 @@ function Question({
 function Result({ guessed, onNext }: { guessed: boolean; onNext: () => void }) {
   return (
     <>
-      <div className="fx-top" />
+      <div className="fx-top">
+        <Logo />
+      </div>
       <div className="fx-main">
         {guessed ? (
           <>
@@ -377,7 +394,9 @@ function Recs({
 }) {
   return (
     <>
-      <div className="fx-top" />
+      <div className="fx-top">
+        <Logo />
+      </div>
       <div className="fx-main">
         <p className="fx-eyebrow">{copy.eyebrow}</p>
         <h1 className="fx-h1">{guessed ? copy.recs.titleRight : copy.recs.titleWrong}</h1>
@@ -412,7 +431,9 @@ function Email({ onSave }: { onSave: (email: string) => void }) {
 
   return (
     <>
-      <div className="fx-top" />
+      <div className="fx-top">
+        <Logo />
+      </div>
       <div className="fx-main">
         <h1 className="fx-h1">{copy.email.title}</h1>
       </div>
@@ -435,7 +456,7 @@ function Email({ onSave }: { onSave: (email: string) => void }) {
             </a>
           </span>
         </label>
-        <Cta onClick={() => onSave(email)} disabled={!valid}>
+        <Cta onClick={() => onSave(email)} disabled={!valid} fill>
           {copy.email.cta}
         </Cta>
       </div>
@@ -452,7 +473,9 @@ function Envelope({ onFinish }: { onFinish: (name: string | null) => void }) {
 
   return (
     <>
-      <div className="fx-top" />
+      <div className="fx-top">
+        <Logo />
+      </div>
       <div className="fx-main">
         <h1 className="fx-h1">{copy.envelope.title}</h1>
         <p className="fx-lede">{copy.envelope.text}</p>
@@ -482,11 +505,11 @@ function Closing({ level }: { level: string }) {
   return (
     <>
       <div className="fx-top">
-        <Logo />
+        <Logo onDark />
       </div>
       <div className="fx-main">
-        <h1 className="fx-claim">{copy.claim}</h1>
-        <p className="fx-claim-sub">{copy.claimSub}</p>
+        <h1 className="fx-h1">{copy.claim}</h1>
+        <p className="fx-lede">{copy.claimSub}</p>
         <p className="fx-level">
           {copy.levelLabel}: {level}
         </p>

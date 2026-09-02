@@ -1,38 +1,56 @@
 /* The Fragrance Experience — design tokens.
- * Palette WO•MAN (valori del brief, non toccare): avorio caldo come
- * fondo, mai bianco o grigio; il rosa è il gesto primario e l'accento. */
+ * Apple-editorial: bianco caldo in alto, aura di colore soffusa che sale
+ * dal basso, testo nero, molta aria. Niente serif, niente animazioni di
+ * sfondo. */
 :root {
   /* colore */
-  --fx-ink: #0f0e12; /* testo principale, testo sulla CTA */
-  --fx-bg: #f3ece0; /* fondo chiaro: avorio caldo */
-  --fx-surface: #faf6ef; /* superfici: card, opzioni, input */
-  --fx-line: #e3d8cc; /* bordi e separatori */
-  --fx-muted: #8a7f6f; /* testo secondario */
-  --fx-magenta: #e966b5; /* rosa WO•MAN — bottone primario, stati attivi */
-  --fx-magenta-strong: #de4fa4; /* hover del bottone primario */
-  --fx-magenta-deep: #bd3a66; /* accenti testuali */
+  --fx-ink: #0f0e12; /* testo principale, bordo/tap dei bottoni */
+  --fx-base: #fdfbf8; /* base delle schermate chiare */
+  --fx-base-dark: #0b0a0e; /* base di ingresso e chiusura */
+  --fx-light: #f7f3ee; /* testo sulle schermate scure */
+  --fx-light-soft: rgba(247, 243, 238, 0.55); /* secondario su scuro */
+  --fx-eyebrow: #8a7f6f; /* occhiello su chiaro */
+  --fx-sub: #6f6862; /* sottotitoli su chiaro */
+  --fx-magenta: #e966b5; /* rosa WO•MAN — conferma finale, stati attivi */
+  --fx-hairline: rgba(15, 14, 18, 0.08); /* bordi del vetro */
+
+  /* mesh gradient: il colore vive solo nel terzo inferiore,
+   * la metà alta resta quasi bianca perché è dove sta il testo. */
+  --fx-mesh-light: radial-gradient(
+      80% 55% at 18% 92%,
+      rgba(233, 102, 181, 0.34) 0%,
+      rgba(233, 102, 181, 0) 62%
+    ),
+    radial-gradient(75% 50% at 82% 88%, rgba(150, 110, 220, 0.3) 0%, rgba(150, 110, 220, 0) 60%),
+    radial-gradient(90% 45% at 50% 100%, rgba(255, 178, 140, 0.22) 0%, rgba(255, 178, 140, 0) 65%),
+    radial-gradient(70% 40% at 50% 30%, rgba(253, 251, 248, 0.9) 0%, rgba(253, 251, 248, 0) 70%),
+    #fdfbf8;
+  --fx-mesh-dark: radial-gradient(
+      85% 55% at 20% 95%,
+      rgba(233, 102, 181, 0.3) 0%,
+      rgba(233, 102, 181, 0) 62%
+    ),
+    radial-gradient(75% 50% at 85% 92%, rgba(130, 90, 200, 0.26) 0%, rgba(130, 90, 200, 0) 60%),
+    #0b0a0e;
 
   /* tipografia — scala */
-  --fx-text-xs: 0.6875rem; /* 11px — eyebrow, label */
-  --fx-text-sm: 0.8125rem; /* 13px — note, didascalie */
-  --fx-text-base: 1.0625rem; /* 17px — corpo */
-  --fx-text-lg: 1.3125rem; /* 21px — nomi fragranza, sottotitoli */
-  --fx-text-xl: clamp(2rem, 7vw, 2.625rem); /* titoli serif */
-  --fx-text-2xl: clamp(2.5rem, 9vw, 3.75rem); /* titoli serif display */
-  --fx-tracking-caps: 0.16em;
+  --fx-text-note: 0.8125rem; /* 13px — note e secondario, ls 0.08em */
+  --fx-text-eyebrow: 0.6875rem; /* 11px — occhiello, ls 0.22em */
+  --fx-text-sub: 1.0625rem; /* 17px — sottotitolo */
+  --fx-text-title: clamp(2.5rem, 9vw, 2.875rem); /* 40–46px: 40 fissi su mobile */
 
-  /* spaziatura — scala */
-  --fx-space-1: 0.5rem;
-  --fx-space-2: 0.875rem;
-  --fx-space-3: 1.5rem;
-  --fx-space-4: 2.5rem;
-  --fx-space-5: 4rem;
-  --fx-space-6: 6rem;
+  /* spaziatura — respiro largo */
+  --fx-side: 1.75rem; /* margini laterali 28px */
+  --fx-gap-eyebrow: 1.25rem; /* occhiello → titolo 20px */
+  --fx-gap-title: 1.5rem; /* titolo → sottotitolo 24px */
+  --fx-gap-block: 3.5rem; /* sottotitolo → elemento successivo 56px */
+  --fx-gap-isle: 3rem; /* isolamento del blocco centrale 48px */
+  --fx-gap-bottom: 2.5rem; /* bottone principale dal fondo 40px */
 
   /* forma e movimento */
-  --fx-radius: 0.875rem; /* controlli */
-  --fx-radius-lg: 1.25rem; /* pannelli */
-  --fx-radius-pill: 980px; /* CTA */
+  --fx-radius-answer: 1rem; /* risposte 16px */
+  --fx-radius-glass: 1.5rem; /* blocco €15 24px */
+  --fx-radius-pill: 980px;
   --fx-ease: cubic-bezier(0.32, 0.72, 0, 1);
   --fx-dur: 520ms;
   --fx-dur-fast: 220ms;
