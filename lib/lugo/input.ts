@@ -4,6 +4,14 @@
 // gioco passa da qui: WASD + frecce, Shift corsa, Spazio freno a mano,
 // E/Invio sali-scendi, R raddrizza, F sgancia un pugno.
 //
+// Lo Spazio fa DUE mestieri e resta UN tasto solo: in auto e in bici è il
+// freno, a piedi è il salto. Qui viaggia sempre come `freno`; è `conStick`
+// a rileggerlo anche come `salta`, ed è il Player — l'unico che sa in che
+// modalità si sta giocando — a decidere quale dei due mestieri conta.
+// Registrarlo due volte nella mappa (freno E salta) sembrava più pulito,
+// ma due voci con lo stesso tasto dipendono da come drei risolve il
+// conflitto, cioè da un dettaglio di libreria che nessuno ha promesso.
+//
 // La E fa sei cose diverse e non è un caso: la sua precedenza è a gradini
 // FISSI e sta scritta in Player.tsx (1 chiudi il pannello, 2 scendi,
 // 3 la tua auto, 4 il veicolo da prendere, 5 bacheca o bottega, e per
@@ -68,6 +76,15 @@ export interface StatoInput {
    * `corri` (0 o 1), che è il comportamento di sempre.
    */
   corsa?: number;
+  /**
+   * Richiesta di salto (Spazio a piedi, o il bottone ↑ dello schermo).
+   * Opzionale come `corsa` e per la stessa ragione: gli StatoInput
+   * costruiti a mano non ne sanno niente e non devono saperne niente —
+   * assente vale «nessun salto». In auto e in bici il campo può risultare
+   * true insieme a `freno` (è lo stesso tasto): lì nessuno lo legge, il
+   * freno resta il freno.
+   */
+  salta?: boolean;
   freno: boolean;
   interagisci: boolean;
   reset: boolean;

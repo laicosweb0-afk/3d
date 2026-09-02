@@ -1,6 +1,8 @@
 // Fisica 2D del mondo (Lugo è in pianura): spatial hash dei collider degli
 // edifici, collisione cerchio-vs-OBB e cerchio-vs-segmento con risoluzione
 // a scivolamento. Nessuna libreria: deterministico, leggero, testabile.
+// L'unica concessione alla terza dimensione è l'altezza OPZIONALE `h` dei
+// collider: serve al salto, che scavalca panchine e fioriere ma mai i muri.
 
 import type { MondoLugo, ColliderRT } from './loadMap';
 
@@ -8,6 +10,20 @@ const CELLA = 16; // metri
 
 export class MondoFisico {
   private hash = new Map<number, ColliderRT[]>();
+  /**
+   * Gli OSTACOLI BASSI (panchine, fioriere) vivono in una hash TUTTA LORO,
+   * non in quella dei muri, e la ragione è di taglio chirurgico: li vede
+   * solo chi chiama risolviCerchio dichiarando la propria quota (il
+   * personaggio a piedi, che può saltarli). Auto, bici, pedoni, gazzella e
+   * tutti i punti che seminano la città con cerchioLibero continuano a
+   * vedere ESATTAMENTE il mondo di prima: metterli nella hash principale
+   * avrebbe fatto sbandare il traffico contro le panchine dei viali e
+   * spostato spawn e bacheche calcolati — mezzo gioco cambiato per dare
+   * un salto a una persona sola.
+   */
+  private hashBassi = new Map<number, ColliderRT[]>();
+  /** true dopo la prima chiamata di arredaOstacoliBassi: si arreda una volta. */
+  private bassiPronti = false;
   private minX: number;
   private minZ: number;
   private cols: number;
@@ -57,7 +73,11 @@ export class MondoFisico {
    * quel che resta è un fantasma solido in mezzo alla strada che nessuno
    * vede e che ferma le auto.
    */
-  private celle(c: ColliderRT, fn: (cella: ColliderRT[], k: number) => void): void {
+  private celle(
+    c: ColliderRT,
+    fn: (cella: ColliderRT[], k: number) => void,
+    mappa: Map<number, ColliderRT[]> = this.hash,
+  ): void {
     const x0 = Math.floor((c.minX - this.minX) / CELLA);
     const x1 = Math.floor((c.maxX - this.minX) / CELLA);
     const z0 = Math.floor((c.minZ - this.minZ) / CELLA);
@@ -65,18 +85,18 @@ export class MondoFisico {
     for (let z = z0; z <= z1; z++) {
       for (let x = x0; x <= x1; x++) {
         const k = this.chiave(x, z);
-        let cella = this.hash.get(k);
+        let cella = mappa.get(k);
         if (!cella) {
           cella = [];
-          this.hash.set(k, cella);
+          mappa.set(k, cella);
         }
         fn(cella, k);
       }
     }
   }
 
-  private inserisci(c: ColliderRT) {
-    this.celle(c, (cella) => cella.push(c));
+  private inserisci(c: ColliderRT, mappa: Map<number, ColliderRT[]> = this.hash) {
+    this.celle(c, (cella) => cella.push(c), mappa);
   }
 
   /**
@@ -101,9 +121,14 @@ export class MondoFisico {
     this.inserisci(c);
   }
 
-  /** Collider potenzialmente vicini a (x,z) entro raggio r. */
-  vicini(x: number, z: number, r: number): ColliderRT[] {
-    const out: ColliderRT[] = [];
+  /** Raccoglie in `out` i collider di `mappa` vicini a (x,z) entro raggio r. */
+  private viciniIn(
+    x: number,
+    z: number,
+    r: number,
+    mappa: Map<number, ColliderRT[]>,
+    out: ColliderRT[],
+  ): void {
     const visti = new Set<ColliderRT>();
     const x0 = Math.floor((x - r - this.minX) / CELLA);
     const x1 = Math.floor((x + r - this.minX) / CELLA);
@@ -111,7 +136,7 @@ export class MondoFisico {
     const z1 = Math.floor((z + r - this.minZ) / CELLA);
     for (let cz = z0; cz <= z1; cz++) {
       for (let cx = x0; cx <= x1; cx++) {
-        const cella = this.hash.get(this.chiave(cx, cz));
+        const cella = mappa.get(this.chiave(cx, cz));
         if (!cella) continue;
         for (const c of cella) {
           if (!visti.has(c)) {
@@ -121,19 +146,105 @@ export class MondoFisico {
         }
       }
     }
+  }
+
+  /** Collider potenzialmente vicini a (x,z) entro raggio r. */
+  vicini(x: number, z: number, r: number): ColliderRT[] {
+    const out: ColliderRT[] = [];
+    this.viciniIn(x, z, r, this.hash, out);
     return out;
+  }
+
+  /**
+   * Registra gli arredi bassi e scavalcabili — una volta sola, al primo
+   * fotogramma del gioco, quando la lista delle imperfezioni è GIÀ stata
+   * seminata dai componenti che la disegnano. Chiamarla due volte (uno
+   * smontaggio/rimontaggio del Player) non deve raddoppiare le panchine:
+   * di qui il chiavistello, che sta nella fisica e non nel chiamante
+   * perché è la fisica a pagare il conto dei doppioni.
+   *
+   * Le misure stanno qui e vengono dalla geometria disegnata in
+   * imperfezioni.ts (PEZZI): la panchina è 1,70×0,48 con la seduta a
+   * ~0,45 m; la fioriera è una vasca di 0,82 con il bordo a 0,52 — il
+   * collider si ferma a 0,50 perché lo scavalco non deve dipendere dal
+   * campionamento a fotogrammi radi del banco di prova, e i due centimetri
+   * che mancano sono il bordo smussato. Il cespuglio sopra la vasca è
+   * fogliame: si attraversa. Tutto il resto del disordine (cassonetti,
+   * cartelli, bici in sosta) NON diventa solido: le bici sono bersagli di
+   * furto e bisogna poterci arrivare addosso.
+   */
+  arredaOstacoliBassi(
+    oggetti: readonly { t: string; x: number; z: number; rot: number }[],
+  ): void {
+    if (this.bassiPronti) return;
+    this.bassiPronti = true;
+    const MISURE: Record<string, { hw: number; hd: number; h: number }> = {
+      panchina: { hw: 0.85, hd: 0.24, h: 0.45 },
+      fioriera: { hw: 0.41, hd: 0.41, h: 0.5 },
+    };
+    for (const o of oggetti) {
+      const m = MISURE[o.t];
+      if (!m) continue;
+      const r = Math.hypot(m.hw, m.hd);
+      this.inserisci(
+        {
+          tipo: 'obb',
+          cx: o.x,
+          cz: o.z,
+          hw: m.hw,
+          hd: m.hd,
+          cos: Math.cos(o.rot),
+          sin: Math.sin(o.rot),
+          segs: null,
+          h: m.h,
+          minX: o.x - r,
+          minZ: o.z - r,
+          maxX: o.x + r,
+          maxZ: o.z + r,
+        },
+        this.hashBassi,
+      );
+    }
   }
 
   /**
    * Spinge fuori un cerchio (x,z,r) da tutti i collider vicini.
    * Ritorna [nx, nz, penetrazione] dell'ultimo contatto (o null) e
    * scrive la posizione corretta in `out`.
+   *
+   * `quotaY` è la quota da terra di chi si muove, ed è OPZIONALE apposta:
+   * chi non la passa (auto, pedoni, tutte le chiamate esistenti) vede il
+   * mondo identico a prima, ostacoli bassi compresi — cioè NON li vede
+   * proprio, perché stanno nella loro hash separata. Chi la dichiara
+   * incontra anche gli arredi bassi: un collider con `h` definita e
+   * h ≤ quotaY non respinge (ci sei sopra, lo stai scavalcando); sotto
+   * quella quota respinge come un muro. In aria, poi, il cerchio si
+   * stringe alla metà contro i SOLI ostacoli bassi: le gambe sono
+   * raccolte (Character piega le ginocchia) e il raggio da fermo — 0,35 m
+   * di spalle E piedi — pretenderebbe un volo da lungista per superare
+   * una vasca di 0,82; contro i muri veri il raggio resta pieno anche a
+   * mezz'aria, che di lì non si passa comunque.
    */
-  risolviCerchio(x: number, z: number, r: number, out: { x: number; z: number }): [number, number] | null {
+  risolviCerchio(
+    x: number,
+    z: number,
+    r: number,
+    out: { x: number; z: number },
+    quotaY?: number,
+  ): [number, number] | null {
     let px = x;
     let pz = z;
     let contatto: [number, number] | null = null;
-    for (const c of this.vicini(x, z, r + 2)) {
+    const cand = this.vicini(x, z, r + 2);
+    if (quotaY !== undefined && this.hashBassi.size > 0) {
+      this.viciniIn(x, z, r + 2, this.hashBassi, cand);
+    }
+    for (const c of cand) {
+      let rc = r;
+      if (c.h !== undefined && quotaY !== undefined) {
+        if (quotaY >= c.h) continue;
+        if (quotaY > 0.02) rc = r * 0.5;
+      }
       if (c.tipo === 'obb') {
         // porta il punto nello spazio dell'OBB
         const dx = px - c.cx;
@@ -159,14 +270,14 @@ export class MondoFisico {
             dist = -ez;
           }
         }
-        if (dist < r) {
+        if (dist < rc) {
           const l = Math.hypot(ddx, ddz) || 1;
           const nxl = ddx / l;
           const nzl = ddz / l;
           // normale di nuovo in spazio mondo
           const nx = nxl * c.cos - nzl * c.sin;
           const nz = nxl * c.sin + nzl * c.cos;
-          const pen = r - dist;
+          const pen = rc - dist;
           px += nx * pen;
           pz += nz * pen;
           contatto = [nx, nz];
@@ -186,10 +297,10 @@ export class MondoFisico {
           let dx = px - qx;
           let dz = pz - qz;
           const dist = Math.hypot(dx, dz);
-          if (dist < r && dist > 1e-6) {
+          if (dist < rc && dist > 1e-6) {
             dx /= dist;
             dz /= dist;
-            const pen = r - dist;
+            const pen = rc - dist;
             px += dx * pen;
             pz += dz * pen;
             contatto = [dx, dz];

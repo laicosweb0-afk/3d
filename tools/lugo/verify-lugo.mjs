@@ -3223,6 +3223,407 @@ try {
     }
   }
 
+  // ── fase 13: i capitoli e il salto, su una partita nuova ──────────────
+  // Le due milestone chiedono un salvataggio VERGINE: il capitolo 1 coi
+  // suoi «0 di 4» esiste solo a missioni zero, e la scheda CAPITOLO
+  // COMPLETATO deve scattare all'AVANZAMENTO, mai al load. La pagina
+  // principale ha alle spalle furti, stelle e missioni fatte: riazzerarla
+  // a mano vorrebbe dire fidarsi di una pulizia che nessuno collauda. Si
+  // apre invece una pagina nuova di zecca — contesto nuovo, localStorage
+  // nuovo — e la partita ricomincia dall'auto, che è anche il posto giusto
+  // per la prova più delicata del salto: lo Spazio al volante deve restare
+  // il FRENO. Gli errori console di questa partita si raccolgono a parte,
+  // così il controllo storico «zero errori console» conserva il suo
+  // significato di sempre sulla pagina di sempre.
+  {
+    const errori2 = [];
+    const page2 = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    page2.on('pageerror', (e) => errori2.push(String(e)));
+    page2.on('console', (m) => {
+      if (m.type() === 'error') errori2.push(m.text());
+    });
+    const lugo2 = (expr) => page2.evaluate(`(() => { const L = window.__LUGO__; return L ? (${expr}) : undefined })()`);
+
+    await page2.goto(URL, { waitUntil: 'networkidle' });
+    await page2.waitForFunction(() => window.__LUGO__ && window.__LUGO__.pronto === true, null, { timeout: 40000 });
+    const salta2 = page2.locator('[data-hud="salta-intro"]');
+    if (await salta2.count()) await salta2.click({ timeout: 5000 }).catch(() => {});
+    await page2.waitForTimeout(400);
+    const gioca2 = page2.locator('[data-hud="gioca"]');
+    if (await gioca2.count()) await gioca2.click();
+    await page2.waitForTimeout(800);
+    // il fuoco resta sul bottone GIOCA appena cliccato: senza blur lo
+    // Spazio riattiverebbe il bottone invece di frenare — lezione già
+    // pagata dalla fase 2
+    await page2.evaluate(() => document.activeElement && document.activeElement.blur());
+
+    const haCapitoli = await lugo2("typeof L.capitolo === 'function'");
+    const haSalto = await lugo2("typeof L.scavalcabili === 'function' && typeof L.direzione().y === 'number'");
+
+    // completa una missione registrata: avvio da hook e teletrasporto di
+    // tappa in tappa — stessa retroazione della fase 4, ma sulla pagina
+    // nuova (il camminatore guidato è legato a `page`, qui non serve)
+    const completa2 = async (id) => {
+      const via = await lugo2(`L.avviaMissione(${JSON.stringify(id)})`);
+      if (!via) return `avviaMissione(${id}) rifiutata`;
+      for (let giri = 0; giri < 12; giri++) {
+        const stato = await lugo2('L.statoMissione()');
+        if (stato === 'completata') return null;
+        if (stato !== 'attiva') return `stato inatteso «${stato}»`;
+        const t = await lugo2('L.tappaCorrente()');
+        if (!t) {
+          await page2.waitForTimeout(400);
+          continue;
+        }
+        await lugo2(`L.teleport(${t.x}, ${t.z})`);
+        await page2
+          .waitForFunction(
+            (prima) => {
+              const w = window.__LUGO__;
+              return w.statoMissione() === 'completata' || JSON.stringify(w.tappaCorrente()) !== prima;
+            },
+            JSON.stringify(t),
+            { timeout: 30000 },
+          )
+          .catch(() => {});
+      }
+      return 'tappe non finite in 12 giri';
+    };
+
+    // ── capitoli: la partita vergine ────────────────────────────────────
+    if (haCapitoli) {
+      const c0 = await lugo2('L.capitolo()');
+      if (c0 && c0.n === 1 && c0.nome === "L'arrivo" && c0.traguardo === 'Prime missioni: 0 di 4' && Array.isArray(c0.completi) && c0.completi.length === 0)
+        ok('capitolo 1 a salvataggio vuoto', `${c0.nome} — ${c0.traguardo}`);
+      else ko('capitolo 1 a salvataggio vuoto', JSON.stringify(c0));
+
+      const chip0 = await page2.textContent('[data-hud="capitolo"]').catch(() => null);
+      if (chip0 && chip0.includes('Cap. 1') && chip0.includes("L'arrivo") && chip0.includes('0 di 4'))
+        ok('il chip dei capitoli dice il vero', chip0.trim());
+      else ko('il chip dei capitoli dice il vero', String(chip0));
+
+      if ((await page2.locator('[data-hud="capitolo-scheda"]').count()) === 0) ok('nessuna scheda capitolo al via');
+      else ko('nessuna scheda capitolo al via', 'già a schermo a partita appena nata');
+    }
+
+    // ── salto, prova al volante: lo Spazio resta il freno ───────────────
+    // Prima di scendere: si prende velocità con la W, poi Spazio tenuto.
+    // Due finestre uguali di 4 s: nella prima l'auto sta ancora smaltendo
+    // l'abbrivio, nella seconda deve essere praticamente ferma — e la
+    // quota della persona deve restare zero, mai un accenno di salto.
+    if (haSalto) {
+      const m0 = await lugo2('L.mode()');
+      await page2.keyboard.down('KeyW');
+      await page2.waitForTimeout(6000);
+      await page2.keyboard.up('KeyW');
+      const p0 = await lugo2('L.pos()');
+      await page2.keyboard.down('Space');
+      await page2.waitForTimeout(4000);
+      const p1 = await lugo2('L.pos()');
+      await page2.waitForTimeout(4000);
+      const p2 = await lugo2('L.pos()');
+      await page2.keyboard.up('Space');
+      const m1 = await lugo2('L.mode()');
+      const yFreno = (await lugo2('L.direzione()')).y;
+      const s1 = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
+      const s2 = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
+      if (m0 === 'auto' && m1 === 'auto' && s2 < Math.max(0.25, s1 * 0.5) && yFreno === 0)
+        ok('in auto lo Spazio è ancora il freno', `tratti per finestra ${s1.toFixed(2)} → ${s2.toFixed(2)} m, quota 0, si resta al volante`);
+      else ko('in auto lo Spazio è ancora il freno', `mode ${m0}→${m1}, tratti ${s1.toFixed(2)}→${s2.toFixed(2)} m, y=${yFreno}`);
+    }
+
+    // si scende: freno e poi E tenuta (il fronte del tasto vive un
+    // fotogramma, vedi TENUTO); un secondo giro copre l'auto ancora in moto
+    for (let giro = 0; giro < 2 && (await lugo2('L.mode()')) !== 'piedi'; giro++) {
+      await page2.keyboard.down('Space');
+      await page2.waitForTimeout(2500);
+      await page2.keyboard.up('Space');
+      await page2.keyboard.press('KeyE', TENUTO);
+      await page2.waitForTimeout(700);
+    }
+
+    // ── capitoli: la catena che chiude «L'arrivo» ───────────────────────
+    if (haCapitoli) {
+      let inciampo = null;
+      for (const id of ['m00', 'mvp1', 'mvp2']) {
+        const e = await completa2(id);
+        if (e && !inciampo) inciampo = `${id}: ${e}`;
+        await lugo2('L.chiudiPannelli()');
+      }
+      const c1 = await lugo2('L.capitolo()');
+      if (!inciampo && c1.n === 1 && c1.traguardo === 'Prime missioni: 3 di 4')
+        ok('i numeri del capitolo 1 sono vivi', c1.traguardo);
+      else ko('i numeri del capitolo 1 sono vivi', inciampo ?? JSON.stringify(c1));
+
+      // mvp3 chiude il capitolo: la scheda deve comparire ADESSO, e non
+      // deve né coprire né ritardare l'esito della missione
+      const e3 = await completa2('mvp3');
+      const schedaViva = await page2
+        .waitForFunction(() => document.querySelector('[data-hud="capitolo-scheda"]'), null, { timeout: 8000 })
+        .then(() => true)
+        .catch(() => false);
+      if (!e3 && schedaViva) {
+        const testo = ((await page2.textContent('[data-hud="capitolo-scheda"]')) ?? '').trim();
+        if (testo.includes('CAPITOLO COMPLETATO') && testo.includes("L'arrivo")) ok('la scheda CAPITOLO COMPLETATO compare', testo);
+        else ko('la scheda CAPITOLO COMPLETATO compare', `testo strano: ${testo}`);
+        const boxE = await page2.locator('[data-hud="esito"]').boundingBox().catch(() => null);
+        const boxC = await page2.locator('[data-hud="capitolo-scheda"]').boundingBox().catch(() => null);
+        if (boxE && boxC && boxC.y >= boxE.y + boxE.height - 1)
+          ok("la scheda non copre l'esito", `esito y+h=${(boxE.y + boxE.height).toFixed(0)}, scheda y=${boxC.y.toFixed(0)}, insieme a schermo`);
+        else if (!boxE) ok("la scheda non copre l'esito", 'esito già dissolto per conto suo');
+        else ko("la scheda non copre l'esito", JSON.stringify({ boxE, boxC }));
+        await page2.screenshot({ path: join(SHOTS, '13-capitolo-completato.png') });
+      } else ko('la scheda CAPITOLO COMPLETATO compare', e3 ?? 'mai comparsa in 8 s');
+
+      const c2 = await lugo2('L.capitolo()');
+      if (c2 && c2.n === 2 && c2.nome === 'Il lavoro' && c2.traguardo === 'Prove in bottega: 0 di 2 · Consegne fatte: 0 di 3')
+        ok('capitolo 2 coi numeri vivi', c2.traguardo);
+      else ko('capitolo 2 coi numeri vivi', JSON.stringify(c2));
+
+      await page2
+        .waitForFunction(() => !document.querySelector('[data-hud="capitolo-scheda"]'), null, { timeout: 12000 })
+        .then(() => ok('la scheda si dissolve da sola'))
+        .catch(() => ko('la scheda si dissolve da sola', 'ancora a schermo dopo 12 s'));
+
+      // una consegna vera muove il contatore del capitolo 2, chip compreso
+      await lugo2('L.chiudiPannelli()');
+      const att = await lugo2('L.missioneAttivita(0)');
+      const eA = att ? await completa2(att.id) : 'missioneAttivita(0) nulla';
+      const c3 = await lugo2('L.capitolo()');
+      const chip3 = (await page2.textContent('[data-hud="capitolo"]').catch(() => '')) ?? '';
+      if (!eA && c3.n === 2 && c3.traguardo.includes('Consegne fatte: 1 di 3') && chip3.includes('Consegne fatte: 1 di 3'))
+        ok('il contatore delle consegne è vivo', c3.traguardo);
+      else ko('il contatore delle consegne è vivo', eA ?? JSON.stringify({ c3, chip: chip3 }));
+
+      // reload: il capitolo si RICALCOLA dal salvataggio (nessun campo
+      // nuovo), identico a prima — e la scheda non deve festeggiare il
+      // passato: al load niente CAPITOLO COMPLETATO, mai
+      await page2.waitForTimeout(1500); // il salvataggio ha il suo debounce
+      await page2.reload({ waitUntil: 'load' });
+      const salta3 = page2.locator('[data-hud="salta-intro"]');
+      try {
+        await salta3.waitFor({ timeout: 5000 });
+        await salta3.click();
+      } catch {}
+      const gioca3 = page2.locator('[data-hud="gioca"]');
+      await gioca3.waitFor({ timeout: 40000 }).catch(() => {});
+      if (await gioca3.count()) await gioca3.click();
+      await page2.waitForFunction(() => window.__LUGO__ && typeof window.__LUGO__.capitolo === 'function', null, { timeout: 40000 });
+      await page2.evaluate(() => document.activeElement && document.activeElement.blur());
+      const c5 = await lugo2('L.capitolo()');
+      if (c5 && c5.n === c3.n && c5.nome === c3.nome && c5.traguardo === c3.traguardo)
+        ok('dopo il reload il capitolo si ricalcola uguale', c5.traguardo);
+      else ko('dopo il reload il capitolo si ricalcola uguale', JSON.stringify({ prima: c3, dopo: c5 }));
+      await page2.waitForTimeout(4000);
+      if ((await page2.locator('[data-hud="capitolo-scheda"]').count()) === 0) ok('nessuna scheda parte da sola al load');
+      else ko('nessuna scheda parte da sola al load', 'CAPITOLO COMPLETATO festeggiato a freddo');
+      const chipR = (await page2.textContent('[data-hud="capitolo"]').catch(() => '')) ?? '';
+      if (chipR.includes('Cap. 2') && chipR.includes('Il lavoro')) ok('il chip dopo il reload dice il vero', chipR.trim());
+      else ko('il chip dopo il reload dice il vero', String(chipR));
+    }
+
+    // ── salto, a piedi ──────────────────────────────────────────────────
+    if (haSalto) {
+      // dopo il reload si deve essere ancora a piedi; se no si scende
+      for (let giro = 0; giro < 2 && (await lugo2('L.mode()')) !== 'piedi'; giro++) {
+        await page2.keyboard.down('Space');
+        await page2.waitForTimeout(2500);
+        await page2.keyboard.up('Space');
+        await page2.keyboard.press('KeyE', TENUTO);
+        await page2.waitForTimeout(700);
+      }
+      const aPiedi = (await lugo2('L.mode()')) === 'piedi';
+      if (!aPiedi) ko('salto a piedi', `mode=${await lugo2('L.mode()')}: impossibile scendere per provare il salto`);
+      else {
+        const centro = await lugo2('L.poi.pavaglione');
+
+        // salto da fermo: la quota si campiona a OGNI fotogramma con un
+        // registratore rAF dentro la pagina — da fuori, a 2,5 fps, si
+        // perderebbe l'apice e si scambierebbe un rimbalzo per un arco
+        await lugo2(`L.teleport(${centro.x}, ${centro.z})`);
+        await page2.waitForTimeout(400);
+        await page2.evaluate(() => {
+          window.__TRACCIA = [];
+          const giro = () => {
+            window.__TRACCIA.push(window.__LUGO__.direzione().y);
+            if (window.__TRACCIA.length < 800) requestAnimationFrame(giro);
+          };
+          requestAnimationFrame(giro);
+        });
+        await page2.keyboard.down('Space');
+        await page2.waitForTimeout(300);
+        await page2.keyboard.up('Space');
+        // appena in quota si ripreme Spazio: il tentativo di doppio salto
+        // deve morire sul fronte già consumato
+        let inVolo = false;
+        for (let i = 0; i < 120; i++) {
+          await page2.waitForTimeout(60);
+          const y = (await lugo2('L.direzione()')).y;
+          if (!inVolo && y > 0.25) {
+            inVolo = true;
+            await page2.keyboard.press('Space', { delay: 600 });
+          }
+          if (inVolo && y === 0) break;
+        }
+        await page2.waitForTimeout(300);
+        const traccia = await page2.evaluate(() => window.__TRACCIA);
+        const apice = Math.max(...traccia);
+        const su = traccia.findIndex((y) => y > 0);
+        const giu = traccia.findIndex((y, i) => i > su && su >= 0 && y === 0);
+        let archi = 0;
+        for (let i = 1; i < traccia.length; i++) if (traccia[i] > 0 && traccia[i - 1] === 0) archi++;
+        const yDopo = (await lugo2('L.direzione()')).y;
+        if (apice > 0.42 && apice < 0.68 && giu > su && su >= 0 && yDopo === 0)
+          ok('il salto ha apice e atterraggio', `apice ${apice.toFixed(3)} m, ${giu - su} fotogrammi in aria, y finale 0`);
+        else ko('il salto ha apice e atterraggio', `apice ${apice.toFixed(3)}, su=${su}, giù=${giu}, y finale ${yDopo}`);
+        if (archi === 1) ok('doppio salto impossibile', 'Spazio ripremuto in aria: un solo arco nel tracciato');
+        else ko('doppio salto impossibile', `${archi} archi nel tracciato`);
+
+        // la panchina: camminandoci contro si resta di qua, di corsa col
+        // salto si atterra di là (y tornata a 0). Si prova più di una
+        // candidata perché attorno a una panchina può esserci di tutto —
+        // un muro, un'aiuola, il disordine seminato
+        const lista = (await lugo2('L.scavalcabili()')) ?? [];
+        const panche = lista.filter((o) => o.t === 'panchina');
+        const provaSu = async (b) => {
+          const dir = b.rot + Math.PI / 2;
+          for (const segno of [1, -1]) {
+            const ux = Math.cos(dir) * segno;
+            const uz = Math.sin(dir) * segno;
+            const px = b.x - ux * 3.2;
+            const pz = b.z - uz * 3.2;
+            await lugo2(`L.teleport(${px}, ${pz}, ${Math.atan2(uz, ux)})`);
+            await page2.waitForTimeout(500);
+            const dopoTp = await lugo2('L.pos()');
+            if (Math.hypot(dopoTp[0] - px, dopoTp[1] - pz) > 0.4) continue; // punto non libero
+            // 1) camminando: fermati dalla panchina, quota sempre zero
+            await page2.keyboard.down('KeyW');
+            let bloccato = true;
+            for (let i = 0; i < 24; i++) {
+              await page2.waitForTimeout(500);
+              const p = await lugo2('L.pos()');
+              const proj = (p[0] - b.x) * ux + (p[1] - b.z) * uz; // <0 di qua, >0 di là
+              if (proj > -0.2) {
+                bloccato = false;
+                break;
+              }
+              if (proj > -0.75) break; // a ridosso: la panchina tiene
+            }
+            await page2.keyboard.up('KeyW');
+            await page2.waitForTimeout(400);
+            if (!bloccato || (await lugo2('L.direzione()')).y !== 0) continue;
+            // 2) di corsa col salto: oltre la panchina e di nuovo a terra
+            await lugo2(`L.teleport(${px}, ${pz}, ${Math.atan2(uz, ux)})`);
+            await page2.waitForTimeout(400);
+            await page2.keyboard.down('ShiftLeft');
+            await page2.keyboard.down('KeyW');
+            let saltato = false;
+            let maxY = 0;
+            let oltre = false;
+            for (let i = 0; i < 90; i++) {
+              await page2.waitForTimeout(90);
+              const p = await lugo2('L.pos()');
+              const d = await lugo2('L.direzione()');
+              maxY = Math.max(maxY, d.y);
+              const pr = (p[0] - b.x) * ux + (p[1] - b.z) * uz;
+              if (!saltato && pr > -2.1) {
+                saltato = true;
+                await page2.keyboard.press('Space', { delay: 180 });
+              }
+              if (saltato && pr > 0.75 && d.y === 0) {
+                oltre = true;
+                break;
+              }
+              if (saltato && i > 70) break;
+            }
+            await page2.keyboard.up('KeyW');
+            await page2.keyboard.up('ShiftLeft');
+            await page2.waitForTimeout(400);
+            if (oltre && (await lugo2('L.direzione()')).y === 0) return { maxY, b };
+          }
+          return null;
+        };
+        let scavalcata = null;
+        for (const b of panche.slice(0, 8)) {
+          scavalcata = await provaSu(b);
+          if (scavalcata) break;
+        }
+        if (scavalcata)
+          ok('la panchina blocca a terra e si scavalca in volo', `apice ${scavalcata.maxY.toFixed(2)} m, panchina a (${scavalcata.b.x.toFixed(1)}, ${scavalcata.b.z.toFixed(1)}), y tornata a 0`);
+        else ko('la panchina blocca a terra e si scavalca in volo', panche.length ? 'nessuna candidata bloccante+scavalcabile' : 'lista scavalcabili vuota');
+
+        // il muro di un edificio invece non si scavalca MAI: ci si
+        // incastra nella rientranza del bar Jolly (stessa tana della fase
+        // del fondale) e si salta tre volte contro la facciata
+        let esitoMuro = null;
+        const spinte = [['KeyW'], ['KeyD'], ['KeyS'], ['KeyA'], ['KeyW', 'KeyD'], ['KeyW', 'KeyA'], ['KeyS', 'KeyD'], ['KeyS', 'KeyA']];
+        for (const tasti of spinte) {
+          await lugo2('L.teleport(49.8, 77)');
+          await page2.waitForTimeout(300);
+          await page2.keyboard.down('ShiftLeft');
+          for (const t of tasti) await page2.keyboard.down(t);
+          await page2.waitForTimeout(2500);
+          const q0 = await lugo2('L.pos()');
+          await page2.waitForTimeout(800);
+          const q1 = await lugo2('L.pos()');
+          if (Math.hypot(q1[0] - q0[0], q1[1] - q0[1]) < 0.05) {
+            let maxY = 0;
+            const pA = await lugo2('L.pos()');
+            for (let g = 0; g < 3; g++) {
+              await page2.keyboard.press('Space', { delay: 300 });
+              for (let i = 0; i < 14; i++) {
+                await page2.waitForTimeout(150);
+                const y = (await lugo2('L.direzione()')).y;
+                maxY = Math.max(maxY, y);
+                if (maxY > 0.4 && y === 0) break;
+              }
+            }
+            const pB = await lugo2('L.pos()');
+            esitoMuro = { tasti: tasti.join('+'), maxY, mosso: Math.hypot(pB[0] - pA[0], pB[1] - pA[1]) };
+            for (const t of tasti) await page2.keyboard.up(t);
+            await page2.keyboard.up('ShiftLeft');
+            break;
+          }
+          for (const t of tasti) await page2.keyboard.up(t);
+          await page2.keyboard.up('ShiftLeft');
+        }
+        if (!esitoMuro) ko('il muro non si scavalca', 'mai incastrato nella rientranza: prova da rivedere');
+        else if (esitoMuro.maxY > 0.4 && esitoMuro.mosso < 0.35)
+          ok('il muro non si scavalca', `${esitoMuro.tasti}: tre salti (apice ${esitoMuro.maxY.toFixed(2)} m), spostamento ${esitoMuro.mosso.toFixed(2)} m`);
+        else ko('il muro non si scavalca', `${esitoMuro.tasti}: apice ${esitoMuro.maxY.toFixed(2)}, spostamento ${esitoMuro.mosso.toFixed(2)} m`);
+
+        // il bottone SALTA dello schermo: tocco VERO via CDP, come per il
+        // joystick — un click del mouse non passa dal codice dei pointer
+        const btn = await page2.locator('button[aria-label="Salta"]').boundingBox();
+        if (!btn) ko('il bottone SALTA risponde al tocco', 'bottone non trovato a schermo');
+        else {
+          await lugo2(`L.teleport(${centro.x}, ${centro.z})`);
+          await page2.waitForTimeout(400);
+          const cdp2 = await page2.context().newCDPSession(page2);
+          const bx = btn.x + btn.width / 2;
+          const by = btn.y + btn.height / 2;
+          await cdp2.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: bx, y: by, id: 1 }] });
+          await page2.waitForTimeout(500);
+          await cdp2.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [{ x: bx, y: by, id: 1 }] });
+          let maxY = 0;
+          for (let i = 0; i < 40; i++) {
+            await page2.waitForTimeout(120);
+            const d = await lugo2('L.direzione()');
+            maxY = Math.max(maxY, d.y);
+            if (maxY > 0.3 && d.y === 0) break;
+          }
+          if (maxY > 0.4) ok('il bottone SALTA risponde al tocco', `tocco CDP → apice ${maxY.toFixed(2)} m`);
+          else ko('il bottone SALTA risponde al tocco', `apice ${maxY.toFixed(2)}`);
+        }
+      }
+    }
+
+    const gravi2 = errori2.filter((e) => !e.includes('favicon'));
+    if (gravi2.length) ko('zero errori console nella partita nuova', gravi2.slice(0, 5).join(' | '));
+    else ok('zero errori console nella partita nuova');
+    await page2.close();
+  }
+
   // ── errori di pagina ──────────────────────────────────────────────────
   const gravi = errori.filter((e) => !e.includes('favicon'));
   if (gravi.length) ko('zero errori console', gravi.slice(0, 5).join(' | '));

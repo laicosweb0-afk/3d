@@ -23,6 +23,8 @@ export const stick = {
   corriBtn: false,
   /** pulsante PUGNO */
   pugnoBtn: false,
+  /** pulsante SALTO (a piedi): l'equivalente dello Spazio sullo schermo */
+  saltoBtn: false,
   /** pulsante E tenuto premuto (il fronte lo gestisce già il Player) */
   interagisci: false,
 };
@@ -102,6 +104,11 @@ export function conStick(t: StatoInput): StatoInput {
     // numero — non il booleano — che il personaggio usa per il bersaglio
     corsa: t.corri || stick.corriBtn ? 1 : corsaStick,
     freno: t.freno || stick.freno,
+    // lo Spazio E il bottone ↑ chiedono il salto; il freno resta com'è,
+    // perché a decidere quale dei due mestieri dello Spazio conta è il
+    // Player, che conosce la modalità. In auto `salta` è true mentre si
+    // frena e non fa niente: nessuno lo legge da dietro un volante.
+    salta: t.freno || stick.saltoBtn,
     interagisci: t.interagisci || stick.interagisci,
     reset: t.reset,
     colpisci: t.colpisci || stick.pugnoBtn,

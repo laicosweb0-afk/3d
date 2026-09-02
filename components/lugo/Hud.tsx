@@ -5,8 +5,9 @@
 // missione, dialoghi a scelte, avvisi che sfumano da soli, hint, minimappa.
 // Solo DOM: niente re-render del canvas 3D.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLugo } from '@/lib/lugo/store';
+import { CAPITOLI, capitoloCorrente, type Capitolo } from '@/lib/lugo/capitoli';
 import { missioneById, pontePrimoIncontro } from '@/lib/lugo/missions';
 import { setAudioAttivo, suonaEvento } from '@/lib/lugo/audio';
 import { orologio } from '@/lib/lugo/tempo';
@@ -90,6 +91,46 @@ export function Hud() {
   const grado = gradoDaRep(punteggio);
   const avanza = avanzamento(punteggio);
   const mondo = useMondo();
+
+  // Il capitolo della vita a Lugo: SEMPRE derivato dai progressi già
+  // salvati (lib/lugo/capitoli.ts), mai memorizzato. Il memo c'è perché
+  // l'HUD re-renderizza ~5 volte al secondo per il tachimetro: i quattro
+  // ingredienti del capitolo cambiano di rado, e ricalcolare le liste di
+  // missioni a ogni lettura del kmh sarebbe lavoro per-frame gratuito.
+  const capitolo = useMemo(() => {
+    const stato = { missioniFatte, denaro, punteggio, consegneFatte };
+    const cap = capitoloCorrente(stato);
+    return { cap, passo: cap.prossimoPasso(stato) };
+  }, [missioniFatte, denaro, punteggio, consegneFatte]);
+
+  // La scheda «CAPITOLO COMPLETATO»: compare solo quando il capitolo
+  // AVANZA durante la partita. Il confronto sta in un ref che parte da
+  // null: al primo render (che è anche il render dopo il caricamento di un
+  // salvataggio, perché avviaSalvataggio gira nello start screen, prima che
+  // l'HUD esista) il ref è vuoto e la scheda non parte — un veterano che
+  // ricarica la pagina non deve rivedere il coriandolo del capitolo 3.
+  const capPrima = useRef<number | null>(null);
+  const [capChiuso, setCapChiuso] = useState<Capitolo | null>(null);
+  useEffect(() => {
+    const prima = capPrima.current;
+    capPrima.current = capitolo.cap.n;
+    // niente scheda al primo render, né su una RETROMARCIA: spendere sotto
+    // i €400 riporta al capitolo della casa senza fanfare
+    if (prima === null || capitolo.cap.n <= prima) return;
+    // con un salto di più capitoli in un colpo (i soldi della casa già in
+    // tasca quando si chiude il quartiere) si festeggia l'ultimo chiuso
+    setCapChiuso(CAPITOLI[capitolo.cap.n - 2]);
+    // l'esito di missione, se c'è, sta già suonando lo stesso jingle: due
+    // 'successo' nello stesso istante fanno solo volume, non festa
+    if (!useLugo.getState().esito) suonaEvento('successo');
+  }, [capitolo.cap.n]);
+  // la scheda si dissolve da sola: il CSS la sfuma a 5,6s e qui si toglie
+  // dal DOM subito dopo, come fanno intro ed esito
+  useEffect(() => {
+    if (!capChiuso) return;
+    const t = setTimeout(() => setCapChiuso(null), 6400);
+    return () => clearTimeout(t);
+  }, [capChiuso]);
 
   // Gli incarichi di oggi e di questa settimana, col progresso vero. Le
   // chiavi vengono dalla data: cambiano da sole a mezzanotte e il lunedì.
@@ -246,31 +287,44 @@ export function Hud() {
 
   return (
     <div className="lugo-hud">
-      {missione && statoMissione === 'attiva' && !intro && (
-        <div className="lugo-missione" data-hud="missione">
-          <div className="lugo-missione-tipo">
-            {missione.tipo === 'consegna' ? 'CONSEGNA' : 'MISSIONE'}
-          </div>
-          <div className="lugo-missione-titolo">{missione.titolo}</div>
-          <div className="lugo-missione-obiettivo" data-hud="obiettivo">
-            {missione.tappe[tappa].titolo}
-            {missione.tappe.length > 1 && (
-              <span className="lugo-missione-passi">
-                {' '}
-                · {tappa + 1}/{missione.tappe.length}
-              </span>
+      {/* La colonna in alto a sinistra: il pannello missione e, sotto, la
+          riga del capitolo. La colonna esiste perché l'altezza del pannello
+          cambia (timer, titoli che vanno a capo): un offset fisso per la
+          riga del capitolo finiva o sovrapposto o a mezz'aria. */}
+      <div className="lugo-capitolo-colonna">
+        {missione && statoMissione === 'attiva' && !intro && (
+          <div className="lugo-missione" data-hud="missione">
+            <div className="lugo-missione-tipo">
+              {missione.tipo === 'consegna' ? 'CONSEGNA' : 'MISSIONE'}
+            </div>
+            <div className="lugo-missione-titolo">{missione.titolo}</div>
+            <div className="lugo-missione-obiettivo" data-hud="obiettivo">
+              {missione.tappe[tappa].titolo}
+              {missione.tappe.length > 1 && (
+                <span className="lugo-missione-passi">
+                  {' '}
+                  · {tappa + 1}/{missione.tappe.length}
+                </span>
+              )}
+            </div>
+            {tempoResiduo !== null && (
+              <div
+                className={'lugo-missione-timer' + (tempoResiduo <= 10 ? ' lugo-timer-critico' : '')}
+                data-hud="timer"
+              >
+                {tempoMMSS(tempoResiduo)}
+              </div>
             )}
           </div>
-          {tempoResiduo !== null && (
-            <div
-              className={'lugo-missione-timer' + (tempoResiduo <= 10 ? ' lugo-timer-critico' : '')}
-              data-hud="timer"
-            >
-              {tempoMMSS(tempoResiduo)}
-            </div>
-          )}
+        )}
+        {/* il filo dichiarato: a che punto della vita a Lugo sono */}
+        <div className="lugo-capitolo" data-hud="capitolo">
+          <span className="lugo-capitolo-n">Cap. {capitolo.cap.n}</span>
+          {' · '}
+          <span className="lugo-capitolo-nome">{capitolo.cap.nome}</span>
+          <span className="lugo-capitolo-passo"> — {capitolo.passo}</span>
         </div>
-      )}
+      </div>
 
       <div className="lugo-status">
         <div className="lugo-ora" data-hud="ora">{ora}</div>
@@ -499,6 +553,24 @@ export function Hud() {
           <div className="lugo-diario-nota">
             I luoghi si scoprono a piedi. Le attività compaiono con il nome e la
             categoria già pubblici su OpenStreetMap.
+          </div>
+        </div>
+      )}
+
+      {/* La scheda «CAPITOLO COMPLETATO». Vive in una fascia PIÙ BASSA
+          delle schede di missione e sta prima di loro nel DOM: quando il
+          capitolo si chiude insieme all'ultima missione, l'esito compare
+          al suo posto di sempre, subito e sopra — questa scheda non lo
+          copre e non lo ritarda, gli fa da seconda riga. */}
+      {capChiuso && (
+        <div className="lugo-scheda lugo-scheda-capitolo" data-hud="capitolo-scheda" key={capChiuso.n}>
+          <div className="lugo-scheda-etichetta lugo-capitolo-etichetta">CAPITOLO COMPLETATO</div>
+          <div className="lugo-scheda-titolo">{capChiuso.nome}</div>
+          <div className="lugo-capitolo-avanti">
+            <span className="lugo-capitolo-avanti-n">
+              Cap. {capitolo.cap.n} · {capitolo.cap.nome}
+            </span>
+            <span className="lugo-capitolo-avanti-motto">{capitolo.cap.motto}</span>
           </div>
         </div>
       )}

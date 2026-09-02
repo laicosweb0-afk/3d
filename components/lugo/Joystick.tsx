@@ -26,6 +26,7 @@ export function Joystick() {
     stick.freno = false;
     stick.corriBtn = false;
     stick.pugnoBtn = false;
+    stick.saltoBtn = false;
   }, [mode]);
 
   // qualunque uscita dalla finestra molla tutto: mai comandi "incollati"
@@ -36,6 +37,7 @@ export function Joystick() {
       stick.freno = false;
       stick.corriBtn = false;
       stick.pugnoBtn = false;
+      stick.saltoBtn = false;
       stick.interagisci = false;
       if (palla.current) palla.current.style.transform = 'translate(0px, 0px)';
     };
@@ -86,7 +88,7 @@ export function Joystick() {
   };
 
   const premi =
-    (campo: 'freno' | 'corriBtn' | 'pugnoBtn' | 'interagisci', valore: boolean) => (e: ReactPointerEvent) => {
+    (campo: 'freno' | 'corriBtn' | 'pugnoBtn' | 'saltoBtn' | 'interagisci', valore: boolean) => (e: ReactPointerEvent) => {
       if (valore) {
         try {
           (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -149,6 +151,21 @@ export function Joystick() {
               onLostPointerCapture={() => (stick.pugnoBtn = false)}
             >
               ✊
+            </button>
+            {/* il salto: lo Spazio di chi gioca col dito. Stesso pattern
+                pointer degli altri bottoni — capture al tocco, rilascio su
+                up/cancel/perdita di capture — perché un salto "incollato"
+                farebbe saltellare il personaggio a ogni atterraggio */}
+            <button
+              type="button"
+              className="lugo-pulsante lugo-pulsante-salto"
+              aria-label="Salta"
+              onPointerDown={premi('saltoBtn', true)}
+              onPointerUp={premi('saltoBtn', false)}
+              onPointerCancel={premi('saltoBtn', false)}
+              onLostPointerCapture={() => (stick.saltoBtn = false)}
+            >
+              ↑
             </button>
           </>
         )}

@@ -16,6 +16,7 @@ import { BICI, lasciaBici, stepBici } from '@/lib/lugo/bici';
 import { bersaglioFurto, compiFurto, hookFurti, vistoDaiCarabinieri } from '@/lib/lugo/furti';
 import { fuocoSuComando, type StatoInput } from '@/lib/lugo/input';
 import { conStick } from '@/lib/lugo/stick';
+import { imperfezioni } from '@/lib/lugo/imperfezioni';
 import { consumaDeltaYaw, orbita, orbitaRecente } from '@/lib/lugo/orbita';
 import { attivitaVicina, registroAttivita } from '@/lib/lugo/attivita';
 import { bachecaVicina, offerteBacheca } from '@/lib/lugo/bacheche';
@@ -256,7 +257,7 @@ export function Player() {
     const spawn = puntoStradaVicino(mondo, rocca ? rocca.xm : 0, rocca ? rocca.zm : 0);
     const creato: RuntimeGioco = {
       auto: { x: spawn.x, z: spawn.z, yaw: spawn.yaw, vx: 0, vz: 0, sterzo: 0 },
-      persona: { x: spawn.x + 2, z: spawn.z + 2, yaw: 0, vx: 0, vz: 0, fase: 0 },
+      persona: { x: spawn.x + 2, z: spawn.z + 2, yaw: 0, vx: 0, vz: 0, fase: 0, y: 0, vy: 0 },
       vAuto: 0,
       vPersona: 0,
       faseRuote: 0,
@@ -275,6 +276,12 @@ export function Player() {
   const [, getInput] = useKeyboardControls();
   const interagiscePrima = useRef(false);
   const resetPrima = useRef(false);
+  // il fronte del salto: si salta all'ISTANTE della pressione, non finché
+  // il tasto resta giù — o scendendo dall'auto con lo Spazio ancora
+  // premuto (si è appena frenato con quello) si spiccherebbe un balzo
+  const saltaPrima = useRef(false);
+  // gli ostacoli scavalcabili entrano nella fisica UNA volta, al primo frame
+  const bassiPronti = useRef(false);
   const hudAcc = useRef(0);
   // Il ref di deduplica tiene la COPPIA (testo, allerta): confrontando la
   // sola stringa, un testo identico con l'allerta diversa non sarebbe mai
@@ -327,13 +334,16 @@ export function Player() {
         decadimento.current += s;
       },
       pos: () => [attivo().x, attivo().z],
-      // diagnosi del movimento: riferimento camera, direzione guardata e velocità
+      // diagnosi del movimento: riferimento camera, direzione guardata,
+      // velocità e — dal salto in poi — la quota da terra
       direzione: () => ({
         camYaw: rt.cameraYaw,
         yaw: rt.persona.yaw,
         vx: rt.persona.vx,
         vz: rt.persona.vz,
         v: Math.hypot(rt.persona.vx, rt.persona.vz),
+        y: rt.persona.y,
+        inAria: rt.persona.y > 0,
       }),
       // la visuale a 360° vista da fuori: yaw del riferimento comandi,
       // sguardo temporaneo dei mezzi, pitch, fattore zoom e se un dito (o
@@ -347,6 +357,15 @@ export function Player() {
         dita: orbita.dita,
       }),
       attivita: () => registroAttivitaHook(),
+      // gli ostacoli bassi resi solidi per il salto (panchine e fioriere),
+      // con posizione e orientamento: il collaudo ci si teletrasporta
+      // davanti, ci sbatte contro da terra e li scavalca in volo. La lista
+      // si legge al momento della chiamata, quando è già seminata.
+      scavalcabili: () =>
+        imperfezioni(mondo, fisica)
+          .filter((o) => o.t === 'panchina' || o.t === 'fioriera')
+          .slice(0, 80)
+          .map((o) => ({ t: o.t, x: o.x, z: o.z, rot: o.rot })),
       // guardia sulle regole commerciali: senza autorizzazione scritta
       // nessuna attività può risultare partner né mostrare promo o logo
       autorizzazioni: () => {
@@ -434,6 +453,36 @@ export function Player() {
     const input = st.fase === 'gioco' ? conStick(getInput() as unknown as StatoInput) : fermo;
     runtime.assi.ax = input.ax;
     runtime.assi.az = input.az;
+
+    // Le panchine e le fioriere diventano solide (e scavalcabili col salto)
+    // AL PRIMO FOTOGRAMMA, non alla nascita della fisica: a quel punto la
+    // lista delle imperfezioni è già stata seminata dai componenti che la
+    // disegnano — World e Imperfezioni stanno prima del Player nell'albero —
+    // quindi questa chiamata la LEGGE soltanto, e il disordine di Lugo resta
+    // identico al pixel. Seminare da qui, prima del solito, sposterebbe ogni
+    // bici e ogni cassonetto della città, e con loro i punti calcolati del
+    // collaudo. L'idempotenza sta nella fisica: un rimontaggio del Player
+    // non raddoppia le panchine.
+    if (!bassiPronti.current) {
+      bassiPronti.current = true;
+      fisica.arredaOstacoliBassi(imperfezioni(mondo, fisica));
+    }
+
+    // Il fronte del salto si calcola in TUTTE le modalità (così lo Spazio
+    // tenuto giù mentre si frena non è mai un fronte quando si scende), ma
+    // conta solo a piedi e mai col fuoco su un bottone dello schermo: lì
+    // lo Spazio appartiene alla pagina, come per la E.
+    const saltaOra = input.salta === true && !saltaPrima.current && !fuocoSuComando();
+    saltaPrima.current = input.salta === true;
+
+    // Se si sale su un mezzo A MEZZ'ARIA (la E non guarda la quota), la
+    // quota residua si azzera: rt.persona in sella è il ciclista, e un
+    // ciclista che pedala a quaranta centimetri da terra è un fotogramma
+    // che nessuno deve vedere.
+    if (st.mode !== 'piedi' && rt.persona.y > 0) {
+      rt.persona.y = 0;
+      rt.persona.vy = 0;
+    }
 
     // Il riposo fra due chiacchiere scorre SEMPRE, in tutte e tre le
     // modalità. Stava dentro il ramo a piedi, cioè si fermava appena
@@ -584,7 +633,7 @@ export function Player() {
         suonaEvento('salita');
       }
     } else {
-      rt.vPersona = stepPersona(rt.persona, input, dt, fisica, rt.cameraYaw);
+      rt.vPersona = stepPersona(rt.persona, input, dt, fisica, rt.cameraYaw, saltaOra);
       runtime.frenata = false;
 
       // salita: vicino all'auto. Altrimenti, E parla col maranza vicino.
@@ -992,10 +1041,12 @@ export function Player() {
       // in bici il personaggio si vede eccome: si vede pedalare
       gruppoPersona.current.visible = st.mode !== 'auto';
       // il bacino sta a 0,94 m da terra; alzarlo di 16 cm è quanto basta
-      // perché il piede esteso arrivi al pedale senza staccarsi dalla sella
+      // perché il piede esteso arrivi al pedale senza staccarsi dalla sella.
+      // La quota del salto si SOMMA: è il gruppo intero che sale, così ombra
+      // e vestiti seguono senza che nessun pezzo debba sapere del volo.
       gruppoPersona.current.position.set(
         rt.persona.x,
-        QUOTA_CALPESTIO + 0.16 * rt.sella,
+        QUOTA_CALPESTIO + 0.16 * rt.sella + rt.persona.y,
         rt.persona.z,
       );
       gruppoPersona.current.rotation.y = -rt.persona.yaw;
