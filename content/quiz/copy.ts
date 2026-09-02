@@ -38,23 +38,23 @@ const it = {
   warmup: 'Partiamo.',
 
   quiz: {
-    counter: '{n} / {total}', // es. 01 / 04
+    eyebrow: 'Prima di scoprirlo.',
+    question: 'Cosa hai sentito?',
   },
 
   result: {
-    eyebrow: 'Your result',
-    almost: 'Ci siamo quasi.',
-    right: {
-      title: 'Esatto.',
-      sub: 'Hai riconosciuto la fragranza.',
+    guessed: {
+      eyebrow: 'Naso allenato',
+      title: 'È esattamente {name}.',
+      byMaison: 'di {maison}',
+      // mostrata solo a chi indovina
+      pct: 'Il {pct}% ha risposto come te.',
     },
-    wrong: {
-      title: 'Non era questa.',
-      sub: 'Ma il bello è proprio scoprire cosa ti piace.',
-      chosen: 'Abbiamo scelto 3 fragranze per te.',
+    missed: {
+      eyebrow: 'Il tuo naso ti ha portato altrove',
+      title: 'È {name}.',
+      trick: 'E non è un caso: sotto c’è un accordo di {trickNote} che confonde quasi tutti.',
     },
-    reveal: 'È {name}, di {maison}.',
-    pct: 'Il {pct}% ha risposto come te.',
     cta: 'Scopri le tue 3 fragranze',
   },
 
@@ -68,6 +68,7 @@ const it = {
   recs: {
     titleRight: 'Le tue 3 fragranze.',
     titleWrong: 'Scelte per te.',
+    subWrong: 'Abbiamo scelto 3 fragranze per te.',
     cta: 'Salva il tuo credito',
   },
 

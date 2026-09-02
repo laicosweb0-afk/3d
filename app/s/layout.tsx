@@ -31,7 +31,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#FAF8F4',
+  themeColor: '#F3ECE0',
 };
 
 export default function QuizLayout({ children }: { children: React.ReactNode }) {

@@ -2,31 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import {
-  CATALOG,
-  FAMILIES,
-  MYSTERY,
-  QUESTIONS,
-  type CatalogEntry,
-  type Family,
-  type QuizOption,
-} from '@/data/fragrances';
+import { CATALOG, FAMILIES, MYSTERY, type CatalogEntry, type Family } from '@/data/fragrances';
 import { copy, fill } from '@/content/quiz/copy';
 
 /* ------------------------------------------------------------------ */
 /* Tipi                                                                */
 /* ------------------------------------------------------------------ */
 
-type Step =
-  | 'landing'
-  | 'warmup'
-  | 'quiz'
-  | 'moment'
-  | 'result'
-  | 'recs'
-  | 'email'
-  | 'envelope'
-  | 'end';
+type Step = 'landing' | 'warmup' | 'quiz' | 'result' | 'recs' | 'email' | 'envelope' | 'end';
 
 type Entry = 'coupon' | 'busta';
 type ForcedOutcome = 'off' | 'right' | 'wrong';
@@ -37,8 +20,6 @@ type TrackedEvent = {
   ts: Date;
   code: string;
 };
-
-const pad = (n: number) => String(n).padStart(2, '0');
 
 /* ------------------------------------------------------------------ */
 /* Elementi ricorrenti                                                 */
@@ -111,9 +92,7 @@ export default function QuizFlow() {
 
   const [entry, setEntry] = useState<Entry>(urlEntry);
   const [step, setStep] = useState<Step>('landing');
-  const [qIndex, setQIndex] = useState(0);
-  const [answers, setAnswers] = useState<QuizOption[]>([]);
-  const [active, setActive] = useState<string | null>(null);
+  const [answer, setAnswer] = useState<Family | null>(null);
   const [guessed, setGuessed] = useState(false);
   const [recs, setRecs] = useState<CatalogEntry[]>([]);
   const [envelopeDone, setEnvelopeDone] = useState(false);
@@ -140,9 +119,7 @@ export default function QuizFlow() {
     (nextEntry: Entry) => {
       setEntry(nextEntry);
       setStep('landing');
-      setQIndex(0);
-      setAnswers([]);
-      setActive(null);
+      setAnswer(null);
       setGuessed(false);
       setRecs([]);
       setEnvelopeDone(false);
@@ -151,14 +128,10 @@ export default function QuizFlow() {
     [track],
   );
 
-  /* --- passaggi automatici: «Partiamo.» e «Ci siamo quasi.» --- */
+  /* --- «Partiamo.» avanza da solo --- */
   useEffect(() => {
     if (step === 'warmup') {
       const t = window.setTimeout(() => setStep('quiz'), 1100);
-      return () => window.clearTimeout(t);
-    }
-    if (step === 'moment') {
-      const t = window.setTimeout(() => setStep('result'), 1300);
       return () => window.clearTimeout(t);
     }
   }, [step]);
@@ -172,36 +145,21 @@ export default function QuizFlow() {
     if (step === 'landing') resultShown.current = false;
   }, [step, guessed, track]);
 
-  /* --- risposta a una domanda: il tap avanza --- */
+  /* --- la risposta unica: il tap avanza al risultato --- */
   const answering = useRef(false);
-  const onAnswer = (option: QuizOption) => {
+  const onAnswer = (family: Family) => {
     if (answering.current) return;
     answering.current = true;
-    setActive(option.label);
-
-    const question = QUESTIONS[qIndex];
-    let detail = `${pad(qIndex + 1)} · ${option.label}`;
-    let hit = guessed;
-    if (question.scoring) {
-      const natural = option.family === MYSTERY.family;
-      hit = forced === 'right' ? true : forced === 'wrong' ? false : natural;
-      setGuessed(hit);
-      detail += ` · ${hit ? 'indovinato' : 'non indovinato'}`;
-    }
-    track('quiz_answered', detail);
-    const nextAnswers = [...answers, option];
-    setAnswers(nextAnswers);
-
+    setAnswer(family);
+    const natural = family === MYSTERY.family;
+    const hit = forced === 'right' ? true : forced === 'wrong' ? false : natural;
+    setGuessed(hit);
+    track('quiz_answered', `${family} · ${hit ? 'indovinato' : 'non indovinato'}`);
+    setRecs(computeRecs(family));
     window.setTimeout(() => {
       answering.current = false;
-      setActive(null);
-      if (qIndex + 1 < QUESTIONS.length) {
-        setQIndex(qIndex + 1);
-      } else {
-        setRecs(computeRecs(nextAnswers));
-        setStep('moment');
-      }
-    }, 260);
+      setStep('result');
+    }, 300);
   };
 
   const confirmRecs = () => {
@@ -232,15 +190,12 @@ export default function QuizFlow() {
       ? copy.levels.allenato
       : copy.levels.curioso;
 
-  const stepKey = step === 'quiz' ? `quiz-${qIndex}` : step;
-
   return (
     <>
-      <div className={`fx-step${step === 'landing' ? ' fx-step--landing' : ''}`} key={stepKey}>
+      <div className={`fx-step${step === 'landing' ? ' fx-step--landing' : ''}`} key={step}>
         {step === 'landing' && <Landing entry={entry} nome={urlNome} onStart={() => setStep('warmup')} />}
         {step === 'warmup' && <Interlude title={copy.warmup} />}
-        {step === 'quiz' && <Question index={qIndex} active={active} onAnswer={onAnswer} />}
-        {step === 'moment' && <Interlude eyebrow={copy.result.eyebrow} title={copy.result.almost} />}
+        {step === 'quiz' && <Question answer={answer} onAnswer={onAnswer} />}
         {step === 'result' && <Result guessed={guessed} onNext={() => setStep('recs')} />}
         {step === 'recs' && <Recs guessed={guessed} recs={recs} onNext={confirmRecs} />}
         {step === 'email' && <Email onSave={saveEmail} />}
@@ -263,16 +218,13 @@ export default function QuizFlow() {
   );
 }
 
-/* Le tre raccomandazioni: famiglie più votate nelle risposte
- * (la domanda che conta pesa doppio), poi il catalogo in quell'ordine. */
-function computeRecs(answers: QuizOption[]): CatalogEntry[] {
-  const score = new Map<Family, number>(FAMILIES.map((f) => [f, 0]));
-  answers.forEach((option, i) => {
-    if (option.family) {
-      score.set(option.family, (score.get(option.family) ?? 0) + (QUESTIONS[i]?.scoring ? 2 : 1));
-    }
-  });
-  const ranked = [...FAMILIES].sort((a, b) => (score.get(b) ?? 0) - (score.get(a) ?? 0));
+/* Le tre raccomandazioni: prima la famiglia sentita, poi quella della
+ * fragranza misteriosa, poi il resto del catalogo. */
+function computeRecs(felt: Family): CatalogEntry[] {
+  const ranked: Family[] = [];
+  for (const f of [felt, MYSTERY.family, ...FAMILIES]) {
+    if (!ranked.includes(f)) ranked.push(f);
+  }
   const rank = (f: Family) => ranked.indexOf(f);
   return [...CATALOG].sort((a, b) => rank(a.family) - rank(b.family)).slice(0, 3);
 }
@@ -324,15 +276,14 @@ function Landing({
 }
 
 /* ------------------------------------------------------------------ */
-/* Passaggi intermedi («Partiamo.», «Ci siamo quasi.»)                 */
+/* «Partiamo.»                                                         */
 /* ------------------------------------------------------------------ */
 
-function Interlude({ eyebrow, title }: { eyebrow?: string; title: string }) {
+function Interlude({ title }: { title: string }) {
   return (
     <>
       <div className="fx-top" />
       <div className="fx-main">
-        {eyebrow && <p className="fx-eyebrow">{eyebrow}</p>}
         <h1 className="fx-h1 fx-h1--display">{title}</h1>
       </div>
       <div className="fx-bottom" />
@@ -341,41 +292,31 @@ function Interlude({ eyebrow, title }: { eyebrow?: string; title: string }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Domanda                                                             */
+/* La domanda — una sola                                               */
 /* ------------------------------------------------------------------ */
 
 function Question({
-  index,
-  active,
+  answer,
   onAnswer,
 }: {
-  index: number;
-  active: string | null;
-  onAnswer: (o: QuizOption) => void;
+  answer: Family | null;
+  onAnswer: (f: Family) => void;
 }) {
-  const question = QUESTIONS[index];
-  const progress = ((index + 1) / QUESTIONS.length) * 100;
   return (
     <>
-      <div className="fx-top">
-        <p className="fx-counter">
-          {fill(copy.quiz.counter, { n: pad(index + 1), total: pad(QUESTIONS.length) })}
-        </p>
-        <div className="fx-bar">
-          <i style={{ width: `${progress}%` }} />
-        </div>
-      </div>
+      <div className="fx-top" />
       <div className="fx-main">
-        <h1 className="fx-h1">{question.text}</h1>
+        <p className="fx-eyebrow">{copy.quiz.eyebrow}</p>
+        <h1 className="fx-h1">{copy.quiz.question}</h1>
         <div className="fx-opts">
-          {question.options.map((o) => (
+          {FAMILIES.map((f) => (
             <button
-              key={o.label}
+              key={f}
               className="fx-opt"
-              data-active={active === o.label}
-              onClick={() => onAnswer(o)}
+              data-active={answer === f}
+              onClick={() => onAnswer(f)}
             >
-              {o.label}
+              {f}
             </button>
           ))}
         </div>
@@ -394,18 +335,22 @@ function Result({ guessed, onNext }: { guessed: boolean; onNext: () => void }) {
     <>
       <div className="fx-top" />
       <div className="fx-main">
-        <p className={`fx-eyebrow${guessed ? '' : ' fx-eyebrow--muted'}`}>{copy.result.eyebrow}</p>
-        <h1 className="fx-h1 fx-h1--display">
-          {guessed ? copy.result.right.title : copy.result.wrong.title}
-        </h1>
-        <p className="fx-lede">{guessed ? copy.result.right.sub : copy.result.wrong.sub}</p>
-        <p className="fx-reveal-name">
-          {fill(copy.result.reveal, { name: MYSTERY.name, maison: MYSTERY.maison })}
-        </p>
-        {!guessed && (
-          <p className="fx-note" style={{ marginTop: 'var(--fx-space-2)' }}>
-            {fill(copy.result.pct, { pct: MYSTERY.guessedPct })}
-          </p>
+        {guessed ? (
+          <>
+            <p className="fx-eyebrow">{copy.result.guessed.eyebrow}</p>
+            <h1 className="fx-h1">{fill(copy.result.guessed.title, { name: MYSTERY.name })}</h1>
+            <p className="fx-lede">{fill(copy.result.guessed.byMaison, { maison: MYSTERY.maison })}</p>
+            <p className="fx-notes">{MYSTERY.notes.join(' · ')}</p>
+            <p className="fx-note" style={{ marginTop: 'var(--fx-space-2)' }}>
+              {fill(copy.result.guessed.pct, { pct: MYSTERY.guessedPct })}
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="fx-eyebrow fx-eyebrow--muted">{copy.result.missed.eyebrow}</p>
+            <h1 className="fx-h1">{fill(copy.result.missed.title, { name: MYSTERY.name })}</h1>
+            <p className="fx-lede">{fill(copy.result.missed.trick, { trickNote: MYSTERY.trickNote })}</p>
+          </>
         )}
         {/* Il credito è identico nei due esiti: cambia il racconto, mai il valore. */}
         <Reward />
@@ -436,7 +381,7 @@ function Recs({
       <div className="fx-main">
         <p className="fx-eyebrow">{copy.eyebrow}</p>
         <h1 className="fx-h1">{guessed ? copy.recs.titleRight : copy.recs.titleWrong}</h1>
-        {!guessed && <p className="fx-lede">{copy.result.wrong.chosen}</p>}
+        {!guessed && <p className="fx-lede">{copy.recs.subWrong}</p>}
         <ul className="fx-recs">
           {recs.map((r) => (
             <li className="fx-rec" key={r.name}>

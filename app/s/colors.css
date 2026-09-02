@@ -1,27 +1,25 @@
 /* The Fragrance Experience — design tokens.
- * Direzione premium/Apple: fondo neutro quasi bianco, superfici bianche,
- * near-black morbido, grigi di sistema. Il rosa WO•MAN resta un accento
- * chirurgico, mai un fondo. */
+ * Palette WO•MAN (valori del brief, non toccare): avorio caldo come
+ * fondo, mai bianco o grigio; il rosa è il gesto primario e l'accento. */
 :root {
   /* colore */
-  --fx-ink: #1d1d1f; /* testo principale, CTA piena */
-  --fx-ink-soft: #3a3a3c; /* hover della CTA */
-  --fx-bg: #f7f6f4; /* fondo neutro caldo, quasi bianco */
-  --fx-surface: #ffffff; /* superfici: opzioni, pannelli, input */
-  --fx-line: #e5e3de; /* hairline e separatori */
-  --fx-muted: #86868b; /* testo secondario */
-  --fx-magenta: #e966b5; /* rosa WO•MAN — solo accento */
-  --fx-magenta-deep: #bd3a66; /* accento leggibile su fondo chiaro */
+  --fx-ink: #0f0e12; /* testo principale, testo sulla CTA */
+  --fx-bg: #f3ece0; /* fondo chiaro: avorio caldo */
+  --fx-surface: #faf6ef; /* superfici: card, opzioni, input */
+  --fx-line: #e3d8cc; /* bordi e separatori */
+  --fx-muted: #8a7f6f; /* testo secondario */
+  --fx-magenta: #e966b5; /* rosa WO•MAN — bottone primario, stati attivi */
+  --fx-magenta-strong: #de4fa4; /* hover del bottone primario */
+  --fx-magenta-deep: #bd3a66; /* accenti testuali */
 
   /* tipografia — scala */
   --fx-text-xs: 0.6875rem; /* 11px — eyebrow, label */
   --fx-text-sm: 0.8125rem; /* 13px — note, didascalie */
   --fx-text-base: 1.0625rem; /* 17px — corpo */
   --fx-text-lg: 1.3125rem; /* 21px — nomi fragranza, sottotitoli */
-  --fx-text-xl: clamp(1.75rem, 6vw, 2.25rem); /* headline */
-  --fx-text-2xl: clamp(2.25rem, 8.5vw, 3.5rem); /* headline display */
+  --fx-text-xl: clamp(2rem, 7vw, 2.625rem); /* titoli serif */
+  --fx-text-2xl: clamp(2.5rem, 9vw, 3.75rem); /* titoli serif display */
   --fx-tracking-caps: 0.16em;
-  --fx-tracking-tight: -0.022em;
 
   /* spaziatura — scala */
   --fx-space-1: 0.5rem;
