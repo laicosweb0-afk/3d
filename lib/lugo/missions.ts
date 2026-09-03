@@ -62,6 +62,14 @@ export interface Missione {
   livelloRichiesto?: number;
   /** Attività di Lugo che ospita la missione, se ce n'è una. */
   attivitaId?: string;
+  /**
+   * Presente SOLO se la missione è un TURNO di lavoro avviato dalla vetrina
+   * di quella bottega («Lavora qui»). La stessa missione proposta dalla
+   * catena o dalla bacheca non ce l'ha: al completamento è questo campo — e
+   * non attivitaId — a muovere il contatore per bottega e lo slot del
+   * giorno, così girare per Lugo non consuma mai i turni di nessuno.
+   */
+  bottegaId?: string;
   /** Distintivo assegnato al completamento. */
   distintivo?: string;
   /** true se si può rigiocare dopo averla finita. */
@@ -427,6 +435,7 @@ const STAMPI: Record<string, StampoAttivita> = {
 export function creaMissioneAttivita(
   mondo: MondoLugo,
   attivita: { id: string; nome: string; categoria: string; x: number; z: number },
+  turno = false,
 ): Missione {
   const st = STAMPI[attivita.categoria] ?? STAMPI.servizi;
   const nome = attivita.nome || 'la bottega';
@@ -445,10 +454,26 @@ export function creaMissioneAttivita(
     ricompensa: st.rep,
     denaro: st.denaro,
     ripetibile: true,
+    // la firma del turno vive solo quando la missione nasce dalla vetrina:
+    // vedi il commento su Missione.bottegaId
+    ...(turno ? { bottegaId: attivita.id } : {}),
     ...(st.secondi ? { tempoLimite: st.secondi, bonusVelocita: true, semeMancia: contatoreAttivita } : {}),
   };
   registraDinamica(m);
   return m;
+}
+
+/**
+ * Il TURNO di una bottega: la stessa identica missione della sua categoria,
+ * ma firmata con `bottegaId`. La firma è tutto quello che serve al resto
+ * del gioco (lib/lugo/lavoro.ts): contatore per bottega al completamento,
+ * un turno al giorno per bottega, la paga del posto fisso.
+ */
+export function creaMissioneTurno(
+  mondo: MondoLugo,
+  attivita: { id: string; nome: string; categoria: string; x: number; z: number },
+): Missione {
+  return creaMissioneAttivita(mondo, attivita, true);
 }
 
 let contatoreAttivita = 0;

@@ -4,9 +4,9 @@
 // Lugo sono, e qual è il prossimo traguardo.
 //
 // Regola non negoziabile: il capitolo è SEMPRE derivato. Qui non si scrive
-// niente, non c'è nessun campo nuovo nel salvataggio, nessun
-// «capitoloCorrente» memorizzato da tenere allineato: si ricalcola ogni
-// volta dagli stessi numeri che salvataggio.ts già salva e già valida. Così
+// niente, non c'è nessun campo «capitoloCorrente» memorizzato da tenere
+// allineato: si ricalcola ogni volta dagli stessi numeri che salvataggio.ts
+// già salva e già valida (contatori dei turni e contratto compresi). Così
 // un salvataggio vecchio (di quando i capitoli non esistevano) o manomesso
 // a mano in localStorage non può mai raccontare un capitolo sbagliato — al
 // massimo racconta i suoi numeri, e il capitolo che ne esce è quello giusto
@@ -16,6 +16,7 @@
 // chiunque altro, senza portarsi dietro nulla.
 
 import { livelloDaRep } from './progressione';
+import { migliorBottega, TURNI_PER_CONTRATTO, type Contratto } from './lavoro';
 
 /**
  * L'estratto dello store da cui tutto si deriva. C'è `punteggio` e non
@@ -30,6 +31,10 @@ export interface StatoCapitoli {
   denaro: number;
   punteggio: number;
   consegneFatte: number;
+  /** Turni completati per bottega: il percorso del capitolo 2. */
+  turniPerBottega: Record<string, number>;
+  /** Il posto fisso, se firmato: è il traguardo che chiude il capitolo 2. */
+  contratto: Contratto | null;
 }
 
 export interface Capitolo {
@@ -46,9 +51,7 @@ export interface Capitolo {
 // funzioni: se un giorno la storia cambia nome a una missione, c'è un solo
 // posto dove il capitolo può restare indietro.
 const MISSIONI_ARRIVO = ['m00', 'mvp1', 'mvp2', 'mvp3'] as const;
-const MISSIONI_LAVORO = ['mvp4', 'mvp5'] as const;
 const MISSIONI_AMICO = ['m01', 'm02', 'm03', 'm04', 'm05', 'm06', 'm07'] as const;
-const CONSEGNE_LAVORO = 3;
 const LIVELLO_QUARTIERE = 3;
 const RISPARMIO_CASA = 400;
 
@@ -77,20 +80,22 @@ export const CAPITOLI: readonly Capitolo[] = [
     n: 2,
     nome: 'Il lavoro',
     motto: 'Le botteghe ti mettono alla prova.',
-    completo: (s) =>
-      fatte(s, MISSIONI_LAVORO) >= MISSIONI_LAVORO.length &&
-      s.consegneFatte >= CONSEGNE_LAVORO,
-    // si mostra solo ciò che manca DAVVERO: a prove finite la riga si
-    // accorcia sulle consegne, invece di trascinarsi un «2 di 2» già chiuso
+    // Il capitolo del lavoro si chiude COL CONTRATTO: tre turni nella
+    // stessa bottega e poi il posto fisso (lib/lugo/lavoro.ts). Il
+    // completamento guarda solo il contratto, non il contatore: chi ha già
+    // firmato ha finito il percorso anche se un salvataggio vecchio non
+    // ricorda più i turni con cui c'era arrivato.
+    completo: (s) => s.contratto !== null,
     prossimoPasso: (s) => {
-      const passi: string[] = [];
-      if (fatte(s, MISSIONI_LAVORO) < MISSIONI_LAVORO.length) {
-        passi.push(`Prove in bottega: ${di(fatte(s, MISSIONI_LAVORO), MISSIONI_LAVORO.length)}`);
+      if (s.contratto) return 'Traguardo raggiunto';
+      const migliore = migliorBottega(s.turniPerBottega);
+      // a tre turni fatti si aggiunge l'unica cosa che manca — andare a
+      // chiedere — in poche parole, perché il chip dell'HUD è una riga e
+      // la versione lunga finiva puntinata proprio sul verbo
+      if (migliore.turni >= TURNI_PER_CONTRATTO) {
+        return `Turni fatti: ${di(migliore.turni, TURNI_PER_CONTRATTO)} · Chiedi il posto fisso`;
       }
-      if (s.consegneFatte < CONSEGNE_LAVORO) {
-        passi.push(`Consegne fatte: ${di(s.consegneFatte, CONSEGNE_LAVORO)}`);
-      }
-      return passi.join(' · ') || 'Traguardo raggiunto';
+      return `Turni fatti: ${di(migliore.turni, TURNI_PER_CONTRATTO)} nella stessa bottega`;
     },
   },
   {

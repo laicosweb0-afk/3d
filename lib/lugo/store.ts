@@ -15,6 +15,7 @@ import {
   chiaveSettimana,
   type Contatori,
 } from './incarichi';
+import { chiaveGiornoLavoro, incrementaTurni, type Contratto } from './lavoro';
 
 export type QualitaTier = 'alta' | 'media' | 'bassa';
 // Tre modi di stare al mondo, non due: a Lugo si gira anche in bici, e la
@@ -193,6 +194,17 @@ interface LugoState {
   baseSettimana: Contatori;
   /** Gli incarichi già riscossi nel periodo in corso. */
   incarichiRiscossi: string[];
+  /**
+   * Il LAVORO nelle botteghe (lib/lugo/lavoro.ts). turniPerBottega conta i
+   * turni completati per ogni bottega, da sempre: tre nella stessa aprono
+   * il posto fisso. giornoLavoro e turniOggi sono lo slot giornaliero — un
+   * turno per bottega al giorno, come i cooldown degli incarichi — e il
+   * contratto è la bottega dove «ci lavori tu», col nome OSM già in uso.
+   */
+  turniPerBottega: Record<string, number>;
+  giornoLavoro: string;
+  turniOggi: string[];
+  contratto: Contratto | null;
   /** Messaggio transitorio a centro schermo (esiti, tappe). */
   avviso: string | null;
   /** Suggerimento contestuale persistente ("Premi E…"). */
@@ -251,6 +263,14 @@ interface LugoState {
   allineaIncarichi: () => void;
   /** Segna un incarico come riscosso; false se era già stato incassato. */
   riscuotiIncarico: (id: string) => boolean;
+  /**
+   * Registra un turno completato in una bottega: contatore per bottega e
+   * slot del giorno insieme, così non possono mai raccontare due storie
+   * diverse. Se nel frattempo il giorno è cambiato, lo slot riparte.
+   */
+  contaTurno: (bottegaId: string) => void;
+  /** Firma (o sposta, o annulla con null) il contratto del posto fisso. */
+  firmaContratto: (c: Contratto | null) => void;
   setAvviso: (msg: string | null) => void;
   /**
    * `allerta` si scrive INSIEME al testo: i chiamanti che non lo passano
@@ -296,6 +316,10 @@ export const useLugo = create<LugoState>((set, get) => ({
   baseGiorno: { ...CONTATORI_ZERO },
   baseSettimana: { ...CONTATORI_ZERO },
   incarichiRiscossi: [],
+  turniPerBottega: {},
+  giornoLavoro: chiaveGiornoLavoro(),
+  turniOggi: [],
+  contratto: null,
   poiVisitati: [],
   distintivi: [],
   scoperta: null,
@@ -396,6 +420,20 @@ export const useLugo = create<LugoState>((set, get) => ({
     set((s) => ({ incarichiRiscossi: [...s.incarichiRiscossi, id] }));
     return true;
   },
+  contaTurno: (bottegaId) =>
+    set((s) => {
+      // lo slot del giorno si allinea QUI, all'unico momento in cui conta:
+      // se è passata mezzanotte (o il collaudo ha girato il calendario),
+      // l'elenco di ieri si butta invece di bloccare le botteghe di oggi
+      const chiave = chiaveGiornoLavoro();
+      const oggi = s.giornoLavoro === chiave ? s.turniOggi : [];
+      return {
+        giornoLavoro: chiave,
+        turniOggi: oggi.includes(bottegaId) ? oggi : [...oggi, bottegaId],
+        turniPerBottega: incrementaTurni(s.turniPerBottega, bottegaId),
+      };
+    }),
+  firmaContratto: (contratto) => set({ contratto }),
   setAvviso: (avviso) => set({ avviso }),
   setHint: (hint, hintAllerta = false) => set({ hint, hintAllerta }),
   setVia: (via) => set({ via }),
