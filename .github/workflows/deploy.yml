@@ -41,6 +41,13 @@ jobs:
           # Quando comprerete il dominio, rimuovete questa riga (basePath vuoto)
           # e riaggiungete public/CNAME con www.mondialservicesrl.it.
           NEXT_PUBLIC_BASE_PATH: /3d
+      # Il gioco è PRIVATO su richiesta del proprietario (03/09): la
+      # cartella /lugo si toglie dall'output PRIMA della pubblicazione,
+      # così il suo link risponde 404 per chiunque, mentre gli altri siti
+      # del repo restano online come sempre. Per ripubblicare il gioco
+      # basta eliminare questo passo.
+      - name: Escludi il gioco dalla pubblicazione
+        run: rm -rf out/lugo out/lugo.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: out
