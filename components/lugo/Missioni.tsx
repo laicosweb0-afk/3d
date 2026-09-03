@@ -20,6 +20,7 @@ import {
   MISSIONI,
 } from '@/lib/lugo/missions';
 import { registroAttivita } from '@/lib/lugo/attivita';
+import { avanzaGiornoLavoro, chiaveGiornoLavoro, pagaTurno } from '@/lib/lugo/lavoro';
 import { bachecaVicina, postiBacheca } from '@/lib/lugo/bacheche';
 import {
   chiaveGiorno,
@@ -172,6 +173,51 @@ export function Missioni() {
       },
       // quante attività vere di Lugo possono ospitare una missione
       attivitaConMissioni: () => attivitaConMissioni().length,
+      // Il lavoro nelle botteghe, per il collaudo: chi ha lavorato oggi, i
+      // contatori più alti, il contratto, e se la vetrina aperta può
+      // ospitare un turno. Come `capitolo`, si legge con le stesse funzioni
+      // del gioco: qui non si inventa una seconda verità.
+      lavoro: () => {
+        const s = useLugo.getState();
+        const chiave = chiaveGiornoLavoro();
+        const top = Object.entries(s.turniPerBottega)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 3);
+        return {
+          giorno: chiave,
+          // un elenco di ieri non conta: oggi non ha ancora lavorato nessuno
+          turniOggi: s.giornoLavoro === chiave ? [...s.turniOggi] : [],
+          turniPerBottega: Object.fromEntries(top),
+          contratto: s.contratto ? { ...s.contratto } : null,
+          bottegaVetrina: s.vetrina
+            ? attivitaConMissioni().some((a) => a.id === s.vetrina!.id)
+            : null,
+        };
+      },
+      // SOLO COLLAUDO: gira il calendario dei turni avanti di n giorni
+      // (lib/lugo/lavoro.ts). Il gioco vero aspetta la mezzanotte vera.
+      avanzaGiornoLavoro: (n = 1) => avanzaGiornoLavoro(n),
+      // apre la vetrina della i-esima attività con missioni, con gli stessi
+      // dati che userebbe la E del Player: serve al collaudo dei turni, che
+      // in headless non può camminare fino alla porta di un bar
+      apriVetrina: (i = 0) => {
+        const elenco = attivitaConMissioni();
+        if (!elenco.length) return null;
+        const scelta = elenco[((i % elenco.length) + elenco.length) % elenco.length];
+        const a = registroAttivita(mondo).find((x) => x.id === scelta.id);
+        if (!a) return null;
+        useLugo.getState().setVetrina({
+          id: a.id,
+          nome: a.nome,
+          categoria: a.categoria,
+          descrizione: a.descrizione,
+          partner: a.partner,
+          livello: a.livelloPartner,
+          promo: a.promo,
+          articoli: a.articoli,
+        });
+        return { id: a.id, nome: a.nome, categoria: a.categoria };
+      },
       // genera la missione di un'attività vera e ne restituisce la scheda
       missioneAttivita: (i = 0) => {
         const elenco = attivitaConMissioni();
@@ -277,9 +323,13 @@ export function Missioni() {
           // così pannello e portafoglio raccontano la stessa storia.
           const giaPagata = m.tipo === 'storia' && s.missioniFatte.includes(m.id);
           if (!giaPagata) s.addPunti(m.ricompensa);
+          // Un turno nella PROPRIA bottega parte da una base più alta: il
+          // 25% in più del contratto (lib/lugo/lavoro.ts), applicato qui e
+          // non alla missione, così la stessa bottega vista in bacheca o
+          // dalla catena continua a pagare la cifra di sempre.
+          let euro = pagaTurno(m.denaro, m.bottegaId, s.contratto);
+          let extra: string | undefined = euro !== m.denaro ? 'POSTO FISSO +25%' : undefined;
           // le consegne pagano di più chi arriva prima, mancia compresa
-          let euro = m.denaro;
-          let extra: string | undefined;
           if (m.bonusVelocita && m.tempoLimite) {
             const frazione = Math.max(0, tempo.current / m.tempoLimite);
             if (frazione > 0.55) euro += 8;
@@ -287,7 +337,7 @@ export function Missioni() {
             const mancia = frazione > 0.45 ? 3 + ((m.semeMancia ?? 0) % 5) : 0;
             if (mancia > 0) {
               euro += mancia;
-              extra = `MANCIA €${mancia}`;
+              extra = extra ? `${extra} · MANCIA €${mancia}` : `MANCIA €${mancia}`;
             }
           }
           if (!giaPagata) s.addDenaro(euro);
@@ -297,6 +347,10 @@ export function Missioni() {
           // l'elenco degli id — dove non entrava mai nulla.
           if (m.tipo === 'storia') s.addMissioneFatta(m.id);
           else if (m.tipo === 'consegna') s.contaConsegna();
+          // il turno firma la bottega SOLO al completamento: un turno
+          // abbandonato o fallito non brucia lo slot del giorno, si può
+          // tornare in vetrina e riprovare
+          if (m.bottegaId) s.contaTurno(m.bottegaId);
           // ogni missione chiusa, di qualunque tipo, muove gli incarichi
           s.contaTotale('missioni');
           // il distintivo di ricompensa, se la missione ne porta uno

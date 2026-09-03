@@ -8,7 +8,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLugo } from '@/lib/lugo/store';
 import { CAPITOLI, capitoloCorrente, type Capitolo } from '@/lib/lugo/capitoli';
-import { missioneById, pontePrimoIncontro } from '@/lib/lugo/missions';
+import {
+  attivitaConMissioni,
+  creaMissioneTurno,
+  missioneById,
+  pontePrimoIncontro,
+} from '@/lib/lugo/missions';
+import {
+  dialogoPostoFisso,
+  turnoFattoOggi,
+  TURNI_PER_CONTRATTO,
+} from '@/lib/lugo/lavoro';
 import { setAudioAttivo, suonaEvento } from '@/lib/lugo/audio';
 import { orologio } from '@/lib/lugo/tempo';
 import { Minimap } from './Minimap';
@@ -87,6 +97,11 @@ export function Hud() {
   const baseSettimana = useLugo((s) => s.baseSettimana);
   const incarichiRiscossi = useLugo((s) => s.incarichiRiscossi);
   const riscuotiIncarico = useLugo((s) => s.riscuotiIncarico);
+  const turniPerBottega = useLugo((s) => s.turniPerBottega);
+  const giornoLavoro = useLugo((s) => s.giornoLavoro);
+  const turniOggi = useLugo((s) => s.turniOggi);
+  const contratto = useLugo((s) => s.contratto);
+  const firmaContratto = useLugo((s) => s.firmaContratto);
   const liv = livelloDaRep(punteggio);
   const grado = gradoDaRep(punteggio);
   const avanza = avanzamento(punteggio);
@@ -98,10 +113,10 @@ export function Hud() {
   // ingredienti del capitolo cambiano di rado, e ricalcolare le liste di
   // missioni a ogni lettura del kmh sarebbe lavoro per-frame gratuito.
   const capitolo = useMemo(() => {
-    const stato = { missioniFatte, denaro, punteggio, consegneFatte };
+    const stato = { missioniFatte, denaro, punteggio, consegneFatte, turniPerBottega, contratto };
     const cap = capitoloCorrente(stato);
     return { cap, passo: cap.prossimoPasso(stato) };
-  }, [missioniFatte, denaro, punteggio, consegneFatte]);
+  }, [missioniFatte, denaro, punteggio, consegneFatte, turniPerBottega, contratto]);
 
   // La scheda «CAPITOLO COMPLETATO»: compare solo quando il capitolo
   // AVANZA durante la partita. Il confronto sta in un ref che parte da
@@ -164,6 +179,46 @@ export function Hud() {
     });
     setBacheca(null);
     suonaEvento('tappa');
+  };
+
+  // ── Il lavoro in vetrina ──────────────────────────────────────────────
+  // La bottega aperta può ospitare un turno se sta nel registro delle
+  // attività con missioni: è la stessa lista da cui pescano la catena e le
+  // bacheche, quindi vetrina e resto del gioco raccontano una sola regola.
+  // Player.tsx non c'entra: la vetrina arriva già aperta dallo store, qui
+  // si decide solo cosa mostrarci dentro.
+  const bottegaTurno = vetrina
+    ? (attivitaConMissioni().find((a) => a.id === vetrina.id) ?? null)
+    : null;
+  const turniQui = vetrina ? (turniPerBottega[vetrina.id] ?? 0) : 0;
+  const fattoOggi = vetrina ? turnoFattoOggi(giornoLavoro, turniOggi, vetrina.id) : false;
+  const bottegaTua = Boolean(vetrina && contratto && contratto.id === vetrina.id);
+  const puoChiedere = Boolean(bottegaTurno && !bottegaTua && turniQui >= TURNI_PER_CONTRATTO);
+
+  // «Lavora qui»: il turno è la missione della categoria, firmata con la
+  // bottega. Parte da fuori dalla macchina delle missioni, esattamente come
+  // un lavoro accettato in bacheca: al conto alla rovescia pensa lei.
+  const lavoraQui = () => {
+    if (!bottegaTurno || fattoOggi) return;
+    const m = creaMissioneTurno(mondo, bottegaTurno);
+    setMissione(m.id, 'attiva', 0);
+    setTempoResiduo(m.tempoLimite ?? null);
+    setIntro({
+      etichetta: 'TURNO DI LAVORO',
+      titolo: m.titolo,
+      frase: m.frase,
+      obiettivo: m.tappe[0].titolo,
+    });
+    setVetrina(null);
+    suonaEvento('tappa');
+  };
+
+  // «Chiedi il posto fisso»: si apre il dialogo col titolare (personaggio
+  // di fantasia). La risposta passa da `rispondi`, come tutti i dialoghi.
+  const chiediPosto = () => {
+    if (!vetrina || !puoChiedere) return;
+    const d = dialogoPostoFisso(contratto);
+    setDialogo({ id: 'lavoro-posto:' + vetrina.id, ...d });
   };
 
   const riscuoti = (i: IncaricoVivo) => {
@@ -238,6 +293,31 @@ export function Hud() {
     // solo setDialogo(null), e il «Volentieri» sarebbe andato perduto.
     if (dialogo?.id.startsWith('m00-')) {
       pontePrimoIncontro.scelta = id;
+      setDialogo(null);
+      return;
+    }
+    // Il posto fisso (lavoro-posto:<bottegaId>): qui l'HUD applica da sé,
+    // perché il contratto è tutto suo — non c'è un ciclo di gioco che debba
+    // dire la sua, come invece per maranza e primo incontro. La bottega si
+    // rilegge dal registro con l'id nel dialogo, NON dalla vetrina: la E
+    // del Player chiude i pannelli ma lascia vivo il dialogo, e un «sì»
+    // detto a vetrina ormai chiusa deve valere lo stesso.
+    if (dialogo?.id.startsWith('lavoro-posto:')) {
+      if (id === 'si') {
+        const bid = dialogo.id.slice('lavoro-posto:'.length);
+        const a = attivitaConMissioni().find((x) => x.id === bid);
+        if (a) {
+          const prima = contratto;
+          firmaContratto({ id: a.id, nome: a.nome });
+          // il commiato onesto: si saluta la vecchia bottega, senza drammi
+          setAvviso(
+            prima && prima.id !== a.id
+              ? `Hai salutato ${prima.nome}: da oggi la tua bottega è ${a.nome}`
+              : `Posto fisso da ${a.nome}: qui ci lavori tu`,
+          );
+          suonaEvento('successo');
+        }
+      }
       setDialogo(null);
       return;
     }
@@ -669,6 +749,48 @@ export function Hud() {
           )}
           {vetrina.partner && vetrina.promo && (
             <div className="lugo-vetrina-promo">{vetrina.promo}</div>
+          )}
+          {/* Il lavoro: solo nelle botteghe che ospitano missioni. Un turno
+              per bottega al giorno; a turno fatto il bottone lascia il posto
+              al «Torna domani». Il lavoro è finzione di gioco: la bottega ci
+              mette solo il nome e la categoria già pubblici su OSM. */}
+          {bottegaTurno && (
+            <div className="lugo-vetrina-lavoro" data-hud="vetrina-lavoro">
+              {bottegaTua && (
+                <div className="lugo-vetrina-tua" data-hud="vetrina-tua">
+                  ◆ Qui ci lavori tu{fattoOggi ? '' : ' · il turno paga il 25% in più'}
+                </div>
+              )}
+              {fattoOggi ? (
+                <div className="lugo-vetrina-domani" data-hud="vetrina-domani">
+                  Turno fatto. Torna domani
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="lugo-vetrina-lavora"
+                  data-hud="vetrina-lavora"
+                  onClick={lavoraQui}
+                >
+                  LAVORA QUI
+                </button>
+              )}
+              {puoChiedere && (
+                <button
+                  type="button"
+                  className="lugo-vetrina-posto"
+                  data-hud="vetrina-posto"
+                  onClick={chiediPosto}
+                >
+                  CHIEDI IL POSTO FISSO
+                </button>
+              )}
+              {!bottegaTua && turniQui > 0 && turniQui < TURNI_PER_CONTRATTO && (
+                <div className="lugo-vetrina-turni" data-hud="vetrina-turni">
+                  Turni fatti qui: {turniQui} di {TURNI_PER_CONTRATTO}
+                </div>
+              )}
+            </div>
           )}
           {vetrina.articoli.length === 0 ? (
             <div className="lugo-vetrina-vuoto">Oggi qui non si vende niente. Torna domani.</div>

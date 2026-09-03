@@ -13,6 +13,7 @@ import { DISTINTIVI } from './distintivi';
 import { avatarValido, type Avatar } from './avatar';
 import { livelloDaRep } from './progressione';
 import { CONTATORI_ZERO, type Contatori, type Metrica } from './incarichi';
+import { contrattoValido, turniValidi, type Contratto } from './lavoro';
 
 const CHIAVE = 'lugo-salvataggio-v1';
 
@@ -41,6 +42,16 @@ export interface Salvataggio {
   baseGiorno: Contatori;
   baseSettimana: Contatori;
   incarichiRiscossi: string[];
+  /**
+   * Il lavoro nelle botteghe (lib/lugo/lavoro.ts): i turni completati per
+   * bottega, lo slot del giorno (un turno per bottega al giorno) e il
+   * contratto del posto fisso. I validatori vivono in lavoro.ts accanto
+   * alle regole, come avatarValido vive accanto all'avatar.
+   */
+  turniPerBottega: Record<string, number>;
+  giornoLavoro: string;
+  turniOggi: string[];
+  contratto: Contratto | null;
   /**
    * Quante bici e quante auto sono state portate via, da sempre. È l'unica
    * cosa del furto che sopravvive alla chiusura del browser: non l'auto che
@@ -150,6 +161,20 @@ export function caricaSalvataggio(): Partial<Salvataggio> | null {
       incarichiRiscossi: Array.isArray(dati.incarichiRiscossi)
         ? dati.incarichiRiscossi.filter((x) => typeof x === 'string').slice(0, 40)
         : undefined,
+      turniPerBottega:
+        dati.turniPerBottega !== undefined ? turniValidi(dati.turniPerBottega) : undefined,
+      giornoLavoro: chiaveValida(dati.giornoLavoro),
+      // lo slot del giorno vale solo INSIEME alla sua data: senza, lo store
+      // gli metterebbe sotto il giorno di oggi e un elenco manomesso
+      // bloccherebbe i turni di botteghe mai lavorate fino a mezzanotte
+      turniOggi:
+        chiaveValida(dati.giornoLavoro) && Array.isArray(dati.turniOggi)
+          ? dati.turniOggi.filter((x) => typeof x === 'string' && x.length <= 60).slice(0, 60)
+          : undefined,
+      // niente riparazioni sul contratto: o è ben formato o non esiste — un
+      // salvataggio manomesso può gonfiarsi i turni, ma un contratto rotto
+      // non deve mai trasformarsi in un posto fisso regalato
+      contratto: dati.contratto !== undefined ? contrattoValido(dati.contratto) : undefined,
       furti: dati.furti !== undefined ? furtiValidi(dati.furti) : undefined,
       volumi:
         dati.volumi && typeof dati.volumi === 'object'
@@ -205,6 +230,10 @@ export function avviaSalvataggio() {
       ...(dati.incarichiRiscossi !== undefined
         ? { incarichiRiscossi: dati.incarichiRiscossi }
         : {}),
+      ...(dati.turniPerBottega !== undefined ? { turniPerBottega: dati.turniPerBottega } : {}),
+      ...(dati.giornoLavoro !== undefined ? { giornoLavoro: dati.giornoLavoro } : {}),
+      ...(dati.turniOggi !== undefined ? { turniOggi: dati.turniOggi } : {}),
+      ...(dati.contratto !== undefined ? { contratto: dati.contratto } : {}),
       ...(dati.furti !== undefined ? { furti: dati.furti } : {}),
     });
     // il livello è la lettura della reputazione, non uno stato a sé: al
@@ -237,6 +266,10 @@ export function avviaSalvataggio() {
       s.baseGiorno === prima.baseGiorno &&
       s.baseSettimana === prima.baseSettimana &&
       s.incarichiRiscossi === prima.incarichiRiscossi &&
+      s.turniPerBottega === prima.turniPerBottega &&
+      s.giornoLavoro === prima.giornoLavoro &&
+      s.turniOggi === prima.turniOggi &&
+      s.contratto === prima.contratto &&
       s.furti === prima.furti
     ) {
       return;
@@ -264,6 +297,10 @@ export function avviaSalvataggio() {
         baseGiorno: st.baseGiorno,
         baseSettimana: st.baseSettimana,
         incarichiRiscossi: st.incarichiRiscossi,
+        turniPerBottega: st.turniPerBottega,
+        giornoLavoro: st.giornoLavoro,
+        turniOggi: st.turniOggi,
+        contratto: st.contratto,
         furti: st.furti,
       });
     }, 600);

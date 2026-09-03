@@ -967,6 +967,67 @@
   text-align: center;
 }
 
+/* ── Il lavoro in vetrina: turno del giorno e posto fisso ──────────────
+   Il blocco vive DENTRO la vetrina, sopra il listino: il bottone pieno è
+   il turno, quello bordato la domanda di posto fisso. Le righe di stato
+   («Torna domani», «Qui ci lavori tu», i turni fatti) non sono bottoni e
+   non devono sembrarlo: niente sfondo caldo, solo testo. */
+.lugo-vetrina-lavoro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0.1rem 0 0.65rem;
+}
+
+.lugo-vetrina-lavora,
+.lugo-vetrina-posto {
+  padding: 0.5rem 0.8rem;
+  border: 0;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #241a10;
+  background: linear-gradient(180deg, #ffd08a, var(--accento));
+  cursor: pointer;
+}
+
+.lugo-vetrina-lavora:active,
+.lugo-vetrina-posto:active {
+  transform: translateY(1px);
+}
+
+/* la domanda di posto fisso è l'azione rara: bordata, non gridata */
+.lugo-vetrina-posto {
+  color: var(--accento);
+  background: rgba(242, 180, 25, 0.12);
+  border: 1px solid rgba(242, 180, 25, 0.55);
+}
+
+/* turno già fatto: al posto del bottone, la stessa sagoma ma spenta */
+.lugo-vetrina-domani {
+  padding: 0.5rem 0.8rem;
+  border: 1px dashed var(--bordo);
+  border-radius: 10px;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muto);
+}
+
+/* la riga del contratto: verde come le cose che sono già tue */
+.lugo-vetrina-tua {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--ok);
+}
+
+.lugo-vetrina-turni {
+  font-size: 0.7rem;
+  color: var(--muto);
+}
+
 .lugo-pulsante-pugno {
   font-size: 1.1rem;
   color: var(--testo);
