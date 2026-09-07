@@ -1028,6 +1028,24 @@
   color: var(--muto);
 }
 
+/* Il blocco del lavoro ha alzato la vetrina di un bottone abbondante, e su
+   un telefono in ORIZZONTALE (390px di altezza) il pannello — ancorato in
+   basso a 7.5rem e senza tetto — sfondava il bordo ALTO: il tasto ✕ finiva
+   fuori schermo, incliccabile, e la bottega non si chiudeva più. Proprio il
+   difetto che la fase 6 del collaudo esiste per non far tornare. Solo sugli
+   schermi bassi la vetrina si riaggancia vicino al fondo (il joystick lì
+   sotto è comunque spento finché un pannello è aperto) e prende un tetto
+   con scorrimento interno: la testa col ✕ resta sempre a schermo, al
+   listino basta scorrere. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .lugo-vetrina {
+    bottom: 0.9rem;
+    max-height: calc(100vh - 1.8rem);
+    max-height: calc(100dvh - 1.8rem);
+    overflow-y: auto;
+  }
+}
+
 .lugo-pulsante-pugno {
   font-size: 1.1rem;
   color: var(--testo);

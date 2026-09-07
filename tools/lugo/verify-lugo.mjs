@@ -3262,10 +3262,11 @@ try {
 
     // completa una missione registrata: avvio da hook e teletrasporto di
     // tappa in tappa — stessa retroazione della fase 4, ma sulla pagina
-    // nuova (il camminatore guidato è legato a `page`, qui non serve)
-    const completa2 = async (id) => {
-      const via = await lugo2(`L.avviaMissione(${JSON.stringify(id)})`);
-      if (!via) return `avviaMissione(${id}) rifiutata`;
+    // nuova (il camminatore guidato è legato a `page`, qui non serve).
+    // Il giro delle tappe vive da solo in finisci2 perché i turni di
+    // lavoro NON partono da avviaMissione: li avvia il bottone della
+    // vetrina, e alla prova resta solo la missione già attiva da chiudere
+    const finisci2 = async () => {
       for (let giri = 0; giri < 12; giri++) {
         const stato = await lugo2('L.statoMissione()');
         if (stato === 'completata') return null;
@@ -3288,6 +3289,11 @@ try {
           .catch(() => {});
       }
       return 'tappe non finite in 12 giri';
+    };
+    const completa2 = async (id) => {
+      const via = await lugo2(`L.avviaMissione(${JSON.stringify(id)})`);
+      if (!via) return `avviaMissione(${id}) rifiutata`;
+      return finisci2();
     };
 
     // ── capitoli: la partita vergine ────────────────────────────────────
@@ -3375,8 +3381,13 @@ try {
         await page2.screenshot({ path: join(SHOTS, '13-capitolo-completato.png') });
       } else ko('la scheda CAPITOLO COMPLETATO compare', e3 ?? 'mai comparsa in 8 s');
 
+      // il traguardo del capitolo 2 è quello del PERCORSO DEI TURNI: tre
+      // turni nella stessa bottega e poi il posto fisso. Il testo vecchio
+      // («Prove in bottega… Consegne fatte…») è stato sostituito per
+      // mandato insieme alla meccanica: l'uguaglianza resta ALLA LETTERA,
+      // così una virgola cambiata nel chip non passa mai in silenzio
       const c2 = await lugo2('L.capitolo()');
-      if (c2 && c2.n === 2 && c2.nome === 'Il lavoro' && c2.traguardo === 'Prove in bottega: 0 di 2 · Consegne fatte: 0 di 3')
+      if (c2 && c2.n === 2 && c2.nome === 'Il lavoro' && c2.traguardo === 'Turni fatti: 0 di 3 nella stessa bottega')
         ok('capitolo 2 coi numeri vivi', c2.traguardo);
       else ko('capitolo 2 coi numeri vivi', JSON.stringify(c2));
 
@@ -3385,19 +3396,192 @@ try {
         .then(() => ok('la scheda si dissolve da sola'))
         .catch(() => ko('la scheda si dissolve da sola', 'ancora a schermo dopo 12 s'));
 
-      // una consegna vera muove il contatore del capitolo 2, chip compreso
-      await lugo2('L.chiudiPannelli()');
-      const att = await lugo2('L.missioneAttivita(0)');
-      const eA = att ? await completa2(att.id) : 'missioneAttivita(0) nulla';
-      const c3 = await lugo2('L.capitolo()');
-      const chip3 = (await page2.textContent('[data-hud="capitolo"]').catch(() => '')) ?? '';
-      if (!eA && c3.n === 2 && c3.traguardo.includes('Consegne fatte: 1 di 3') && chip3.includes('Consegne fatte: 1 di 3'))
-        ok('il contatore delle consegne è vivo', c3.traguardo);
-      else ko('il contatore delle consegne è vivo', eA ?? JSON.stringify({ c3, chip: chip3 }));
+      // ── capitolo 2: il lavoro, dal bancone al contratto ───────────────
+      // Il percorso nuovo si cammina PER INTERO, nell'ordine del giocatore:
+      // un turno dal bottone della vetrina, il «Torna domani» dello stesso
+      // giorno, il calendario che gira con l'hook di collaudo (aspettare la
+      // mezzanotte vera qui non si può), tre turni nella stessa bottega, il
+      // dialogo del titolare, il contratto che chiude il capitolo e la paga
+      // col +25% il giorno dopo. Le botteghe si pescano dal registro via
+      // apriVetrina: la prima di categoria bar (paga base nota: €45, e le
+      // sue missioni portano bonus e mancia, quindi la forchetta della
+      // paga si conosce a priori) e una seconda qualsiasi, per provare che
+      // il limite giornaliero è PER BOTTEGA, non per giornata.
+      const haLavoro = await lugo2(
+        "typeof L.lavoro === 'function' && typeof L.apriVetrina === 'function' && typeof L.avanzaGiornoLavoro === 'function' && typeof L.denaro === 'function'",
+      );
+      let c3 = null; // il capitolo con cui si arriva al reload, qualunque strada si sia fatta
+      if (!haLavoro) ko('la vetrina offre LAVORA QUI', 'hook del lavoro assenti (lavoro/apriVetrina/avanzaGiornoLavoro/denaro)');
+      else {
+        await lugo2('L.chiudiPannelli()');
+        // riapre la vetrina della bottega chiesta, scorrendo il registro
+        const apri2 = async (id) => {
+          for (let i = 0; i < 60; i++) {
+            const v = await lugo2(`L.apriVetrina(${i})`);
+            if (!v) return null;
+            if (v.id === id) return v;
+          }
+          return null;
+        };
+        let bar = null;
+        let altra = null;
+        for (let i = 0; i < 60 && (!bar || !altra); i++) {
+          const v = await lugo2(`L.apriVetrina(${i})`);
+          if (!v) break;
+          if (!bar && v.categoria === 'bar') bar = v;
+          else if (bar && !altra && v.id !== bar.id) altra = v;
+        }
+        const btnLavora = page2.locator('[data-hud="vetrina-lavora"]');
+        if (!bar || !altra) ko('la vetrina offre LAVORA QUI', `nel registro manca ${bar ? 'una seconda bottega' : 'un bar'}`);
+        else {
+          await apri2(bar.id);
+          await page2.waitForTimeout(300);
+          const lv0 = await lugo2('L.lavoro()');
+          if (lv0 && lv0.bottegaVetrina === true && (await btnLavora.count()) === 1)
+            ok('la vetrina offre LAVORA QUI', `${bar.nome} (bar), giorno ${lv0.giorno}`);
+          else ko('la vetrina offre LAVORA QUI', JSON.stringify({ lv0, bottoni: await btnLavora.count() }));
 
-      // reload: il capitolo si RICALCOLA dal salvataggio (nessun campo
-      // nuovo), identico a prima — e la scheda non deve festeggiare il
-      // passato: al load niente CAPITOLO COMPLETATO, mai
+          // il primo turno: parte dal bottone, si chiude a tappe, conta e
+          // paga la cifra BASE — qui il contratto non c'è ancora, e la
+          // scheda d'esito non deve nominare nessun posto fisso
+          const soldi0 = await lugo2('L.denaro()');
+          await btnLavora.click({ timeout: 5000 }).catch(() => {});
+          // in headless i fotogrammi arrancano: si aspetta lo STATO, non
+          // un numero di millisecondi scelto a occhio
+          await page2.waitForFunction(() => window.__LUGO__.statoMissione() === 'attiva', null, { timeout: 15000 }).catch(() => {});
+          const stT1 = await lugo2('L.statoMissione()');
+          const intro1 = await lugo2('L.intro()');
+          if (stT1 === 'attiva' && intro1 && intro1.etichetta === 'TURNO DI LAVORO')
+            ok('il turno parte dalla vetrina', `${intro1.titolo} — ${intro1.obiettivo}`);
+          else ko('il turno parte dalla vetrina', JSON.stringify({ stato: stT1, intro: intro1 }));
+          let eT = await finisci2();
+          const soldi1 = await lugo2('L.denaro()');
+          const lv1 = await lugo2('L.lavoro()');
+          const esito1 = ((await page2.textContent('[data-hud="esito"]').catch(() => '')) ?? '').trim();
+          const paga1 = soldi1 - soldi0;
+          // bar: base 45, più al massimo 8 di bonus velocità e 7 di mancia
+          if (!eT && lv1.turniPerBottega[bar.id] === 1 && lv1.turniOggi.includes(bar.id) && paga1 >= 45 && paga1 <= 60 && !esito1.includes('POSTO FISSO'))
+            ok('il primo turno conta e paga la base', `turni=1, +€${paga1} (base 45), esito senza posto fisso`);
+          else ko('il primo turno conta e paga la base', eT ?? JSON.stringify({ lv1, paga1, esito1 }));
+          const cT1 = await lugo2('L.capitolo()');
+          const chipT1 = (await page2.textContent('[data-hud="capitolo"]').catch(() => '')) ?? '';
+          if (cT1.n === 2 && cT1.traguardo === 'Turni fatti: 1 di 3 nella stessa bottega' && chipT1.includes('Turni fatti: 1 di 3'))
+            ok('il contatore dei turni è vivo, chip compreso', cT1.traguardo);
+          else ko('il contatore dei turni è vivo, chip compreso', JSON.stringify({ cT1, chip: chipT1 }));
+
+          // stessa bottega, stesso giorno: al posto del bottone c'è il
+          // congedo «Torna domani» — e il bottone NON deve esserci
+          await apri2(bar.id);
+          await page2.waitForTimeout(300);
+          const domani = page2.locator('[data-hud="vetrina-domani"]');
+          const testoDomani = ((await domani.textContent().catch(() => '')) ?? '').trim();
+          if ((await domani.count()) === 1 && testoDomani.includes('Torna domani') && (await btnLavora.count()) === 0)
+            ok('stesso giorno, stessa bottega: Torna domani', testoDomani);
+          else ko('stesso giorno, stessa bottega: Torna domani', JSON.stringify({ righe: await domani.count(), testoDomani, bottoni: await btnLavora.count() }));
+
+          // un'ALTRA bottega, lo stesso giorno, invece assume: il limite è
+          // per bottega, non è un coprifuoco cittadino
+          await apri2(altra.id);
+          await page2.waitForTimeout(300);
+          if (await btnLavora.count()) {
+            await btnLavora.click();
+            await page2.waitForFunction(() => window.__LUGO__.statoMissione() === 'attiva', null, { timeout: 15000 }).catch(() => {});
+            const stA = await lugo2('L.statoMissione()');
+            eT = stA === 'attiva' ? await finisci2() : `stato «${stA}»`;
+            const lvA = await lugo2('L.lavoro()');
+            if (!eT && lvA.turniOggi.includes(altra.id)) ok('altra bottega, stesso giorno: si lavora', `${altra.nome}, turniOggi=${lvA.turniOggi.length}`);
+            else ko('altra bottega, stesso giorno: si lavora', eT ?? JSON.stringify(lvA));
+          } else ko('altra bottega, stesso giorno: si lavora', 'bottone assente anche qui');
+
+          // il calendario gira: il bar torna lavorabile, e coi turni 2 e 3
+          // si arriva alla soglia del posto fisso
+          let rilavora = false;
+          for (let giro = 2; giro <= 3; giro++) {
+            const g = await lugo2('L.avanzaGiornoLavoro(1)');
+            await apri2(bar.id);
+            await page2.waitForTimeout(300);
+            if (!(await btnLavora.count())) {
+              ko(`turno ${giro} nella stessa bottega`, `giorno ${g}: bottone assente`);
+              continue;
+            }
+            if (giro === 2) rilavora = true;
+            await btnLavora.click();
+            await page2.waitForFunction(() => window.__LUGO__.statoMissione() === 'attiva', null, { timeout: 15000 }).catch(() => {});
+            eT = await finisci2();
+            if (eT) ko(`turno ${giro} nella stessa bottega`, eT);
+          }
+          if (rilavora) ok('il giorno avanza e si rilavora', 'avanzaGiornoLavoro(1) riapre il bancone');
+          else ko('il giorno avanza e si rilavora', 'il bar non è mai tornato lavorabile');
+          const lv3 = await lugo2('L.lavoro()');
+          const cT3 = await lugo2('L.capitolo()');
+          await apri2(bar.id);
+          await page2.waitForTimeout(300);
+          const btnPosto = page2.locator('[data-hud="vetrina-posto"]');
+          if (lv3.turniPerBottega[bar.id] === 3 && cT3.n === 2 && cT3.traguardo.includes('Chiedi il posto fisso') && (await btnPosto.count()) === 1)
+            ok('tre turni aprono il posto fisso', `${cT3.traguardo} — bottone in vetrina`);
+          else ko('tre turni aprono il posto fisso', JSON.stringify({ turni: lv3.turniPerBottega, cT3, bottoni: await btnPosto.count() }));
+
+          // il titolare (personaggio di fantasia) offre, si accetta, e il
+          // contratto — id e nome della bottega — chiude il capitolo 2 con
+          // la sua scheda. È l'avanzamento: la scheda DEVE scattare adesso
+          await btnPosto.click().catch(() => {});
+          await page2.waitForTimeout(400);
+          const dlgTesto = ((await page2.textContent('[data-hud="dialogo"]').catch(() => '')) ?? '').trim();
+          if (dlgTesto.includes('Il titolare')) ok('il dialogo del titolare si apre', dlgTesto.slice(0, 80) + '…');
+          else ko('il dialogo del titolare si apre', dlgTesto || 'pannello mai comparso');
+          await page2.locator('[data-hud="dialogo-opzione-si"]').click().catch(() => {});
+          await page2.waitForTimeout(600);
+          const lvC = await lugo2('L.lavoro()');
+          if (lvC.contratto && lvC.contratto.id === bar.id && lvC.contratto.nome === bar.nome)
+            ok('il contratto si firma con id e nome giusti', JSON.stringify(lvC.contratto));
+          else ko('il contratto si firma con id e nome giusti', JSON.stringify(lvC.contratto));
+          const cC = await lugo2('L.capitolo()');
+          const schedaC = await page2
+            .waitForFunction(() => document.querySelector('[data-hud="capitolo-scheda"]'), null, { timeout: 8000 })
+            .then(() => true)
+            .catch(() => false);
+          if (cC.n === 3 && Array.isArray(cC.completi) && cC.completi.includes(2) && schedaC)
+            ok('il contratto chiude il capitolo 2', `cap. ${cC.n} «${cC.nome}», completi [${cC.completi}], scheda a schermo`);
+          else ko('il contratto chiude il capitolo 2', JSON.stringify({ cC, schedaC }));
+          await page2.screenshot({ path: join(SHOTS, '13-lavoro-contratto.png') });
+          await page2
+            .waitForFunction(() => !document.querySelector('[data-hud="capitolo-scheda"]'), null, { timeout: 15000 })
+            .catch(() => {});
+
+          // il giorno dopo, nella PROPRIA bottega, la paga sale del 25%
+          // arrotondato: base 45 → 56. La riga «POSTO FISSO +25%» in esito
+          // è la prova che il bonus è quello del contratto e non una
+          // mancia fortunata; la forchetta 56–71 (56 + bonus velocità 8 +
+          // mancia 3–7) tiene fuori qualunque paga senza contratto
+          await lugo2('L.avanzaGiornoLavoro(1)');
+          await apri2(bar.id);
+          await page2.waitForTimeout(300);
+          const tuaTesto = ((await page2.textContent('[data-hud="vetrina-tua"]').catch(() => '')) ?? '').trim();
+          if (tuaTesto.includes('Qui ci lavori tu')) ok('la vetrina sa che è la tua bottega', tuaTesto);
+          else ko('la vetrina sa che è la tua bottega', tuaTesto || 'riga assente');
+          const soldiPre = await lugo2('L.denaro()');
+          await btnLavora.click().catch(() => {});
+          await page2.waitForTimeout(600);
+          eT = await finisci2();
+          const soldiPost = await lugo2('L.denaro()');
+          const esitoC = ((await page2.textContent('[data-hud="esito"]').catch(() => '')) ?? '').trim();
+          const pagaC = soldiPost - soldiPre;
+          if (!eT && esitoC.includes('POSTO FISSO +25%') && pagaC >= 56 && pagaC <= 71)
+            ok('il posto fisso paga il 25% in più', `+€${pagaC} (base 45→56), esito «POSTO FISSO +25%»`);
+          else ko('il posto fisso paga il 25% in più', eT ?? JSON.stringify({ pagaC, esitoC }));
+        }
+      }
+      // il capitolo con cui si arriva al reload, qualunque strada si sia
+      // fatta: col contratto firmato è già il 3, e il confronto di là dal
+      // reload deve ritrovare ESATTAMENTE questo
+      c3 = await lugo2('L.capitolo()');
+      const lavPrima = haLavoro ? await lugo2('L.lavoro()') : null;
+
+      // reload: il capitolo si RICALCOLA dal salvataggio, identico a
+      // prima — e la scheda non deve festeggiare il passato: al load
+      // niente CAPITOLO COMPLETATO, mai. Coi campi del lavoro nel
+      // salvataggio, di qua dal reload devono tornare anche contratto e
+      // contatori, tali e quali
       await page2.waitForTimeout(1500); // il salvataggio ha il suo debounce
       await page2.reload({ waitUntil: 'load' });
       const salta3 = page2.locator('[data-hud="salta-intro"]');
@@ -3414,12 +3598,73 @@ try {
       if (c5 && c5.n === c3.n && c5.nome === c3.nome && c5.traguardo === c3.traguardo)
         ok('dopo il reload il capitolo si ricalcola uguale', c5.traguardo);
       else ko('dopo il reload il capitolo si ricalcola uguale', JSON.stringify({ prima: c3, dopo: c5 }));
+      if (haLavoro && lavPrima) {
+        const lavDopo = await lugo2('L.lavoro()');
+        if (
+          lavDopo &&
+          lavDopo.contratto &&
+          lavPrima.contratto &&
+          lavDopo.contratto.id === lavPrima.contratto.id &&
+          lavDopo.contratto.nome === lavPrima.contratto.nome &&
+          JSON.stringify(lavDopo.turniPerBottega) === JSON.stringify(lavPrima.turniPerBottega)
+        )
+          ok('dopo il reload contratto e turni persistono', `${lavDopo.contratto.nome}, turni ${JSON.stringify(lavDopo.turniPerBottega)}`);
+        else ko('dopo il reload contratto e turni persistono', JSON.stringify({ prima: lavPrima, dopo: lavDopo }));
+      }
       await page2.waitForTimeout(4000);
       if ((await page2.locator('[data-hud="capitolo-scheda"]').count()) === 0) ok('nessuna scheda parte da sola al load');
       else ko('nessuna scheda parte da sola al load', 'CAPITOLO COMPLETATO festeggiato a freddo');
       const chipR = (await page2.textContent('[data-hud="capitolo"]').catch(() => '')) ?? '';
-      if (chipR.includes('Cap. 2') && chipR.includes('Il lavoro')) ok('il chip dopo il reload dice il vero', chipR.trim());
+      if (c3 && chipR.includes(`Cap. ${c3.n}`) && chipR.includes(c3.nome)) ok('il chip dopo il reload dice il vero', chipR.trim());
       else ko('il chip dopo il reload dice il vero', String(chipR));
+
+      // ── il salvataggio manomesso sui campi del lavoro ──────────────────
+      // localStorage è materiale di chiunque: contatori a stringa, numeri
+      // negativi o gonfiati a 1e300, un contratto coi tipi sbagliati, il
+      // giorno ridotto a un numero. Il gioco deve caricare senza un
+      // errore, ripulire i contatori (interi, tetto 999, spazzatura
+      // fuori) e NON regalare il contratto: il capitolo 2 si riapre, e
+      // racconta i turni superstiti
+      if (haLavoro) {
+        await page2.evaluate(() => {
+          const grezzo = JSON.parse(localStorage.getItem('lugo-salvataggio-v1') || '{}');
+          grezzo.turniPerBottega = { rotto: 'ciao', negativo: -5, gonfiato: 1e300, vero: 2.7 };
+          grezzo.contratto = { id: 123, nome: ['non', 'una', 'stringa'] };
+          grezzo.giornoLavoro = 42;
+          grezzo.turniOggi = 'non-un-array';
+          localStorage.setItem('lugo-salvataggio-v1', JSON.stringify(grezzo));
+        });
+        await page2.reload({ waitUntil: 'load' });
+        const salta4 = page2.locator('[data-hud="salta-intro"]');
+        try {
+          await salta4.waitFor({ timeout: 5000 });
+          await salta4.click();
+        } catch {}
+        const gioca4 = page2.locator('[data-hud="gioca"]');
+        await gioca4.waitFor({ timeout: 40000 }).catch(() => {});
+        if (await gioca4.count()) await gioca4.click();
+        const vivo = await page2
+          .waitForFunction(() => window.__LUGO__ && typeof window.__LUGO__.lavoro === 'function', null, { timeout: 40000 })
+          .then(() => true)
+          .catch(() => false);
+        await page2.evaluate(() => document.activeElement && document.activeElement.blur());
+        const lavRotto = vivo ? await lugo2('L.lavoro()') : null;
+        const capRotto = vivo ? await lugo2('L.capitolo()') : null;
+        if (
+          vivo &&
+          lavRotto &&
+          lavRotto.contratto === null &&
+          lavRotto.turniPerBottega.gonfiato === 999 &&
+          lavRotto.turniPerBottega.vero === 2 &&
+          !('rotto' in lavRotto.turniPerBottega) &&
+          !('negativo' in lavRotto.turniPerBottega)
+        )
+          ok('il salvataggio manomesso non regala contratti', `contratto null, contatori ${JSON.stringify(lavRotto.turniPerBottega)}`);
+        else ko('il salvataggio manomesso non regala contratti', vivo ? JSON.stringify(lavRotto) : 'il gioco non è più partito');
+        if (capRotto && capRotto.n === 2 && capRotto.traguardo.includes('Chiedi il posto fisso'))
+          ok('il capitolo 2 si riapre coi turni superstiti', capRotto.traguardo);
+        else ko('il capitolo 2 si riapre coi turni superstiti', JSON.stringify(capRotto));
+      }
     }
 
     // ── salto, a piedi ──────────────────────────────────────────────────
