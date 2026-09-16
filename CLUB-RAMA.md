@@ -64,9 +64,8 @@ pagina è già online e provabile.
 
 ### 2.2 Il dominio
 
-In **Project → Settings → Domains** aggiungi `club.ramaceramiche.it`
-(da confermare: il dominio esatto e il sottodominio li scegli tu — questo è
-solo la proposta). Vercel risponde con il record da creare.
+In **Project → Settings → Domains** aggiungi `club.ramastore.it`.
+Vercel risponde con il record da creare.
 
 Nel pannello DNS del dominio aggiungi **un solo record**:
 
@@ -79,7 +78,7 @@ ultimi anni ha cambiato più volte l'host di destinazione, quindi vale quello
 a schermo, non quello scritto qui.
 
 Il sito principale non si tocca: i record del dominio nudo
-(`ramaceramiche.it`) e di `www` restano dove sono e continuano a puntare
+(`ramastore.it`) e di `www` restano dove sono e continuano a puntare
 dove puntano adesso. Un CNAME su `club` riguarda solo `club`.
 
 Dopo la propagazione (di solito pochi minuti, fino a un'ora) Vercel emette
