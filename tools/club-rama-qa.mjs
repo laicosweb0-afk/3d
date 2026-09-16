@@ -10,7 +10,12 @@ p.on('pageerror', (e) => errori.push(`PAGE ERROR: ${e.message}`));
 p.on('console', (m) => { if (m.type() === 'error') errori.push(`CONSOLE: ${m.text()}`); });
 
 await p.goto(url, { waitUntil: 'networkidle' });
-await p.waitForTimeout(600);
+await p.waitForTimeout(1500);
+await p.screenshot({ path: `${out}/0-hey.png` });
+await p.waitForTimeout(1800);
+await p.screenshot({ path: `${out}/0b-benvenuto.png` });
+await p.waitForSelector('.intro', { state: 'detached', timeout: 9000 });
+await p.waitForTimeout(500);
 await p.screenshot({ path: `${out}/1-ambiente.png` });
 
 await p.getByRole('radio', { name: 'Bagno' }).click();

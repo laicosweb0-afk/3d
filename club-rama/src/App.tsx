@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Header } from './components/Header';
+import { Intro } from './components/Intro';
 import { StepScelta } from './screens/StepScelta';
 import { StepRuota } from './screens/StepRuota';
 import { StepRivelazione } from './screens/StepRivelazione';
@@ -18,6 +19,7 @@ const PASSO_DI: Record<Fase, number> = {
 };
 
 export default function App() {
+  const [apertura, setApertura] = useState(true);
   const [fase, setFase] = useState<Fase>('ambiente');
   const [avanti, setAvanti] = useState(true);
   const [ambiente, setAmbiente] = useState<string | null>(null);
@@ -26,6 +28,8 @@ export default function App() {
   const [lead, setLead] = useState<Lead | null>(null);
   const [inCorso, setInCorso] = useState(false);
   const [errore, setErrore] = useState<string | null>(null);
+
+  const chiudiApertura = useCallback(() => setApertura(false), []);
 
   const vai = useCallback((f: Fase, indietro = false) => {
     setAvanti(!indietro);
@@ -109,6 +113,8 @@ export default function App() {
     : undefined;
 
   return (
+    <>
+    {apertura && <Intro onFine={chiudiApertura} />}
     <div className="flex w-full flex-col" style={{ minHeight: '100dvh' }}>
       <Header
         passo={PASSO_DI[fase]} totale={4}
@@ -134,5 +140,6 @@ export default function App() {
         </AnimatePresence>
       </main>
     </div>
+    </>
   );
 }
