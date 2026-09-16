@@ -15,9 +15,17 @@ p.on('console', (m) => {
   // /favicon.ico e logga un 404: è la sola richiesta di rete che fa, e non
   // riguarda il contenuto. Tutto il resto è un errore vero.
   const faviconMancante = /Failed to load resource.*404/.test(m.text());
-  if (m.type() === 'error' && !faviconMancante) errors.push(`CONSOLE ERROR: ${m.text()}`);
+  // Da qui il proxy di rete non lascia uscire nessuna chiamata verso il
+  // servizio di raccolta: l'invio parte (lo verifica contattoInviato) e muore
+  // nel tunnel. Sul telefono di chi tocca la card non succede.
+  const uscitaBloccata = /ERR_TUNNEL_CONNECTION_FAILED|ERR_PROXY/.test(m.text());
+  if (m.type() === 'error' && !faviconMancante && !uscitaBloccata) errors.push(`CONSOLE ERROR: ${m.text()}`);
 });
-p.on('request', (r) => { if (!r.url().startsWith('http://localhost')) errors.push(`RICHIESTA ESTERNA: ${r.url()}`); });
+let contattoInviato = false;
+p.on('request', (r) => {
+  if (r.url().startsWith('https://api.web3forms.com/')) { contattoInviato = true; return; }
+  if (!r.url().startsWith('http://localhost')) errors.push(`RICHIESTA ESTERNA: ${r.url()}`);
+});
 p.on('response', (r) => { if (r.status() >= 400) errors.push(`${r.status()} su ${r.url()}`); });
 
 await p.goto(url, { waitUntil: 'load' });
@@ -28,6 +36,8 @@ await p.screenshot({ path: `${out}/01-intro-hey.png` });
 await p.waitForTimeout(1600);
 await p.screenshot({ path: `${out}/02-intro-welcome.png` });
 await p.waitForSelector('#intro', { state: 'hidden', timeout: 8000 });
+// le schede dei lavori entrano subito dopo l'apertura: aspetto che si posino
+await p.waitForTimeout(900);
 
 const attiva = () => p.evaluate(() => document.querySelector('.screen.active').dataset.screen);
 const scatta = async (n, atteso) => {
@@ -54,18 +64,15 @@ const cifra = await p.textContent('#amountNum');
 if (cifra.trim() !== '70') errors.push(`CREDITO: atteso "70", trovato "${cifra}"`);
 
 await p.click('[data-screen="reveal"] .btn-primary');
-await p.waitForTimeout(500);
-await scatta('07', 'delivery');
-
-await p.click('[data-screen="delivery"] .option');
 await p.waitForTimeout(600);
-await scatta('08', 'form');
+await scatta('07', 'form');
 
+// L'email è facoltativa: il percorso da provare è quello col solo nome,
+// perché è quello che deve passare senza bloccare nessuno.
 await p.fill('#inpName', 'Mario Rossi');
-await p.fill('#inpEmail', 'mario.rossi@example.it');
 await p.click('[data-screen="form"] .btn-primary');
 await p.waitForTimeout(600);
-await scatta('09', 'done');
+await scatta('08', 'done');
 const codice = (await p.textContent('#codeOut')).trim();
 if (!/^RAMA70-[A-Z0-9]{4}$/.test(codice)) errors.push(`CODICE malformato: "${codice}"`);
 
@@ -76,9 +83,12 @@ const foto = await p.evaluate(() => {
   return getComputedStyle(el).backgroundImage.slice(0, 40);
 });
 
+if (!contattoInviato) errors.push('CONTATTO: nessun invio al servizio di raccolta dopo il modulo');
+
 const overflow = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 
 console.log('codice generato:', codice);
+console.log('invio del contatto tentato:', contattoInviato);
 console.log('foto showroom:', foto);
 console.log('overflow orizzontale (px):', overflow);
 console.log(errors.length ? `PROBLEMI:\n- ${errors.join('\n- ')}` : 'nessun errore, nessuna richiesta esterna');
