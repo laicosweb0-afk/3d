@@ -111,7 +111,27 @@ Resta comunque da fare un giro sulla card fisica vera, con un iPhone e un
 Android: il tocco NFC e il browser in-app (quello che si apre dal lettore
 NFC di sistema) sono l'unico pezzo che non si può simulare da qui.
 
-## 4. Due dettagli grafici, da decidere
+## 4. Il QR
+
+La card è NFC, ma un QR serve lo stesso: per provarla senza avvicinare il
+telefono, e per la vetrina o un volantino, dove chi passa inquadra e basta.
+
+```bash
+pip install segno
+python3 tools/qr.py https://club.ramastore.it club-qr            # colori del marchio
+python3 tools/qr.py https://club.ramastore.it club-qr --neutro   # nero su bianco
+```
+
+Escono un PNG (schermo) e un SVG (stampa, scala senza sgranare). Il codice è
+generato con correzione d'errore alta, così regge graffi, pieghe e una stampa
+storta. Da rifare ogni volta che cambia l'indirizzo: il QR contiene l'URL in
+chiaro, non un redirect.
+
+Per la tipografia conviene la versione `--neutro`: il nero pieno su bianco è
+quello che i lettori sbagliano meno, e su carta il contrasto del crema non è
+garantito come a schermo.
+
+## 5. Due dettagli grafici, da decidere
 
 Trovati durante il controllo, **non corretti** perché il file va tenuto com'è
 finché non dici il contrario:
