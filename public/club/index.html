@@ -441,21 +441,29 @@
     setTimeout(()=>terms.classList.add('show'), 1200);
   }
 
-  // Dove finiscono i contatti raccolti. Finché questa riga è vuota la pagina
-  // non chiama nessuno e si comporta esattamente come prima: il codice appare
-  // e basta. Il giorno che c'è un indirizzo, i contatti iniziano ad arrivarci
-  // senza toccare altro.
-  const RACCOLTA = '';
+  // Chiave pubblica del servizio che gira i contatti alla casella di Rama.
+  // Finché è vuota la pagina non chiama nessuno e si comporta come prima:
+  // il codice appare e basta. L'indirizzo di destinazione NON sta qui — vive
+  // nell'account del servizio — così non finisce nel sorgente in pasto ai
+  // raccoglitori di indirizzi. Questa chiave invece è pubblica per disegno:
+  // permette solo di spedire a quella casella, non di leggerne niente.
+  const RACCOLTA_CHIAVE = '';
+  const RACCOLTA_URL = 'https://api.web3forms.com/submit';
 
   function inviaContatto(dati){
-    if(!RACCOLTA) return;
-    // A vuoto di proposito: chi ha toccato la card ha già il suo codice a
-    // schermo, e un problema di rete non deve fermarlo né mostrargli un errore.
+    if(!RACCOLTA_CHIAVE) return;
+    // A vuoto di proposito: chi ha toccato la card ha già il codice a schermo,
+    // e un problema di rete non deve fermarlo né mostrargli un errore. Nel
+    // peggiore dei casi si perde un contatto, non si rovina il momento.
     try{
-      fetch(RACCOLTA, {
+      fetch(RACCOLTA_URL, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(dati),
+        body:JSON.stringify(Object.assign({
+          access_key: RACCOLTA_CHIAVE,
+          subject: `Club Rama — nuovo contatto: ${dati.nome}`,
+          from_name: 'Club Rama',
+        }, dati)),
         keepalive:true,
       }).catch(()=>{});
     }catch(e){}
