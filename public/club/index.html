@@ -450,23 +450,48 @@
   const RACCOLTA_CHIAVE = 'd6cab222-7ad5-4d1e-859f-b411eae928eb';
   const RACCOLTA_URL = 'https://api.web3forms.com/submit';
 
+  // Con ?debug=1 nell'indirizzo la pagina smette di ingoiare gli errori e
+  // mostra a schermo cosa ha risposto il servizio. Serve solo a noi per
+  // capire dove si inceppa: chi tocca la card non ci arriva mai.
+  const DEBUG = location.search.indexOf('debug=1') !== -1;
+
   function inviaContatto(dati){
     if(!RACCOLTA_CHIAVE) return;
-    // A vuoto di proposito: chi ha toccato la card ha già il codice a schermo,
-    // e un problema di rete non deve fermarlo né mostrargli un errore. Nel
-    // peggiore dei casi si perde un contatto, non si rovina il momento.
-    try{
-      fetch(RACCOLTA_URL, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(Object.assign({
-          access_key: RACCOLTA_CHIAVE,
-          subject: `Club Rama — nuovo contatto: ${dati.nome}`,
-          from_name: 'Club Rama',
-        }, dati)),
-        keepalive:true,
-      }).catch(()=>{});
-    }catch(e){}
+    // Nomi di campo come se li aspetta il servizio: name, email e message
+    // sono quelli che finiscono nel corpo dell'email. L'email si manda solo
+    // se c'è davvero — un valore vuoto o nullo lo fa storcere.
+    const corpo = {
+      access_key: RACCOLTA_CHIAVE,
+      subject: `Club Rama — nuovo contatto: ${dati.nome}`,
+      from_name: 'Club Rama',
+      name: dati.nome,
+      message:
+        `Progetto: ${dati.progetto || '—'}\n` +
+        `Stile: ${dati.stile || '—'}\n` +
+        `Codice: ${dati.codice}\n` +
+        `Email lasciata: ${dati.email || 'no'}\n` +
+        `Consenso promozionale: ${dati.consenso ? 'sì' : 'no'}\n` +
+        `Quando: ${dati.quando}`,
+    };
+    if(dati.email) corpo.email = dati.email;
+
+    const chiamata = fetch(RACCOLTA_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json', 'Accept':'application/json'},
+      body:JSON.stringify(corpo),
+      keepalive:true,
+    });
+
+    if(!DEBUG){
+      // A vuoto di proposito: chi ha toccato la card ha già il codice a
+      // schermo, e un problema di rete non deve fermarlo né mostrargli un
+      // errore. Nel peggiore dei casi si perde un contatto.
+      chiamata.catch(()=>{});
+      return;
+    }
+    chiamata
+      .then(r => r.text().then(t => alert(`Risposta ${r.status}\n\n${t}`)))
+      .catch(e => alert(`La chiamata non è partita:\n\n${e}`));
   }
 
   function submitForm(){
