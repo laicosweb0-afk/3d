@@ -15,9 +15,17 @@ p.on('console', (m) => {
   // /favicon.ico e logga un 404: è la sola richiesta di rete che fa, e non
   // riguarda il contenuto. Tutto il resto è un errore vero.
   const faviconMancante = /Failed to load resource.*404/.test(m.text());
-  if (m.type() === 'error' && !faviconMancante) errors.push(`CONSOLE ERROR: ${m.text()}`);
+  // Da qui il proxy di rete non lascia uscire nessuna chiamata verso il
+  // servizio di raccolta: l'invio parte (lo verifica contattoInviato) e muore
+  // nel tunnel. Sul telefono di chi tocca la card non succede.
+  const uscitaBloccata = /ERR_TUNNEL_CONNECTION_FAILED|ERR_PROXY/.test(m.text());
+  if (m.type() === 'error' && !faviconMancante && !uscitaBloccata) errors.push(`CONSOLE ERROR: ${m.text()}`);
 });
-p.on('request', (r) => { if (!r.url().startsWith('http://localhost')) errors.push(`RICHIESTA ESTERNA: ${r.url()}`); });
+let contattoInviato = false;
+p.on('request', (r) => {
+  if (r.url().startsWith('https://api.web3forms.com/')) { contattoInviato = true; return; }
+  if (!r.url().startsWith('http://localhost')) errors.push(`RICHIESTA ESTERNA: ${r.url()}`);
+});
 p.on('response', (r) => { if (r.status() >= 400) errors.push(`${r.status()} su ${r.url()}`); });
 
 await p.goto(url, { waitUntil: 'load' });
@@ -75,9 +83,12 @@ const foto = await p.evaluate(() => {
   return getComputedStyle(el).backgroundImage.slice(0, 40);
 });
 
+if (!contattoInviato) errors.push('CONTATTO: nessun invio al servizio di raccolta dopo il modulo');
+
 const overflow = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 
 console.log('codice generato:', codice);
+console.log('invio del contatto tentato:', contattoInviato);
 console.log('foto showroom:', foto);
 console.log('overflow orizzontale (px):', overflow);
 console.log(errors.length ? `PROBLEMI:\n- ${errors.join('\n- ')}` : 'nessun errore, nessuna richiesta esterna');
