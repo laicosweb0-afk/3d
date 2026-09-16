@@ -14,6 +14,7 @@ Un unico piano sequenza: il visitatore assiste alla trasformazione di uno spazio
 | [TECH_ARCHITECTURE.md](./TECH_ARCHITECTURE.md) | Architettura tecnica e milestone |
 | [PORTFOLIO.md](./PORTFOLIO.md) | La pagina `/portfolio/`: come si aggiorna |
 | [CLUB-RAMA.md](./CLUB-RAMA.md) | La landing `/club/` della card NFC di Rama Ceramiche: messa online e dominio |
+| [CRM-RAMA.md](./CRM-RAMA.md) | Il CRM di Rama Ceramiche (`crm/`): dove finiscono i lead della card, messa online |
 
 ## Stato
 

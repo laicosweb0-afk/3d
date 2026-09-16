@@ -6,15 +6,18 @@ questo link, parte l'animazione di apertura e poi il mini-quiz di quattro
 domande che si chiude con un codice sconto da mostrare in negozio o ricevere
 via email.
 
-- **File**: `public/club/index.html` — un solo file, 165 KB, invariato
-  rispetto alla versione approvata.
+- **File**: `public/club/index.html` — un solo file, ~170 KB. Rispetto alla
+  versione approvata cambia solo il finale: il modulo parla col CRM.
 - **Zero dipendenze esterne**: nessun font da Google, nessuna immagine
   separata, nessuno script di terze parti. La foto dello showroom è dentro il
-  CSS in base64 e i caratteri sono quelli di sistema (SF Pro su iPhone). La
-  pagina funziona anche senza rete dopo il primo caricamento.
-- **Tutto client-side**: il form finale **non salva niente e non manda
-  nessuna email**. Il codice `RAMA70-XXXX` è generato a caso nel browser.
-  Collegare un CRM o l'invio email è un passo successivo, da decidere a parte.
+  CSS in base64 e i caratteri sono quelli di sistema (SF Pro su iPhone). Il
+  quiz gira tutto nel browser: l'unica richiesta di rete è quella finale al
+  CRM, su un dominio nostro.
+- **Il form ora salva davvero**: nome, email, risposte e consenso finiscono nel
+  CRM di Rama (`CRM-RAMA.md`), il codice `RAMA70-XXXX` lo genera il server ed è
+  riscattabile al banco, e se il cliente ha scelto l'email il codice gli arriva.
+  Se la rete manca, la pagina lo dice invece di inventare un codice: niente
+  promesse che non può mantenere.
 
 Sta in `public/` come il portfolio (`PORTFOLIO.md`): è una cartella statica
 che viaggia insieme al repo senza entrare nel sito di Mondial Service.

@@ -169,6 +169,13 @@
   .consent{display:flex; align-items:flex-start; gap:10px; margin:18px 0 8px;}
   .consent input{margin-top:3px; accent-color:var(--gold-1); width:16px; height:16px; flex-shrink:0;}
   .consent label{font-size:12px; color:var(--ink-faint); line-height:1.5;}
+  .consent a{color:var(--gold-deep);}
+  /* Campo trappola: invisibile a chi guarda, lo riempiono solo i robot. */
+  .trappola{position:absolute; left:-9999px; width:1px; height:1px; opacity:0;}
+  .errore-form{
+    display:none; font-size:12.5px; line-height:1.5; color:#8C2F2F;
+    background:rgba(140,47,47,.08); border-radius:14px; padding:10px 12px; margin-top:12px;
+  }
 
   .done-wrap{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;}
   .check{
@@ -303,11 +310,16 @@
       <div class="field"><label>Email</label><input type="email" id="inpEmail" placeholder="La tua email"></div>
       <div class="consent">
         <input type="checkbox" id="inpConsent">
-        <label for="inpConsent">Acconsento al trattamento dei dati per ricevere comunicazioni promozionali da Rama Ceramiche.</label>
+        <label for="inpConsent">Acconsento al trattamento dei dati per ricevere comunicazioni promozionali da Rama Ceramiche.<span id="linkPrivacy"></span></label>
       </div>
+      <div class="trappola" aria-hidden="true">
+        <label for="inpAzienda">Azienda</label>
+        <input type="text" id="inpAzienda" name="azienda" tabindex="-1" autocomplete="off">
+      </div>
+      <p class="errore-form" id="erroreForm"></p>
     </div>
     <div class="foot">
-      <button class="btn-primary" onclick="submitForm()">Attiva il credito</button>
+      <button class="btn-primary" id="btnAttiva" onclick="submitForm()">Attiva il credito</button>
     </div>
   </div>
 
@@ -398,20 +410,125 @@
     setTimeout(()=>terms.classList.add('show'), 1200);
   }
 
-  function submitForm(){
+  // ---------------------------------------------------------------------
+  // Il collegamento col CRM. Il codice non lo inventa più il browser: lo batte
+  // il server, che lo salva insieme al contatto e lo rende riscattabile in
+  // negozio. Unica chiamata di rete della pagina.
+  // ---------------------------------------------------------------------
+  const CONFIG = {
+    api: (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? 'http://localhost:3100/api/lead'
+      : 'https://crm.ramastore.it/api/lead',
+    // Indirizzo dell'informativa privacy di Rama. Finché è vuoto, accanto al
+    // consenso non compare nessun link: meglio niente di un link rotto.
+    privacy: ''
+  };
+  const CHIAVE_CODA = 'rama-club-coda';
+
+  // Identificativo di questa visita: se l'invio va ritentato, il server
+  // riconosce la chiamata e restituisce lo stesso codice invece di battérne
+  // un altro.
+  function tokenCliente(){
+    try{
+      let t = sessionStorage.getItem('rama-club-token');
+      if(!t){
+        t = (crypto.randomUUID && crypto.randomUUID()) || (Date.now() + '-' + Math.random().toString(36).slice(2));
+        sessionStorage.setItem('rama-club-token', t);
+      }
+      return t;
+    }catch(e){ return null; }
+  }
+
+  async function inviaAlCrm(dati){
+    const risposta = await fetch(CONFIG.api, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(dati)
+    });
+    if(!risposta.ok) throw new Error('richiesta rifiutata: ' + risposta.status);
+    const esito = await risposta.json();
+    if(!esito || !esito.codice) throw new Error('risposta senza codice');
+    return esito;
+  }
+
+  // Se la rete manca proprio adesso, il contatto non si butta via: resta qui e
+  // riparte al prossimo caricamento della pagina.
+  function leggiCoda(){
+    try{ return JSON.parse(localStorage.getItem(CHIAVE_CODA) || '[]'); }catch(e){ return []; }
+  }
+  function scriviCoda(coda){
+    try{ localStorage.setItem(CHIAVE_CODA, JSON.stringify(coda.slice(-5))); }catch(e){}
+  }
+  function accoda(dati){
+    const coda = leggiCoda();
+    coda.push(dati);
+    scriviCoda(coda);
+  }
+  async function smaltisciCoda(){
+    const coda = leggiCoda();
+    if(!coda.length) return;
+    const rimasti = [];
+    for(const dati of coda){
+      try{ await inviaAlCrm(dati); }catch(e){ rimasti.push(dati); }
+    }
+    scriviCoda(rimasti);
+  }
+
+  function mostraFatto(esito){
+    document.getElementById('codeOut').textContent = esito.codice;
+    document.getElementById('doneMsg').textContent = esito.emailInviata
+      ? 'Il tuo credito è attivo. Te lo abbiamo mandato anche via email.'
+      : 'Il tuo credito è attivo. Mostra questo codice in negozio.';
+    go('done');
+  }
+
+  async function submitForm(){
     const name = document.getElementById('inpName').value.trim();
     const email = document.getElementById('inpEmail').value.trim();
     if(!name || !email){
       alert('Inserisci nome ed email per continuare.');
       return;
     }
-    const suffix = Math.random().toString(36).slice(2,6).toUpperCase();
-    document.getElementById('codeOut').textContent = `RAMA70-${suffix}`;
-    document.getElementById('doneMsg').textContent = state.delivery==='Negozio'
-      ? 'Il tuo credito è attivo. Mostra questo codice in negozio.'
-      : 'Il tuo credito è attivo. Te lo abbiamo mandato anche via email.';
-    go('done');
+
+    const bottone = document.getElementById('btnAttiva');
+    const errore = document.getElementById('erroreForm');
+    const etichetta = bottone.textContent;
+    errore.style.display = 'none';
+    bottone.disabled = true;
+    bottone.textContent = 'Un attimo…';
+
+    const dati = {
+      nome: name,
+      email: email,
+      consenso: document.getElementById('inpConsent').checked,
+      progetto: state.project,
+      stile: state.style,
+      consegna: state.delivery,
+      client_token: tokenCliente(),
+      hp: document.getElementById('inpAzienda').value
+    };
+
+    try{
+      mostraFatto(await inviaAlCrm(dati));
+    }catch(e){
+      accoda(dati);
+      errore.textContent = state.delivery === 'Email'
+        ? 'Non riusciamo a raggiungere il negozio in questo momento. Riprova: se la linea non torna, il codice ti arriva via email appena possibile.'
+        : 'Non riusciamo a raggiungere il negozio in questo momento. Controlla la connessione e riprova.';
+      errore.style.display = 'block';
+    }finally{
+      bottone.disabled = false;
+      bottone.textContent = etichetta;
+    }
   }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    if(CONFIG.privacy){
+      const posto = document.getElementById('linkPrivacy');
+      if(posto) posto.innerHTML = ' <a href="' + CONFIG.privacy + '" target="_blank" rel="noopener">Informativa privacy</a>.';
+    }
+    smaltisciCoda();
+  });
 </script>
 </body>
 </html>

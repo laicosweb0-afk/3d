@@ -1,0 +1,52 @@
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { NextResponse, type NextRequest } from 'next/server';
+
+// Due compiti: rinnovare la sessione a ogni richiesta (i cookie di Supabase
+// scadono in fretta) e tenere fuori dal CRM chi non ha fatto login.
+
+const PUBBLICHE = ['/login', '/api/lead'];
+
+export async function middleware(richiesta: NextRequest) {
+  let risposta = NextResponse.next({ request: richiesta });
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const chiave = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // Senza configurazione non si può decidere niente: si lascia passare e sarà
+  // la pagina a dire cosa manca (succede solo in build o in anteprima).
+  if (!url || !chiave) return risposta;
+
+  const supabase = createServerClient(url, chiave, {
+    cookies: {
+      getAll: () => richiesta.cookies.getAll(),
+      setAll: (daScrivere: { name: string; value: string; options: CookieOptions }[]) => {
+        daScrivere.forEach(({ name, value }) => richiesta.cookies.set(name, value));
+        risposta = NextResponse.next({ request: richiesta });
+        daScrivere.forEach(({ name, value, options }) => risposta.cookies.set(name, value, options));
+      },
+    },
+  });
+
+  const { data } = await supabase.auth.getUser();
+  const percorso = richiesta.nextUrl.pathname;
+  const pubblica = PUBBLICHE.some((p) => percorso.startsWith(p));
+
+  if (!data.user && !pubblica) {
+    const versoLogin = richiesta.nextUrl.clone();
+    versoLogin.pathname = '/login';
+    versoLogin.search = percorso === '/' ? '' : `?da=${encodeURIComponent(percorso)}`;
+    return NextResponse.redirect(versoLogin);
+  }
+
+  if (data.user && percorso.startsWith('/login')) {
+    const versoCasa = richiesta.nextUrl.clone();
+    versoCasa.pathname = '/';
+    versoCasa.search = '';
+    return NextResponse.redirect(versoCasa);
+  }
+
+  return risposta;
+}
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)'],
+};

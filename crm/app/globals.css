@@ -1,0 +1,145 @@
+/* I colori sono quelli della card NFC (public/club/index.html): chi passa dal
+   tocco sulla card al gestionale vede la stessa casa. Mobile-first, perché in
+   showroom il CRM si apre dal telefono. */
+:root {
+  --crema: #f5f5f3;
+  --fondo: #ebe9e5;
+  --carta: #ffffff;
+  --inchiostro: #1d1d1f;
+  --inchiostro-molle: rgba(29, 29, 31, 0.62);
+  --inchiostro-lieve: rgba(29, 29, 31, 0.4);
+  --linea: rgba(29, 29, 31, 0.1);
+  --oro: #b8912a;
+  --oro-chiaro: #f1d98a;
+  --oro-cupo: #8c6a17;
+  --allarme: #9d2f2f;
+  --bene: #2f6b46;
+  --raggio: 18px;
+  --raggio-grande: 26px;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  background: var(--fondo);
+  color: var(--inchiostro);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+h1 { font-size: 23px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 4px; }
+h2 { font-size: 15px; font-weight: 600; margin: 0 0 10px; }
+p { margin: 0 0 10px; }
+
+.guscio { max-width: 880px; margin: 0 auto; padding: 0 16px 96px; }
+
+/* Barra in alto: marchio a tessere + voci. */
+.barra {
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(245, 245, 243, 0.92);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--linea);
+}
+.barra-dentro {
+  max-width: 880px; margin: 0 auto;
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 16px;
+}
+.marchio { display: flex; align-items: center; gap: 8px; font-weight: 600; letter-spacing: -0.01em; }
+/* Le tessere del marchio, stesse proporzioni e stesso taglio della card NFC. */
+.tessere { width: 20px; height: 20px; flex-shrink: 0; display: grid; grid-template-columns: 1.15fr 1fr; grid-template-rows: 1.1fr 1fr; gap: 2px; }
+.tessere i { display: block; background: linear-gradient(135deg, var(--oro-chiaro), var(--oro)); clip-path: polygon(32% 0%, 100% 0%, 68% 100%, 0% 100%); }
+.tessere i:nth-child(3) { background: linear-gradient(135deg, var(--oro), var(--oro-cupo)); }
+.voci { display: flex; gap: 4px; margin-left: auto; align-items: center; overflow-x: auto; scrollbar-width: none; }
+.voci::-webkit-scrollbar { display: none; }
+.voce {
+  padding: 7px 12px; border-radius: 999px; text-decoration: none;
+  font-size: 13.5px; color: var(--inchiostro-molle);
+}
+.voce:hover { background: rgba(29, 29, 31, 0.05); }
+.voce.attiva { background: var(--inchiostro); color: var(--crema); }
+
+.intestazione { padding: 22px 0 14px; }
+.occhiello { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--oro-cupo); margin: 0 0 6px; }
+.lede { color: var(--inchiostro-molle); margin: 0; }
+
+.scheda { background: var(--carta); border-radius: var(--raggio-grande); padding: 18px; margin-bottom: 14px; }
+.scheda + .scheda { margin-top: 0; }
+
+.riga { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--linea); text-decoration: none; }
+.riga:last-child { border-bottom: 0; }
+.riga:hover { background: rgba(29, 29, 31, 0.02); }
+.riga .cresce { flex: 1; min-width: 0; }
+.riga .nome { font-weight: 550; }
+.riga .sotto { font-size: 13px; color: var(--inchiostro-lieve); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.vuoto { color: var(--inchiostro-lieve); font-size: 14px; padding: 8px 0; }
+
+/* Pastiglie di stato: il colore serve a distinguere, non a decorare. */
+.pastiglia { display: inline-block; font-size: 11.5px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--linea); color: var(--inchiostro-molle); white-space: nowrap; }
+.pastiglia.nuovo { background: linear-gradient(140deg, var(--oro-chiaro), #f8ebc2); border-color: transparent; color: var(--oro-cupo); }
+.pastiglia.cliente { background: rgba(47, 107, 70, 0.1); border-color: transparent; color: var(--bene); }
+.pastiglia.perso { background: rgba(29, 29, 31, 0.06); color: var(--inchiostro-lieve); }
+.pastiglia.ritardo { background: rgba(157, 47, 47, 0.1); border-color: transparent; color: var(--allarme); }
+
+.codice { font-variant-numeric: tabular-nums; letter-spacing: 0.06em; font-weight: 600; }
+
+/* Campi e bottoni. 16px sugli input: sotto, iOS ingrandisce la pagina da solo. */
+label { display: block; font-size: 12.5px; color: var(--inchiostro-lieve); margin: 0 0 5px; }
+input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="tel"], input[type="datetime-local"], select, textarea {
+  width: 100%; font: inherit; font-size: 16px; color: var(--inchiostro);
+  background: var(--crema); border: 1px solid var(--linea); border-radius: 14px;
+  padding: 11px 13px; outline: none;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--oro); }
+textarea { resize: vertical; min-height: 78px; }
+.campo { margin-bottom: 12px; }
+.campi-affiancati { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+button, .bottone {
+  font: inherit; font-size: 14.5px; font-weight: 550; cursor: pointer;
+  border: 1px solid transparent; border-radius: 999px; padding: 10px 18px;
+  background: var(--inchiostro); color: var(--crema); text-decoration: none;
+  display: inline-block; text-align: center;
+}
+button:active, .bottone:active { opacity: 0.88; }
+button:disabled { opacity: 0.5; cursor: default; }
+.bottone-secondario { background: transparent; color: var(--inchiostro); border-color: var(--linea); }
+.bottone-pericolo { background: transparent; color: var(--allarme); border-color: rgba(157, 47, 47, 0.3); }
+.bottone-minuto { padding: 5px 12px; font-size: 13px; }
+
+.azioni { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.filtri { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.filtri form { display: contents; }
+.filtri input[type="search"] { flex: 1; min-width: 190px; }
+.filtri select { width: auto; }
+
+.avviso { background: rgba(157, 47, 47, 0.08); color: var(--allarme); border-radius: 14px; padding: 10px 13px; font-size: 13.5px; margin-bottom: 12px; }
+.nota-piede { font-size: 12.5px; color: var(--inchiostro-lieve); }
+
+.dati { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; }
+.dati div { min-width: 0; }
+.dati dt { font-size: 12px; color: var(--inchiostro-lieve); margin-bottom: 2px; }
+.dati dd { margin: 0; overflow-wrap: anywhere; }
+
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline li { padding: 11px 0; border-bottom: 1px solid var(--linea); }
+.timeline li:last-child { border-bottom: 0; }
+.timeline .meta { font-size: 12px; color: var(--inchiostro-lieve); }
+
+/* Pagina di accesso: una carta al centro, niente altro. */
+.accesso { min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+.accesso .scheda { width: 100%; max-width: 360px; }
+
+@media (max-width: 520px) {
+  .campi-affiancati, .dati { grid-template-columns: 1fr; }
+  .voce { padding: 7px 10px; font-size: 13px; }
+  .barra-dentro { gap: 8px; }
+}

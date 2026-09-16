@@ -1,6 +1,8 @@
 // Controllo su telefono simulato della landing Club Rama (public/club/).
 // Percorre tutte e sette le schermate, aspetta le animazioni e salva uno
-// screenshot per ciascuna. Uso:
+// screenshot per ciascuna. Il CRM non serve: la chiamata a /api/lead viene
+// intercettata qui dentro, prima in errore (per vedere che la pagina lo dica
+// invece di inventarsi un codice) e poi con una risposta finta. Uso:
 //   node tools/static-server.mjs public 8932 &
 //   node tools/club-mobile.mjs <cartella-screenshot>
 import { chromium } from 'playwright-core';
@@ -12,13 +14,33 @@ const errors = [];
 p.on('pageerror', (e) => errors.push(`PAGE ERROR: ${e.message}`));
 p.on('console', (m) => {
   // La pagina non dichiara nessuna icona, quindi il browser prova comunque
-  // /favicon.ico e logga un 404: è la sola richiesta di rete che fa, e non
-  // riguarda il contenuto. Tutto il resto è un errore vero.
-  const faviconMancante = /Failed to load resource.*404/.test(m.text());
-  if (m.type() === 'error' && !faviconMancante) errors.push(`CONSOLE ERROR: ${m.text()}`);
+  // /favicon.ico e logga un 404: non riguarda il contenuto. L'altro rumore
+  // atteso è la chiamata al CRM che blocchiamo apposta qui sotto.
+  const dove = `${m.text()} ${m.location() && m.location().url ? m.location().url : ''}`;
+  const atteso = /Failed to load resource.*404/.test(m.text()) || /api\/lead/.test(dove);
+  if (m.type() === 'error' && !atteso) errors.push(`CONSOLE ERROR: ${m.text()}`);
 });
 p.on('request', (r) => { if (!r.url().startsWith('http://localhost')) errors.push(`RICHIESTA ESTERNA: ${r.url()}`); });
-p.on('response', (r) => { if (r.status() >= 400) errors.push(`${r.status()} su ${r.url()}`); });
+p.on('response', (r) => { if (r.status() >= 400 && !r.url().includes('/api/lead')) errors.push(`${r.status()} su ${r.url()}`); });
+
+// Il CRM finto. `crmVivo` decide se risponde o se cade la linea.
+const CODICE_FINTO = 'RAMA70-7K3M';
+let crmVivo = false;
+let chiamateAlCrm = 0;
+await p.route('**/api/lead', async (rotta) => {
+  chiamateAlCrm += 1;
+  if (!crmVivo) return rotta.abort('connectionrefused');
+  const inviato = JSON.parse(rotta.request().postData() || '{}');
+  if (inviato.hp !== '') errors.push('TRAPPOLA: il campo esca è arrivato pieno');
+  for (const campo of ['nome', 'email', 'progetto', 'stile', 'consegna']) {
+    if (!inviato[campo]) errors.push(`PAYLOAD: manca "${campo}"`);
+  }
+  await rotta.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ codice: CODICE_FINTO, scadenza: '2026-12-15', emailInviata: true }),
+  });
+});
 
 await p.goto(url, { waitUntil: 'load' });
 
@@ -63,11 +85,24 @@ await scatta('08', 'form');
 
 await p.fill('#inpName', 'Mario Rossi');
 await p.fill('#inpEmail', 'mario.rossi@example.it');
+
+// Primo tentativo con il CRM irraggiungibile: niente codice inventato, la
+// pagina resta sul modulo e lo dice.
 await p.click('[data-screen="form"] .btn-primary');
-await p.waitForTimeout(600);
-await scatta('09', 'done');
+await p.waitForTimeout(800);
+if (await attiva() !== 'form') errors.push('OFFLINE: la pagina è passata a "fatto" senza risposta dal CRM');
+if (!(await p.isVisible('#erroreForm'))) errors.push('OFFLINE: nessun avviso mostrato al cliente');
+if (await p.isDisabled('#btnAttiva')) errors.push('OFFLINE: il bottone è rimasto bloccato, non si può riprovare');
+await p.screenshot({ path: `${out}/09-form-offline.png` });
+
+// Secondo tentativo, CRM in piedi: il codice mostrato è quello del server.
+crmVivo = true;
+await p.click('[data-screen="form"] .btn-primary');
+await p.waitForTimeout(800);
+await scatta('10', 'done');
 const codice = (await p.textContent('#codeOut')).trim();
-if (!/^RAMA70-[A-Z0-9]{4}$/.test(codice)) errors.push(`CODICE malformato: "${codice}"`);
+if (codice !== CODICE_FINTO) errors.push(`CODICE: atteso quello del server ("${CODICE_FINTO}"), trovato "${codice}"`);
+if (chiamateAlCrm !== 2) errors.push(`CHIAMATE al CRM: attese 2, fatte ${chiamateAlCrm}`);
 
 // la foto dello showroom è in base64 nel CSS: verifico che sia decodificata
 const foto = await p.evaluate(() => {

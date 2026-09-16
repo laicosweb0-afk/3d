@@ -91,3 +91,13 @@ altro cliente, un altro dominio, stessa meccanica del portfolio — HTML puro in
 ma l'indirizzo definitivo è un sottodominio suo, servito da Vercel davanti al
 sito di Rama Ceramiche senza toccarlo. Il procedimento completo — progetto
 Vercel, record DNS, controllo da telefono — sta in `CLUB-RAMA.md`.
+
+## Il CRM di Rama (`crm/`)
+
+La cartella `crm/` **non entra in questa build**: è un'applicazione Next.js a
+sé, con server, login e database, pubblicata da un progetto Vercel con *Root
+Directory* = `crm`. Il sito statico qui sopra non la vede nemmeno — la radice
+del repo resta un export come prima.
+
+È il posto dove finiscono i contatti raccolti dalla card NFC del club. Messa
+online, variabili d'ambiente, dominio `crm.ramastore.it` e collaudo: `CRM-RAMA.md`.

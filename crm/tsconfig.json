@@ -6,9 +6,9 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
-    "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
+    "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -17,7 +17,5 @@
     "paths": { "@/*": ["./*"] }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  // `crm/` è un progetto Next a sé (app con server, non export
-  // statico): ha il suo tsconfig e la sua build. Qui va tenuto fuori.
-  "exclude": ["node_modules", "crm"]
+  "exclude": ["node_modules"]
 }
