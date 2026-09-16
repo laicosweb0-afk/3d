@@ -97,6 +97,15 @@ export interface Npc {
    * chi lo guida lo fa camminare.
    */
   fisso: boolean;
+  /**
+   * Il volto fisso del QUARTIERE che questo pedone interpreta (capitolo 3,
+   * components/lugo/Quartiere.tsx): il maranza pentito o il custode del
+   * Rossini. L'anziano della m00 NON ce l'ha apposta — «fisso senza ruolo»
+   * è la sua firma, e così il blocco che gli mette il pacchetto fra le
+   * mani (Npcs.tsx) non veste di cartone anche i due nuovi. Assente per
+   * tutti i pedoni normali.
+   */
+  ruolo?: 'pentito' | 'custode';
 }
 
 export const RAGGIO_NPC = 0.3;
@@ -109,6 +118,22 @@ export const RAGGIO_NPC = 0.3;
  * deve essere identica per tutti, non un'estrazione.
  */
 export const ANCORA_PRIMO_INCONTRO = { x: 70.6, z: -51.7 } as const;
+
+/**
+ * Dove aspettano i due volti fissi del capitolo 3 (il terzo è Otello, che
+ * resta all'ancora del primo incontro): il maranza pentito sul lato del
+ * Pavaglione, il custode sul sagrato del Teatro Rossini. Stesso patto
+ * dell'ancora qui sopra — POSIZIONI FISSE validate con la fisica in
+ * creaNpcs, mai puntoStradaCasuale: le scene del quartiere devono essere
+ * identiche per tutti. I punti sono presi dalla rete pedonale FUORI dai
+ * footprint degli edifici (il tratto che passa dentro la corte del
+ * Pavaglione era il candidato ovvio, ed era anche il modo migliore per far
+ * nascere il pentito contro un pilastro del portico).
+ */
+export const ANCORE_QUARTIERE = {
+  pentito: { x: 10.9, z: 47.8, yaw: 2.07 },
+  custode: { x: -112.2, z: 46.1, yaw: -2.26 },
+} as const;
 
 /**
  * Le andature dei tre stati dell'incontro. Stanno qui e non in maranza.ts
@@ -531,6 +556,83 @@ export function creaNpcs(mondo: MondoLugo, quanti: number): Npc[] {
       manoY: 0,
       manoZ: 0,
       fisso: true,
+    });
+  }
+
+  // ── i volti fissi del quartiere (capitolo 3) ──────────────────────────
+  // Stesso trucco dell'anziano qui sopra, per gli stessi tre motivi:
+  // nascono PRIMA del riempimento degli anziani (il totale resta dentro
+  // `quanti` e nessuna matrice scrive oltre la capienza degli
+  // InstancedMesh), NON pescano dal LCG condiviso (tratti fissi, così non
+  // spostano di un'estrazione la sequenza di tutti i pedoni dopo di loro)
+  // e la posizione è l'ancora validata con la fisica. Li guida
+  // components/lugo/Quartiere.tsx; il flag `fisso` li tiene fuori da
+  // balzi, cedute e riciclo, e `chiesto` a 1e9 li tiene fuori anche dalla
+  // selezione dell'incontro sigaretta (il cooldown non scade mai).
+  for (const scheda of [
+    {
+      ruolo: 'pentito' as const,
+      tipo: 'maranza' as const,
+      ancora: ANCORE_QUARTIERE.pentito,
+      // più svelto del giocatore che cammina (2,3): quando ti accompagna
+      // al bar ti sta dietro senza trotterellare, ma correndo lo stacchi
+      passo: 2.6,
+      variante: 4,
+      pelle: 5,
+      cappello: 3,
+    },
+    {
+      ruolo: 'custode' as const,
+      tipo: 'anziano' as const,
+      ancora: ANCORE_QUARTIERE.custode,
+      passo: 1.0,
+      variante: 2,
+      pelle: 1,
+      cappello: 4,
+    },
+  ]) {
+    let fx: number = scheda.ancora.x;
+    let fz: number = scheda.ancora.z;
+    if (!fisica.cerchioLibero(fx, fz, RAGGIO_NPC) && fisica.risolviCerchio(fx, fz, RAGGIO_NPC, fuori)) {
+      fx = fuori.x;
+      fz = fuori.z;
+    }
+    npcs.push({
+      tipo: scheda.tipo,
+      x: fx,
+      z: fz,
+      yaw: scheda.ancora.yaw,
+      passo: scheda.passo,
+      fase: 0,
+      stato: 'fermo',
+      timer: 5,
+      targetX: fx,
+      targetZ: fz,
+      variante: scheda.variante,
+      bx: 0,
+      bz: 0,
+      v: 0,
+      fermoDa: 0,
+      pelle: scheda.pelle,
+      cappello: scheda.cappello,
+      senzaCappello: false,
+      // niente sigaretta e niente monopattino, per contratto di scena: il
+      // pentito sta rimediando a una figuraccia, non posando col fumo
+      fuma: false,
+      monopattino: false,
+      tiro: 1e9,
+      fumoAcc: 0,
+      frase: -1,
+      fraseDa: 0,
+      fraseFino: 0,
+      // «già chiesto» in un futuro lontanissimo: l'orologio di maranza.ts
+      // non lo raggiunge mai, quindi la scansione dell'incontro lo salta
+      chiesto: 1e9,
+      manoX: 0,
+      manoY: 0,
+      manoZ: 0,
+      fisso: true,
+      ruolo: scheda.ruolo,
     });
   }
 

@@ -41,7 +41,8 @@ export type MomentoFrase =
   | 'fuga'
   | 'gruppo'
   | 'ostacolo'
-  | 'missione';
+  | 'missione'
+  | 'quartiere';
 
 /**
  * Le battute, in ordine: l'indice È la cella dell'atlante disegnato da
@@ -116,6 +117,17 @@ export const FRASI_ATLANTE: readonly string[] = [
   'Va bene, va bene: tanto sto qui.',
   'Mi raccomando, che è fragile!',
   'Ciò, che gioventù gentile.',
+  // QUARTIERE, i volti fissi del capitolo 3 — 54..60: le battute di
+  // Otello, del maranza pentito e del custode del Rossini
+  // (components/lugo/Quartiere.tsx). Come per il gruppo qui sopra,
+  // l'ordine dentro il gruppo è un contratto per scostamento: solo append.
+  'Ah! Il ragazzo del pacchetto!',
+  'Grazie! Stasera si mangia.',
+  'Oh… ehi. Hai un attimo?',
+  'Arrivo, arrivo. Non correre!',
+  'Meno male che c’eri tu.',
+  'Giovane! La serata è stasera!',
+  'Le luci! Stasera si vede tutto.',
 ];
 
 /** [primo, ultimo+1] dentro FRASI_ATLANTE. */
@@ -128,6 +140,7 @@ export const GRUPPI: Record<MomentoFrase, readonly [number, number]> = {
   gruppo: [37, 43],
   ostacolo: [43, 48],
   missione: [48, 54],
+  quartiere: [54, 61],
 };
 
 /**
@@ -283,6 +296,7 @@ function casoFumo(): number {
 
 const ultima: Record<MomentoFrase, number> = {
   aggancio: -1, insistenza: -1, si: -1, pugno: -1, fuga: -1, gruppo: -1, ostacolo: -1, missione: -1,
+  quartiere: -1,
 };
 
 /**
@@ -523,6 +537,12 @@ export function stepIncontro(
     for (let i = 0; i < npcs.length; i++) {
       const n = npcs[i];
       if (n.tipo !== 'maranza') continue;
+      // il maranza FISSO del quartiere (npc.ts, capitolo 3) non chiede mai
+      // la sigaretta: la sua scena la conduce Quartiere.tsx, e un aggancio
+      // qui lo strapperebbe dal suo posto proprio mentre un'altra storia
+      // lo sta aspettando lì. Il suo `chiesto` a 1e9 lo esclude già, ma la
+      // regola si dichiara dove si sceglie, non dove si inizializza.
+      if (n.fisso) continue;
       if (n.stato !== 'cammina' && n.stato !== 'fermo') continue;
       if (n.chiesto + INCONTRO.cooldownNpc > orologio) continue;
       const d = Math.hypot(n.x - gx, n.z - gz);
@@ -761,7 +781,9 @@ export function subisciPugno(
   let compagni = 0;
   let dettoDaUno = false;
   for (const c of npcs) {
-    if (c === n || c.tipo !== 'maranza') continue;
+    // il fisso del quartiere non scappa coi compagni: la ritirata lo
+    // porterebbe a dieci metri dal suo posto, e la sua scena lo aspetta lì
+    if (c === n || c.tipo !== 'maranza' || c.fisso) continue;
     if (Math.hypot(c.x - n.x, c.z - n.z) > 12) continue;
     c.stato = 'ritirata';
     c.timer = 6;
@@ -852,6 +874,10 @@ export function provocaIncontro(
   for (let i = 0; i < npcs.length; i++) {
     const n = npcs[i];
     if (n.tipo !== 'maranza') continue;
+    // mai il fisso del quartiere, nemmeno da hook: se il collaudo provoca
+    // un incontro col giocatore fermo davanti al Pavaglione, il pentito
+    // sarebbe il più vicino e la prova si mangerebbe la scena sbagliata
+    if (n.fisso) continue;
     if (soloMonopattino && !n.monopattino) continue;
     const d = Math.hypot(n.x - px, n.z - pz);
     if (d < dMin) {

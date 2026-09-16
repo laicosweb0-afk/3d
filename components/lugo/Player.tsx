@@ -28,6 +28,7 @@ import {
   subisciPugno,
 } from '@/lib/lugo/maranza';
 import { pontePrimoIncontro } from '@/lib/lugo/missions';
+import { HINT_QUARTIERE, ponteQuartiere, quartiereVicino } from '@/lib/lugo/quartiere';
 import type { Npc } from '@/lib/lugo/npc';
 import { runtime, type RuntimeGioco } from '@/lib/lugo/runtime';
 import { updateAudio, suonaEvento, updateAmbiente, parla, campanello } from '@/lib/lugo/audio';
@@ -742,6 +743,14 @@ export function Player() {
           // PrimoIncontro nel suo giro di frame, che è l'unico padrone
           // della scena (stesso schema del pugno via stick.ts).
           pontePrimoIncontro.parla = true;
+        } else if (!st.dialogo && quartiereVicino(rt.persona.x, rt.persona.z) !== null) {
+          // I volti fissi del quartiere (capitolo 3): lo stesso gradino
+          // dell'anziano qui sopra — sotto bacheche e vetrine, sopra la
+          // chiacchiera col maranza — e lo stesso schema: la E scrive solo
+          // la richiesta sul ponte, il pannello lo apre Quartiere.tsx nel
+          // suo giro di frame. `quartiereVicino` risponde solo per chi è
+          // DISPONIBILE, quindi a storia chiusa o bloccata la E passa oltre.
+          ponteQuartiere.parla = quartiereVicino(rt.persona.x, rt.persona.z);
         } else if (!st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
           // ULTIMO gradino della precedenza della E, e ci sta apposta: è
           // l'unica interazione che sa avviarsi da sola, quindi qui la E è
@@ -1006,6 +1015,11 @@ export function Player() {
           // lo stesso gradino della E, letto a schermo: l'anziano della
           // missione vince sul maranza, come nella scala qui sopra
           hint = 'Premi E per parlare col signore del pacchetto';
+        } else if (!hint && !st.dialogo && quartiereVicino(rt.persona.x, rt.persona.z) !== null) {
+          // i volti del quartiere, stessa scala della E: il testo sta in
+          // HINT_QUARTIERE accanto alla regola, così suggerimento e tasto
+          // non possono raccontare due cose diverse
+          hint = HINT_QUARTIERE[quartiereVicino(rt.persona.x, rt.persona.z)!];
         } else if (!hint && !st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
           for (const n of runtime.npcs) {
             if (n.tipo !== 'maranza') continue;

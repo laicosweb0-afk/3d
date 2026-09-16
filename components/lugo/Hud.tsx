@@ -37,6 +37,7 @@ import {
   type IncaricoVivo,
 } from '@/lib/lugo/incarichi';
 import { avanzamento, gradoDaRep, livelloDaRep } from '@/lib/lugo/progressione';
+import { ponteQuartiere } from '@/lib/lugo/quartiere';
 import { risposta } from '@/lib/lugo/maranza';
 import { stick } from '@/lib/lugo/stick';
 
@@ -293,6 +294,15 @@ export function Hud() {
     // solo setDialogo(null), e il «Volentieri» sarebbe andato perduto.
     if (dialogo?.id.startsWith('m00-')) {
       pontePrimoIncontro.scelta = id;
+      setDialogo(null);
+      return;
+    }
+    // I dialoghi del quartiere (q01-/q02-/q03-, capitolo 3): identica
+    // disciplina — la scelta va sul ponte di quartiere.ts e il pannello si
+    // chiude; le conseguenze (missione, pentito che ti segue, battute) le
+    // applica Quartiere.tsx nel ciclo di gioco, unico padrone delle scene.
+    if (dialogo && /^q0\d-/.test(dialogo.id)) {
+      ponteQuartiere.scelta = id;
       setDialogo(null);
       return;
     }

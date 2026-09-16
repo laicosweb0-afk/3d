@@ -52,6 +52,13 @@ export interface Capitolo {
 // posto dove il capitolo può restare indietro.
 const MISSIONI_ARRIVO = ['m00', 'mvp1', 'mvp2', 'mvp3'] as const;
 const MISSIONI_AMICO = ['m01', 'm02', 'm03', 'm04', 'm05', 'm06', 'm07'] as const;
+// Le tre storie del quartiere (capitolo 3, lib/lugo/quartiere.ts): sono
+// missioni DINAMICHE come la m00, quindi non stanno in MISSIONI — ma i
+// loro id finiscono in missioniFatte come tutte le storie, ed è tutto ciò
+// che serve qui. Gli id sono duplicati e non importati apposta: capitoli.ts
+// non importa quartiere.ts per la stessa ragione per cui non importa
+// missions.ts — il capitolo si deriva dal salvataggio, non dal gioco vivo.
+const MISSIONI_QUARTIERE = ['q01', 'q02', 'q03'] as const;
 const LIVELLO_QUARTIERE = 3;
 const RISPARMIO_CASA = 400;
 
@@ -102,13 +109,24 @@ export const CAPITOLI: readonly Capitolo[] = [
     n: 3,
     nome: 'Il quartiere',
     motto: 'La città comincia a conoscerti.',
+    // Il capitolo del quartiere chiede TRE cose: la storia dell'amico, le
+    // tre storie coi personaggi ricorrenti (Otello, il pentito, il
+    // custode) e il livello 3. Sono tre condizioni in AND e tre pezzi di
+    // traguardo separati: ogni riga sparisce quando è fatta, così il chip
+    // racconta sempre solo quello che manca davvero.
     completo: (s) =>
       fatte(s, MISSIONI_AMICO) >= MISSIONI_AMICO.length &&
+      fatte(s, MISSIONI_QUARTIERE) >= MISSIONI_QUARTIERE.length &&
       livelloDaRep(s.punteggio).n >= LIVELLO_QUARTIERE,
     prossimoPasso: (s) => {
       const passi: string[] = [];
       if (fatte(s, MISSIONI_AMICO) < MISSIONI_AMICO.length) {
         passi.push(`«Trova il tuo amico»: ${di(fatte(s, MISSIONI_AMICO), MISSIONI_AMICO.length)}`);
+      }
+      if (fatte(s, MISSIONI_QUARTIERE) < MISSIONI_QUARTIERE.length) {
+        passi.push(
+          `Storie del quartiere: ${di(fatte(s, MISSIONI_QUARTIERE), MISSIONI_QUARTIERE.length)}`,
+        );
       }
       if (livelloDaRep(s.punteggio).n < LIVELLO_QUARTIERE) {
         passi.push(`Livello ${di(livelloDaRep(s.punteggio).n, LIVELLO_QUARTIERE)}`);

@@ -197,6 +197,19 @@ export function Missioni() {
       // SOLO COLLAUDO: gira il calendario dei turni avanti di n giorni
       // (lib/lugo/lavoro.ts). Il gioco vero aspetta la mezzanotte vera.
       avanzaGiornoLavoro: (n = 1) => avanzaGiornoLavoro(n),
+      // SOLO COLLAUDO: semina reputazione e missioni fatte senza giocarle.
+      // Servono alle prove del quartiere (capitolo 3), che partono da «m00
+      // fatta e livello 2» e in headless non possono guadagnarseli a
+      // missioni: passano dalle STESSE azioni dello store del gioco vero
+      // (addPunti ricalcola il livello, addMissioneFatta non duplica).
+      addRep: (n: number) => {
+        useLugo.getState().addPunti(n);
+        return useLugo.getState().punteggio;
+      },
+      segnaFatta: (id: string) => {
+        useLugo.getState().addMissioneFatta(id);
+        return [...useLugo.getState().missioniFatte];
+      },
       // apre la vetrina della i-esima attività con missioni, con gli stessi
       // dati che userebbe la E del Player: serve al collaudo dei turni, che
       // in headless non può camminare fino alla porta di un bar

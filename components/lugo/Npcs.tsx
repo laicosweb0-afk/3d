@@ -36,7 +36,9 @@ import {
   FRASI_ATLANTE,
   oraGioco,
   type ContestoIncontro,
+  type MomentoFrase,
 } from '@/lib/lugo/maranza';
+import { Quartiere } from './Quartiere';
 import { useLugo } from '@/lib/lugo/store';
 import { pontePrimoIncontro } from '@/lib/lugo/missions';
 import { suonaEvento, parla } from '@/lib/lugo/audio';
@@ -225,7 +227,7 @@ export function Npcs() {
           .map((n) => FRASI_ATLANTE[n.frase]);
         return { vivi: testi.length, testi };
       },
-      frasi: (g: 'aggancio' | 'insistenza' | 'si' | 'pugno' | 'fuga' | 'gruppo' | 'ostacolo' | 'missione') => frasiDi(g),
+      frasi: (g: MomentoFrase) => frasiDi(g),
       // un pedone qualunque, per provare che picchiare chi non ti ha fatto
       // niente costa reputazione
       npcVicino: () => {
@@ -275,8 +277,11 @@ export function Npcs() {
       p.gambaD.setColorAt(i, c.set(gambe));
       p.gambaS.setColorAt(i, c.set(gambe));
       // lo slot del marsupio è anche il PACCHETTO dell'anziano del primo
-      // incontro: per lui il colore è cartone, non nylon nero
-      p.marsupio.setColorAt(i, c.set(n.fisso ? '#B8925A' : '#101014'));
+      // incontro: per lui il colore è cartone, non nylon nero. La firma è
+      // «fisso SENZA ruolo»: i volti fissi del quartiere (npc.ts) hanno
+      // `ruolo`, e il pentito — che da maranza il marsupio lo porta
+      // davvero — lo deve portare nero, non color scatola
+      p.marsupio.setColorAt(i, c.set(n.fisso && !n.ruolo ? '#B8925A' : '#101014'));
       p.bastone.setColorAt(i, c.set('#6E5537'));
       p.bandaD.setColorAt(i, c.set(ROSSO_BANDA));
       p.bandaS.setColorAt(i, c.set(ROSSO_BANDA));
@@ -410,7 +415,10 @@ export function Npcs() {
       // mani: braccia avanti, ferme, finché il pacco è suo. Il flag arriva
       // dal ponte di missions.ts, che è l'unica verità sul pacco — se qui
       // si guardasse un altro stato, mani e scatola potrebbero separarsi.
-      const reggePacco = n.fisso && pontePrimoIncontro.paccoAnziano;
+      // la firma è «fisso senza ruolo»: senza il controllo sul ruolo, il
+      // pentito e il custode del quartiere — fissi anche loro — avrebbero
+      // retto un pacco di cartone a testa fin dal primo fotogramma
+      const reggePacco = n.fisso && !n.ruolo && pontePrimoIncontro.paccoAnziano;
       if (reggePacco) {
         oscD = 0.8;
         oscS = 0.8;
@@ -594,6 +602,16 @@ export function Npcs() {
           <GazzellaMesh lampeggia />
         </group>
       )}
+
+      {/* Il regista dei volti fissi del quartiere (capitolo 3). Vive QUI e
+          non in World.tsx per due ragioni: guida pedoni di questo mazzo
+          (come PrimoIncontro, che infatti sta subito dopo <Npcs />), e
+          montato dentro Npcs il suo useFrame gira PRIMA di quello di
+          PrimoIncontro e di <Missioni /> — così la presa in carico di
+          Otello vede il rilascio del frame prima, e una missione q*
+          sfrattata dal registro LRU rientra prima che la macchina delle
+          missioni la cerchi. Non disegna nulla: zero draw call. */}
+      <Quartiere />
     </group>
   );
 }
