@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /mediapro
+Disallow: /club
 
 Sitemap: https://www.mondialservicesrl.it/sitemap.xml

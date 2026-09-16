@@ -79,3 +79,15 @@ Poi si riestrae il poster (primo fotogramma utile) di ciascuno:
 node_modules/ffmpeg-static/ffmpeg -ss 3.4 -i public/portfolio/assets/05.mp4 \
   -frames:v 1 -q:v 4 -y public/portfolio/assets/05.jpg
 ```
+
+## Club Rama (`/club/`)
+
+Dentro `public/club/` c'è la landing della card NFC di Rama Ceramiche: un
+altro cliente, un altro dominio, stessa meccanica del portfolio — HTML puro in
+`public/`, che l'export copia senza toccare. Dopo un push su `main` è online a
+
+    https://laicosweb0-afk.github.io/3d/club/
+
+ma l'indirizzo definitivo è un sottodominio suo, servito da Vercel davanti al
+sito di Rama Ceramiche senza toccarlo. Il procedimento completo — progetto
+Vercel, record DNS, controllo da telefono — sta in `CLUB-RAMA.md`.

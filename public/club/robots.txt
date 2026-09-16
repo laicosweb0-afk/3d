@@ -1,0 +1,5 @@
+# La landing della card NFC si raggiunge toccando la card, non da Google:
+# tenerla fuori dall'indice evita una pagina orfana a nome Rama Ceramiche.
+# Per renderla indicizzabile basta cancellare questo file.
+User-agent: *
+Disallow: /
