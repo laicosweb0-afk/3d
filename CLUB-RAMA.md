@@ -20,15 +20,20 @@ Sta in `public/` come il portfolio (`PORTFOLIO.md`): è una cartella statica
 che viaggia insieme al repo senza entrare nel sito di Mondial Service.
 L'export di Next la copia così com'è.
 
-## 1. Anteprima gratuita, senza account (già pronta)
+## 1. Indirizzo di collaudo (online)
 
-Appena questo branch è unito su `main`, il workflow `deploy.yml` pubblica la
-pagina su GitHub Pages:
+Il workflow `deploy.yml` pubblica la pagina su GitHub Pages a ogni push su
+`main`. È online qui:
 
     https://laicosweb0-afk.github.io/3d/club/
 
-Serve per provarla dal telefono vero prima di comprare o puntare il dominio.
-Non è l'indirizzo definitivo: la card deve puntare al sottodominio.
+Serve per provarla dal telefono e per farla vedere, non per le card: è un
+indirizzo in prestito, e il giorno che si cambia hosting muore. Sulle card va
+`club.ramastore.it`, che resta nostro qualunque cosa ci sia sotto.
+
+Su questo indirizzo il `robots.txt` del sito non vale (Pages serve il suo,
+alla radice del dominio): la pagina è raggiungibile da chiunque abbia il link.
+Senza link in ingresso è di fatto invisibile, ma tenerlo presente.
 
 ## 2. Il sottodominio su Vercel
 
@@ -84,6 +89,18 @@ dove puntano adesso. Un CNAME su `club` riguarda solo `club`.
 Dopo la propagazione (di solito pochi minuti, fino a un'ora) Vercel emette
 da sé il certificato HTTPS. Quando la spunta verde compare in Domains, il
 link è quello da scrivere sulla card.
+
+### Il connettore Vercel di Claude
+
+Collegato, ma a metà: lascia caricare file direttamente (`deploy_to_vercel`)
+e non lascia creare progetti agganciati a Git — Vercel risponde 403,
+*"You must re-authenticate to this scope"* sullo scope `laicosweb0-5609`.
+Si sblocca scollegando e ricollegando Vercel dalle impostazioni connettori di
+claude.ai, concedendo l'accesso a quello scope.
+
+Caricare i file a mano non è una via d'uscita: l'88% della pagina è la foto in
+base64, 148.772 caratteri, troppi per passare in una chiamata e troppo fragili
+da ricopiare. Il file deve arrivare a Vercel da Git.
 
 ### Se invece preferisci Netlify
 
