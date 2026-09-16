@@ -56,18 +56,15 @@ const cifra = await p.textContent('#amountNum');
 if (cifra.trim() !== '70') errors.push(`CREDITO: atteso "70", trovato "${cifra}"`);
 
 await p.click('[data-screen="reveal"] .btn-primary');
-await p.waitForTimeout(500);
-await scatta('07', 'delivery');
-
-await p.click('[data-screen="delivery"] .option');
 await p.waitForTimeout(600);
-await scatta('08', 'form');
+await scatta('07', 'form');
 
+// L'email è facoltativa: il percorso da provare è quello col solo nome,
+// perché è quello che deve passare senza bloccare nessuno.
 await p.fill('#inpName', 'Mario Rossi');
-await p.fill('#inpEmail', 'mario.rossi@example.it');
 await p.click('[data-screen="form"] .btn-primary');
 await p.waitForTimeout(600);
-await scatta('09', 'done');
+await scatta('08', 'done');
 const codice = (await p.textContent('#codeOut')).trim();
 if (!/^RAMA70-[A-Z0-9]{4}$/.test(codice)) errors.push(`CODICE malformato: "${codice}"`);
 

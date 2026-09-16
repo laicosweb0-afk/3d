@@ -203,6 +203,7 @@
 
   .field{margin-bottom:14px;}
   .field label{display:block; font-size:12.5px; color:var(--ink-faint); margin-bottom:7px; font-weight:590;}
+  .field label .opt{font-weight:500; opacity:.72;}
   .field input{
     width:100%; padding:16px 18px; border-radius:var(--radius-md);
     border:1px solid var(--line); background:var(--card);
@@ -295,7 +296,7 @@
 
   <!-- 2. PROJECT -->
   <div class="screen" data-screen="project">
-    <div class="mark-row"><div class="rama-mark small"><div class="tiles"><i></i><i></i><i></i><i></i></div><span class="word">Rama</span></div><span class="step">1 di 4</span></div>
+    <div class="mark-row"><div class="rama-mark small"><div class="tiles"><i></i><i></i><i></i><i></i></div><span class="word">Rama</span></div><span class="step">1 di 3</span></div>
     <h1>Cosa stai<br>rifacendo?</h1>
     <p class="lede">Ci serve per proporti i materiali giusti.</p>
     <div class="grow">
@@ -309,7 +310,7 @@
 
   <!-- 3. STYLE -->
   <div class="screen" data-screen="style">
-    <div class="mark-row"><div class="rama-mark small"><div class="tiles"><i></i><i></i><i></i><i></i></div><span class="word">Rama</span></div><span class="step">2 di 4</span></div>
+    <div class="mark-row"><div class="rama-mark small"><div class="tiles"><i></i><i></i><i></i><i></i></div><span class="word">Rama</span></div><span class="step">2 di 3</span></div>
     <h1>Che stile<br>preferisci?</h1>
     <p class="lede">Così ti mostriamo le lastre più adatte in showroom.</p>
     <div class="grow">
@@ -321,7 +322,7 @@
 
   <!-- 4. REVEAL -->
   <div class="screen" data-screen="reveal">
-    <div class="mark-row"><div class="rama-mark small"><div class="tiles"><i></i><i></i><i></i><i></i></div><span class="word">Rama</span></div><span class="step">3 di 4</span></div>
+    <div class="mark-row"><div class="rama-mark small"><div class="tiles"><i></i><i></i><i></i><i></i></div><span class="word">Rama</span></div><span class="step">3 di 3</span></div>
     <div class="reveal-wrap">
       <div class="rama-mark coin" id="coin"><div class="tiles"><i></i><i></i><i></i><i></i></div></div>
       <div class="amount-row">
@@ -332,30 +333,18 @@
       <p class="terms" id="revealTerms">Valido 90 giorni in negozio o online</p>
     </div>
     <div class="foot">
-      <button class="btn-primary" onclick="go('delivery')">Continua</button>
+      <button class="btn-primary" onclick="go('form')">Continua</button>
     </div>
   </div>
 
-  <!-- 5. DELIVERY -->
-  <div class="screen" data-screen="delivery">
-    <div class="mark-row"><div class="rama-mark small"><div class="tiles"><i></i><i></i><i></i><i></i></div><span class="word">Rama</span></div><span class="step">4 di 4</span></div>
-    <h1>Come vuoi<br>ritirarlo?</h1>
-    <p class="lede">Scegli l'opzione più comoda per te.</p>
-    <div class="grow">
-      <div class="option" onclick="pick('delivery', this, 'Negozio')">Ritira in negozio <svg class="arrow" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <div class="option" onclick="pick('delivery', this, 'Email')">Ricevi il codice via email <svg class="arrow" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-    </div>
-    <button class="restart" onclick="go('welcome')">Ricomincia</button>
-  </div>
-
-  <!-- 6. FORM -->
+  <!-- 5. FORM -->
   <div class="screen" data-screen="form">
     <div class="mark-row"><div class="rama-mark small"><div class="tiles"><i></i><i></i><i></i><i></i></div><span class="word">Rama</span></div></div>
     <h1>Quasi fatto</h1>
-    <p class="lede">Solo due dati per attivare il tuo credito.</p>
+    <p class="lede">Ti basta il nome: l'email è facoltativa.</p>
     <div class="grow">
       <div class="field"><label>Nome</label><input type="text" id="inpName" placeholder="Il tuo nome"></div>
-      <div class="field"><label>Email</label><input type="email" id="inpEmail" placeholder="La tua email"></div>
+      <div class="field"><label>Email <span class="opt">facoltativa</span></label><input type="email" id="inpEmail" placeholder="Solo se vuoi lasciarla"></div>
       <div class="consent">
         <input type="checkbox" id="inpConsent">
         <label for="inpConsent">Acconsento al trattamento dei dati per ricevere comunicazioni promozionali da Rama Ceramiche.</label>
@@ -366,7 +355,7 @@
     </div>
   </div>
 
-  <!-- 7. DONE -->
+  <!-- 6. DONE -->
   <div class="screen" data-screen="done">
     <div class="mark-row"><div class="rama-mark small"><div class="tiles"><i></i><i></i><i></i><i></i></div><span class="word">Rama</span></div></div>
     <div class="done-wrap">
@@ -374,7 +363,7 @@
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 13L9.5 17.5L19 7" stroke="#F5F5F3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
       <h1 style="font-size:25px; margin-bottom:8px;">Fatto</h1>
-      <p class="lede" style="margin-bottom:0;" id="doneMsg">Il tuo credito è attivo. Te lo abbiamo mandato anche via email.</p>
+      <p class="lede" style="margin-bottom:0;" id="doneMsg">Il tuo credito è attivo. Mostra questo codice in negozio.</p>
       <div class="code-card">
         <span class="label">IL TUO CODICE</span>
         <span class="code" id="codeOut">RAMA70-XJ92</span>
@@ -386,7 +375,7 @@
 </div>
 
 <script>
-  const state = {project:null, style:null, delivery:null};
+  const state = {project:null, style:null};
 
   function playIntro(){
     const intro = document.getElementById('intro');
@@ -422,7 +411,6 @@
     setTimeout(()=>{
       if(group==='project') go('style');
       else if(group==='style') go('reveal');
-      else if(group==='delivery') go('form');
     }, 260);
   }
 
@@ -453,18 +441,45 @@
     setTimeout(()=>terms.classList.add('show'), 1200);
   }
 
+  // Dove finiscono i contatti raccolti. Finché questa riga è vuota la pagina
+  // non chiama nessuno e si comporta esattamente come prima: il codice appare
+  // e basta. Il giorno che c'è un indirizzo, i contatti iniziano ad arrivarci
+  // senza toccare altro.
+  const RACCOLTA = '';
+
+  function inviaContatto(dati){
+    if(!RACCOLTA) return;
+    // A vuoto di proposito: chi ha toccato la card ha già il suo codice a
+    // schermo, e un problema di rete non deve fermarlo né mostrargli un errore.
+    try{
+      fetch(RACCOLTA, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(dati),
+        keepalive:true,
+      }).catch(()=>{});
+    }catch(e){}
+  }
+
   function submitForm(){
     const name = document.getElementById('inpName').value.trim();
     const email = document.getElementById('inpEmail').value.trim();
-    if(!name || !email){
-      alert('Inserisci nome ed email per continuare.');
+    if(!name){
+      alert('Inserisci il tuo nome per continuare.');
       return;
     }
     const suffix = Math.random().toString(36).slice(2,6).toUpperCase();
-    document.getElementById('codeOut').textContent = `RAMA70-${suffix}`;
-    document.getElementById('doneMsg').textContent = state.delivery==='Negozio'
-      ? 'Il tuo credito è attivo. Mostra questo codice in negozio.'
-      : 'Il tuo credito è attivo. Te lo abbiamo mandato anche via email.';
+    const codice = `RAMA70-${suffix}`;
+    document.getElementById('codeOut').textContent = codice;
+    inviaContatto({
+      nome: name,
+      email: email || null,
+      consenso: document.getElementById('inpConsent').checked,
+      progetto: state.project,
+      stile: state.style,
+      codice: codice,
+      quando: new Date().toISOString(),
+    });
     go('done');
   }
 </script>
