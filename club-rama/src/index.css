@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-crema text-ink font-sans antialiased;
+    margin: 0;
+    /* Su desktop l'app resta una colonna da telefono al centro della pagina. */
+    @apply flex justify-center;
+  }
+  /*
+   * #root è la colonna-telefono. Senza larghezza esplicita è un elemento
+   * flessibile che si stringe sul contenuto: le schermate con poco testo
+   * verrebbero più strette delle altre, e la pagina "respirerebbe" a ogni
+   * cambio di passo invece di stare ferma.
+   */
+  #root { width: 100%; max-width: 430px; }
+
+  /* 16px minimo: sotto questa soglia iOS ingrandisce la pagina al focus. */
+  input, select, textarea, button { font-size: 16px; font-family: inherit; }
+  :focus-visible { outline: 2px solid #C9A54E; outline-offset: 3px; border-radius: 6px; }
+  ::selection { background: rgba(201,165,78,.28); }
+}
+
+@layer utilities {
+  /* Cifre a larghezza fissa: il conteggio del credito non deve ballare. */
+  .tabular { font-variant-numeric: tabular-nums; }
+  .vetro {
+    background: rgba(245,243,238,.82);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+  }
+  @supports not (backdrop-filter: blur(1px)) {
+    .vetro { background: #F5F3EE; }
+  }
+  .oro-testo {
+    background: linear-gradient(135deg, #E8CD86, #C9A54E 55%, #8C6E27);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+}
+
+/* Chi ha chiesto meno movimento non deve vedere giri, coriandoli né rimbalzi. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}

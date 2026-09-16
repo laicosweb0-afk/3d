@@ -6,3 +6,5 @@ next-env.d.ts
 .DS_Store
 tools/lugo/cache/
 tools/lugo/shots/
+club-rama/dist/
+club-rama/.env.local
