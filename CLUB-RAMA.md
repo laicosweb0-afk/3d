@@ -131,24 +131,18 @@ Per la tipografia conviene la versione `--neutro`: il nero pieno su bianco è
 quello che i lettori sbagliano meno, e su carta il contrasto del crema non è
 garantito come a schermo.
 
-## 5. Due dettagli grafici, da decidere
+## 5. Il marchio a tessere
 
-Trovati durante il controllo, **non corretti** perché il file va tenuto com'è
-finché non dici il contrario:
+Nella schermata di benvenuto e dentro la moneta del credito il marchio dorato
+non compariva: le regole delle tessere sono scritte per `.rama-mark .tiles`,
+ma quei due contenitori erano `.welcome-mark` e `.coin`, senza quella classe.
+Aggiunta `rama-mark` a entrambi — due parole nell'HTML, nessun testo, colore,
+font o passaggio del quiz toccato: compare solo quello che il CSS già
+prevedeva. Nelle intestazioni delle altre schermate e nell'apertura il
+marchio si vedeva già da prima.
 
-- Nella schermata di benvenuto il marchio a tessere dorate accanto a "Rama
-  Ceramiche" non si vede: le regole delle tessere sono scritte per
-  `.rama-mark .tiles`, ma lì il contenitore è `.welcome-mark`, quindi non le
-  prende. Nelle intestazioni delle schermate successive e nell'apertura il
-  marchio si vede correttamente.
-- Per lo stesso motivo la moneta dorata della schermata del credito esce
-  piena: il marchio scuro che dovrebbe starci dentro non viene disegnato.
-
-Si sistemano aggiungendo `rama-mark` alle due `class` nell'HTML, senza
-toccare colori, testi né logica. Dimmi se lo faccio.
-
-- La pagina non dichiara nessuna icona, quindi il browser chiede
-  `/favicon.ico` e prende un 404: in Safari resta l'iconcina generica e,
-  se qualcuno aggiunge il link alla schermata Home, l'icona è vuota. Su una
-  card che si tocca e si chiude subito conta poco, ma si risolve con un
-  `apple-touch-icon.png` accanto al file.
+Resta un dettaglio minore: la pagina non dichiara nessuna icona, quindi il
+browser chiede `/favicon.ico` e prende un 404. In Safari resta l'iconcina
+generica e, se qualcuno aggiunge il link alla schermata Home, l'icona è
+vuota. Si risolve con un `apple-touch-icon.png` accanto al file, senza
+toccare l'HTML.
