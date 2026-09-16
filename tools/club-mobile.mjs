@@ -28,6 +28,8 @@ await p.screenshot({ path: `${out}/01-intro-hey.png` });
 await p.waitForTimeout(1600);
 await p.screenshot({ path: `${out}/02-intro-welcome.png` });
 await p.waitForSelector('#intro', { state: 'hidden', timeout: 8000 });
+// le schede dei lavori entrano subito dopo l'apertura: aspetto che si posino
+await p.waitForTimeout(900);
 
 const attiva = () => p.evaluate(() => document.querySelector('.screen.active').dataset.screen);
 const scatta = async (n, atteso) => {
