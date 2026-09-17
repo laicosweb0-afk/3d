@@ -13,14 +13,14 @@ export function StepFine({ lead, onRicomincia }: { lead: Lead; onRicomincia: () 
           initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 260, damping: 18 }}
           className="flex h-14 w-14 items-center justify-center rounded-full shadow-moneta"
-          style={{ background: 'conic-gradient(from 200deg, #F0DCAE, #C9A54E, #F6E4B4, #8C6E27, #F0DCAE)' }}
+          style={{ background: 'conic-gradient(from 200deg, #E8CD86, #C9A54E, #F6E4B4, #8C6E27, #E8CD86)' }}
         >
           {/* La spunta entra con una molla invece di essere disegnata tratto per
               tratto: a 26px il disegno progressivo si legge come un difetto. */}
           <motion.svg width="28" height="28" viewBox="0 0 26 26" fill="none" aria-hidden
             initial={{ scale: 0.4, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 420, damping: 17, delay: 0.18 }}>
-            <path d="M6 13.4 11 18.4 20 8.2" stroke="#1A0E13" strokeWidth="2.6"
+            <path d="M6 13.4 11 18.4 20 8.2" stroke="#1D1D1F" strokeWidth="2.6"
               strokeLinecap="round" strokeLinejoin="round" />
           </motion.svg>
         </motion.div>

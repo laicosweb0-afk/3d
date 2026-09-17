@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 type Pezzo = { x: number; y: number; vx: number; vy: number; r: number; w: number; h: number; c: string };
 
 /**
- * Coriandoli su canvas: due secondi, magenta e oro, pochi e sottili. Niente
+ * Coriandoli su canvas: due secondi, oro e nero, pochi e sottili. Niente
  * libreria e niente nodi nel DOM, così non pesano sul resto della scena.
  */
 export function Confetti({ attivi }: { attivi: boolean }) {
@@ -21,7 +21,7 @@ export function Confetti({ attivi }: { attivi: boolean }) {
     canvas.width = L * dpr; canvas.height = H * dpr;
     ctx.scale(dpr, dpr);
 
-    const tinte = ['#F9B7D6', '#E0559B', '#C9A54E', '#1A0E13'];
+    const tinte = ['#E8CD86', '#C9A54E', '#8C6E27', '#1D1D1F'];
     const pezzi: Pezzo[] = Array.from({ length: 46 }, () => ({
       x: L / 2 + (Math.random() - 0.5) * L * 0.5,
       y: H * 0.34 + (Math.random() - 0.5) * 30,

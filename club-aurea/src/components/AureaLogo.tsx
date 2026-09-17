@@ -6,8 +6,14 @@ import { motion } from 'framer-motion';
  * tessera disegnino lo stesso marchio invece di averne ciascuno una copia
  * leggermente diversa.
  *
+ * Il soggetto è l'unica cosa che cambia rispetto a Club Rama: là erano
+ * quattro piastrelle, e le piastrelle in profumeria non dicono niente. La
+ * finitura è la stessa — lo stesso gradiente d'oro, la stessa molla, gli
+ * stessi ritardi a scalare — perché la mano che disegna i due marchi deve
+ * sembrare la stessa.
+ *
  * Non è un logo a lettere di proposito: a 20px un monogramma diventa una
- * macchia, una sagoma no. E la sagoma dice "profumo" prima di qualunque nome.
+ * macchia, una sagoma no. E la sagoma dice «profumo» prima di qualunque nome.
  */
 export const FLACONE = {
   /** Il corpo: spalle larghe, spigoli appena ammorbiditi. */
@@ -27,22 +33,16 @@ export const GOCCE = [
 
 type Props = {
   size?: number;
-  variant?: 'oro' | 'magenta' | 'nero';
+  variant?: 'oro' | 'nero';
   className?: string;
   title?: string;
   /** Il flacone si compone pezzo per pezzo e poi spruzza. */
   animato?: boolean;
 };
 
-const SFUMATURE: Record<'oro' | 'magenta', [string, string, string]> = {
-  oro: ['#F6E9C6', '#E0C68A', '#C9A54E'],
-  magenta: ['#F9B7D6', '#E0559B', '#A32E6B'],
-};
-
 export function AureaLogo({ size = 24, variant = 'oro', className, title, animato }: Props) {
   const id = `aurea-${variant}-${size}`;
-  const fill = variant === 'nero' ? 'currentColor' : `url(#${id})`;
-  const tinte = variant === 'nero' ? null : SFUMATURE[variant];
+  const fill = variant === 'oro' ? `url(#${id})` : 'currentColor';
   const { corpo, collo, tappo } = FLACONE;
 
   return (
@@ -50,25 +50,28 @@ export function AureaLogo({ size = 24, variant = 'oro', className, title, animat
       width={size} height={size} viewBox="0 0 32 32" className={className}
       role={title ? 'img' : 'presentation'} aria-label={title} aria-hidden={title ? undefined : true}
     >
-      {tinte && (
+      {variant === 'oro' && (
         <defs>
+          {/* Le tre fermate del marchio Rama, identiche: 0% #F2DFA6,
+              45% #E8CD86, 100% #C9A54E. */}
           <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor={tinte[0]} />
-            <stop offset="48%" stopColor={tinte[1]} />
-            <stop offset="100%" stopColor={tinte[2]} />
+            <stop offset="0%" stopColor="#F2DFA6" />
+            <stop offset="45%" stopColor="#E8CD86" />
+            <stop offset="100%" stopColor="#C9A54E" />
           </linearGradient>
         </defs>
       )}
 
-      {/* Il flacone: tappo, collo, corpo. In quest'ordine anche nell'animazione,
-          perché si monti dall'alto come lo si prende in mano. */}
+      {/* Il flacone: tappo, collo, corpo. In quest'ordine anche
+          nell'animazione, perché si monti dall'alto come lo si prende in
+          mano — lo stesso gesto con cui a Rama si posava un pavimento. */}
       {[tappo, collo, corpo].map((p, i) =>
         animato ? (
           <motion.rect
             key={i} x={p.x} y={p.y} width={p.l} height={p.h} rx={p.r} fill={fill}
-            initial={{ opacity: 0, scale: 0.6 }}
+            initial={{ opacity: 0, scale: 0.55 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 280, damping: 21, delay: 0.08 * i }}
+            transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.09 * i }}
             style={{ transformOrigin: `${p.x + p.l / 2}px ${p.y + p.h / 2}px` }}
           />
         ) : (

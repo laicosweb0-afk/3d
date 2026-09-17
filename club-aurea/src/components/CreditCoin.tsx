@@ -18,12 +18,12 @@ export function CreditCoin({ size = 116, piccola = false }: { size?: number; pic
         <div
           aria-hidden
           className="absolute -inset-8 rounded-full blur-2xl"
-          style={{ background: 'radial-gradient(circle, rgba(224,85,155,.30), transparent 68%)' }}
+          style={{ background: 'radial-gradient(circle, rgba(201,165,78,.34), transparent 68%)' }}
         />
       )}
       <div
         className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full shadow-moneta"
-        style={{ background: 'conic-gradient(from 200deg, #F0DCAE, #C9A54E, #F6E4B4, #8C6E27, #C9A54E, #F0DCAE)' }}
+        style={{ background: 'conic-gradient(from 200deg, #E8CD86, #C9A54E, #F6E4B4, #8C6E27, #C9A54E, #E8CD86)' }}
       >
         <motion.div
           aria-hidden
@@ -32,7 +32,7 @@ export function CreditCoin({ size = 116, piccola = false }: { size?: number; pic
           animate={{ x: ['-120%', '120%'] }}
           transition={{ duration: 3.6, repeat: Infinity, repeatDelay: 1.4, ease: 'easeInOut' }}
         />
-        <AureaLogo size={size * 0.46} variant="nero" className="relative text-ink" />
+        <AureaLogo size={size * 0.44} variant="nero" className="relative text-ink" />
       </div>
     </motion.div>
   );

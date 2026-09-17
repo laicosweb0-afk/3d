@@ -11,4 +11,5 @@ club-rama/.env.local
 club-aurea/dist/
 club-aurea/.env.local
 
-# public/club-rama/ e' la build committata apposta: NON ignorarla.
+# public/club-rama/ e public/club-aurea/ sono le build committate apposta,
+# quelle che GitHub Pages serve su /rama/ e /aurea/: NON ignorarle.

@@ -6,7 +6,7 @@
 
 export type Spicchio = {
   valore: number;
-  /** Il premio grosso: si veste d'oro invece che di magenta. */
+  /** Il premio grosso: si veste di rubino invece che d'oro. */
   speciale?: boolean;
 };
 

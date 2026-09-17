@@ -5,31 +5,32 @@ import type { Config } from 'tailwindcss';
  * nei componenti non compaiono valori sciolti, così cambiare un colore o una
  * spaziatura è una riga sola e vale ovunque.
  *
- * La tavolozza è quella del mondo Woman / Aurea: magenta, nero e luce, con
- * l'oro tenuto da parte per il metallo — la moneta del credito e lo spicchio
- * grosso della ruota. Il fondo non è il crema di Club Rama ma una cipria
- * appena rosata: stessa luce, un'altra pelle.
+ * Sono gli stessi valori di `club-rama/`, cifra per cifra: crema, oro e il
+ * rubino del premio grosso, la scala tipografica di iOS sui font di sistema,
+ * gli stessi raggi e le stesse ombre. Club Aurea è l'altro mondo, non un
+ * altro design: quello che cambia è il gioco dentro, non il vestito.
  */
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
-        cipria: '#F6F0F2',     // sfondo
-        superficie: '#FFFBFC', // card e campi
-        ink: '#1A0E13',        // testo principale
-        'ink-soft': '#8B7A81', // testo secondario
-        linea: '#EADFE3',      // separatori
-        notte: '#0C0709',      // il nero della tessera
-        magenta: {
-          chiaro: '#F48FC0',
-          DEFAULT: '#E0559B',
-          scuro: '#A32E6B',
-        },
+        crema: '#F5F3EE',      // sfondo
+        superficie: '#FBFAF7', // card e campi
+        ink: '#1D1D1F',        // testo principale
+        'ink-soft': '#86868B', // testo secondario
+        linea: '#E5E1D8',      // separatori
         oro: {
-          chiaro: '#F0DCAE',
+          chiaro: '#E8CD86',
           DEFAULT: '#C9A54E',
           scuro: '#8C6E27',
+        },
+        // Il premio grosso. Non un rosso da insegna: un rubino profondo, che
+        // accanto all'oro e al quasi nero sta senza urlare.
+        rubino: {
+          chiaro: '#A8383A',
+          DEFAULT: '#8A2B2E',
+          scuro: '#5E1C1F',
         },
       },
       fontFamily: {
@@ -55,8 +56,8 @@ export default {
       },
       boxShadow: {
         // Ombre larghe e appena percettibili: mai un grigio duro sotto un bordo.
-        card: '0 1px 2px rgba(26,14,19,.04), 0 8px 24px -12px rgba(26,14,19,.10)',
-        rilievo: '0 2px 6px rgba(26,14,19,.06), 0 20px 50px -20px rgba(26,14,19,.22)',
+        card: '0 1px 2px rgba(29,29,31,.04), 0 8px 24px -12px rgba(29,29,31,.10)',
+        rilievo: '0 2px 6px rgba(29,29,31,.06), 0 20px 50px -20px rgba(29,29,31,.22)',
         moneta: '0 10px 30px -8px rgba(140,110,39,.45), inset 0 0 0 1px rgba(255,255,255,.5)',
       },
       spacing: { safe: 'env(safe-area-inset-bottom)' },

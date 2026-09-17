@@ -3,12 +3,13 @@ import { AureaLogo } from './AureaLogo';
 import { pronto, sblocca, spruzzo } from '../lib/suono';
 
 /**
- * L'apertura, la stessa sequenza in due tempi di Club Rama: prima "Hey.", poi
- * la domanda. Lì era un benvenuto, qui è l'unica domanda che conta quando uno
- * è appena entrato in profumeria — hai sentito il profumo?
+ * L'apertura: «Hey.» e poi la domanda. Tempi, curve e dimensioni sono quelli
+ * di Club Rama, non un'approssimazione — 1000, 2350, 2650, 4400, 4700, 5300:
+ * quella sequenza era già stata approvata così, e qui cambia solo la frase.
  *
- * Sotto, l'alone di magenta che si allarga: è il profumo che si diffonde
- * nella stanza, ed è l'unico movimento della schermata.
+ * Al posto del tintinnio c'è lo spruzzo del vaporizzatore: è l'unico suono
+ * diverso di tutta l'app, e lo è perché un profumo non si annuncia con un
+ * carillon.
  */
 export function Intro({ onFine }: { onFine: () => void }) {
   const [hey, setHey] = useState<'' | 'show' | 'hide' | 'via'>('');
@@ -31,9 +32,9 @@ export function Intro({ onFine }: { onFine: () => void }) {
         // sprecato nel silenzio.
         if (pronto()) spruzzo();
       }, 2650),
-      setTimeout(() => setDomanda('hide'), 4600),
-      setTimeout(() => setUscita(true), 4900),
-      setTimeout(onFine, 5500),
+      setTimeout(() => setDomanda('hide'), 4400),
+      setTimeout(() => setUscita(true), 4700),
+      setTimeout(onFine, 5300),
     ];
     return () => t.forEach(clearTimeout);
   }, [onFine]);
@@ -46,13 +47,11 @@ export function Intro({ onFine }: { onFine: () => void }) {
       // sbloccare l'audio: chi tocca, sente.
       onPointerDown={() => { const gia = pronto(); sblocca(); if (!gia && marchio) spruzzo(); }}
     >
-      <span className={`intro-alone${marchio ? ' show' : ''}`} />
-
       {/* Monta già visibile: la dissolvenza del contenitore sopra il flacone
           che si compone faceva due sfumature sovrapposte. */}
       {marchio && (
         <span className="intro-marchio show">
-          <AureaLogo size={48} variant="magenta" animato />
+          <AureaLogo size={46} animato />
         </span>
       )}
       {hey !== 'via' && <span className={`intro-parola ${hey}`}>Hey.</span>}

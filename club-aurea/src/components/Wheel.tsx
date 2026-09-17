@@ -8,22 +8,17 @@ const N = SPICCHI.length;
 const PASSO = 360 / N;
 
 /** Colori degli spicchi, in ciclo. */
-const TINTE = ['#1A0E13', '#F9B7D6', '#E0559B', '#FFFBFC'];
+const TINTE = ['#1D1D1F', '#E8CD86', '#C9A54E', '#FBFAF7'];
 /** Nella metà bassa della ruota la scritta arriverebbe a testa in giù. */
 const capovolto = (i: number) => {
   const a = ((i * PASSO) % 360 + 360) % 360;
   return a > 90 && a < 270;
 };
-/** Il premio grosso non si veste di magenta come gli altri: oro pieno. */
-const ORO = '#C9A54E';
-const tintaDi = (i: number) => (SPICCHI[i].speciale ? ORO : TINTE[i % TINTE.length]);
-/**
- * Solo il quasi nero vuole la scritta chiara. Sul magenta e sull'oro la crema
- * sta sotto il 3:1 e a 14px in movimento sparisce: l'inchiostro scuro su
- * quelle due tinte arriva a 7:1 abbondanti, ed è l'unica ragione della scelta.
- */
-const SCURE = new Set(['#1A0E13']);
-const testoSu = (i: number) => (SCURE.has(tintaDi(i)) ? '#FFFBFC' : '#1A0E13');
+/** Il premio grosso non si veste d'oro come gli altri: rubino profondo. */
+const RUBINO = '#8A2B2E';
+const tintaDi = (i: number) => (SPICCHI[i].speciale ? RUBINO : TINTE[i % TINTE.length]);
+const SCURE = new Set(['#1D1D1F', RUBINO]);
+const testoSu = (i: number) => (SCURE.has(tintaDi(i)) ? '#FBFAF7' : '#1D1D1F');
 
 /**
  * Profilo di velocità: rampa breve in accelerazione, poi frenata lunga che
@@ -181,7 +176,7 @@ export const Wheel = forwardRef<WheelHandle, Props>(function Wheel(
     <div className="relative w-full select-none" style={{ touchAction: 'pan-y' }}>
       <svg
         viewBox="0 0 200 200"
-        className="w-full drop-shadow-[0_24px_50px_rgba(26,14,19,.22)]"
+        className="w-full drop-shadow-[0_24px_50px_rgba(29,29,31,.22)]"
         role="img"
         aria-label={
           vinto !== null
@@ -191,7 +186,7 @@ export const Wheel = forwardRef<WheelHandle, Props>(function Wheel(
       >
         <defs>
           <linearGradient id="bordo-aurea" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#F0DCAE" />
+            <stop offset="0%" stopColor="#E8CD86" />
             <stop offset="50%" stopColor="#C9A54E" />
             <stop offset="100%" stopColor="#8C6E27" />
           </linearGradient>
@@ -210,15 +205,15 @@ export const Wheel = forwardRef<WheelHandle, Props>(function Wheel(
         </defs>
 
         <circle cx={R} cy={R} r={R - 2} fill="url(#bordo-aurea)" />
-        <circle cx={R} cy={R} r={R - 7} fill="#FFFBFC" />
+        <circle cx={R} cy={R} r={R - 7} fill="#FBFAF7" />
 
         <g ref={ruotaRef} style={{ transformOrigin: '100px 100px', willChange: 'transform' }}>
           {SPICCHI.map((s, i) => {
             const vincente = !girando && indiceVinto === i;
             return (
               <g key={i}>
-                <path d={settore(i)} fill={tintaDi(i)} stroke="#FFFBFC" strokeWidth=".6" />
-                {vincente && <path d={settore(i)} fill="#F9B7D6" opacity=".45" filter="url(#alone-aurea)" />}
+                <path d={settore(i)} fill={tintaDi(i)} stroke="#FBFAF7" strokeWidth=".6" />
+                {vincente && <path d={settore(i)} fill="#E8CD86" opacity=".4" filter="url(#alone-aurea)" />}
                 <text
                   x={R} y={R - R * 0.585}
                   transform={
@@ -246,12 +241,12 @@ export const Wheel = forwardRef<WheelHandle, Props>(function Wheel(
         {/* Riflesso fisso: la luce non gira con la ruota. */}
         <circle cx={R} cy={R} r={R - 7} fill="url(#luce-aurea)" pointerEvents="none" />
 
-        <circle cx={R} cy={R} r="23" fill="#FFFBFC" opacity=".9" />
+        <circle cx={R} cy={R} r="23" fill="#FBFAF7" opacity=".9" />
         <circle cx={R} cy={R} r="21" fill="url(#perno-aurea)" />
         <circle cx={R} cy={R} r="21" fill="none" stroke="#8C6E27" strokeWidth=".7" opacity=".45" />
         {/* Il flacone al centro, senza gocce: a questa scala lo spruzzo
             diventerebbe sporco sul metallo. */}
-        <g transform={`translate(${R - 13} ${R - 13}) scale(0.81)`} fill="#1A0E13">
+        <g transform={`translate(${R - 13} ${R - 13}) scale(0.81)`} fill="#1D1D1F">
           {[FLACONE.tappo, FLACONE.collo, FLACONE.corpo].map((p, i) => (
             <rect key={i} x={p.x} y={p.y} width={p.l} height={p.h} rx={p.r} />
           ))}
@@ -260,8 +255,8 @@ export const Wheel = forwardRef<WheelHandle, Props>(function Wheel(
         <g ref={lancettaRef} style={{ transformOrigin: '100px 12px' }}>
           {/* Un cuneo e basta: appoggiato sul bordo, la punta dentro la ruota.
               Il filo chiaro lo stacca anche dagli spicchi neri. */}
-          <path d="M100 30 L91 7 H109 Z" fill="#1A0E13"
-            stroke="#FFFBFC" strokeWidth="2" strokeLinejoin="round" />
+          <path d="M100 30 L91 7 H109 Z" fill="#1D1D1F"
+            stroke="#FBFAF7" strokeWidth="2" strokeLinejoin="round" />
         </g>
       </svg>
     </div>

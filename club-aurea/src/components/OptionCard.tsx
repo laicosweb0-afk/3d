@@ -1,13 +1,19 @@
 import { motion } from 'framer-motion';
 
 /**
- * Lo stato di una risposta.
+ * La scheda di una risposta. È l'`OptionCard` di Club Rama — stessa altezza
+ * minima, stesso raggio, stessa molla, stesso anello d'oro quando è scelta —
+ * con due stati in più che là non servivano, perché là non c'era niente da
+ * indovinare.
  *
- * - `neutro`   nessuno ha ancora toccato niente
- * - `scelta`   selezionata, ma la domanda è ancora aperta
- * - `giusta`   la risposta corretta, mostrata dopo la conferma
+ * - `neutro`    nessuno ha ancora toccato niente
+ * - `scelta`    selezionata, ma la domanda è ancora aperta
+ * - `giusta`    la risposta corretta, mostrata dopo la conferma
  * - `sbagliata` quella che aveva scelto il cliente, e non era questa
- * - `spenta`   una delle altre, dopo la conferma: si tira indietro
+ * - `spenta`    una delle altre, dopo la conferma: si tira indietro
+ *
+ * Lo sbagliato prende il rosso dei campi in errore del modulo, non un rosso
+ * nuovo: in tutta l'app quel colore vuol dire una cosa sola.
  */
 export type StatoRisposta = 'neutro' | 'scelta' | 'giusta' | 'sbagliata' | 'spenta';
 
@@ -21,9 +27,9 @@ type Props = {
 
 const CORNICE: Record<StatoRisposta, string> = {
   neutro: 'shadow-card ring-1 ring-linea',
-  scelta: 'shadow-rilievo ring-[1.5px] ring-magenta',
-  giusta: 'shadow-rilievo ring-[1.5px] ring-magenta bg-magenta/[.06]',
-  sbagliata: 'ring-[1.5px] ring-[#E0A0A0] bg-[#FDF0F0]',
+  scelta: 'shadow-rilievo ring-[1.5px] ring-oro',
+  giusta: 'shadow-rilievo ring-[1.5px] ring-oro bg-oro/[.08]',
+  sbagliata: 'ring-[1.5px] ring-[#E0A0A0] bg-[#FDECEC]',
   spenta: 'ring-1 ring-linea opacity-55',
 };
 
@@ -63,9 +69,9 @@ function Segno({ stato }: { stato: StatoRisposta }) {
         'flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full',
         'transition-colors duration-200',
         stato === 'sbagliata'
-          ? 'bg-[#C9605F]'
+          ? 'bg-rubino'
           : pieno
-            ? 'bg-gradient-to-br from-magenta-chiaro to-magenta-scuro'
+            ? 'bg-gradient-to-br from-oro-chiaro to-oro-scuro'
             : 'ring-1 ring-linea',
       ].join(' ')}
     >

@@ -5,7 +5,7 @@
 @layer base {
   html { -webkit-text-size-adjust: 100%; }
   body {
-    @apply bg-cipria text-ink font-sans antialiased;
+    @apply bg-crema text-ink font-sans antialiased;
     margin: 0;
     /* Su desktop l'app resta una colonna da telefono al centro della pagina. */
     @apply flex justify-center;
@@ -20,23 +20,23 @@
 
   /* 16px minimo: sotto questa soglia iOS ingrandisce la pagina al focus. */
   input, select, textarea, button { font-size: 16px; font-family: inherit; }
-  :focus-visible { outline: 2px solid #E0559B; outline-offset: 3px; border-radius: 6px; }
-  ::selection { background: rgba(224,85,155,.25); }
+  :focus-visible { outline: 2px solid #C9A54E; outline-offset: 3px; border-radius: 6px; }
+  ::selection { background: rgba(201,165,78,.28); }
 }
 
 @layer utilities {
   /* Cifre a larghezza fissa: il conteggio del credito non deve ballare. */
   .tabular { font-variant-numeric: tabular-nums; }
   .vetro {
-    background: rgba(246,240,242,.82);
+    background: rgba(245,243,238,.82);
     backdrop-filter: saturate(180%) blur(20px);
     -webkit-backdrop-filter: saturate(180%) blur(20px);
   }
   @supports not (backdrop-filter: blur(1px)) {
-    .vetro { background: #F6F0F2; }
+    .vetro { background: #F5F3EE; }
   }
   .oro-testo {
-    background: linear-gradient(135deg, #F0DCAE, #C9A54E 55%, #8C6E27);
+    background: linear-gradient(135deg, #E8CD86, #C9A54E 55%, #8C6E27);
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
 }
@@ -50,42 +50,34 @@
   }
 }
 
-/* ---- apertura: "Hey." e poi la domanda ---- */
+/* ---- apertura: gli stessi valori di Club Rama, al millesimo ---- */
 @layer components {
   .intro {
     position: fixed; inset: 0; z-index: 100;
-    background: #F6F0F2;
+    background: #F5F3EE;
     display: flex; align-items: center; justify-content: center;
     transition: opacity .55s ease, transform .6s cubic-bezier(.4, 0, .2, 1);
   }
   .intro.leaving { opacity: 0; transform: translateY(-28px); pointer-events: none; }
 
   .intro-parola {
-    position: absolute; font-weight: 700; letter-spacing: -.03em; color: #1A0E13;
+    position: absolute; font-weight: 700; letter-spacing: -.03em; color: #1D1D1F;
     font-size: 68px; opacity: 0; transform: scale(.88);
     transition: opacity .5s cubic-bezier(.2, 1, .3, 1), transform .5s cubic-bezier(.2, 1, .3, 1);
   }
   .intro-parola.show { opacity: 1; transform: scale(1); }
   .intro-parola.hide { opacity: 0; transform: scale(1.06); transition-duration: .4s; }
-  .intro-domanda { font-size: 40px; text-align: center; padding: 0 40px; line-height: 1.14; }
+  /*
+   * La seconda riga: 33px, centrata, interlinea 1.16. Sono i valori del
+   * "Benvenuto da Rama Ceramiche!" — «Hai sentito il profumo?» è più corto e
+   * respirerebbe anche più grande, ma allora non sarebbe più la stessa
+   * apertura, e quella era già approvata così.
+   */
+  .intro-domanda { font-size: 33px; text-align: center; padding: 0 40px; line-height: 1.16; }
 
   .intro-marchio {
-    position: absolute; top: calc(50% - 118px);
+    position: absolute; top: calc(50% - 112px);
     opacity: 0; transition: opacity .5s ease;
   }
   .intro-marchio.show { opacity: 1; }
-
-  /*
-   * L'alone del profumo che si diffonde. Sta dietro a tutto, non si ferma mai
-   * e non ha un bordo: se si vede dove finisce non è più un odore nell'aria,
-   * è un cerchio rosa.
-   */
-  .intro-alone {
-    position: absolute; width: 22rem; height: 22rem; border-radius: 9999px;
-    background: radial-gradient(circle, rgba(224,85,155,.30), transparent 70%);
-    filter: blur(28px);
-    opacity: 0; transform: scale(.7);
-    transition: opacity 1.2s ease, transform 1.6s cubic-bezier(.2, .8, .3, 1);
-  }
-  .intro-alone.show { opacity: 1; transform: scale(1); }
 }

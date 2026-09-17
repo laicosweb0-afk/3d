@@ -5,9 +5,23 @@ del mondo **Woman / Aurea**: una domanda in apertura, tre note da indovinare
 sulla fragranza che ha nel naso, un giro di ruota, un credito da spendere in
 profumeria. Serve a trasformare un profumo sentito per caso in un contatto.
 
-È il gemello di `club-rama/`: stessa struttura, stessa fisica della ruota,
-stesso impianto di suoni. Cambiano il mondo, il gioco e la tavolozza —
-magenta, nero e luce invece del crema e dell'oro.
+È il gemello di `club-rama/` — quello pubblicato su `/3d/rama/` — e lo è per
+scelta, non per comodità: **stesso design, stessi font, stesse animazioni**.
+Crema e oro, i font di sistema con la scala tipografica di iOS, le stesse
+molle, gli stessi raggi e le stesse ombre, l'apertura in due tempi con gli
+stessi millesimi. Cambia il gioco dentro, non il vestito.
+
+Le sole tre differenze visive, e il motivo di ognuna:
+
+| Cosa | Perché |
+|---|---|
+| Il marchio è un flacone, non quattro piastrelle | Le piastrelle sono di Rama Ceramiche. Il gradiente d'oro, la molla e i ritardi a scalare sono gli stessi. |
+| Le schede delle risposte hanno due stati in più, giusta e sbagliata | Là non c'era niente da indovinare. Il giusto è l'oro che già c'era, lo sbagliato è il rosso dei campi in errore del modulo. |
+| Nella tessera ci sono le onde dell'NFC dove starebbe il QR | È il punto del brief: la card al posto del coupon. |
+
+Il resto — crema `#F5F3EE`, superficie `#FBFAF7`, inchiostro `#1D1D1F`, oro
+`#E8CD86`/`#C9A54E`/`#8C6E27`, il rubino del premio grosso — è copiato cifra
+per cifra da `club-rama/tailwind.config.ts`.
 
 Prototipo di prova. Non va messo online pubblicamente.
 
@@ -15,7 +29,7 @@ Prototipo di prova. Non va messo online pubblicamente.
 
 | | Schermata | Cosa succede |
 |---|---|---|
-| — | Apertura | «Hey.» e poi **«Hai sentito il profumo?»**, con l'alone che si diffonde |
+| — | Apertura | «Hey.» e poi **«Hai sentito il profumo?»**, col flacone che si compone sopra |
 | 1 | Avvio | «Ora prova a indovinare le fragranze», e il patto: il credito arriva comunque |
 | 1 | Quiz ×3 | testa, cuore, fondo della fragranza in diffusione |
 | 1 | Esito | quante ne ha prese, e **com'era che si chiamava** |
@@ -180,9 +194,12 @@ viene dal punto d'arresto — la lancetta si posa a sei o sette gradi dal bordo
 del 100 appena sfilato — non da una pausa costruita: una ruota vera non si
 ferma e riparte.
 
-**Sugli spicchi magenta e oro la scritta è scura.** La crema su quelle due
-tinte sta sotto il 3:1 e a 14px in movimento sparisce; l'inchiostro arriva a
-7:1 abbondanti. Solo il quasi nero tiene la scritta chiara.
+**I valori del design non si toccano a occhio.** Tinte, tempi, molle, ombre e
+dimensioni vengono da `club-rama/` e lì si controllano: la build pubblicata su
+`/3d/rama/` ha gli stessi hash di quella che esce da `club-rama/npm run build`,
+quindi quel sorgente *è* il riferimento, non una copia che gli assomiglia. Chi
+cambia un colore qui lo sta cambiando in un mondo solo dei due: se la modifica
+riguarda il sistema e non il gioco, va fatta in entrambi.
 
 **`#root` ha una larghezza esplicita** in `index.css`. Senza, il flex del body
 lo stringe sulla larghezza del contenuto e le schermate con poco testo escono

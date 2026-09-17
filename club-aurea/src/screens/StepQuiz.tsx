@@ -46,7 +46,7 @@ export function StepQuiz({ domanda, indice, totale, onRisposto }: Props) {
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex items-center gap-2">
-        <span className="rounded-pill bg-magenta/10 px-2.5 py-1 text-footnote font-semibold text-magenta-scuro">
+        <span className="rounded-pill bg-oro/[.18] px-2.5 py-1 text-footnote font-semibold text-ink">
           {domanda.livello}
         </span>
         <span className="text-footnote text-ink-soft tabular">Nota {indice + 1} di {totale}</span>

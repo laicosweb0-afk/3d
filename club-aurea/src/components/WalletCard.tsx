@@ -25,10 +25,10 @@ export function WalletCard({ nome, credito, fragranza, codice, scadenza }: Props
       animate={{ y: 0, opacity: 1, scale: 1 }}
       transition={{ type: 'spring', stiffness: 190, damping: 26, delay: 0.1 }}
       className="relative overflow-hidden rounded-[22px] p-6 text-white shadow-rilievo"
-      style={{ background: 'linear-gradient(158deg, #2A1520 0%, #1A0E13 55%, #0C0709 100%)' }}
+      style={{ background: 'linear-gradient(158deg, #2A2621 0%, #1D1D1F 55%, #14120E 100%)' }}
     >
       <div aria-hidden className="absolute -right-16 -top-20 h-48 w-48 rounded-full"
-        style={{ background: 'radial-gradient(circle, rgba(224,85,155,.34), transparent 68%)' }} />
+        style={{ background: 'radial-gradient(circle, rgba(201,165,78,.30), transparent 68%)' }} />
 
       <div className="relative flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -58,7 +58,7 @@ function Voce({ etichetta, valore, mono }: { etichetta: string; valore: string; 
   return (
     <div>
       <p className="text-[11px] uppercase tracking-[.09em] text-white/40">{etichetta}</p>
-      <p className={`mt-1 text-callout font-semibold ${mono ? 'tabular tracking-[.06em] text-magenta-chiaro' : ''}`}>
+      <p className={`mt-1 text-callout font-semibold ${mono ? 'tabular tracking-[.06em] text-oro-chiaro' : ''}`}>
         {valore}
       </p>
     </div>

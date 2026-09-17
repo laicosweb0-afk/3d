@@ -3,6 +3,12 @@
 La stessa cosa di Club Rama, per l'altro mondo: una **card NFC** che il
 cliente appoggia al telefono e che apre l'esperienza di `club-aurea/`.
 
+«La stessa cosa» alla lettera: design, font e animazioni sono quelli della
+pagina pubblicata su `/3d/rama/` — crema e oro, i font di sistema, le stesse
+molle, la stessa apertura in due tempi. A cambiare sono il gioco e tre soli
+dettagli visivi (il marchio, i due stati in più delle risposte, le onde NFC
+nella tessera), ognuno spiegato nel README di `club-aurea/`.
+
 Il cliente entra, sente il profumo, appoggia il telefono sulla card. Si apre
 «Hey. **Hai sentito il profumo?**», poi tre note da indovinare sulla fragranza
 che ha nel naso, la ruota che gli lascia 15 € di credito, e il modulo con nome
@@ -12,6 +18,18 @@ profumeria ha un nome.
 - **Sorgente**: `club-aurea/` — progetto Vite a sé, con il suo `README.md`
   che spiega come cambiare fragranze, domande e premi.
 - **Build**: `npm run build` dentro `club-aurea/`, esce `dist/`.
+- **Online per provarla**, accanto a quella di Rama:
+
+      https://laicosweb0-afk.github.io/3d/aurea/
+
+  Come `/3d/rama/`, è una scorciatoia: rimanda a `/3d/club-aurea/`, dove sta
+  la build committata in `public/club-aurea/`. Serve per provarla dal telefono
+  e per farla vedere, **non per le card**: è un indirizzo in prestito, e il
+  giorno che si cambia hosting muore. Sulle card va un dominio nostro.
+
+  La build in `public/` non si aggiorna da sé: dopo aver cambiato qualcosa in
+  `club-aurea/`, `npm run build` e poi ricopiare `dist/` sopra
+  `public/club-aurea/`, altrimenti l'indirizzo mostra la versione vecchia.
 - **Tutto client-side**: il modulo finale **non salva niente e non manda
   nessuna email** finché non gli si dà un indirizzo a cui spedire. Il codice
   `AUREA-XXXX` è generato a caso nel browser.

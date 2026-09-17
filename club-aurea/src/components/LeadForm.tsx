@@ -94,7 +94,7 @@ export function LeadForm({ onInvia, inCorso, errore }: Props) {
 
       <label className="flex cursor-pointer items-start gap-3 pt-1">
         <input type="checkbox" checked={consenso} onChange={(e) => setConsenso(e.target.checked)}
-          className="mt-[2px] h-5 w-5 shrink-0 accent-[#E0559B]" />
+          className="mt-[2px] h-5 w-5 shrink-0 accent-[#C9A54E]" />
         <span className="text-footnote leading-[19px] text-ink-soft">
           Voglio ricevere novità, anteprime e inviti di Aurea.{' '}
           <a href="#privacy" className="underline underline-offset-2">Informativa privacy</a>
@@ -129,7 +129,7 @@ function Campo({
         className={[
           'flex items-stretch overflow-hidden rounded-campo bg-superficie',
           'ring-1 transition-shadow duration-200',
-          errore ? 'ring-[#E0A0A0]' : 'ring-linea focus-within:ring-magenta',
+          errore ? 'ring-[#E0A0A0]' : 'ring-linea focus-within:ring-oro',
         ].join(' ')}
       >
         {prefisso && (

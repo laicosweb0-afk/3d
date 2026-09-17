@@ -24,7 +24,7 @@ export function StepAvvio({ domande, onAvanti }: { domande: number; onAvanti: ()
         <motion.span
           aria-hidden
           className="absolute h-56 w-56 rounded-full blur-2xl"
-          style={{ background: 'radial-gradient(circle, rgba(224,85,155,.34), transparent 70%)' }}
+          style={{ background: 'radial-gradient(circle, rgba(201,165,78,.34), transparent 70%)' }}
           animate={{ scale: [1, 1.14, 1], opacity: [0.75, 1, 0.75] }}
           transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
         />
@@ -34,7 +34,7 @@ export function StepAvvio({ domande, onAvanti }: { domande: number; onAvanti: ()
           transition={{ type: 'spring', stiffness: 170, damping: 22 }}
           className="relative"
         >
-          <AureaLogo size={132} variant="magenta" />
+          <AureaLogo size={132} />
         </motion.div>
       </div>
 
