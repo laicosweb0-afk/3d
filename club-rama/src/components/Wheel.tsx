@@ -98,6 +98,7 @@ export const Wheel = forwardRef<WheelHandle, Props>(function Wheel(
     }
 
     let ultimo = spicchioSotto(0);
+    let scatti = 0;
     let angoloPrec = 0;
     let deltaMax = 0;
     const fruscio = fruscioRuota();
@@ -119,7 +120,7 @@ export const Wheel = forwardRef<WheelHandle, Props>(function Wheel(
       if (corrente !== ultimo) {
         ultimo = corrente;
         tickAptico();
-        tickSuono();
+        tickSuono(scatti++);
         // La lancetta scatta all'indietro e rientra: la muovo fuori da React,
         // altrimenti sarebbero decine di render durante il giro.
         lancettaRef.current?.animate(

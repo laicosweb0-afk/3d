@@ -52,9 +52,9 @@ const audioPrima = await p.evaluate(() => ({ ...window.__audio }));
 await p.getByRole('button', { name: 'Gira' }).click();
 await p.waitForTimeout(2200);
 await p.screenshot({ path: `${out}/3b-in-giro.png` });
-await p.waitForTimeout(4400);           // fine giro e pausa sulla ruota ferma
+await p.waitForTimeout(3300);           // la ruota si è appena posata
 await p.screenshot({ path: `${out}/3c-ruota-ferma.png` });
-await p.waitForTimeout(2000);           // conteggio del credito e testi
+await p.waitForTimeout(3100);           // conteggio, notifica e testi
 await p.screenshot({ path: `${out}/4-rivelazione.png` });
 {
   const l = await p.evaluate(() => Math.round(document.querySelector('#root').getBoundingClientRect().width));

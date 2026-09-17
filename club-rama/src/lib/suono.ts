@@ -99,38 +99,85 @@ export function sblocca(): void { avvia(); }
 /** Vero se il contesto sta davvero suonando: serve a non sprecare i suoni. */
 export function pronto(): boolean { return ctx?.state === 'running'; }
 
-/** Colpo secco: uno spicchio è passato sotto la lancetta. */
-export function tick(): void {
-  const c = avvia();
-  if (!c || !rumore || muto) return;
-  const t = c.currentTime;
+/**
+ * La scala su cui cantano gli scatti della ruota: pentatonica discendente,
+ * senza semitoni, quindi non c'è modo che due note vicine stonino. È questa
+ * a togliere il meccanico — un clic è un clic, una nota che scende è un
+ * carillon che si sta fermando.
+ */
+const SCALA = [1174.7, 1046.5, 880, 783.99, 659.26, 587.33, 523.25];
 
-  const s = c.createBufferSource();
-  s.buffer = rumore;
-  const passa = c.createBiquadFilter();
-  passa.type = 'bandpass';
-  passa.frequency.value = 2600;
-  passa.Q.value = 3.4;
+/**
+ * Uno scatto: una nota di legno, tipo marimba. Fondamentale più l'ottava
+ * sopra, attacco immediato e coda corta. L'indice fa scendere la melodia man
+ * mano che la ruota rallenta.
+ */
+export function tick(indice = 0): void {
+  const c = avvia();
+  if (!c || muto) return;
+  const t = c.currentTime;
+  const hz = SCALA[indice % SCALA.length];
+
+  const o = c.createOscillator();
+  o.type = 'sine';
+  o.frequency.value = hz;
   const g = c.createGain();
   g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(0.30, t + 0.002);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.032);
-  s.connect(passa).connect(g).connect(master!);
-  s.start(t);
-  s.stop(t + 0.05);
+  g.gain.exponentialRampToValueAtTime(0.28, t + 0.004);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.24);
+  o.connect(g).connect(master!);
+  o.start(t);
+  o.stop(t + 0.26);
 
-  // Un filo di corpo sotto il click, se no suona di plastica.
+  // L'ottava sopra, breve: è quella a dare il "legno" senza indurire la nota.
+  const a = c.createOscillator();
+  a.type = 'sine';
+  a.frequency.value = hz * 2;
+  const ga = c.createGain();
+  ga.gain.setValueAtTime(0.0001, t);
+  ga.gain.exponentialRampToValueAtTime(0.09, t + 0.003);
+  ga.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
+  a.connect(ga).connect(master!);
+  a.start(t);
+  a.stop(t + 0.12);
+}
+
+/** La ruota si è posata: un tonfo morbido, non ancora la festa. */
+export function arresto(): void {
+  const c = avvia();
+  if (!c || muto) return;
+  const t = c.currentTime;
+  const o = c.createOscillator();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(320, t);
+  o.frequency.exponentialRampToValueAtTime(150, t + 0.2);
+  const g = c.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.26, t + 0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.34);
+  o.connect(g).connect(master!);
+  o.start(t);
+  o.stop(t + 0.38);
+}
+
+/**
+ * Una tacca del conteggio del credito. Sale di tono insieme al numero, così
+ * si sente che il totale sta crescendo anche senza guardarlo.
+ */
+export function conteggio(progresso: number): void {
+  const c = avvia();
+  if (!c || muto) return;
+  const t = c.currentTime;
   const o = c.createOscillator();
   o.type = 'triangle';
-  o.frequency.setValueAtTime(1150, t);
-  o.frequency.exponentialRampToValueAtTime(760, t + 0.03);
-  const go = c.createGain();
-  go.gain.setValueAtTime(0.0001, t);
-  go.gain.exponentialRampToValueAtTime(0.16, t + 0.003);
-  go.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
-  o.connect(go).connect(master!);
+  o.frequency.value = 560 + 640 * Math.max(0, Math.min(1, progresso));
+  const g = c.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.1, t + 0.003);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.075);
+  o.connect(g).connect(master!);
   o.start(t);
-  o.stop(t + 0.06);
+  o.stop(t + 0.09);
 }
 
 /**

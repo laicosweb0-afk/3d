@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react';
 import { Wheel, type WheelHandle } from '../components/Wheel';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { vittoria } from '../lib/haptics';
-import { vittoria as suonoVittoria } from '../lib/suono';
+import { tocco as toccoAptico } from '../lib/haptics';
+import { arresto } from '../lib/suono';
 
 export function StepRuota({ onVinto }: { onVinto: (valore: number) => void }) {
   const ruota = useRef<WheelHandle>(null);
@@ -22,8 +22,8 @@ export function StepRuota({ onVinto }: { onVinto: (valore: number) => void }) {
             onRisultato={(v) => {
               setGirata(true);
               setRisultato(v);
-              vittoria();
-              suonoVittoria();
+              toccoAptico();
+              arresto();
               // Il tempo di vedere dove si è posata, non uno di più: la coda
               // della frenata ha già regalato mezzo secondo di ruota immobile.
               setTimeout(() => onVinto(v), 750);
