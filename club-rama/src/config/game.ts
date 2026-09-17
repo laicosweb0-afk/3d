@@ -68,10 +68,27 @@ export const GIRO = {
  */
 export const WHATSAPP_NEGOZIO = '';
 
-/** Il messaggio che il cliente si ritrova già pronto nella chat. */
-export function messaggioWhatsApp(nome: string, credito: number, codice: string, ambiente: string): string {
-  return `Ciao, sono ${nome}. Ho il credito Club Rama da ${credito}€, codice ${codice}. ` +
-    `Vorrei un preventivo per ${ambiente.toLowerCase()}.`;
+/**
+ * Il messaggio che il cliente si ritrova già pronto nella chat.
+ *
+ * Parte dal suo WhatsApp, quindi arriva a Rama dal suo numero vero: il
+ * contatto è verificato per costruzione, non c'è modo di sbagliarlo a
+ * scrivere. Dentro ci mettiamo tutto il resto, così la conversazione nasce
+ * già con le informazioni sul tavolo.
+ */
+export function messaggioWhatsApp(l: {
+  nome: string; email: string; credito: number; codice: string; ambiente: string; stile: string;
+}): string {
+  return [
+    `Ciao, sono ${l.nome}.`,
+    `Ho il credito Club Rama da ${l.credito}€, codice ${l.codice}.`,
+    '',
+    `Sto rifacendo: ${l.ambiente.toLowerCase()}`,
+    `Stile che mi piace: ${l.stile.toLowerCase()}`,
+    `La mia email: ${l.email}`,
+    '',
+    'Vorrei un preventivo.',
+  ].join('\n');
 }
 
 export type Opzione = { id: string; etichetta: string; nota?: string };

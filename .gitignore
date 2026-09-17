@@ -8,3 +8,5 @@ tools/lugo/cache/
 tools/lugo/shots/
 club-rama/dist/
 club-rama/.env.local
+
+# public/club-rama/ e' la build committata apposta: NON ignorarla.

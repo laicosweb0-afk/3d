@@ -54,13 +54,14 @@ export function StepFine({ lead, onRicomincia }: { lead: Lead; onRicomincia: () 
       {/* Invece di promettere un messaggio che nessuno spedisce, apriamo noi
           la chat col codice già scritto: parte il cliente, e Rama si ritrova
           la conversazione aperta. Compare solo se il numero è configurato. */}
-      {lead.ritiro === 'whatsapp' && WHATSAPP_NEGOZIO && (
+      {WHATSAPP_NEGOZIO && (
         <div className="mt-6">
           <PrimaryButton
             onClick={() => {
-              const testo = messaggioWhatsApp(
-                lead.nome, lead.credito, lead.codiceCredito, lead.ambiente,
-              );
+              const testo = messaggioWhatsApp({
+                nome: lead.nome, email: lead.email, credito: lead.credito,
+                codice: lead.codiceCredito, ambiente: lead.ambiente, stile: lead.stile,
+              });
               window.open(
                 `https://wa.me/${WHATSAPP_NEGOZIO}?text=${encodeURIComponent(testo)}`,
                 '_blank', 'noopener,noreferrer',
