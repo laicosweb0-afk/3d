@@ -1,5 +1,5 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { SPICCHI, OUTCOME, GIRO } from '../config/game';
+import { SPICCHI, OUTCOME, GIRO, QUASI } from '../config/game';
 import { tick as tickAptico } from '../lib/haptics';
 import { tick as tickSuono, fruscioRuota, sblocca } from '../lib/suono';
 import { TESSERE, INCLINAZIONE } from './RamaLogo';
@@ -14,7 +14,11 @@ const capovolto = (i: number) => {
   const a = ((i * PASSO) % 360 + 360) % 360;
   return a > 90 && a < 270;
 };
-const testoSu = (i: number) => (TINTE[i % TINTE.length] === '#1D1D1F' ? '#FBFAF7' : '#1D1D1F');
+/** Il premio grosso non si veste d'oro come gli altri: rubino profondo. */
+const RUBINO = '#8A2B2E';
+const tintaDi = (i: number) => (SPICCHI[i].speciale ? RUBINO : TINTE[i % TINTE.length]);
+const SCURE = new Set(['#1D1D1F', RUBINO]);
+const testoSu = (i: number) => (SCURE.has(tintaDi(i)) ? '#FBFAF7' : '#1D1D1F');
 
 /**
  * Profilo di velocità: rampa breve in accelerazione, poi frenata lunga che
@@ -28,6 +32,21 @@ function percorso(t: number): number {
   if (t <= A) return t * t / (2 * A) / TOT;
   const u = (t - A) / (1 - A);
   return (A / 2 + ((1 - A) / 4) * (1 - Math.pow(1 - u, 4))) / TOT;
+}
+
+/**
+ * L'angolo nei tre tempi della frenata: corsa fino a un soffio dal bersaglio,
+ * respiro fermo, scatto finale. Lo scivolo usa un'accelerazione dolce e una
+ * frenata dolce, così l'ultimo scatto sembra la ruota che cede di un dente,
+ * non un salto.
+ */
+function angoloConSuspense(trascorso: number, quasi: number, finale: number): number {
+  if (trascorso <= GIRO.durata) return quasi * percorso(trascorso / GIRO.durata);
+  const dopo = trascorso - GIRO.durata;
+  if (dopo <= GIRO.pausa) return quasi;
+  const u = Math.min(1, (dopo - GIRO.pausa) / GIRO.scivolo);
+  const dolce = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+  return quasi + (finale - quasi) * dolce;
 }
 
 /** Indice dello spicchio fermo sotto la lancetta per una data rotazione. */
@@ -70,6 +89,15 @@ export const Wheel = forwardRef<WheelHandle, Props>(function Wheel(
     const giri = GIRO.giriMin + Math.floor(Math.random() * (GIRO.giriMax - GIRO.giriMin + 1));
     const finale = giri * 360 + (360 - bersaglio * PASSO) + sbavatura;
 
+    // Lo spicchio che sfila un attimo prima del bersaglio: se è quello grosso,
+    // la ruota ci si ferma quasi sopra prima di scoprire il premio vero.
+    const precedente = (bersaglio + 1) % N;
+    const conSuspense = QUASI && OUTCOME !== null && !!SPICCHI[precedente].speciale;
+    const quasi = finale - PASSO;
+    const durataTotale = conSuspense
+      ? GIRO.durata + GIRO.pausa + GIRO.scivolo
+      : GIRO.durata;
+
     const ridotto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (ridotto) {
       if (ruotaRef.current) ruotaRef.current.style.transform = `rotate(${finale}deg)`;
@@ -86,8 +114,9 @@ export const Wheel = forwardRef<WheelHandle, Props>(function Wheel(
     const fruscio = fruscioRuota();
     const t0 = performance.now();
     const passo = (ora: number) => {
-      const t = Math.min(1, (ora - t0) / GIRO.durata);
-      const angolo = finale * percorso(t);
+      const trascorso = ora - t0;
+      const t = Math.min(1, trascorso / durataTotale);
+      const angolo = conSuspense ? angoloConSuspense(trascorso, quasi, finale) : finale * percorso(t);
       if (ruotaRef.current) ruotaRef.current.style.transform = `rotate(${angolo}deg)`;
 
       // Il fruscio segue la velocità vera, fotogramma per fotogramma: è questo
@@ -194,7 +223,7 @@ export const Wheel = forwardRef<WheelHandle, Props>(function Wheel(
             const vincente = !girando && indiceVinto === i;
             return (
               <g key={i}>
-                <path d={settore(i)} fill={TINTE[i % TINTE.length]} stroke="#FBFAF7" strokeWidth=".6" />
+                <path d={settore(i)} fill={tintaDi(i)} stroke="#FBFAF7" strokeWidth=".6" />
                 {vincente && <path d={settore(i)} fill="#E8CD86" opacity=".4" filter="url(#alone)" />}
                 <text
                   x={R} y={R - R * 0.585}

@@ -27,12 +27,33 @@ Tutto sta in `src/config/game.ts`, non serve aprire altro.
 |---|---|---|
 | Spicchi della ruota | `SPICCHI` | In senso orario. Cambiarne il numero è lecito: la ruota si ridisegna da sé. |
 | Esito | `OUTCOME` | `70` fa atterrare la ruota su uno spicchio da 70€, in un punto casuale al suo interno. Con `null` l'esito è davvero casuale. |
+| Frenata in due tempi | `QUASI` | Con `true` la ruota si ferma quasi del tutto sullo spicchio che precede il bersaglio, respira, poi scivola avanti di uno scatto. Funziona solo se quello spicchio è marcato `speciale`. |
 | Validità del credito | `VALIDITA_GIORNI` | La scadenza è calcolata dal giorno del ritiro. |
-| Durata e giri | `GIRO` | Millisecondi e numero di giri completi prima della frenata. |
+| Durata e giri | `GIRO` | `durata` è la corsa fino a un soffio dal bersaglio, `pausa` il respiro sul premio grosso, `scivolo` lo scatto finale. |
 | Domande e risposte | `AMBIENTI`, `STILI` | Testi delle due schermate iniziali. |
 
 L'importo mostrato **è quello vinto sulla ruota**: non esiste un secondo
 posto dove cambiarlo, così non possono divergere.
+
+### L'ordine degli spicchi non è decorativo
+
+La ruota gira in avanti, quindi gli spicchi arrivano sotto la lancetta in
+ordine **decrescente** di indice: prima del bersaglio passa sempre quello che
+nella lista viene **dopo**. Per questo il 200 sta all'indice 2 e il 70
+all'indice 1. Se sposti uno dei due, la frenata in due tempi si ferma sullo
+spicchio sbagliato e l'effetto sparisce.
+
+### Il premio che non esce mai
+
+Con `OUTCOME = 70` la ruota atterra sempre sul 70, e il 200 in rubino non può
+uscire. È una scelta da fare con gli occhi aperti: mostrare un premio che
+nessuno può vincere, in Italia, è una pratica commerciale ingannevole ai sensi
+del Codice del Consumo, e i concorsi a premi hanno regole loro (DPR 430/2001).
+
+La versione onesta costa una riga: si lascia `OUTCOME = 70` per le
+dimostrazioni e si passa a `null` quando la card va in mano ai clienti — la
+frenata in due tempi si spegne da sola, perché con l'esito davvero casuale
+non avrebbe senso costruire la suspense.
 
 ## Dove finiscono i contatti
 

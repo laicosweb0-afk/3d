@@ -20,6 +20,13 @@ export default {
           DEFAULT: '#C9A54E',
           scuro: '#8C6E27',
         },
+        // Il premio grosso. Non un rosso da insegna: un rubino profondo, che
+        // accanto all'oro e al quasi nero sta senza urlare.
+        rubino: {
+          chiaro: '#A8383A',
+          DEFAULT: '#8A2B2E',
+          scuro: '#5E1C1F',
+        },
       },
       fontFamily: {
         sans: [
