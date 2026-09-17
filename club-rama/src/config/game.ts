@@ -32,15 +32,19 @@ export const SPICCHI: Spicchio[] = [
 /**
  * Gli esiti possibili e quanto spesso escono. Sopra i 70 non si va: i premi
  * grossi stanno sulla ruota per farsi vedere e per far sudare, non per essere
- * vinti. I pesi sono relativi, non percentuali: si possono cambiare a occhio
- * senza rifare i conti perché tornino a cento.
+ * vinti. Il 70 esce più di tutti — è il premio su cui è costruita l'offerta —
+ * ma non da solo: se uscisse sempre lui, due persone che confrontano lo
+ * schermo capirebbero in un attimo che la ruota non decide niente.
+ *
+ * I pesi sono relativi, non percentuali: si possono cambiare a occhio senza
+ * rifare i conti perché tornino a cento.
  */
 export type Esito = { valore: number; peso: number };
 
 export const ESITI: Esito[] = [
-  { valore: 30, peso: 30 },
-  { valore: 50, peso: 35 },
-  { valore: 70, peso: 35 },
+  { valore: 30, peso: 18 },
+  { valore: 50, peso: 27 },
+  { valore: 70, peso: 55 },
 ];
 
 /**
