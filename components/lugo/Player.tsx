@@ -666,6 +666,10 @@ export function Player() {
         // e SOPRA i pannelli solo se è strettamente più vicino di tutti e
         // due (vedi sotto).
         const bers = occupato ? null : bersaglioFurto(mondo, rt.persona.x, rt.persona.z);
+        // il volto del quartiere a portata di voce: si chiede UNA volta e
+        // si riusa, così il gradino e il ponte non possono mai riferirsi a
+        // due persone diverse nello stesso battito di tasto
+        const chiQuartiere = quartiereVicino(rt.persona.x, rt.persona.z);
         if (daChiudere) {
           // la E ha già fatto il suo: ha chiuso il pannello
         } else if (dAuto < DIST_SALITA) {
@@ -743,14 +747,14 @@ export function Player() {
           // PrimoIncontro nel suo giro di frame, che è l'unico padrone
           // della scena (stesso schema del pugno via stick.ts).
           pontePrimoIncontro.parla = true;
-        } else if (!st.dialogo && quartiereVicino(rt.persona.x, rt.persona.z) !== null) {
+        } else if (!st.dialogo && chiQuartiere) {
           // I volti fissi del quartiere (capitolo 3): lo stesso gradino
           // dell'anziano qui sopra — sotto bacheche e vetrine, sopra la
           // chiacchiera col maranza — e lo stesso schema: la E scrive solo
           // la richiesta sul ponte, il pannello lo apre Quartiere.tsx nel
           // suo giro di frame. `quartiereVicino` risponde solo per chi è
           // DISPONIBILE, quindi a storia chiusa o bloccata la E passa oltre.
-          ponteQuartiere.parla = quartiereVicino(rt.persona.x, rt.persona.z);
+          ponteQuartiere.parla = chiQuartiere;
         } else if (!st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
           // ULTIMO gradino della precedenza della E, e ci sta apposta: è
           // l'unica interazione che sa avviarsi da sola, quindi qui la E è
@@ -1003,6 +1007,10 @@ export function Player() {
           } else if (banco && dK < dB) hint = `Premi E · lavori · ${banco.bacheca.nome}`;
           else if (bottega) hint = `Premi E · ${bottega.nome}`;
         }
+        // il volto del quartiere a portata di voce, chiesto una volta sola
+        // per fotogramma: la E qui sopra fa la stessa domanda con la stessa
+        // funzione, e una regola sola non può contraddirsi
+        const chiQuartiereHint = quartiereVicino(rt.persona.x, rt.persona.z);
         // col maranza addosso il suggerimento cambia: quello che serve
         // sapere non è più «puoi parlargli», è come uscirne
         if (incontroInCorso().attivo) hint = 'F · sganciagli un pugno · oppure corri via';
@@ -1015,11 +1023,11 @@ export function Player() {
           // lo stesso gradino della E, letto a schermo: l'anziano della
           // missione vince sul maranza, come nella scala qui sopra
           hint = 'Premi E per parlare col signore del pacchetto';
-        } else if (!hint && !st.dialogo && quartiereVicino(rt.persona.x, rt.persona.z) !== null) {
+        } else if (!hint && !st.dialogo && chiQuartiereHint) {
           // i volti del quartiere, stessa scala della E: il testo sta in
           // HINT_QUARTIERE accanto alla regola, così suggerimento e tasto
           // non possono raccontare due cose diverse
-          hint = HINT_QUARTIERE[quartiereVicino(rt.persona.x, rt.persona.z)!];
+          hint = HINT_QUARTIERE[chiQuartiereHint];
         } else if (!hint && !st.dialogo && cooldownDialogo.current <= 0 && runtime.npcs) {
           for (const n of runtime.npcs) {
             if (n.tipo !== 'maranza') continue;

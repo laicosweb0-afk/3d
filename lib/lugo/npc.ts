@@ -121,17 +121,22 @@ export const ANCORA_PRIMO_INCONTRO = { x: 70.6, z: -51.7 } as const;
 
 /**
  * Dove aspettano i due volti fissi del capitolo 3 (il terzo è Otello, che
- * resta all'ancora del primo incontro): il maranza pentito sul lato del
- * Pavaglione, il custode sul sagrato del Teatro Rossini. Stesso patto
+ * resta all'ancora del primo incontro): il maranza pentito in piazza dei
+ * Martiri, il custode sul sagrato del Teatro Rossini. Stesso patto
  * dell'ancora qui sopra — POSIZIONI FISSE validate con la fisica in
  * creaNpcs, mai puntoStradaCasuale: le scene del quartiere devono essere
- * identiche per tutti. I punti sono presi dalla rete pedonale FUORI dai
- * footprint degli edifici (il tratto che passa dentro la corte del
- * Pavaglione era il candidato ovvio, ed era anche il modo migliore per far
- * nascere il pentito contro un pilastro del portico).
+ * identiche per tutti.
+ *
+ * Il pentito sta sul selciato FUORI dalla loggia, non sotto il portico.
+ * Sotto ci stava benissimo (è lì che i maranza stanno davvero), ma fra due
+ * pilastri non lo vedeva nessuno: la scritta della E compare a tre metri e
+ * mezzo, e un personaggio che devi trovare al buio fra le colonne è un
+ * appuntamento mancato. Da qui si vede da tutta la piazza, e il bar più
+ * vicino resta il suo (il Jolly, sette metri avanti al Roccà) invece di
+ * diventare lo stesso locale della consegna del primo incontro.
  */
 export const ANCORE_QUARTIERE = {
-  pentito: { x: 10.9, z: 47.8, yaw: 2.07 },
+  pentito: { x: 16.0, z: 48.0, yaw: -0.9 },
   custode: { x: -112.2, z: 46.1, yaw: -2.26 },
 } as const;
 

@@ -143,7 +143,11 @@ function negozioVicino(
  *    del gioco mette insieme ristoranti e pasticcerie, e «ritira la spesa
  *    al ristorante» non sta in piedi), col ripiego sul 'cibo' più vicino.
  *  - Le PASTE del pentito: una 'confectionery' se c'è, se no il 'cibo' più
- *    vicino al Pavaglione; il BAR delle scuse è il bar più vicino.
+ *    vicino al Pavaglione; il BAR delle scuse è il bar più vicino. Quale
+ *    sia lo decide dove sta il pentito, e la sua ancora (npc.ts) è scelta
+ *    anche per questo: da lì il più vicino è il Jolly, non il locale della
+ *    consegna del primo incontro — due storie di fila nello stesso bar
+ *    sembrerebbero una svista, non un quartiere.
  *  - Le tre cose del CUSTODE: farmacia, tabacchi e negozio più vicini al
  *    teatro — tre categorie diverse per costruzione. Il ripiego, se una
  *    categoria sparisse dai dati OSM, è il 'servizi' più vicino: brutto ma
@@ -288,8 +292,12 @@ export function creaMissioneLuci(mondo: MondoLugo, libero?: Libero): Missione {
     descrizione:
       'Al custode del Teatro Rossini mancano tre cose per la serata: farmacia, tabacchi e negozio, poi si torna al teatro.',
     frase: '“Tre cose, tre botteghe, una serata sola.”',
+    // I titoli nominano SOLO l'attività, senza la categoria davanti: metà
+    // delle farmacie di OSM si chiama già «Farmacia Tal dei Tali», e «Passa
+    // in farmacia: Farmacia Rossi» era una balbuzie dell'obiettivo — la
+    // stessa che il dialogo qui sotto evita per la stessa ragione.
     tappe: [
-      { poi: xz(mete.farmacia), titolo: `Passa in farmacia: ${mete.farmacia.nome}` },
+      { poi: xz(mete.farmacia), titolo: `Passa da ${mete.farmacia.nome}` },
       { poi: xz(mete.tabacchi), titolo: `Passa da ${mete.tabacchi.nome}` },
       { poi: xz(mete.negozio), titolo: `Passa da ${mete.negozio.nome}` },
       { poi: xz({ x: cu.x, z: cu.z }), titolo: 'Torna dal custode al Teatro Rossini' },
@@ -324,9 +332,16 @@ export function quartiereVicino(x: number, z: number, raggio = 3.4): ChiQuartier
   return scelto;
 }
 
-/** Il testo dell'hint, accanto alla regola che lo fa comparire. */
+/**
+ * Il testo dell'hint, accanto alla regola che lo fa comparire. I tre volti
+ * si descrivono per come SI VEDONO, non per come si chiamano: il nome di
+ * Otello lo dà lui nel dialogo, e «Premi E per parlare con Otello» prima
+ * delle presentazioni faceva sapere al giocatore una cosa che il suo
+ * personaggio non poteva sapere. Lo stesso per il pentito: che sia pentito
+ * si scopre quando racconta la figuraccia, prima è solo uno col muso lungo.
+ */
 export const HINT_QUARTIERE: Record<ChiQuartiere, string> = {
-  otello: 'Premi E per parlare con Otello',
-  pentito: 'Premi E per parlare col maranza pentito',
+  otello: 'Premi E per parlare col signore del pacchetto',
+  pentito: 'Premi E per parlare col ragazzo col muso lungo',
   custode: 'Premi E per parlare col custode del teatro',
 };

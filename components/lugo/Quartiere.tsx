@@ -97,15 +97,32 @@ const scenaNuova = (fase: FaseScena): Scena => ({
   accompagnato: false,
 });
 
+// Entro questi metri dal proprio posto un volto del quartiere è «a casa»:
+// più stretto del raggio con cui la fisica lo può spingere di lato, più
+// largo del mezzo metro in cui oscillerebbe avanti e indietro.
+const SOGLIA_CASA = 1.2;
+
 /** La tabella delle scene: quello che cambia da personaggio a personaggio. */
-const SCHEDA: Record<
-  ChiQuartiere,
-  { etichetta: string; voce: string; aggancio: number; finale: number }
-> = {
-  otello: { etichetta: 'Otello, il signore del pacchetto', voce: 'anziano', aggancio: FRASE_Q.riconosce, finale: FRASE_Q.grazieOtello },
-  pentito: { etichetta: 'Un maranza pentito', voce: 'maranza', aggancio: FRASE_Q.aggancioPentito, finale: FRASE_Q.arrivoPentito },
-  custode: { etichetta: 'Il custode del Rossini', voce: 'anziano', aggancio: FRASE_Q.aggancioCustode, finale: FRASE_Q.arrivoCustode },
+const SCHEDA: Record<ChiQuartiere, { voce: string; aggancio: number; finale: number }> = {
+  otello: { voce: 'anziano', aggancio: FRASE_Q.riconosce, finale: FRASE_Q.grazieOtello },
+  pentito: { voce: 'maranza', aggancio: FRASE_Q.aggancioPentito, finale: FRASE_Q.arrivoPentito },
+  custode: { voce: 'anziano', aggancio: FRASE_Q.aggancioCustode, finale: FRASE_Q.arrivoCustode },
 };
+
+/**
+ * Chi parla, secondo quello che il GIOCATORE sa in quel momento. Nel primo
+ * pannello Otello è ancora «un signore col pacchetto» — la stessa targhetta
+ * della m00, perché è la stessa persona e il nome non l'ha ancora detto; da
+ * lì in poi è Otello, e il titolo della missione («La spesa di Otello») non
+ * nomina più uno sconosciuto. Il pentito, finché non ha raccontato la
+ * figuraccia, è soltanto uno col muso lungo: dare per saputo il pentimento
+ * avrebbe bruciato l'unica sorpresa che quel dialogo ha.
+ */
+function chiParla(chi: ChiQuartiere, nodo: string): string {
+  if (chi === 'otello') return nodo === 'saluto' ? 'Un signore col pacchetto' : 'Otello';
+  if (chi === 'pentito') return nodo === 'saluto' ? 'Un ragazzo col muso lungo' : 'Il maranza pentito';
+  return 'Il custode del Rossini';
+}
 
 export function Quartiere() {
   const mondo = useMondo();
@@ -185,6 +202,43 @@ export function Quartiere() {
     return { x, z };
   };
 
+  /**
+   * Il rientro al proprio posto, con la rete di sicurezza del primo
+   * incontro: se un pilastro del portico o un'auto in sosta lo tiene fermo
+   * da più di due secondi e mezzo, ce lo si rimette di peso. Un volto del
+   * quartiere incastrato contro un muro è un appuntamento che nessuno
+   * trova più, e la fase in cui succede non cambia il rimedio — per questo
+   * la regola sta in un posto solo e non nelle quattro fasi che la usano.
+   * Restituisce la distanza da casa, che alle fasi serve per sapere se è
+   * arrivato.
+   */
+  const rientra = (n: Npc, casa: { x: number; z: number }): number => {
+    const d = Math.hypot(n.x - casa.x, n.z - casa.z);
+    if (d <= SOGLIA_CASA) {
+      // fermarlo qui e non «se non è già fermo»: lo stato 'chiede' di un
+      // pannello appena chiuso lo farebbe arretrare in eterno davanti al
+      // giocatore, invece di stare al suo posto
+      if (n.stato !== 'fermo') {
+        n.stato = 'fermo';
+        n.timer = 5;
+      }
+      return d;
+    }
+    if (n.fermoDa > 2.5 || d > 140) {
+      const p = puntoLibero(casa.x, casa.z);
+      n.x = p.x;
+      n.z = p.z;
+      n.fermoDa = 0;
+      n.stato = 'fermo';
+      n.timer = 5;
+      return 0;
+    }
+    n.stato = 'avvicina';
+    n.targetX = casa.x;
+    n.targetZ = casa.z;
+    return d;
+  };
+
   // ── i dialoghi: una tabella di nodi per personaggio ───────────────────
   // Ogni nodo restituisce il pannello già pronto; le transizioni stanno in
   // `gestisciScelta`. Gli id sono namespace 'q01-'/'q02-'/'q03-': è la
@@ -196,22 +250,23 @@ export function Quartiere() {
       if (nodo === 'saluto') {
         return {
           id: 'q01-saluto',
-          chi: SCHEDA.otello.etichetta,
-          testo: '“Ah! Il ragazzo del pacchetto! Lo sapevo che ripassavi.”',
+          chi: chiParla(chi, nodo),
+          testo:
+            '“Ah! Il ragazzo del pacchetto! Lo sapevo che ripassavi. Otello, piacere: così adesso siamo presentati.”',
           opzioni: [{ id: 'avanti', label: '“Mi si riconosce facile.”' }, dopo],
         };
       }
       if (nodo === 'favore') {
         return {
           id: 'q01-favore',
-          chi: SCHEDA.otello.etichetta,
+          chi: chiParla(chi, nodo),
           testo: `“Senti: la mia spesa è pronta al ${mete.spesa.nome}, già pagata. Me la riporti qui? Con le mie gambe, capisci…”`,
           opzioni: [{ id: 'volentieri', label: '“Volentieri.”' }, dopo],
         };
       }
       return {
         id: 'q01-arrivo',
-        chi: SCHEDA.otello.etichetta,
+        chi: chiParla(chi, nodo),
         testo: '“La spesa! Grazie, stasera si mangia. …Sei sempre tu quello del pacchetto, eh.”',
         opzioni: [{ id: 'ok', label: '“Sempre io.”' }],
       };
@@ -220,7 +275,7 @@ export function Quartiere() {
       if (nodo === 'saluto') {
         return {
           id: 'q02-saluto',
-          chi: SCHEDA.pentito.etichetta,
+          chi: chiParla(chi, nodo),
           testo: '“Oh… ehi. Tu giri tanto, no? Mi serve una mano per una figuraccia.”',
           opzioni: [{ id: 'avanti', label: '“Sentiamo.”' }, dopo],
         };
@@ -228,7 +283,7 @@ export function Quartiere() {
       if (nodo === 'proposta') {
         return {
           id: 'q02-proposta',
-          chi: SCHEDA.pentito.etichetta,
+          chi: chiParla(chi, nodo),
           testo: `“Ieri al ${mete.bar.nome} ho fatto cadere un vassoio intero. Vorrei far arrivare due scuse e un pacchetto di paste. Ci pensi tu?”`,
           opzioni: [
             { id: 'convincilo', label: '“Vieni anche tu: scusarsi di persona vale doppio.”' },
@@ -240,7 +295,7 @@ export function Quartiere() {
       if (nodo === 'convinci') {
         return {
           id: 'q02-convinci',
-          chi: SCHEDA.pentito.etichetta,
+          chi: chiParla(chi, nodo),
           testo: '“Vacci tu, che figura ci faccio io?”',
           opzioni: [
             { id: 'insieme', label: '“Appunto: la TUA figura. Dai, ti accompagno.”' },
@@ -262,7 +317,7 @@ export function Quartiere() {
       // la battuta in più della forma accompagnata: lui c'era, e l'ha sentita
       return {
         id: 'q02-coda',
-        chi: SCHEDA.pentito.etichetta,
+        chi: chiParla(chi, nodo),
         testo: '“Hai sentito? ‘Acqua passata’. Le paste, prima o poi, le offro io.”',
         opzioni: [{ id: 'ok', label: '“Segno sul calendario.”' }],
       };
@@ -271,7 +326,7 @@ export function Quartiere() {
     if (nodo === 'saluto') {
       return {
         id: 'q03-saluto',
-        chi: SCHEDA.custode.etichetta,
+        chi: chiParla(chi, nodo),
         testo: '“Giovane! Stasera il Rossini si accende e a me mancano tre cose. Hai gambe buone?”',
         opzioni: [{ id: 'avanti', label: '“Abbastanza. Cosa serve?”' }, dopo],
       };
@@ -279,7 +334,7 @@ export function Quartiere() {
     if (nodo === 'lista') {
       return {
         id: 'q03-lista',
-        chi: SCHEDA.custode.etichetta,
+        chi: chiParla(chi, nodo),
         // niente «dalla farmacia …» prima del nome: molte farmacie di OSM
         // si chiamano già «Farmacia Tal dei Tali», e la categoria ripetuta
         // suonava come una balbuzie del pannello
@@ -289,7 +344,7 @@ export function Quartiere() {
     }
     return {
       id: 'q03-arrivo',
-      chi: SCHEDA.custode.etichetta,
+      chi: chiParla(chi, nodo),
       testo: '“C’è tutto: si va in scena. Stasera il Rossini brilla — e un po’ è merito tuo.”',
       opzioni: [{ id: 'ok', label: '“In bocca al lupo per la serata.”' }],
     };
@@ -491,8 +546,14 @@ export function Quartiere() {
       // componente è montato prima di <Missioni /> apposta (dentro Npcs)
       if (qAttiva && s.missione && !missioneById(qId)) registraDinamica(s.missione);
 
-      ponte.disponibile =
-        s.fase === 'attesa' && sbloccata && !fatta && !qAttiva && s.cooldown <= 0;
+      // «la storia è lì da prendere»: la dice il ponte alla E del Player e
+      // all'hint. Il riposo dopo un «Magari dopo» è dentro `disponibile`
+      // apposta — per quei secondi il tasto non risponde e non promette
+      // nulla — ma NON riguarda l'apertura forzata del collaudo, che è la
+      // stessa scorciatoia di forzaDialogo del primo incontro e non deve
+      // aspettare dieci secondi per riprovare un ramo di dialogo.
+      const aperta = s.fase === 'attesa' && sbloccata && !fatta && !qAttiva;
+      ponte.disponibile = aperta && s.cooldown <= 0;
 
       // ── missione completata: la battuta finale ────────────────────────
       if ((s.fase === 'inCorso' || s.fase === 'attesa') && qCompletata) {
@@ -508,6 +569,17 @@ export function Quartiere() {
           s.fase = 'arrivo';
         } else {
           s.fase = 'arrivo';
+        }
+        // Il pentito accompagnato CAMBIA CASA: da adesso il suo posto è il
+        // bar — lo stesso punto che il caricamento gli assegna a q02 già
+        // chiusa, così la scena viva e il ricaricamento non lo mettono in
+        // due posti diversi. Scritto qui e non «dove si è fermato» perché
+        // l'ancora è il bersaglio di tutte le fasi che lo riportano a casa:
+        // con l'ancora giusta, nessun pannello aperto a metà strada può
+        // lasciarlo piantato in mezzo alla piazza.
+        if (chi === 'pentito' && s.accompagnato) {
+          const bar = meteQuartiere(mondo).bar;
+          s.ancora = puntoLibero(bar.x, bar.z);
         }
         // l'ultima storia chiusa arma il festeggiamento (una volta sola)
         const fatteDopo = st.missioniFatte;
@@ -525,28 +597,26 @@ export function Quartiere() {
 
       if (s.fase === 'arrivo') {
         s.timerArrivo -= dt;
-        // il pentito accompagnato compie il suo pezzo di scena: cammina
-        // fino al bar e quello diventa il suo posto nuovo
         if (chi === 'pentito' && s.accompagnato) {
-          const bar = meteQuartiere(mondo).bar;
-          const dBar = Math.hypot(n.x - bar.x, n.z - bar.z);
-          if (dBar > 1.6) {
-            n.stato = 'avvicina';
-            n.targetX = bar.x;
-            n.targetZ = bar.z;
-          } else {
-            n.stato = 'fermo';
-            s.ancora = { x: n.x, z: n.z };
-          }
-          // la battuta in più: quando il titolare ha detto la sua e lui è
-          // arrivato (o il tempo è scaduto: mai una scena incastrata)
-          if (!st.dialogo && (dBar < 3 || s.timerArrivo < -6) && st.mode === 'piedi') {
+          // l'ultimo pezzo di scena lo fa coi suoi piedi: dal punto in cui
+          // ti stava dietro fino al bar, che il blocco di sopra ha appena
+          // eletto casa sua — quindi «rientrare» e «arrivare» sono la
+          // stessa cosa, e la percorre la funzione di sempre
+          const dCasa = rientra(n, s.ancora);
+          // La battuta in più si apre quando è ARRIVATO davvero: aprirla a
+          // tempo, com'era prima, la faceva scattare a dodici metri dal
+          // bancone, con la sua parte di scena ancora da camminare. Il
+          // timeout resta come ultima rete, e venticinque secondi di
+          // simulazione bastano: quaranta metri li fa in sedici, e se un
+          // pilastro lo tiene fermo ci pensa `rientra` a rimetterlo a
+          // posto molto prima. Una scena incastrata è peggio di una scena
+          // sbrigativa, ma una rete troppo lunga è una scena incastrata.
+          if (!st.dialogo && st.mode === 'piedi' && (dCasa < 3.2 || s.timerArrivo < -25)) {
             apriNodo(chi, s, n, st, 'coda');
             s.fase = 'coda';
-          } else if (s.timerArrivo < -20) {
+          } else if (s.timerArrivo < -45) {
             // il giocatore è ripartito col mezzo e la coda non può aprirsi:
             // la scena si chiude lo stesso, col pentito al suo posto nuovo
-            s.ancora = { x: n.x, z: n.z };
             s.fase = 'finita';
           }
           continue;
@@ -557,11 +627,10 @@ export function Quartiere() {
 
       if (s.fase === 'coda') {
         // si aspetta solo che il pannello della coda si chiuda (la scelta
-        // 'ok' o una chiusura qualsiasi): poi la storia è finita davvero
-        if (!st.dialogo) {
-          s.fase = 'finita';
-          s.ancora = { x: n.x, z: n.z };
-        }
+        // 'ok' o una chiusura qualsiasi): poi la storia è finita davvero.
+        // L'ancora non si riscrive: è già il bar, e se il pannello lo ha
+        // colto a due passi ci pensa la fase 'finita' a rimetterlo a posto.
+        if (!st.dialogo) s.fase = 'finita';
         continue;
       }
 
@@ -569,15 +638,7 @@ export function Quartiere() {
         ponte.disponibile = false;
         // faccia del quartiere: resta al suo posto (il pugno di un passante
         // o una spinta possono averlo mosso: rientra da solo)
-        const dA = Math.hypot(n.x - s.ancora.x, n.z - s.ancora.z);
-        if (dA > 1.5) {
-          n.stato = 'avvicina';
-          n.targetX = s.ancora.x;
-          n.targetZ = s.ancora.z;
-        } else if (n.stato !== 'fermo') {
-          n.stato = 'fermo';
-          n.timer = 5;
-        }
+        rientra(n, s.ancora);
         continue;
       }
 
@@ -599,9 +660,16 @@ export function Quartiere() {
           // (una meta riscritta ogni frame), fatto con lo stato 'avvicina'
           // dei fissi. Da vicino passa a 'chiede': tiene la distanza e ti
           // guarda — sta ripassando le scuse, mica ti pedina.
-          if (dG > 120) {
-            // seminato con un teleport o un'auto: lo si riporta accanto,
-            // com'è giusto per una scena e non per una maratona
+          if (st.mode !== 'piedi') {
+            // sei salito su un mezzo: lui ti ASPETTA lì dov'è. Inseguire
+            // un'auto a 2,6 m/s vuol dire restare indietro fino alla
+            // soglia del recupero e poi ricomparire accanto al finestrino,
+            // di nuovo e di nuovo: la scena si vedeva sfarfallare. La
+            // tappa è aPiedi, quindi in auto la q02 non avanza comunque.
+            n.stato = 'fermo';
+          } else if (dG > 120) {
+            // seminato con un teleport o una corsa in auto: lo si riporta
+            // accanto, com'è giusto per una scena e non per una maratona
             const p = puntoLibero(rt.persona.x + 1.5, rt.persona.z + 1.5);
             n.x = p.x;
             n.z = p.z;
@@ -618,15 +686,7 @@ export function Quartiere() {
           // giocatore, e la tappa del ritorno punta all'ANCORA — senza il
           // rientro la missione direbbe «riporta la spesa a Otello» con
           // Otello da tutt'altra parte
-          const dCasa = Math.hypot(n.x - s.ancora.x, n.z - s.ancora.z);
-          if (dCasa > 1.5) {
-            n.stato = 'avvicina';
-            n.targetX = s.ancora.x;
-            n.targetZ = s.ancora.z;
-          } else if (n.stato === 'avvicina' || n.stato === 'chiede') {
-            n.stato = 'fermo';
-            n.timer = 5;
-          }
+          rientra(n, s.ancora);
           if (dG < 8 && s.cooldownFumetto <= 0) {
             // ripassi di lì con la commissione in tasca: un promemoria
             s.cooldownFumetto = 20;
@@ -665,15 +725,7 @@ export function Quartiere() {
       // rientro all'ancora se qualcosa l'ha spostato (un pugno, un balzo
       // richiesto a mano): un volto fisso che deriva per la piazza è un
       // appuntamento che nessuno trova più
-      const dA = Math.hypot(n.x - s.ancora.x, n.z - s.ancora.z);
-      if (dA > 1.5) {
-        n.stato = 'avvicina';
-        n.targetX = s.ancora.x;
-        n.targetZ = s.ancora.z;
-      } else if (n.stato === 'avvicina') {
-        n.stato = 'fermo';
-        n.timer = 5;
-      }
+      rientra(n, s.ancora);
 
       // da vicino ti segue con lo sguardo (da fermo stepNpcs non ruota)
       if (dG < 12) {
@@ -693,7 +745,7 @@ export function Quartiere() {
 
       // l'apertura forzata del collaudo: un punto libero a due metri,
       // davanti al giocatore, così il pannello descrive uno che c'è
-      if (forza === chi && ponte.disponibile) {
+      if (forza === chi && aperta) {
         for (const giroAng of [0, 0.6, -0.6, 1.2, -1.2, 2, -2, Math.PI]) {
           const a = rt.persona.yaw + giroAng;
           const x = rt.persona.x + Math.cos(a) * 2.1;
