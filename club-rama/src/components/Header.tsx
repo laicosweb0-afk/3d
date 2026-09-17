@@ -1,5 +1,6 @@
 import { RamaLogo } from './RamaLogo';
 import { ProgressBar } from './ProgressBar';
+import { MuteButton } from './MuteButton';
 
 type Props = {
   passo: number;
@@ -28,9 +29,12 @@ export function Header({ passo, totale, mostraContatore = true, onIndietro }: Pr
           <RamaLogo size={22} title="Rama Ceramiche" />
           <span className="text-callout font-semibold tracking-[-0.01em]">Club Rama</span>
         </div>
-        {mostraContatore && (
-          <span className="text-footnote text-ink-soft tabular">{passo} di {totale}</span>
-        )}
+        <div className="flex items-center gap-1">
+          {mostraContatore && (
+            <span className="text-footnote text-ink-soft tabular">{passo} di {totale}</span>
+          )}
+          <MuteButton />
+        </div>
       </div>
       <ProgressBar passo={passo} totale={totale} />
     </header>

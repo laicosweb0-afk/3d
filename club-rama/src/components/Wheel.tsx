@@ -1,7 +1,8 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { SPICCHI, OUTCOME, GIRO } from '../config/game';
 import { tick as tickAptico } from '../lib/haptics';
-import { BARRE } from './RamaLogo';
+import { tick as tickSuono, fruscioRuota, sblocca } from '../lib/suono';
+import { TESSERE, INCLINAZIONE } from './RamaLogo';
 
 const N = SPICCHI.length;
 const PASSO = 360 / N;
@@ -54,6 +55,9 @@ export const Wheel = forwardRef<WheelHandle, Props>(function Wheel(
     if (giroFatto.current || disabilitata) return;
     giroFatto.current = true;
     setGirando(true);
+    // Siamo dentro un gesto dell'utente: è l'unico momento in cui iOS lascia
+    // svegliare l'audio.
+    sblocca();
 
     // Lo spicchio d'arrivo: quello imposto, o uno a caso.
     const candidati = OUTCOME === null
@@ -77,16 +81,27 @@ export const Wheel = forwardRef<WheelHandle, Props>(function Wheel(
     }
 
     let ultimo = spicchioSotto(0);
+    let angoloPrec = 0;
+    let deltaMax = 0;
+    const fruscio = fruscioRuota();
     const t0 = performance.now();
     const passo = (ora: number) => {
       const t = Math.min(1, (ora - t0) / GIRO.durata);
       const angolo = finale * percorso(t);
       if (ruotaRef.current) ruotaRef.current.style.transform = `rotate(${angolo}deg)`;
 
+      // Il fruscio segue la velocità vera, fotogramma per fotogramma: è questo
+      // a far sentire il peso della ruota, più dei singoli scatti.
+      const delta = angolo - angoloPrec;
+      angoloPrec = angolo;
+      if (delta > deltaMax) deltaMax = delta;
+      fruscio.aggiorna(deltaMax > 0 ? delta / deltaMax : 0);
+
       const corrente = spicchioSotto(angolo);
       if (corrente !== ultimo) {
         ultimo = corrente;
         tickAptico();
+        tickSuono();
         // La lancetta scatta all'indietro e rientra: la muovo fuori da React,
         // altrimenti sarebbero decine di render durante il giro.
         lancettaRef.current?.animate(
@@ -97,6 +112,7 @@ export const Wheel = forwardRef<WheelHandle, Props>(function Wheel(
 
       if (t < 1) requestAnimationFrame(passo);
       else {
+        fruscio.ferma();
         setGirando(false);
         setVinto(SPICCHI[bersaglio].valore);
         setIndiceVinto(bersaglio);
@@ -211,7 +227,11 @@ export const Wheel = forwardRef<WheelHandle, Props>(function Wheel(
         <circle cx={R} cy={R} r="21" fill="url(#perno)" />
         <circle cx={R} cy={R} r="21" fill="none" stroke="#8C6E27" strokeWidth=".7" opacity=".45" />
         <g transform={`translate(${R - 12.5} ${R - 12.5}) scale(0.78)`} fill="#1D1D1F">
-          {BARRE.map((d, i) => <path key={i} d={d} />)}
+          <g transform={INCLINAZIONE}>
+            {TESSERE.map((t, i) => (
+              <rect key={i} x={t.x} y={t.y} width={t.l} height={t.l} rx={t.r} />
+            ))}
+          </g>
         </g>
 
         <g ref={lancettaRef} style={{ transformOrigin: '100px 12px' }}>

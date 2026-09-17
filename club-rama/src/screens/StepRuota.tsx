@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Wheel, type WheelHandle } from '../components/Wheel';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { vittoria } from '../lib/haptics';
+import { vittoria as suonoVittoria } from '../lib/suono';
 
 export function StepRuota({ onVinto }: { onVinto: (valore: number) => void }) {
   const ruota = useRef<WheelHandle>(null);
@@ -22,6 +23,7 @@ export function StepRuota({ onVinto }: { onVinto: (valore: number) => void }) {
               setGirata(true);
               setRisultato(v);
               vittoria();
+              suonoVittoria();
               // Un respiro con la ruota ferma prima di passare alla rivelazione:
               // il premio si deve vedere dove è caduto.
               setTimeout(() => onVinto(v), 1150);

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { RamaLogo } from './RamaLogo';
 
 /**
  * La moneta del credito: gradiente d'oro con un riflesso che scorre lento,
@@ -31,12 +32,7 @@ export function CreditCoin({ size = 116, piccola = false }: { size?: number; pic
           animate={{ x: ['-120%', '120%'] }}
           transition={{ duration: 3.6, repeat: Infinity, repeatDelay: 1.4, ease: 'easeInOut' }}
         />
-        <svg width={size * 0.42} height={size * 0.42} viewBox="0 0 32 32" fill="#1D1D1F" aria-hidden
-          className="relative">
-          <path d="M10.6 4h5.2L11.4 28H6.2L10.6 4Z" />
-          <path d="M17.8 4H23l-4.4 24h-5.2L17.8 4Z" />
-          <path d="M24.6 4h3.2l-4.4 24h-3.2L24.6 4Z" opacity=".55" />
-        </svg>
+        <RamaLogo size={size * 0.44} variant="nero" className="relative text-ink" />
       </div>
     </motion.div>
   );

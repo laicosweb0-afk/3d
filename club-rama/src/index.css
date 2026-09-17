@@ -70,7 +70,7 @@
   .intro-benvenuto { font-size: 33px; text-align: center; padding: 0 40px; line-height: 1.16; }
 
   .intro-marchio {
-    position: absolute; top: calc(50% - 96px);
+    position: absolute; top: calc(50% - 112px);
     opacity: 0; transition: opacity .5s ease;
   }
   .intro-marchio.show { opacity: 1; }

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { tocco } from '../lib/suono';
 import type { ReactNode } from 'react';
 
 type Props = {
@@ -14,7 +15,7 @@ export function PrimaryButton({ children, onClick, disabled, loading, type = 'bu
   return (
     <motion.button
       type={type}
-      onClick={onClick}
+      onClick={() => { tocco(true); onClick?.(); }}
       disabled={spento}
       whileTap={spento ? undefined : { scale: 0.975 }}
       transition={{ type: 'spring', stiffness: 600, damping: 30 }}

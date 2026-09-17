@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { tocco } from '../lib/suono';
 
 type Voce<T extends string> = { id: T; etichetta: string };
 
@@ -14,7 +15,7 @@ export function SegmentedControl<T extends string>({
         return (
           <button
             key={v.id} type="button" role="radio" aria-checked={attiva}
-            onClick={() => onChange(v.id)}
+            onClick={() => { tocco(); onChange(v.id); }}
             className="relative flex-1 min-h-[40px] rounded-[11px] text-callout font-medium"
           >
             {attiva && (

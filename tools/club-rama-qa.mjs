@@ -9,6 +9,18 @@ const errori = [];
 p.on('pageerror', (e) => errori.push(`PAGE ERROR: ${e.message}`));
 p.on('console', (m) => { if (m.type() === 'error') errori.push(`CONSOLE: ${m.text()}`); });
 
+// Da qui non si sente niente, ma si può contare: se durante il giro non
+// nasce nessun nodo audio, i suoni non ci sono, per quanto il codice compili.
+await p.addInitScript(() => {
+  const w = window;
+  w.__audio = { osc: 0, buf: 0 };
+  const AC = w.AudioContext || w.webkitAudioContext;
+  if (!AC) return;
+  const o = AC.prototype.createOscillator, b = AC.prototype.createBufferSource;
+  AC.prototype.createOscillator = function () { w.__audio.osc++; return o.call(this); };
+  AC.prototype.createBufferSource = function () { w.__audio.buf++; return b.call(this); };
+});
+
 await p.goto(url, { waitUntil: 'networkidle' });
 await p.waitForTimeout(1500);
 await p.screenshot({ path: `${out}/0-hey.png` });
@@ -35,6 +47,7 @@ await p.getByRole('button', { name: 'Continua' }).click();
 await p.waitForTimeout(700);
 await p.screenshot({ path: `${out}/3-ruota.png` });
 
+const audioPrima = await p.evaluate(() => ({ ...window.__audio }));
 await p.getByRole('button', { name: 'Gira' }).click();
 await p.waitForTimeout(2200);
 await p.screenshot({ path: `${out}/3b-in-giro.png` });
@@ -60,6 +73,16 @@ await p.screenshot({ path: `${out}/5b-compilato.png` });
 await p.getByRole('button', { name: 'Ricevi il credito' }).click();
 await p.waitForTimeout(1600);
 await p.screenshot({ path: `${out}/6-fine.png` });
+
+const audioDopo = await p.evaluate(() => ({ ...window.__audio }));
+const tickProdotti = audioDopo.osc - audioPrima.osc;
+const fruscioProdotto = audioDopo.buf - audioPrima.buf;
+if (tickProdotti < 8) errori.push(`SUONO: solo ${tickProdotti} nodi durante il giro, gli scatti non suonano`);
+if (fruscioProdotto < 1) errori.push('SUONO: nessun fruscio della ruota');
+console.log('nodi audio durante il giro:', tickProdotti, 'oscillatori,', fruscioProdotto, 'sorgenti');
+
+const silenziatore = await p.getByRole('button', { name: /suoni/i }).count();
+if (silenziatore !== 1) errori.push(`SILENZIATORE: trovati ${silenziatore} comandi invece di 1`);
 
 const largheColonna = await p.evaluate(() => Math.round(document.querySelector('#root').getBoundingClientRect().width));
 if (largheColonna !== 390) errori.push(`COLONNA: larga ${largheColonna}px invece di 390`);

@@ -30,9 +30,13 @@ export function Intro({ onFine }: { onFine: () => void }) {
 
   return (
     <div className={`intro${uscita ? ' leaving' : ''}`} aria-hidden>
-      <span className={`intro-marchio${marchio ? ' show' : ''}`}>
-        <RamaLogo size={30} />
-      </span>
+      {/* Monta già visibile: la dissolvenza del contenitore sopra le
+          piastrelle che si posano faceva due sfumature sovrapposte. */}
+      {marchio && (
+        <span className="intro-marchio show">
+          <RamaLogo size={46} animato />
+        </span>
+      )}
       {hey !== 'via' && <span className={`intro-parola ${hey}`}>Hey.</span>}
       <span className={`intro-parola intro-benvenuto ${benvenuto}`}>
         Benvenuto da<br />Rama Ceramiche!

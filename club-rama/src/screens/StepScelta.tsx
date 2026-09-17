@@ -2,6 +2,7 @@ import { OptionCard } from '../components/OptionCard';
 import { PrimaryButton } from '../components/PrimaryButton';
 import type { Opzione } from '../config/game';
 import { tocco } from '../lib/haptics';
+import { tocco as suonoTocco } from '../lib/suono';
 
 type Props = {
   titolo: string;
@@ -23,7 +24,7 @@ export function StepScelta({ titolo, sottotitolo, opzioni, scelta, onScegli, onA
         {opzioni.map((o) => (
           <OptionCard
             key={o.id} etichetta={o.etichetta} scelta={scelta === o.id}
-            onClick={() => { tocco(); onScegli(o.id); }}
+            onClick={() => { tocco(); suonoTocco(); onScegli(o.id); }}
           />
         ))}
       </div>
