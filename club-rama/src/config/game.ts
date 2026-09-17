@@ -30,22 +30,58 @@ export const SPICCHI: Spicchio[] = [
 ];
 
 /**
- * Esito deciso in partenza. La ruota atterra su uno spicchio con questo
- * valore, in un punto leggermente casuale al suo interno perché non sembri
- * calcolato. Con `null` l'esito è davvero casuale.
+ * Gli esiti possibili e quanto spesso escono. Sopra i 70 non si va: i premi
+ * grossi stanno sulla ruota per farsi vedere e per far sudare, non per essere
+ * vinti. I pesi sono relativi, non percentuali: si possono cambiare a occhio
+ * senza rifare i conti perché tornino a cento.
  */
-export const OUTCOME: number | null = 70;
+export type Esito = { valore: number; peso: number };
+
+export const ESITI: Esito[] = [
+  { valore: 30, peso: 30 },
+  { valore: 50, peso: 35 },
+  { valore: 70, peso: 35 },
+];
+
+/**
+ * Per ogni esito, lo spicchio su cui fermarsi.
+ *
+ * Non è un dettaglio: gli spicchi arrivano sotto la lancetta in ordine
+ * decrescente, quindi la scelta dello spicchio decide *quale premio sfila via
+ * un attimo prima*. Il 70 sull'indice 1 si prende il 200 davanti; il 50
+ * sull'indice 3 si prende il 150; il 30 sull'indice 0 si prende il 70. Ogni
+ * esito ha così il suo quasi-premio, e nessun giro finisce piatto.
+ */
+export const SPICCHIO_PER_ESITO: Record<number, number> = { 30: 0, 50: 3, 70: 1 };
+
+/** Sorteggia il premio secondo i pesi. */
+export function sorteggiaEsito(): number {
+  const totale = ESITI.reduce((s, e) => s + e.peso, 0);
+  let r = Math.random() * totale;
+  for (const e of ESITI) {
+    r -= e.peso;
+    if (r <= 0) return e.valore;
+  }
+  return ESITI[ESITI.length - 1].valore;
+}
+
+/** Lo spicchio su cui atterrare per un dato premio. */
+export function spicchioPer(valore: number): number {
+  const scelto = SPICCHIO_PER_ESITO[valore];
+  if (scelto !== undefined && SPICCHI[scelto]?.valore === valore) return scelto;
+  const tutti = SPICCHI.map((s, i) => (s.valore === valore ? i : -1)).filter((i) => i >= 0);
+  return tutti[Math.floor(Math.random() * tutti.length)];
+}
 
 /**
  * Dove si posa la lancetta dentro lo spicchio vincente, misurato a partire
  * dal bordo che confina con lo spicchio precedente.
  *
- * Con valori bassi la ruota si ferma appena dentro, a un soffio dal premio
- * grosso appena sfilato: la tensione nasce da lì, dal punto d'arresto, non da
- * una pausa costruita. Una ruota vera non si ferma e riparte, e se lo fa si
- * vede subito che è finta.
- *
- * `null` posa la lancetta dove capita, come farebbe una ruota qualsiasi.
+ * Vale solo quando quello appena sfilato è il premio grosso: lì la ruota si
+ * posa appena dentro, a un soffio dal 200, e la tensione nasce dal punto
+ * d'arresto invece che da una pausa costruita. Una ruota vera non si ferma e
+ * riparte, e se lo fa si vede subito che è finta. Sugli altri esiti la
+ * lancetta si posa dove capita, in mezzo allo spicchio.
  */
 export const ARRESTO: { da: number; a: number } | null = { da: 0.14, a: 0.26 };
 
