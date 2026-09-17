@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Header } from './components/Header';
 import { Intro } from './components/Intro';
+import { StepVetrina } from './screens/StepVetrina';
 import { StepScelta } from './screens/StepScelta';
 import { StepRuota } from './screens/StepRuota';
 import { StepRivelazione } from './screens/StepRivelazione';
@@ -11,16 +12,20 @@ import { AMBIENTI, STILI, generaCodice, scadenza } from './config/game';
 import { submitLead, type Lead } from './lib/lead';
 import type { DatiModulo } from './components/LeadForm';
 
-type Fase = 'ambiente' | 'stile' | 'ruota' | 'rivelazione' | 'dati' | 'fine';
+type Fase = 'vetrina' | 'ambiente' | 'stile' | 'ruota' | 'rivelazione' | 'dati' | 'fine';
 
-/** I quattro passaggi dichiarati all'utente; rivelazione e fine non contano. */
+/**
+ * I quattro passaggi dichiarati all'utente; rivelazione e fine non contano.
+ * La vetrina sta prima del percorso: si guarda, non si compila, e mostrare
+ * "0 di 4" farebbe sembrare lunga una cosa che dura un tocco.
+ */
 const PASSO_DI: Record<Fase, number> = {
-  ambiente: 1, stile: 2, ruota: 3, rivelazione: 3, dati: 4, fine: 4,
+  vetrina: 0, ambiente: 1, stile: 2, ruota: 3, rivelazione: 3, dati: 4, fine: 4,
 };
 
 export default function App() {
   const [apertura, setApertura] = useState(true);
-  const [fase, setFase] = useState<Fase>('ambiente');
+  const [fase, setFase] = useState<Fase>('vetrina');
   const [avanti, setAvanti] = useState(true);
   const [ambiente, setAmbiente] = useState<string | null>(null);
   const [stile, setStile] = useState<string | null>(null);
@@ -74,11 +79,13 @@ export default function App() {
 
   const ricomincia = useCallback(() => {
     setAmbiente(null); setStile(null); setCredito(0); setLead(null); setErrore(null);
-    vai('ambiente', true);
+    vai('vetrina', true);
   }, [vai]);
 
   const schermata = useMemo(() => {
     switch (fase) {
+      case 'vetrina':
+        return <StepVetrina onAvanti={() => vai('ambiente')} />;
       case 'ambiente':
         return (
           <StepScelta
@@ -109,7 +116,8 @@ export default function App() {
   }, [fase, ambiente, stile, credito, lead, inCorso, errore, invia, vai, ricomincia]);
 
   const indietro =
-    fase === 'stile' ? () => vai('ambiente', true)
+    fase === 'ambiente' ? () => vai('vetrina', true)
+    : fase === 'stile' ? () => vai('ambiente', true)
     : fase === 'dati' ? () => vai('rivelazione', true)
     : undefined;
 
@@ -119,7 +127,7 @@ export default function App() {
     <div className="flex w-full flex-col" style={{ minHeight: '100dvh' }}>
       <Header
         passo={PASSO_DI[fase]} totale={4}
-        mostraContatore={fase !== 'fine'}
+        mostraContatore={fase !== 'vetrina' && fase !== 'fine'}
         onIndietro={indietro}
       />
 
