@@ -130,6 +130,18 @@ META_MODELLO=nuovo_contatto_club_rama
 META_LINGUA=it
 ```
 
+### Provarla senza configurare niente
+
+`api/lead.prova.mjs` esegue la funzione intercettando la rete: mostra il
+messaggio che arriverebbe su WhatsApp e verifica il caso che conta di più,
+cioè il fornitore giù e il cliente che non se ne accorge.
+
+```bash
+npx esbuild api/lead.ts --format=esm --platform=node --outfile=api/lead.js
+node api/lead.prova.mjs
+rm api/lead.js
+```
+
 ### In ogni caso
 
 - `ORIGINE_AMMESSA` va messo al dominio della pagina, altrimenti la funzione
