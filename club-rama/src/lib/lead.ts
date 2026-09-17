@@ -1,12 +1,13 @@
 export type Lead = {
   nome: string;
   email: string;
+  telefono: string;
   ambiente: string;
   stile: string;
   credito: number;
   codiceCredito: string;
   scadenza: string;
-  ritiro: 'negozio' | 'email';
+  ritiro: 'negozio' | 'email' | 'whatsapp';
   consensoMarketing: boolean;
   timestamp: string;
   sorgente: 'card-nfc';

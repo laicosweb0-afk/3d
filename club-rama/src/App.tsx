@@ -45,6 +45,7 @@ export default function App() {
     const nuovo: Lead = {
       nome: d.nome,
       email: d.email,
+      telefono: d.telefono,
       ambiente: etichetta(AMBIENTI, ambiente),
       stile: etichetta(STILI, stile),
       credito,

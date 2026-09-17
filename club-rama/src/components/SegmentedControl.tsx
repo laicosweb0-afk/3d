@@ -16,7 +16,7 @@ export function SegmentedControl<T extends string>({
           <button
             key={v.id} type="button" role="radio" aria-checked={attiva}
             onClick={() => { tocco(); onChange(v.id); }}
-            className="relative flex-1 min-h-[40px] rounded-[11px] text-callout font-medium"
+            className="relative flex-1 min-h-[40px] whitespace-nowrap rounded-[11px] px-1 text-footnote font-medium"
           >
             {attiva && (
               <motion.span layoutId="pastiglia" aria-hidden

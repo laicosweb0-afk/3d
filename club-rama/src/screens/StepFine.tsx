@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion';
 import { WalletCard } from '../components/WalletCard';
+import { PrimaryButton } from '../components/PrimaryButton';
+import { WHATSAPP_NEGOZIO, messaggioWhatsApp } from '../config/game';
 import type { Lead } from '../lib/lead';
 
 export function StepFine({ lead, onRicomincia }: { lead: Lead; onRicomincia: () => void }) {
@@ -29,6 +31,11 @@ export function StepFine({ lead, onRicomincia }: { lead: Lead; onRicomincia: () 
             Ti abbiamo mandato il codice a <span className="text-ink">{lead.email}</span>
           </p>
         )}
+        {lead.ritiro === 'whatsapp' && (
+          <p className="mt-2 text-body text-ink-soft">
+            Ti scriviamo su WhatsApp al <span className="text-ink">{lead.telefono}</span>
+          </p>
+        )}
       </div>
 
       <div className="mt-8">
@@ -42,6 +49,27 @@ export function StepFine({ lead, onRicomincia }: { lead: Lead; onRicomincia: () 
         <p className="mt-5 text-center text-callout text-ink-soft">
           Mostra questa schermata in negozio quando chiedi il preventivo.
         </p>
+      )}
+
+      {/* Invece di promettere un messaggio che nessuno spedisce, apriamo noi
+          la chat col codice già scritto: parte il cliente, e Rama si ritrova
+          la conversazione aperta. Compare solo se il numero è configurato. */}
+      {lead.ritiro === 'whatsapp' && WHATSAPP_NEGOZIO && (
+        <div className="mt-6">
+          <PrimaryButton
+            onClick={() => {
+              const testo = messaggioWhatsApp(
+                lead.nome, lead.credito, lead.codiceCredito, lead.ambiente,
+              );
+              window.open(
+                `https://wa.me/${WHATSAPP_NEGOZIO}?text=${encodeURIComponent(testo)}`,
+                '_blank', 'noopener,noreferrer',
+              );
+            }}
+          >
+            Scrivi a Rama su WhatsApp
+          </PrimaryButton>
+        </div>
       )}
 
       <div className="mt-auto pt-10">

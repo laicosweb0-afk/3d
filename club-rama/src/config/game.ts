@@ -30,6 +30,20 @@ export const VALIDITA_GIORNI = 90;
 /** Durata della rotazione in millisecondi e giri completi prima di fermarsi. */
 export const GIRO = { durata: 5200, giriMin: 6, giriMax: 8 };
 
+/**
+ * Il numero WhatsApp del negozio, in formato internazionale senza segni:
+ * per esempio 393331234567. Finché è vuoto, chi sceglie WhatsApp vede solo
+ * il messaggio di conferma; appena c'è un numero compare il bottone che apre
+ * la chat con il codice già scritto.
+ */
+export const WHATSAPP_NEGOZIO = '';
+
+/** Il messaggio che il cliente si ritrova già pronto nella chat. */
+export function messaggioWhatsApp(nome: string, credito: number, codice: string, ambiente: string): string {
+  return `Ciao, sono ${nome}. Ho il credito Club Rama da ${credito}€, codice ${codice}. ` +
+    `Vorrei un preventivo per ${ambiente.toLowerCase()}.`;
+}
+
 export type Opzione = { id: string; etichetta: string; nota?: string };
 
 export const AMBIENTI: Opzione[] = [

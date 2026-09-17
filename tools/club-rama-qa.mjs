@@ -67,6 +67,7 @@ await p.screenshot({ path: `${out}/5-dati.png` });
 
 await p.fill('#nome', 'Giulia Bassi');
 await p.fill('#email', 'giulia@esempio.it');
+await p.fill('#telefono', '333 481 2290');
 await p.getByRole('radio', { name: 'In negozio' }).click();
 await p.waitForTimeout(400);
 await p.screenshot({ path: `${out}/5b-compilato.png` });
@@ -86,6 +87,14 @@ if (silenziatore !== 1) errori.push(`SILENZIATORE: trovati ${silenziatore} coman
 
 const largheColonna = await p.evaluate(() => Math.round(document.querySelector('#root').getBoundingClientRect().width));
 if (largheColonna !== 390) errori.push(`COLONNA: larga ${largheColonna}px invece di 390`);
+
+// Il modulo ha tre campi e tre segmenti: se cresce oltre la schermata, il
+// bottone finisce sotto la piega e nessuno lo trova.
+const scorreIlModulo = await p.evaluate(() => {
+  const m = document.querySelector('main');
+  return m ? m.scrollHeight - m.clientHeight : 0;
+});
+if (scorreIlModulo > 0) errori.push(`MODULO: sborda di ${scorreIlModulo}px in altezza`);
 
 const overflow = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 console.log('credito rivelato:', credito);
