@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { RamaLogo } from './RamaLogo';
+import { apertura, pronto, sblocca } from '../lib/suono';
 
 /**
  * L'apertura: "Hey." e poi "Benvenuto da Rama Ceramiche!", com'era nella
@@ -20,7 +21,13 @@ export function Intro({ onFine }: { onFine: () => void }) {
     const t = [
       setTimeout(() => setHey('show'), 1000),
       setTimeout(() => setHey('hide'), 2350),
-      setTimeout(() => { setHey('via'); setMarchio(true); setBenvenuto('show'); }, 2650),
+      setTimeout(() => {
+        setHey('via'); setMarchio(true); setBenvenuto('show');
+        // Suona solo se qualcuno ha già toccato lo schermo: prima di un
+        // gesto iOS non lascia svegliare l'audio, e il tintinnio andrebbe
+        // sprecato nel silenzio.
+        if (pronto()) apertura();
+      }, 2650),
       setTimeout(() => setBenvenuto('hide'), 4400),
       setTimeout(() => setUscita(true), 4700),
       setTimeout(onFine, 5300),
@@ -29,7 +36,13 @@ export function Intro({ onFine }: { onFine: () => void }) {
   }, [onFine]);
 
   return (
-    <div className={`intro${uscita ? ' leaving' : ''}`} aria-hidden>
+    <div
+      className={`intro${uscita ? ' leaving' : ''}`}
+      aria-hidden
+      // Un dito appoggiato sullo schermo durante l'apertura basta a
+      // sbloccare l'audio: chi tocca, sente.
+      onPointerDown={() => { const gia = pronto(); sblocca(); if (!gia && marchio) apertura(); }}
+    >
       {/* Monta già visibile: la dissolvenza del contenitore sopra le
           piastrelle che si posano faceva due sfumature sovrapposte. */}
       {marchio && (

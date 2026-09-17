@@ -37,28 +37,25 @@ export const SPICCHI: Spicchio[] = [
 export const OUTCOME: number | null = 70;
 
 /**
- * La frenata in due tempi: la ruota si ferma quasi del tutto sullo spicchio
- * che precede il bersaglio, resta lì un istante, poi scivola avanti di uno
- * scatto e si posa. Serve a far credere, per un secondo, che stia per uscire
- * il premio grosso.
+ * Dove si posa la lancetta dentro lo spicchio vincente, misurato a partire
+ * dal bordo che confina con lo spicchio precedente.
  *
- * Vale solo se lo spicchio che precede è marcato `speciale`. Con OUTCOME a
- * `null` non entra mai in gioco: se l'esito è davvero casuale, la suspense
- * costruita non avrebbe senso.
+ * Con valori bassi la ruota si ferma appena dentro, a un soffio dal premio
+ * grosso appena sfilato: la tensione nasce da lì, dal punto d'arresto, non da
+ * una pausa costruita. Una ruota vera non si ferma e riparte, e se lo fa si
+ * vede subito che è finta.
+ *
+ * `null` posa la lancetta dove capita, come farebbe una ruota qualsiasi.
  */
-export const QUASI = true;
+export const ARRESTO: { da: number; a: number } | null = { da: 0.14, a: 0.26 };
 
 /** Giorni di validità del credito, contati dal giorno del ritiro. */
 export const VALIDITA_GIORNI = 90;
 
 /** Durata della rotazione in millisecondi e giri completi prima di fermarsi. */
 export const GIRO = {
-  /** La corsa vera e propria, fino a un soffio dal bersaglio. */
-  durata: 4300,
-  /** Il respiro col premio grosso fermo sotto la lancetta. */
-  pausa: 430,
-  /** Lo scatto finale che scopre il premio vero. */
-  scivolo: 980,
+  /** Durata dell'unica decelerazione, dal lancio all'arresto. */
+  durata: 5400,
   giriMin: 6,
   giriMax: 8,
 };

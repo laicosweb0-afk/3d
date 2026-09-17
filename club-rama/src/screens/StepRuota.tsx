@@ -24,9 +24,9 @@ export function StepRuota({ onVinto }: { onVinto: (valore: number) => void }) {
               setRisultato(v);
               vittoria();
               suonoVittoria();
-              // Un respiro con la ruota ferma prima di passare alla rivelazione:
-              // il premio si deve vedere dove è caduto.
-              setTimeout(() => onVinto(v), 1150);
+              // Il tempo di vedere dove si è posata, non uno di più: la coda
+              // della frenata ha già regalato mezzo secondo di ruota immobile.
+              setTimeout(() => onVinto(v), 750);
             }}
           />
         </div>

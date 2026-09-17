@@ -1,5 +1,5 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { SPICCHI, OUTCOME, GIRO, QUASI } from '../config/game';
+import { SPICCHI, OUTCOME, GIRO, ARRESTO } from '../config/game';
 import { tick as tickAptico } from '../lib/haptics';
 import { tick as tickSuono, fruscioRuota, sblocca } from '../lib/suono';
 import { TESSERE, INCLINAZIONE } from './RamaLogo';
@@ -26,27 +26,13 @@ const testoSu = (i: number) => (SCURE.has(tintaDi(i)) ? '#FBFAF7' : '#1D1D1F');
  * continue nel punto di raccordo — è quello che fa sembrare la ruota pesante
  * invece che tirata da un'animazione.
  */
-const A = 0.12;
-const TOT = A / 2 + (1 - A) / 4;
+const A = 0.09;
+const E = 3.4; // più alto, più lunga la coda: gli ultimi gradi durano
+const TOT = A / 2 + (1 - A) / (E + 1);
 function percorso(t: number): number {
   if (t <= A) return t * t / (2 * A) / TOT;
   const u = (t - A) / (1 - A);
-  return (A / 2 + ((1 - A) / 4) * (1 - Math.pow(1 - u, 4))) / TOT;
-}
-
-/**
- * L'angolo nei tre tempi della frenata: corsa fino a un soffio dal bersaglio,
- * respiro fermo, scatto finale. Lo scivolo usa un'accelerazione dolce e una
- * frenata dolce, così l'ultimo scatto sembra la ruota che cede di un dente,
- * non un salto.
- */
-function angoloConSuspense(trascorso: number, quasi: number, finale: number): number {
-  if (trascorso <= GIRO.durata) return quasi * percorso(trascorso / GIRO.durata);
-  const dopo = trascorso - GIRO.durata;
-  if (dopo <= GIRO.pausa) return quasi;
-  const u = Math.min(1, (dopo - GIRO.pausa) / GIRO.scivolo);
-  const dolce = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
-  return quasi + (finale - quasi) * dolce;
+  return (A / 2 + ((1 - A) / (E + 1)) * (1 - Math.pow(1 - u, E + 1))) / TOT;
 }
 
 /** Indice dello spicchio fermo sotto la lancetta per una data rotazione. */
@@ -85,18 +71,21 @@ export const Wheel = forwardRef<WheelHandle, Props>(function Wheel(
     const bersaglio = candidati[Math.floor(Math.random() * candidati.length)];
 
     // Non al centro esatto dello spicchio: un po' fuori asse sembra naturale.
-    const sbavatura = (Math.random() - 0.5) * PASSO * 0.62;
     const giri = GIRO.giriMin + Math.floor(Math.random() * (GIRO.giriMax - GIRO.giriMin + 1));
-    const finale = giri * 360 + (360 - bersaglio * PASSO) + sbavatura;
 
-    // Lo spicchio che sfila un attimo prima del bersaglio: se è quello grosso,
-    // la ruota ci si ferma quasi sopra prima di scoprire il premio vero.
-    const precedente = (bersaglio + 1) % N;
-    const conSuspense = QUASI && OUTCOME !== null && !!SPICCHI[precedente].speciale;
-    const quasi = finale - PASSO;
-    const durataTotale = conSuspense
-      ? GIRO.durata + GIRO.pausa + GIRO.scivolo
-      : GIRO.durata;
+    /*
+     * Dove si posa la lancetta dentro lo spicchio. Gli spicchi arrivano in
+     * ordine decrescente di indice, quindi il bordo appena superato è quello
+     * verso lo spicchio precedente: uno scostamento negativo lascia la
+     * lancetta lì accanto, appena dentro. È tutto qui l'effetto — nessuna
+     * pausa, nessuno scatto, solo un punto d'arresto scelto bene.
+     */
+    const dentro = ARRESTO
+      ? ARRESTO.da + Math.random() * (ARRESTO.a - ARRESTO.da)
+      : Math.random();
+    const scostamento = (0.5 - dentro) * PASSO * -1;
+    const finale = giri * 360 + (360 - bersaglio * PASSO) + scostamento;
+    const durataTotale = GIRO.durata;
 
     const ridotto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (ridotto) {
@@ -116,7 +105,7 @@ export const Wheel = forwardRef<WheelHandle, Props>(function Wheel(
     const passo = (ora: number) => {
       const trascorso = ora - t0;
       const t = Math.min(1, trascorso / durataTotale);
-      const angolo = conSuspense ? angoloConSuspense(trascorso, quasi, finale) : finale * percorso(t);
+      const angolo = finale * percorso(t);
       if (ruotaRef.current) ruotaRef.current.style.transform = `rotate(${angolo}deg)`;
 
       // Il fruscio segue la velocità vera, fotogramma per fotogramma: è questo

@@ -27,9 +27,9 @@ Tutto sta in `src/config/game.ts`, non serve aprire altro.
 |---|---|---|
 | Spicchi della ruota | `SPICCHI` | In senso orario. Cambiarne il numero è lecito: la ruota si ridisegna da sé. |
 | Esito | `OUTCOME` | `70` fa atterrare la ruota su uno spicchio da 70€, in un punto casuale al suo interno. Con `null` l'esito è davvero casuale. |
-| Frenata in due tempi | `QUASI` | Con `true` la ruota si ferma quasi del tutto sullo spicchio che precede il bersaglio, respira, poi scivola avanti di uno scatto. Funziona solo se quello spicchio è marcato `speciale`. |
+| Punto d'arresto | `ARRESTO` | Dove si posa la lancetta dentro lo spicchio vincente, misurato dal bordo appena superato. Valori bassi la lasciano a un soffio dal premio grosso appena sfilato. `null` la posa dove capita. |
 | Validità del credito | `VALIDITA_GIORNI` | La scadenza è calcolata dal giorno del ritiro. |
-| Durata e giri | `GIRO` | `durata` è la corsa fino a un soffio dal bersaglio, `pausa` il respiro sul premio grosso, `scivolo` lo scatto finale. |
+| Durata e giri | `GIRO` | Millisecondi dell'unica decelerazione e numero di giri completi. |
 | Domande e risposte | `AMBIENTI`, `STILI` | Testi delle due schermate iniziali. |
 
 L'importo mostrato **è quello vinto sulla ruota**: non esiste un secondo
@@ -79,6 +79,14 @@ profilo di velocità scritto a mano: rampa breve in accelerazione e frenata
 lunga, con velocità continua nel punto di raccordo. Serve perché la lancetta
 scatti e la vibrazione parta esattamente quando uno spicchio passa sotto,
 cosa impossibile se non si conosce l'angolo a ogni fotogramma.
+
+La frenata è **una sola curva continua**. Una prima versione si fermava sullo
+spicchio precedente, faceva una pausa e scattava avanti: si vedeva subito che
+era finta, perché una ruota vera non si ferma e riparte. La tensione viene
+invece dal punto d'arresto — la lancetta si posa a sei o sette gradi dal
+bordo del premio grosso appena sfilato, e negli ultimi mille millesimi
+striscia dentro lo spicchio vincente senza mai fermarsi. Misurato: gli ultimi
+567 millesimi sono impercettibili, il resto si vede muovere.
 
 `#root` ha una larghezza esplicita in `index.css`. Senza, il flex del body lo
 stringe sulla larghezza del contenuto e le schermate con poco testo escono
