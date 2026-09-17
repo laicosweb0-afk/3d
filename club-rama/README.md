@@ -65,12 +65,88 @@ Senza configurazione è un invio simulato: aspetta 800ms e scrive in console.
 Per mandarlo davvero, crea un file `.env.local`:
 
 ```
-VITE_LEAD_WEBHOOK_URL=https://esempio.it/contatti
+VITE_LEAD_WEBHOOK_URL=/api/lead
 ```
 
 Da quel momento il contatto parte in POST JSON a quell'indirizzo. Se il
 server risponde male, la schermata lo dice e lascia riprovare **senza
 perdere quello che il cliente ha già scritto**.
+
+## Ricevere i contatti su WhatsApp
+
+`api/lead.ts` è la funzione che prende il contatto e lo gira su WhatsApp.
+Gira su Vercel, accanto alla pagina.
+
+### Perché non basta la pagina
+
+La chiave del servizio WhatsApp **non può stare nella pagina**. Una pagina è
+pubblica: chiunque apre il sorgente la legge, e da quel momento può spedire
+messaggi a nome di Rama, a chi vuole. La chiave sta nella funzione, in una
+variabile d'ambiente che il browser non vede mai. Non è un dettaglio
+architetturale: è la ragione per cui la funzione esiste.
+
+### Il muro delle 24 ore
+
+WhatsApp non lascia scrivere a chi vuoi quando vuoi. Un'azienda può mandare
+testo libero **solo nelle 24 ore dopo un messaggio del destinatario**; fuori
+da quella finestra servono **modelli approvati da Meta** uno per uno. Vale per
+tutti i fornitori, non è un limite di Twilio o di chicchessia.
+
+Da qui le due strade, ed è il motivo per cui la funzione ne supporta due.
+
+### Per provare oggi: Twilio sandbox
+
+Il sandbox di Twilio salta modelli e numero dedicato. Si entra mandando una
+parola di attivazione al loro numero dal proprio WhatsApp, e da lì si ricevono
+messaggi liberi. Serve per vedere la catena funzionare, non per la produzione.
+
+```
+PROVIDER=twilio
+DESTINATARIO=39XXXXXXXXXX
+TWILIO_SID=...
+TWILIO_TOKEN=...
+TWILIO_MITTENTE=14155238886
+```
+
+### Per la produzione: Meta WhatsApp Cloud API
+
+Serve un account Meta Business, un numero **dedicato** al mittente (non un
+numero già su WhatsApp normale) e un modello approvato con **una sola
+variabile nel corpo** — gli a capo nelle variabili non sono ammessi, per
+questo il riepilogo viaggia su una riga sola.
+
+Il modello, in categoria "utility", può essere semplice quanto:
+
+```
+Nuovo contatto Club Rama: {{1}}
+```
+
+```
+PROVIDER=meta
+DESTINATARIO=39XXXXXXXXXX
+META_TOKEN=...
+META_NUMERO_ID=...
+META_MODELLO=nuovo_contatto_club_rama
+META_LINGUA=it
+```
+
+### In ogni caso
+
+- `ORIGINE_AMMESSA` va messo al dominio della pagina, altrimenti la funzione
+  accetta chiamate da qualunque sito.
+- Il contatto finisce **sempre** nei log della funzione, anche se WhatsApp
+  fallisce: non si perde, si recupera dalla dashboard di Vercel. I log però
+  scadono — se i contatti contano davvero, il passo dopo è scriverli in un
+  foglio o in un database.
+- Se WhatsApp fallisce la pagina risponde comunque `ok`: chi ha compilato non
+  deve vedere un errore per un problema che non è suo.
+
+### Dati di clienti veri
+
+Da qui in avanti passano nome, email e telefono di persone vere, verso un
+fornitore straniero. Serve un'informativa privacy raggiungibile dal modulo —
+oggi il link punta a un segnaposto — e la casella di destinazione va spostata
+su un numero di Rama, non su quello di chi ha costruito il prototipo.
 
 ## Scelte che vale la pena conoscere
 
