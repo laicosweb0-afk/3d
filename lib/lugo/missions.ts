@@ -290,9 +290,28 @@ export function registraDinamica(m: Missione): void {
   DINAMICHE.delete(m.id);
   DINAMICHE.set(m.id, m);
   if (DINAMICHE.size > 40) {
-    const primo = DINAMICHE.keys().next().value;
-    if (primo && primo !== m.id) DINAMICHE.delete(primo);
+    // Si sfratta il più vecchio, ma MAI la missione che si sta giocando.
+    // Reinserirla al momento giusto non bastava: un turno di lavoro appena
+    // cominciato è il più vecchio della mappa dopo poche altre dinamiche, e
+    // sfrattarlo lo faceva evaporare dal registro — il frame successivo non
+    // lo ritrovava più e lo archiviava, col turno che spariva senza pagare.
+    // Vale per chiunque: quaranta dinamiche si accumulano anche giocando.
+    for (const chiave of DINAMICHE.keys()) {
+      if (chiave === m.id || chiave === protetta) continue;
+      DINAMICHE.delete(chiave);
+      break;
+    }
   }
+}
+
+/**
+ * L'id della missione in corso: chi la conosce (la macchina delle missioni,
+ * a ogni frame) lo dichiara qui, e lo sfratto del registro la salta.
+ */
+let protetta: string | null = null;
+
+export function proteggiDinamica(id: string | null): void {
+  protetta = id;
 }
 
 let contatoreConsegne = 0;

@@ -14,6 +14,7 @@ import {
   missioneById,
   pontePrimoIncontro,
   posTappa,
+  proteggiDinamica,
   prossimaMissione,
   registraAttivitaConMissioni,
   storiaFinita,
@@ -257,6 +258,11 @@ export function Missioni() {
     const dt = Math.min(dtRaw, 0.05);
     const s = useLugo.getState();
     if (s.fase !== 'gioco') return;
+
+    // Chi sta giocando una dinamica lo sa solo qui: dichiararlo al registro
+    // la mette al riparo dallo sfratto per anzianità, che altrimenti se la
+    // porta via proprio mentre la stai facendo.
+    proteggiDinamica(s.statoMissione === 'attiva' ? s.missioneId : null);
 
     if (s.statoMissione === 'attiva' && s.missioneId) {
       const m = missioneById(s.missioneId);
