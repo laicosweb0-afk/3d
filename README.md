@@ -13,6 +13,7 @@ Un unico piano sequenza: il visitatore assiste alla trasformazione di uno spazio
 | [DIRECTION_V4.md](./DIRECTION_V4.md) | Il reale come protagonista: le finestre di realtà nel viaggio |
 | [TECH_ARCHITECTURE.md](./TECH_ARCHITECTURE.md) | Architettura tecnica e milestone |
 | [PORTFOLIO.md](./PORTFOLIO.md) | La pagina `/portfolio/`: come si aggiorna |
+| [CLUB-RAMA.md](./CLUB-RAMA.md) | La landing `/club/` della card NFC di Rama Ceramiche: messa online e dominio |
 
 ## Stato
 

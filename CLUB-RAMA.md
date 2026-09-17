@@ -1,0 +1,165 @@
+# Club Rama — la landing della card NFC
+
+Pagina dedicata alla card NFC fisica di **Rama Ceramiche** (showroom di
+piastrelle a Lugo, RA). Il cliente appoggia il telefono sulla card, si apre
+questo link, parte l'animazione di apertura e poi il mini-quiz di quattro
+domande che si chiude con un codice sconto da mostrare in negozio o ricevere
+via email.
+
+- **File**: `public/club/index.html` — un solo file, 165 KB, invariato
+  rispetto alla versione approvata.
+- **Zero dipendenze esterne**: nessun font da Google, nessuna immagine
+  separata, nessuno script di terze parti. La foto dello showroom è dentro il
+  CSS in base64 e i caratteri sono quelli di sistema (SF Pro su iPhone). La
+  pagina funziona anche senza rete dopo il primo caricamento.
+- **Tutto client-side**: il form finale **non salva niente e non manda
+  nessuna email**. Il codice `RAMA70-XXXX` è generato a caso nel browser.
+  Collegare un CRM o l'invio email è un passo successivo, da decidere a parte.
+
+Sta in `public/` come il portfolio (`PORTFOLIO.md`): è una cartella statica
+che viaggia insieme al repo senza entrare nel sito di Mondial Service.
+L'export di Next la copia così com'è.
+
+## 1. Indirizzo di collaudo (online)
+
+Il workflow `deploy.yml` pubblica la pagina su GitHub Pages a ogni push su
+`main`. È online qui:
+
+    https://laicosweb0-afk.github.io/3d/club/
+
+Serve per provarla dal telefono e per farla vedere, non per le card: è un
+indirizzo in prestito, e il giorno che si cambia hosting muore. Sulle card va
+`club.ramastore.it`, che resta nostro qualunque cosa ci sia sotto.
+
+Su questo indirizzo il `robots.txt` del sito non vale (Pages serve il suo,
+alla radice del dominio): la pagina è raggiungibile da chiunque abbia il link.
+Senza link in ingresso è di fatto invisibile, ma tenerlo presente.
+
+## 2. Il sottodominio su Vercel
+
+Questi passi richiedono il tuo account Vercel e il pannello DNS del dominio:
+non sono automatizzabili da qui.
+
+### 2.1 Il progetto Vercel
+
+Su [vercel.com](https://vercel.com) (registrazione con l'account GitHub, il
+piano Hobby basta e costa zero), **Add New → Project**, importa
+`laicosweb0-afk/3d` e imposta:
+
+| Campo | Valore |
+|---|---|
+| Framework Preset | **Other** |
+| Root Directory | **`public/club`** |
+| Build Command | vuoto (spunta "Override" e lascialo vuoto) |
+| Output Directory | **`.`** |
+| Install Command | vuoto (Override) |
+| Production Branch | `main` |
+
+Con Root Directory su `public/club` Vercel ignora tutto il resto del repo:
+non fa la build di Next, pubblica solo quel file. `public/club/vercel.json`
+è già nel repo e fissa queste impostazioni insieme agli header della
+risposta (la pagina non viene messa in cache dai browser, così se un giorno
+la aggiorni la card mostra subito la versione nuova). Accanto c'è anche un
+`robots.txt` che tiene la pagina fuori da Google: si raggiunge toccando la
+card, non cercandola, e una pagina orfana a nome Rama Ceramiche in giro per
+l'indice non serve. Se la vuoi indicizzabile, cancella quel file.
+
+Al primo deploy Vercel dà un indirizzo tipo `club-rama.vercel.app`: da lì la
+pagina è già online e provabile.
+
+### 2.2 Il dominio
+
+In **Project → Settings → Domains** aggiungi `club.ramastore.it`.
+Vercel risponde con il record da creare.
+
+Nel pannello DNS del dominio aggiungi **un solo record**:
+
+    Tipo    CNAME
+    Nome    club
+    Valore  cname.vercel-dns.com
+
+Copia il valore **esatto** che ti mostra Vercel in quella schermata: negli
+ultimi anni ha cambiato più volte l'host di destinazione, quindi vale quello
+a schermo, non quello scritto qui.
+
+Il sito principale non si tocca: i record del dominio nudo
+(`ramastore.it`) e di `www` restano dove sono e continuano a puntare
+dove puntano adesso. Un CNAME su `club` riguarda solo `club`.
+
+Dopo la propagazione (di solito pochi minuti, fino a un'ora) Vercel emette
+da sé il certificato HTTPS. Quando la spunta verde compare in Domains, il
+link è quello da scrivere sulla card.
+
+### Il connettore Vercel di Claude
+
+Collegato, ma a metà: lascia caricare file direttamente (`deploy_to_vercel`)
+e non lascia creare progetti agganciati a Git — Vercel risponde 403,
+*"You must re-authenticate to this scope"* sullo scope `laicosweb0-5609`.
+Si sblocca scollegando e ricollegando Vercel dalle impostazioni connettori di
+claude.ai, concedendo l'accesso a quello scope.
+
+Caricare i file a mano non è una via d'uscita: l'88% della pagina è la foto in
+base64, 148.772 caratteri, troppi per passare in una chiamata e troppo fragili
+da ricopiare. Il file deve arrivare a Vercel da Git.
+
+### Se invece preferisci Netlify
+
+Stessa logica: **Add new site → Import an existing project**, base directory
+`public/club`, nessun comando di build, publish directory `public/club`.
+Poi **Domain management → Add a domain**, e nel DNS un CNAME `club` →
+`<nome-sito>.netlify.app`. Vale lo stesso discorso: il sito principale
+resta intatto.
+
+## 3. Controllo su telefono
+
+Lo script ripercorre tutte e sette le schermate su un viewport da iPhone e
+salva uno screenshot per ciascuna:
+
+```bash
+node tools/static-server.mjs public 8932 &
+node tools/club-mobile.mjs <cartella-screenshot>
+```
+
+Fallisce con codice 1 se una schermata non è quella attesa, se il credito non
+arriva a 70 €, se il codice finale è malformato, se c'è overflow orizzontale
+o se la pagina prova a chiamare qualcosa fuori dal server locale.
+
+Resta comunque da fare un giro sulla card fisica vera, con un iPhone e un
+Android: il tocco NFC e il browser in-app (quello che si apre dal lettore
+NFC di sistema) sono l'unico pezzo che non si può simulare da qui.
+
+## 4. Il QR
+
+La card è NFC, ma un QR serve lo stesso: per provarla senza avvicinare il
+telefono, e per la vetrina o un volantino, dove chi passa inquadra e basta.
+
+```bash
+pip install segno
+python3 tools/qr.py https://club.ramastore.it club-qr            # colori del marchio
+python3 tools/qr.py https://club.ramastore.it club-qr --neutro   # nero su bianco
+```
+
+Escono un PNG (schermo) e un SVG (stampa, scala senza sgranare). Il codice è
+generato con correzione d'errore alta, così regge graffi, pieghe e una stampa
+storta. Da rifare ogni volta che cambia l'indirizzo: il QR contiene l'URL in
+chiaro, non un redirect.
+
+Per la tipografia conviene la versione `--neutro`: il nero pieno su bianco è
+quello che i lettori sbagliano meno, e su carta il contrasto del crema non è
+garantito come a schermo.
+
+## 5. Il marchio a tessere
+
+Nella schermata di benvenuto e dentro la moneta del credito il marchio dorato
+non compariva: le regole delle tessere sono scritte per `.rama-mark .tiles`,
+ma quei due contenitori erano `.welcome-mark` e `.coin`, senza quella classe.
+Aggiunta `rama-mark` a entrambi — due parole nell'HTML, nessun testo, colore,
+font o passaggio del quiz toccato: compare solo quello che il CSS già
+prevedeva. Nelle intestazioni delle altre schermate e nell'apertura il
+marchio si vedeva già da prima.
+
+Resta un dettaglio minore: la pagina non dichiara nessuna icona, quindi il
+browser chiede `/favicon.ico` e prende un 404. In Safari resta l'iconcina
+generica e, se qualcuno aggiunge il link alla schermata Home, l'icona è
+vuota. Si risolve con un `apple-touch-icon.png` accanto al file, senza
+toccare l'HTML.
