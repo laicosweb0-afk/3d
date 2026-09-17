@@ -17,5 +17,11 @@
     "paths": { "@/*": ["./*"] }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    // club-rama/ e' un progetto Vite a se': ha il suo tsconfig, le sue
+    // dipendenze e un altro jsx. Lasciarlo dentro a questo include lo fa
+    // controllare col compilatore sbagliato e la build di Next fallisce.
+    "club-rama"
+  ]
 }
