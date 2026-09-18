@@ -94,7 +94,7 @@ export default function App() {
   const schermata = useMemo(() => {
     switch (fase) {
       case 'avvio':
-        return <StepAvvio domande={fragranza.domande.length} onAvanti={() => vai('quiz')} />;
+        return <StepAvvio fragranza={fragranza} onAvanti={() => vai('quiz')} />;
       case 'quiz':
         return (
           <StepQuiz

@@ -12,9 +12,10 @@ import { chromium } from 'playwright-core';
 
 const out = process.argv[2];
 const url = process.argv[3] || 'http://localhost:8934/';
-// Notte Aurea: bergamotto (testa), gelsomino (cuore), vaniglia (fondo).
-// La seconda si sbaglia apposta, per vedere anche lo stato rosso.
-const RISPOSTE = ['Bergamotto', 'Rosa damascena', 'Vaniglia e ambra'];
+// Notte Aurea: agrumi (testa), fiori bianchi (cuore), vaniglia (fondo).
+// La seconda si sceglie diversa apposta, per vedere che cosa dice la card a
+// chi non l'ha presa — che è il punto: non deve dire «sbagliato».
+const RISPOSTE = ['Agrumi', 'Rosa', 'Vaniglia'];
 const GIUSTE_ATTESE = 2;
 const CREDITO_ATTESO = '15';
 
@@ -67,6 +68,10 @@ if (!(await p.getByText(/indovinare le fragranze/i).count())) {
 await p.getByRole('button', { name: 'Comincia' }).click();
 await p.waitForTimeout(700);
 
+// Le parole che questa card non deve mai dire a chi ha scelto un'altra nota.
+const VIETATE = /sbagliat|errat|non c.eri|hai perso|purtroppo/i;
+const bocciature = [];
+
 for (let i = 0; i < RISPOSTE.length; i++) {
   await scatto(`2-nota-${i + 1}`);
   await p.getByRole('radio', { name: RISPOSTE[i] }).click();
@@ -75,6 +80,11 @@ for (let i = 0; i < RISPOSTE.length; i++) {
   await p.waitForTimeout(500);
   await scatto(`2-nota-${i + 1}-esito`);
   await colonna(`sulla nota ${i + 1}`);
+  {
+    const testo = (await p.locator('main').innerText()).replace(/\s+/g, ' ');
+    const trovata = testo.match(VIETATE);
+    if (trovata) bocciature.push(`«${trovata[0]}» alla nota ${i + 1}`);
+  }
   const avanti = i + 1 === RISPOSTE.length ? /Vedi com/ : /Prossima nota/;
   await p.getByRole('button', { name: avanti }).click();
   await p.waitForTimeout(650);
@@ -84,9 +94,16 @@ for (let i = 0; i < RISPOSTE.length; i++) {
 // va presa a sipario alzato, non a metà dissolvenza.
 await p.waitForTimeout(1200);
 await scatto('3-esito');
-const punteggio = (await p.locator('main .tabular').first().textContent())?.trim();
+const chiosa = (await p.locator('main p', { hasText: /\d+ su \d+/ }).last().textContent())?.trim() ?? '';
+const punteggio = chiosa.match(/(\d+) su (\d+)/)?.[1];
 if (punteggio !== String(GIUSTE_ATTESE)) {
-  errori.push(`PUNTEGGIO: ${punteggio} invece di ${GIUSTE_ATTESE}`);
+  errori.push(`PUNTEGGIO: «${chiosa}» invece di ${GIUSTE_ATTESE} su ${RISPOSTE.length}`);
+}
+
+// Il patto di questa card: da qui non si esce bocciati. Nessuna schermata
+// del quiz deve aver detto «sbagliato», e la crocetta rossa non esiste più.
+if (bocciature.length) {
+  errori.push(`TONO: il quiz ha detto ${bocciature.join(' / ')}`);
 }
 if (!(await p.getByText('Notte Aurea').count())) {
   errori.push('ESITO: la fragranza non viene svelata');

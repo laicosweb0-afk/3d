@@ -68,7 +68,13 @@ export const GIRO = {
 /* Il quiz delle fragranze                                             */
 /* ------------------------------------------------------------------ */
 
-export type Opzione = { id: string; etichetta: string; nota?: string };
+export type Opzione = {
+  id: string;
+  etichetta: string;
+  /** Il paragone con una cosa di tutti i giorni. È questo a rendere
+   *  rispondibile la domanda a chi non ha mai letto una piramide olfattiva. */
+  nota?: string;
+};
 
 export type Domanda = {
   /** Il gradino della piramide olfattiva a cui si riferisce la domanda. */
@@ -78,6 +84,14 @@ export type Domanda = {
   opzioni: Opzione[];
   /** L'id dell'opzione giusta. Deve esistere fra le opzioni qui sopra. */
   giusta: string;
+  /**
+   * Cosa diciamo a chi sceglie un'altra opzione. Una riga per ciascuna,
+   * e nessuna di queste righe dice «sbagliato»: spiega perché quelle due
+   * note si somigliano, il che è vero e toglie l'esame di mezzo.
+   *
+   * Una risposta senza riga qui cade su `CONSOLAZIONE` più sotto.
+   */
+  vicine?: Record<string, string>;
 };
 
 export type Fragranza = {
@@ -86,153 +100,225 @@ export type Fragranza = {
   famiglia: string;
   /** Una riga sola: si legge dopo l'ultima risposta, quando si scopre. */
   ritratto: string;
+  /**
+   * La foto del flacone, se c'è: un file dentro `public/` (per esempio
+   * `/fragranze/notte-aurea.png`), meglio se PNG con lo sfondo trasparente e
+   * il vetro già scontornato. Quando manca, l'app disegna la sua boccetta e
+   * non si rompe niente — è il motivo per cui questo campo è facoltativo.
+   */
+  immagine?: string;
   domande: Domanda[];
 };
 
 /**
- * Le fragranze della casa. Le domande non sono indovinelli da manuale: il
- * cliente ha il profumo addosso o nell'aria del negozio mentre risponde, e
- * quello che gli chiediamo è di riconoscerlo — testa, cuore, fondo.
+ * Le fragranze della casa.
+ *
+ * Le domande non sono un test da nasi esperti: chi tocca la card ha il
+ * profumo nell'aria e trenta secondi di pazienza. Per questo si sceglie fra
+ * **famiglie**, non fra ingredienti — «agrumi» e non «bergamotto di
+ * Calabria» — e ogni opzione porta con sé il paragone che la rende
+ * riconoscibile a chiunque: la scorza d'arancia, il bucato steso, la
+ * pasticceria.
+ *
+ * La regola per aggiungerne una: se l'opzione non si può spiegare con una
+ * cosa che sta in una cucina o in un bagno, è troppo difficile per questa
+ * card.
  */
 export const FRAGRANZE: Fragranza[] = [
   {
     id: 'notte-aurea',
     nome: 'Notte Aurea',
-    famiglia: 'Orientale floreale',
+    famiglia: 'Dolce e avvolgente',
     ritratto: 'Un fiore bianco che si scalda sulla pelle e non se ne va più.',
     domande: [
       {
         livello: 'Testa',
-        titolo: 'Cosa senti per primo?',
-        sottotitolo: 'La nota di testa è quella che arriva nei primi minuti.',
+        titolo: 'Cosa senti appena lo annusi?',
+        sottotitolo: 'La prima cosa che arriva, senza pensarci troppo.',
         opzioni: [
-          { id: 'bergamotto', etichetta: 'Bergamotto', nota: 'agrumato, pulito' },
-          { id: 'pepe', etichetta: 'Pepe rosa', nota: 'pungente, secco' },
-          { id: 'lavanda', etichetta: 'Lavanda', nota: 'erbaceo, fresco' },
-          { id: 'mela', etichetta: 'Mela verde', nota: 'acidulo, croccante' },
+          { id: 'agrumi', etichetta: 'Agrumi', nota: 'come la scorza d’arancia' },
+          { id: 'dolce', etichetta: 'Dolce', nota: 'zucchero, caramello' },
+          { id: 'fresco', etichetta: 'Fresco', nota: 'menta, aria di mare' },
+          { id: 'speziato', etichetta: 'Speziato', nota: 'pepe, cannella' },
         ],
-        giusta: 'bergamotto',
+        giusta: 'agrumi',
+        vicine: {
+          dolce: 'Ci sta: l’arancia all’inizio è talmente piena che sembra zucchero.',
+          fresco: 'Ci sta: l’agrume pulisce l’aria, e la freschezza è la prima cosa che si sente.',
+          speziato: 'Ci sta: sotto l’agrume c’è un pizzico di pepe che scalda.',
+        },
       },
       {
         livello: 'Cuore',
-        titolo: 'E adesso, sotto?',
-        sottotitolo: 'Il cuore esce dopo una decina di minuti ed è il carattere.',
+        titolo: 'E dopo un minuto?',
+        sottotitolo: 'Quando il primo slancio passa, esce il carattere.',
         opzioni: [
-          { id: 'gelsomino', etichetta: 'Gelsomino sambac', nota: 'bianco, narcotico' },
-          { id: 'rosa', etichetta: 'Rosa damascena', nota: 'vellutato, dolce' },
-          { id: 'iris', etichetta: 'Iris', nota: 'cipriato, elegante' },
-          { id: 'neroli', etichetta: 'Fiori d’arancio', nota: 'solare, mieloso' },
+          { id: 'fiori-bianchi', etichetta: 'Fiori bianchi', nota: 'gelsomino, zagara' },
+          { id: 'rosa', etichetta: 'Rosa', nota: 'il fiore classico' },
+          { id: 'frutta', etichetta: 'Frutta', nota: 'pesca, mela' },
+          { id: 'cipria', etichetta: 'Cipriato', nota: 'talco, borotalco' },
         ],
-        giusta: 'gelsomino',
+        giusta: 'fiori-bianchi',
+        vicine: {
+          rosa: 'Ci sta: rosa e gelsomino sono due fiori, e da vicino si confondono sempre.',
+          frutta: 'Ci sta: i fiori bianchi hanno un lato dolce che sa di frutta matura.',
+          cipria: 'Ci sta: i fiori bianchi, quando si posano, diventano morbidi come il talco.',
+        },
       },
       {
         livello: 'Fondo',
         titolo: 'Cosa resta sulla pelle?',
-        sottotitolo: 'Il fondo è quello che senti stasera, sulla sciarpa.',
+        sottotitolo: 'Quello che senti stasera, sulla sciarpa.',
         opzioni: [
-          { id: 'vaniglia', etichetta: 'Vaniglia e ambra', nota: 'caldo, avvolgente' },
-          { id: 'muschio', etichetta: 'Muschio bianco', nota: 'pulito, di bucato' },
-          { id: 'vetiver', etichetta: 'Vetiver', nota: 'terroso, affumicato' },
-          { id: 'patchouli', etichetta: 'Patchouli', nota: 'scuro, di bosco' },
+          { id: 'vaniglia', etichetta: 'Vaniglia', nota: 'caldo, da pasticceria' },
+          { id: 'bucato', etichetta: 'Bucato pulito', nota: 'muschio bianco' },
+          { id: 'legno', etichetta: 'Legno', nota: 'matita temperata' },
+          { id: 'cocco', etichetta: 'Cocco', nota: 'crema solare' },
         ],
         giusta: 'vaniglia',
+        vicine: {
+          bucato: 'Ci sta: la vaniglia sul finire diventa morbida come il bucato.',
+          legno: 'Ci sta: sotto la vaniglia c’è un legno che la tiene in piedi.',
+          cocco: 'Ci sta: cocco e vaniglia sono due dolci, e si somigliano tantissimo.',
+        },
       },
     ],
   },
   {
     id: 'rosa-nera',
     nome: 'Rosa Nera',
-    famiglia: 'Floreale legnoso',
+    famiglia: 'Floreale intenso',
     ritratto: 'Una rosa che ha passato la notte fuori e non chiede scusa.',
     domande: [
       {
         livello: 'Testa',
-        titolo: 'Cosa senti per primo?',
-        sottotitolo: 'La nota di testa è quella che arriva nei primi minuti.',
+        titolo: 'Cosa senti appena lo annusi?',
+        sottotitolo: 'La prima cosa che arriva, senza pensarci troppo.',
         opzioni: [
-          { id: 'pepe', etichetta: 'Pepe rosa', nota: 'pungente, secco' },
-          { id: 'bergamotto', etichetta: 'Bergamotto', nota: 'agrumato, pulito' },
-          { id: 'menta', etichetta: 'Menta', nota: 'freddo, verde' },
-          { id: 'pera', etichetta: 'Pera', nota: 'succoso, morbido' },
+          { id: 'frutti-rossi', etichetta: 'Frutti rossi', nota: 'ribes, lampone' },
+          { id: 'agrumi', etichetta: 'Agrumi', nota: 'come la scorza d’arancia' },
+          { id: 'fresco', etichetta: 'Fresco', nota: 'menta, aria di mare' },
+          { id: 'dolce', etichetta: 'Dolce', nota: 'zucchero, caramello' },
         ],
-        giusta: 'pepe',
+        giusta: 'frutti-rossi',
+        vicine: {
+          agrumi: 'Ci sta: i frutti rossi hanno la stessa punta acidula degli agrumi.',
+          fresco: 'Ci sta: all’inizio è una frutta croccante, e sembra freschezza.',
+          dolce: 'Ci sta: il lampone è dolce quanto lo zucchero, solo più acido.',
+        },
       },
       {
         livello: 'Cuore',
-        titolo: 'E adesso, sotto?',
-        sottotitolo: 'Il cuore esce dopo una decina di minuti ed è il carattere.',
+        titolo: 'E dopo un minuto?',
+        sottotitolo: 'Quando il primo slancio passa, esce il carattere.',
         opzioni: [
-          { id: 'rosa', etichetta: 'Rosa damascena', nota: 'vellutato, dolce' },
-          { id: 'tuberosa', etichetta: 'Tuberosa', nota: 'carnoso, denso' },
-          { id: 'violetta', etichetta: 'Violetta', nota: 'cipriato, timido' },
-          { id: 'gelsomino', etichetta: 'Gelsomino', nota: 'bianco, narcotico' },
+          { id: 'rosa', etichetta: 'Rosa', nota: 'il fiore classico' },
+          { id: 'fiori-bianchi', etichetta: 'Fiori bianchi', nota: 'gelsomino, zagara' },
+          { id: 'cipria', etichetta: 'Cipriato', nota: 'talco, borotalco' },
+          { id: 'frutta', etichetta: 'Frutta', nota: 'pesca, mela' },
         ],
         giusta: 'rosa',
+        vicine: {
+          'fiori-bianchi': 'Ci sta: sono due fiori, e a naso nudo fanno lo stesso effetto.',
+          cipria: 'Ci sta: la rosa, quando è densa, diventa cipriata come il talco.',
+          frutta: 'Ci sta: questa rosa è così piena che sa di frutta.',
+        },
       },
       {
         livello: 'Fondo',
         titolo: 'Cosa resta sulla pelle?',
-        sottotitolo: 'Il fondo è quello che senti stasera, sulla sciarpa.',
+        sottotitolo: 'Quello che senti stasera, sulla sciarpa.',
         opzioni: [
-          { id: 'oud', etichetta: 'Patchouli e oud', nota: 'scuro, resinoso' },
-          { id: 'vaniglia', etichetta: 'Vaniglia', nota: 'dolce, da pasticceria' },
-          { id: 'cedro', etichetta: 'Legno di cedro', nota: 'asciutto, a matita' },
-          { id: 'muschio', etichetta: 'Muschio bianco', nota: 'pulito, di bucato' },
+          { id: 'legno', etichetta: 'Legno', nota: 'matita temperata' },
+          { id: 'vaniglia', etichetta: 'Vaniglia', nota: 'caldo, da pasticceria' },
+          { id: 'bucato', etichetta: 'Bucato pulito', nota: 'muschio bianco' },
+          { id: 'cioccolato', etichetta: 'Cioccolato', nota: 'cacao amaro' },
         ],
-        giusta: 'oud',
+        giusta: 'legno',
+        vicine: {
+          vaniglia: 'Ci sta: il legno scuro ha un fondo dolce che sembra vaniglia.',
+          bucato: 'Ci sta: sul finire ogni profumo diventa un po’ più pulito.',
+          cioccolato: 'Ci sta: legno e cacao sono due amari, e si somigliano parecchio.',
+        },
       },
     ],
   },
   {
     id: 'sale-di-cedro',
     nome: 'Sale di Cedro',
-    famiglia: 'Agrumato legnoso',
+    famiglia: 'Fresca e pulita',
     ritratto: 'Il primo sole di maggio su una barca ferma.',
     domande: [
       {
         livello: 'Testa',
-        titolo: 'Cosa senti per primo?',
-        sottotitolo: 'La nota di testa è quella che arriva nei primi minuti.',
+        titolo: 'Cosa senti appena lo annusi?',
+        sottotitolo: 'La prima cosa che arriva, senza pensarci troppo.',
         opzioni: [
-          { id: 'mandarino', etichetta: 'Mandarino verde', nota: 'agrumato, amaro' },
-          { id: 'cannella', etichetta: 'Cannella', nota: 'speziato, caldo' },
-          { id: 'cassis', etichetta: 'Ribes nero', nota: 'acido, scuro' },
-          { id: 'zenzero', etichetta: 'Zenzero', nota: 'frizzante, pepato' },
+          { id: 'agrumi', etichetta: 'Agrumi', nota: 'limone, mandarino' },
+          { id: 'fresco', etichetta: 'Fresco', nota: 'menta, aria di mare' },
+          { id: 'dolce', etichetta: 'Dolce', nota: 'zucchero, caramello' },
+          { id: 'speziato', etichetta: 'Speziato', nota: 'pepe, cannella' },
         ],
-        giusta: 'mandarino',
+        giusta: 'agrumi',
+        vicine: {
+          fresco: 'Ci sta: il limone È freschezza, le due cose stanno insieme.',
+          dolce: 'Ci sta: il mandarino ha una dolcezza che inganna.',
+          speziato: 'Ci sta: sotto l’agrume si nasconde un pizzico di zenzero.',
+        },
       },
       {
         livello: 'Cuore',
-        titolo: 'E adesso, sotto?',
-        sottotitolo: 'Il cuore esce dopo una decina di minuti ed è il carattere.',
+        titolo: 'E dopo un minuto?',
+        sottotitolo: 'Quando il primo slancio passa, esce il carattere.',
         opzioni: [
-          { id: 'neroli', etichetta: 'Neroli', nota: 'solare, verde' },
-          { id: 'tuberosa', etichetta: 'Tuberosa', nota: 'carnoso, denso' },
-          { id: 'rosa', etichetta: 'Rosa', nota: 'vellutato, dolce' },
-          { id: 'iris', etichetta: 'Iris', nota: 'cipriato, elegante' },
+          { id: 'marino', etichetta: 'Marino', nota: 'aria salata, scoglio' },
+          { id: 'fiori-bianchi', etichetta: 'Fiori bianchi', nota: 'gelsomino, zagara' },
+          { id: 'erba', etichetta: 'Erba', nota: 'prato appena tagliato' },
+          { id: 'frutta', etichetta: 'Frutta', nota: 'pesca, mela' },
         ],
-        giusta: 'neroli',
+        giusta: 'marino',
+        vicine: {
+          'fiori-bianchi': 'Ci sta: il fiore d’arancio qui dentro c’è, e spinge verso il bianco.',
+          erba: 'Ci sta: il marino e il verde hanno la stessa aria aperta.',
+          frutta: 'Ci sta: resta un fondo di agrume che sembra frutta.',
+        },
       },
       {
         livello: 'Fondo',
         titolo: 'Cosa resta sulla pelle?',
-        sottotitolo: 'Il fondo è quello che senti stasera, sulla sciarpa.',
+        sottotitolo: 'Quello che senti stasera, sulla sciarpa.',
         opzioni: [
-          { id: 'cedro', etichetta: 'Cedro e muschio', nota: 'asciutto, salato' },
-          { id: 'ambra', etichetta: 'Ambra', nota: 'caldo, resinoso' },
-          { id: 'fava', etichetta: 'Fava tonka', nota: 'dolce, di mandorla' },
-          { id: 'incenso', etichetta: 'Incenso', nota: 'fumoso, di chiesa' },
+          { id: 'bucato', etichetta: 'Bucato pulito', nota: 'muschio bianco' },
+          { id: 'legno', etichetta: 'Legno', nota: 'matita temperata' },
+          { id: 'vaniglia', etichetta: 'Vaniglia', nota: 'caldo, da pasticceria' },
+          { id: 'cocco', etichetta: 'Cocco', nota: 'crema solare' },
         ],
-        giusta: 'cedro',
+        giusta: 'bucato',
+        vicine: {
+          legno: 'Ci sta: il cedro è proprio lì sotto, tiene insieme tutto.',
+          vaniglia: 'Ci sta: il muschio pulito ha una morbidezza da vaniglia.',
+          cocco: 'Ci sta: è la stessa scia da pelle al sole.',
+        },
       },
     ],
   },
 ];
 
 /**
- * Quale fragranza c'è nell'aria del negozio, oggi. È l'unica riga da tenere
- * allineata al mondo vero: se il diffusore cambia e questa resta indietro, il
- * quiz dice "sbagliato" a chi ha il naso giusto, che è il modo più veloce di
+ * Quando chi risponde sceglie un'opzione per cui non abbiamo scritto una
+ * riga apposta. Non dice mai «sbagliato»: nessuno deve uscire da questa card
+ * sentendosi bocciato, il credito lo prende comunque, e il profumo lo stava
+ * annusando per davvero.
+ */
+export const CONSOLAZIONE = 'Ci sta: sono due note che si somigliano parecchio.';
+
+/** La riga di chi ha preso la nota giusta. */
+export const CONFERMA = 'Esatto, è proprio quella.';
+
+/**
+ * Quale fragranza c'è nell'aria del negozio, oggi. È l'unica riga legata al
+ * mondo vero: se il diffusore cambia e questa resta indietro, il quiz dice
+ * la nota sbagliata a chi ha il naso giusto, che è il modo più veloce di
  * rovinare tutto.
  *
  * Con `null` la fragranza è scelta a caso a ogni tocco della card: va bene
@@ -246,19 +332,30 @@ export function fragranzaDelGiorno(): Fragranza {
 }
 
 /**
- * La riga sotto il punteggio. Nessuna di queste frasi nomina un numero: le
- * domande possono diventare due o cinque, e un verdetto che dice «su tre»
- * sarebbe la prima cosa a suonare falsa.
+ * Il titolo del riepilogo.
+ *
+ * Non è una pagella. Chi ha preso tutto se lo sente dire, ma chi non ha
+ * preso niente legge comunque una riga che parla del suo naso e non dei
+ * suoi errori: da questa schermata si esce contenti, sempre, perché il
+ * premio non è mai stato il punteggio.
  */
 export function verdetto(giuste: number, totale: number): string {
   if (giuste === totale) return 'Tutte. Hai il naso.';
-  if (giuste === 0) return 'Nessuna. Si impara annusando.';
-  // Le frasi restano senza genere: «ci sei andato vicino» sceglie per chi
-  // legge, e qui non abbiamo nessun motivo per farlo.
+  if (giuste === 0) return 'Il tuo naso ha idee sue.';
   if (giuste === totale - 1) return 'Quasi tutte.';
   return 'Qualcuna l’hai presa.';
 }
 
+/**
+ * La riga sotto il titolo del riepilogo. Anche a zero risposte giuste dice
+ * una cosa vera e gentile: le note si somigliano, riconoscerle è un
+ * mestiere, e intanto la fragranza adesso ha un nome.
+ */
+export function chiosa(giuste: number, totale: number): string {
+  if (giuste === totale) return 'Tre su tre. Il naso ce l’hai, davvero.';
+  if (giuste === 0) return 'Le note si somigliano tutte, all’inizio: si impara annusando.';
+  return `${giuste} su ${totale}. Le altre le riconosci la prossima volta.`;
+}
 /* ------------------------------------------------------------------ */
 /* Il modulo e il credito                                              */
 /* ------------------------------------------------------------------ */

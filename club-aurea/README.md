@@ -59,6 +59,8 @@ Tutto sta in `src/config/gioco.ts`, non serve aprire altro.
 |---|---|---|
 | Fragranza in diffusione | `IN_DIFFUSIONE` | L'unica riga legata al mondo vero. Con `null` ne esce una a caso: va bene per far vedere il giocattolo, non in negozio. |
 | Fragranze e domande | `FRAGRANZE` | Ognuna ha nome, famiglia, un ritratto di una riga e le tre domande. Le domande possono essere più o meno di tre: i contatori si adeguano da soli. |
+| La foto del flacone | `FRAGRANZE[].immagine` | Un file dentro `public/`, per esempio `/fragranze/notte-aurea.png`. Se manca, l'app disegna la sua boccetta e non si rompe niente. |
+| Cosa si sente dicendo se la nota era un'altra | `FRAGRANZE[].domande[].vicine` | Una riga per ciascuna risposta. Quella generica, quando non c'è, è `CONSOLAZIONE`. |
 | Spicchi della ruota | `SPICCHI` | In senso orario. Cambiarne il numero è lecito: la ruota si ridisegna da sé. |
 | Esito | `ESITO` | `15` fa atterrare la ruota su uno spicchio da 15€, in un punto casuale al suo interno. Con `null` l'esito è davvero casuale. |
 | Punto d'arresto | `ARRESTO` | Dove si posa la lancetta dentro lo spicchio vincente, misurato dal bordo appena superato. Valori bassi la lasciano a un soffio dal premio grosso appena sfilato. `null` la posa dove capita. |
@@ -73,9 +75,47 @@ posto dove cambiarlo, così non possono divergere.
 
 Il quiz non chiede nozioni: chiede di riconoscere quello che si sta sentendo
 in quel momento. Se il diffusore in negozio cambia e `IN_DIFFUSIONE` resta
-indietro, la pagina dice «non c'eri» a chi ha il naso giusto — ed è il modo
-più veloce di rovinare tutto il giocattolo. Chi cambia l'essenza cambia anche
-quella riga, o il gioco è meglio spegnerlo.
+indietro, la pagina segna come giusta una nota che nell'aria non c'è — ed è il
+modo più veloce di rovinare tutto il giocattolo. Chi cambia l'essenza cambia
+anche quella riga, o il gioco è meglio spegnerlo.
+
+### Le domande sono facili di proposito
+
+Si sceglie fra **famiglie** olfattive, non fra ingredienti: «agrumi» e non «bergamotto di
+Calabria», «bucato pulito» e non «muschio bianco». E ogni opzione porta con sé
+il paragone che la rende riconoscibile — la scorza d'arancia, il talco, la
+crema solare, la matita temperata.
+
+La regola per aggiungerne una: **se l'opzione non si può spiegare con una cosa
+che sta in una cucina o in un bagno, è troppo difficile per questa card.** Chi
+tocca la card non è un naso: è una persona con trenta secondi di pazienza, e
+una domanda da esperti la fa smettere alla prima schermata.
+
+### Da qui non si esce bocciati
+
+Chi sceglie un'altra nota **non vede un rosso, non vede una croce e non legge
+la parola «sbagliato»**. Vede accendersi la nota giusta, la sua segnata con un
+punto tenue, e una riga che spiega perché quelle due si somigliano: «rosa e
+gelsomino sono due fiori, e da vicino si confondono sempre». Sono righe scritte
+una per una in `vicine`, dentro ogni domanda.
+
+Contano due cose, e vanno tenute insieme:
+
+- **Nessuno si sente stupido.** È il punto: uno che si sente stupido non
+  lascia il numero di telefono.
+- **Nessuna di quelle righe dice il falso.** Sarebbe stato più corto scrivere
+  «quasi tutti rispondono così, non ti preoccupare», ma è una statistica che
+  non abbiamo mai misurato, e messa in bocca a un negozio diventa una cosa che
+  il negozio non può dimostrare. Le note che si somigliano invece si
+  somigliano per davvero: la rassicurazione arriva uguale e non c'è niente da
+  difendere. Se si vuole comunque quella frase, è una riga in `gioco.ts` —
+  `CONSOLAZIONE`.
+
+Lo stesso vale per il riepilogo: non è una pagella. Anche a zero note prese il
+titolo parla del naso di chi gioca («Il tuo naso ha idee sue») e non dei suoi
+errori, e il punteggio è la riga piccola sotto. Lo controlla anche la passata
+automatica: se una schermata del quiz dicesse «sbagliato», `club-aurea-qa.mjs`
+fallisce.
 
 ### L'ordine degli spicchi non è decorativo
 
@@ -193,6 +233,25 @@ cosa impossibile se non si conosce l'angolo a ogni fotogramma. La tensione
 viene dal punto d'arresto — la lancetta si posa a sei o sette gradi dal bordo
 del 100 appena sfilato — non da una pausa costruita: una ruota vera non si
 ferma e riparte.
+
+**La boccetta disegnata è una rete, non l'obiettivo.** `Boccetta.tsx` disegna
+un flacone in SVG — vetro, liquido, tappo, un riflesso che passa — e regge la
+schermata finché non ci sono foto. Ma un vettoriale disegnato a mano non
+arriva dove arriva una fotografia: appena la profumeria manda gli scatti dei
+suoi flaconi, si mette il file in `public/fragranze/` e si aggiunge
+`immagine:` alla fragranza in `gioco.ts`. Il disegno si fa da parte da solo.
+Meglio ancora: il cliente riconosce sullo schermo il flacone che ha appena
+visto sullo scaffale, e quello nessun disegno lo può fare.
+
+Serve un PNG con lo **sfondo trasparente** e il vetro già scontornato: su
+fondo crema un rettangolo bianco attorno al flacone si vede, e rovina più di
+quanto aggiunge.
+
+**`AureaLogo` e `Boccetta` sono due mestieri diversi.** Il primo è il marchio:
+una sagoma che deve reggere a 20px nell'intestazione, dentro la moneta e al
+centro della ruota. Il secondo è l'illustrazione grande, con i riflessi. A
+20px i riflessi diventano una macchia, e a 170px la sagoma sembra un'emoji:
+per questo sono due file e non un componente con una scala.
 
 **I valori del design non si toccano a occhio.** Tinte, tempi, molle, ombre e
 dimensioni vengono da `club-rama/` e lì si controllano: la build pubblicata su

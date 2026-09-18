@@ -6,16 +6,19 @@ import { motion } from 'framer-motion';
  * con due stati in più che là non servivano, perché là non c'era niente da
  * indovinare.
  *
- * - `neutro`    nessuno ha ancora toccato niente
- * - `scelta`    selezionata, ma la domanda è ancora aperta
- * - `giusta`    la risposta corretta, mostrata dopo la conferma
- * - `sbagliata` quella che aveva scelto il cliente, e non era questa
- * - `spenta`    una delle altre, dopo la conferma: si tira indietro
+ * - `neutro`  nessuno ha ancora toccato niente
+ * - `scelta`  selezionata, ma la domanda è ancora aperta
+ * - `giusta`  la nota che c'era davvero, accesa dopo la conferma
+ * - `tua`     quella che aveva scelto il cliente, quando era un'altra
+ * - `spenta`  una delle altre, dopo la conferma: si tira indietro
  *
- * Lo sbagliato prende il rosso dei campi in errore del modulo, non un rosso
- * nuovo: in tutta l'app quel colore vuol dire una cosa sola.
+ * `tua` non è rossa e non ha una croce. Qui non si viene bocciati: la nota
+ * scelta resta segnata con un cerchietto pieno, perché si veda da dove si
+ * era partiti, e accanto si accende quella giusta. Il rosso in quest'app
+ * vuol dire una cosa sola — un campo del modulo scritto male — e una
+ * risposta a naso non è un errore di compilazione.
  */
-export type StatoRisposta = 'neutro' | 'scelta' | 'giusta' | 'sbagliata' | 'spenta';
+export type StatoRisposta = 'neutro' | 'scelta' | 'giusta' | 'tua' | 'spenta';
 
 type Props = {
   etichetta: string;
@@ -29,12 +32,12 @@ const CORNICE: Record<StatoRisposta, string> = {
   neutro: 'shadow-card ring-1 ring-linea',
   scelta: 'shadow-rilievo ring-[1.5px] ring-oro',
   giusta: 'shadow-rilievo ring-[1.5px] ring-oro bg-oro/[.08]',
-  sbagliata: 'ring-[1.5px] ring-[#E0A0A0] bg-[#FDECEC]',
+  tua: 'ring-1 ring-linea opacity-80',
   spenta: 'ring-1 ring-linea opacity-55',
 };
 
 export function OptionCard({ etichetta, nota, stato, disabilitata, onClick }: Props) {
-  const scelta = stato === 'scelta' || stato === 'giusta' || stato === 'sbagliata';
+  const scelta = stato === 'scelta' || stato === 'giusta' || stato === 'tua';
   return (
     <motion.button
       type="button"
@@ -61,31 +64,25 @@ export function OptionCard({ etichetta, nota, stato, disabilitata, onClick }: Pr
 }
 
 function Segno({ stato }: { stato: StatoRisposta }) {
-  const pieno = stato === 'scelta' || stato === 'giusta' || stato === 'sbagliata';
+  const oro = stato === 'scelta' || stato === 'giusta';
   return (
     <span
       aria-hidden
       className={[
         'flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full',
         'transition-colors duration-200',
-        stato === 'sbagliata'
-          ? 'bg-rubino'
-          : pieno
-            ? 'bg-gradient-to-br from-oro-chiaro to-oro-scuro'
-            : 'ring-1 ring-linea',
+        oro ? 'bg-gradient-to-br from-oro-chiaro to-oro-scuro' : 'ring-1 ring-linea',
       ].join(' ')}
     >
-      {stato === 'sbagliata' ? (
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <path d="M3.6 3.6 8.4 8.4M8.4 3.6 3.6 8.4" stroke="#fff" strokeWidth="1.8"
-            strokeLinecap="round" />
-        </svg>
-      ) : pieno ? (
+      {oro && (
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
           <path d="M2.5 6.4 4.9 8.8 9.5 3.6" stroke="#fff" strokeWidth="1.8"
             strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-      ) : null}
+      )}
+      {/* La nota scelta quando ce n'era un'altra: un punto pieno, tenue.
+          Dice «eri qui», non «hai sbagliato». */}
+      {stato === 'tua' && <span className="h-[9px] w-[9px] rounded-full bg-ink-soft/45" />}
     </span>
   );
 }

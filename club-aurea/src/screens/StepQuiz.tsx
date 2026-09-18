@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { OptionCard, type StatoRisposta } from '../components/OptionCard';
 import { PrimaryButton } from '../components/PrimaryButton';
-import type { Domanda } from '../config/gioco';
-import { giusta as giustaAptica, sbagliata as sbagliataAptica, tocco } from '../lib/haptics';
-import { giusta as giustaSuono, pop, sbagliata as sbagliataSuono } from '../lib/suono';
+import { CONFERMA, CONSOLAZIONE, type Domanda } from '../config/gioco';
+import { giusta as giustaAptica, tocco } from '../lib/haptics';
+import { giusta as giustaSuono, pop, tocco as toccoSuono } from '../lib/suono';
 
 type Props = {
   domanda: Domanda;
@@ -17,11 +17,17 @@ type Props = {
 /**
  * Una domanda del quiz. La risposta si conferma in due tempi — prima la
  * scelta, poi "Conferma" — perché sul telefono un tocco parte anche per
- * sbaglio, e qui il tocco sbagliato costa un punto.
+ * sbaglio.
  *
- * Dopo la conferma la schermata non cambia: resta lì, con la risposta giusta
- * accesa e le altre spente. È il momento in cui si impara qualcosa, e vale
- * più del punto.
+ * Dopo la conferma la schermata non cambia: resta lì, con la nota giusta
+ * accesa e accanto quella scelta, se era un'altra. È il momento in cui si
+ * impara qualcosa, e vale più del punto.
+ *
+ * **Da qui non si esce mai bocciati.** Non c'è un rosso, non c'è una croce e
+ * non c'è la parola «sbagliato»: chi ha scelto un'altra nota si sente dire
+ * perché quelle due si somigliano — cosa vera, non una pacca sulla spalla — e
+ * il credito arriva comunque. Il punteggio serve a raccontare la fragranza,
+ * non a meritarsi lo sconto.
  */
 export function StepQuiz({ domanda, indice, totale, onRisposto }: Props) {
   const [scelta, setScelta] = useState<string | null>(null);
@@ -33,15 +39,25 @@ export function StepQuiz({ domanda, indice, totale, onRisposto }: Props) {
     if (!scelta) return;
     setChiusa(true);
     if (scelta === domanda.giusta) { giustaSuono(); giustaAptica(); }
-    else { sbagliataSuono(); sbagliataAptica(); }
+    // Una nota diversa non merita il suono del «no»: un tocco morbido, e
+    // si va avanti. Il rimprovero, anche solo in due note, si sente.
+    else { toccoSuono(); tocco(); }
   };
 
   const stato = (id: string): StatoRisposta => {
     if (!chiusa) return scelta === id ? 'scelta' : 'neutro';
     if (id === domanda.giusta) return 'giusta';
-    if (id === scelta) return 'sbagliata';
+    if (id === scelta) return 'tua';
     return 'spenta';
   };
+
+  /** La riga scritta apposta per quella nota, se c'è; se no, quella generica. */
+  const commento = esatta
+    ? CONFERMA
+    : (scelta && domanda.vicine?.[scelta]) || CONSOLAZIONE;
+
+  const etichettaGiusta =
+    domanda.opzioni.find((o) => o.id === domanda.giusta)?.etichetta ?? '';
 
   return (
     <div className="flex flex-1 flex-col">
@@ -69,7 +85,7 @@ export function StepQuiz({ domanda, indice, totale, onRisposto }: Props) {
       </div>
 
       <p aria-live="polite" className="sr-only">
-        {chiusa ? (esatta ? 'Risposta giusta.' : 'Risposta sbagliata.') : ''}
+        {chiusa ? `${commento} La nota era ${etichettaGiusta}.` : ''}
       </p>
 
       <div className="mt-auto pt-8">
@@ -79,7 +95,7 @@ export function StepQuiz({ domanda, indice, totale, onRisposto }: Props) {
             transition={{ duration: 0.3 }}
             className="mb-3 text-center text-callout text-ink-soft"
           >
-            {esatta ? 'Esatto, è proprio quella.' : 'Non c’eri. Riannusa, e senti la differenza.'}
+            {commento}
           </motion.p>
         )}
         {chiusa ? (
