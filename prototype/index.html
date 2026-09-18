@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mondial Service — Ristrutturazioni chiavi in mano a Bologna</title>
+  <meta name="description" content="Mondial Service: ristrutturazioni complete, impianti e servizi per la casa a Bologna. Prenota un sopralluogo.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23b98a3a'/%3E%3Ctext x='16' y='22' font-family='Georgia' font-size='18' fill='white' text-anchor='middle'%3EM%3C/text%3E%3C/svg%3E">
+
+  <!-- Tipografia self-hosted (assets/fonts/): serif per i titoli, sans per il corpo.
+       Self-hosted anche per il GDPR (niente chiamate a Google Fonts). -->
+  <link rel="preload" href="assets/fonts/cormorant-garamond-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/inter-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ============================================================
+       MENU FISSO IN ALTO
+       ============================================================ -->
+  <header class="nav" id="nav">
+    <a class="nav__logo" href="#hero">Mondial <span>Service</span></a>
+    <nav class="nav__links">
+      <a href="#cap1">I lavori</a>
+      <a href="#servizi">Servizi</a>
+      <a href="#portfolio">Portfolio</a>
+      <a href="#recensioni">Recensioni</a>
+      <a href="#contatti">Contatti</a>
+    </nav>
+    <a class="nav__cta" href="#contatti">Prenota un sopralluogo</a>
+    <button class="nav__burger" id="burger" aria-label="Apri menu">
+      <span></span><span></span>
+    </button>
+  </header>
+
+  <!-- ============================================================
+       INTRO / HERO — la porta 3D che si apre
+       VIDEO REALE DA CARICARE: assets/videos/intro-porta.mp4
+       (sostituisci il placeholder con il tuo video della porta,
+        stessa risoluzione consigliata: 1280x720 o 1920x1080, H.264)
+       ============================================================ -->
+  <section class="hero" id="hero">
+    <video class="hero__video" id="intro-video"
+           src="assets/videos/intro-porta.mp4"
+           poster="assets/images/intro-poster.jpg"
+           muted playsinline preload="auto"></video>
+    <div class="hero__overlay"></div>
+
+    <div class="hero__content" id="hero-content">
+      <!-- ✏️ HEADLINE PLACEHOLDER — riscrivi tu il copy definitivo -->
+      <p class="hero__eyebrow">Ristrutturazioni · Bologna</p>
+      <h1 class="hero__title">Entra nella casa<br>che immagini.</h1>
+      <p class="hero__sub">[Placeholder] Sottotitolo hero: una frase sul trasformare gli spazi.</p>
+      <a class="btn btn--accent" href="#cap1">Scopri come lavoriamo</a>
+    </div>
+
+    <button class="hero__skip" id="skip-intro">Salta intro</button>
+    <div class="hero__scroll-hint" id="scroll-hint"><span></span>Scorri</div>
+  </section>
+
+  <!-- ============================================================
+       CAPITOLO 1 — INGRESSO / SPAZI GREZZI  (scroll-scrubbing)
+       VIDEO REALE DA CARICARE: assets/videos/cap1-grezzo-finito.mp4
+       Requisiti del video per uno scrubbing fluido:
+       - H.264, keyframe frequenti (meglio: tutti keyframe, "-g 1" in ffmpeg)
+       - 1280x720 basta; durata 4–8 secondi
+       - il PRIMO frame = stanza al grezzo, l'ULTIMO = stanza finita
+       ============================================================ -->
+  <section class="chapter" id="cap1" data-scrub-chapter>
+    <div class="chapter__sticky">
+      <video class="chapter__video"
+             src="assets/videos/cap1-grezzo-finito.mp4"
+             poster="assets/images/cap1-poster-grezzo.jpg"
+             muted playsinline preload="auto"
+             data-scrub-video></video>
+
+      <!-- Testi che appaiono in dissolvenza durante lo scroll.
+           data-at = punto di comparsa (0..1 del progresso del capitolo) -->
+      <div class="chapter__caption" data-caption data-at="0.05">
+        <!-- ✏️ PLACEHOLDER copy -->
+        <span class="chapter__kicker">Capitolo 01 — Spazi grezzi</span>
+        <h2>Ogni casa parte<br><em>da uno spazio vuoto.</em></h2>
+        <p>[Placeholder] Dal grezzo al progetto: qui racconti come inizia un cantiere.</p>
+      </div>
+      <div class="chapter__caption" data-caption data-at="0.62">
+        <span class="chapter__kicker">Dal grezzo al finito</span>
+        <h2>E prende forma<br><em>metro dopo metro.</em></h2>
+        <p>[Placeholder] Seconda frase del capitolo, sul lavoro che avanza.</p>
+      </div>
+
+      <div class="chapter__progress"><span data-progress-bar></span></div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       CAPITOLO 2 — I LAVORI (bagni, interni)   ⏳ PROSSIMO STEP
+       Quando estendiamo: duplicare la struttura del Capitolo 1 e
+       caricare assets/videos/cap2-bagno-grezzo-finito.mp4
+       (match cut: primo frame di cap2 = ultimo frame di cap1
+        per prospettiva e luce)
+       ============================================================ -->
+  <section class="stub" id="cap2">
+    <div class="stub__inner">
+      <p class="stub__label">Capitolo 2 — in arrivo</p>
+      <h2>I lavori: bagni e interni</h2>
+      <p>Qui andrà il secondo ambiente scroll-scrubbed (video <code>cap2-bagno-grezzo-finito.mp4</code>).</p>
+    </div>
+  </section>
+
+  <!-- CAPITOLO 3 — Dettagli / Impianti  ⏳ (video: cap3-impianti.mp4) -->
+  <section class="stub" id="cap3">
+    <div class="stub__inner">
+      <p class="stub__label">Capitolo 3 — in arrivo</p>
+      <h2>Dettagli e impianti</h2>
+      <p>Sezione tecnica (impianti, fotovoltaico) in stile portfolio pulito.</p>
+    </div>
+  </section>
+
+  <!-- CAPITOLO 4 — Consegna / Chiavi in mano  ⏳ (video: cap4-consegna.mp4) -->
+  <section class="stub" id="cap4">
+    <div class="stub__inner">
+      <p class="stub__label">Capitolo 4 — in arrivo</p>
+      <h2>Consegna chiavi in mano</h2>
+      <p>L'ambiente finito, luce calda.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SERVIZI — 3 card
+       ============================================================ -->
+  <section class="services" id="servizi">
+    <p class="section-kicker">Servizi</p>
+    <h2 class="section-title">Cosa facciamo</h2>
+    <div class="services__grid">
+      <!-- ✏️ Testi card = placeholder, riscrivi tu -->
+      <article class="card" data-reveal>
+        <span class="card__num">01</span>
+        <h3>Ristrutturazioni</h3>
+        <p>[Placeholder] Ristrutturazioni complete di appartamenti e case, dal progetto alla consegna.</p>
+      </article>
+      <article class="card" data-reveal>
+        <span class="card__num">02</span>
+        <h3>Impianti</h3>
+        <p>[Placeholder] Impianti elettrici, idraulici, climatizzazione e fotovoltaico.</p>
+      </article>
+      <article class="card" data-reveal>
+        <span class="card__num">03</span>
+        <h3>Servizi</h3>
+        <p>[Placeholder] Manutenzioni e interventi rapidi per la casa.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       PORTFOLIO — griglia progetti
+       FOTO REALI DA CARICARE in assets/images/ con nomi tipo:
+       portfolio-01-bagno.jpg, portfolio-02-soggiorno.jpg, ...
+       poi sostituire i div .ph con <img src="assets/images/...">
+       ============================================================ -->
+  <section class="portfolio" id="portfolio">
+    <p class="section-kicker">Portfolio</p>
+    <h2 class="section-title">Progetti</h2>
+    <div class="portfolio__grid">
+      <figure class="portfolio__item" data-reveal><div class="ph">Foto progetto 1<br><small>portfolio-01.jpg</small></div><figcaption>Bagno — [zona]</figcaption></figure>
+      <figure class="portfolio__item" data-reveal><div class="ph">Foto progetto 2<br><small>portfolio-02.jpg</small></div><figcaption>Soggiorno — [zona]</figcaption></figure>
+      <figure class="portfolio__item" data-reveal><div class="ph">Foto progetto 3<br><small>portfolio-03.jpg</small></div><figcaption>Cucina — [zona]</figcaption></figure>
+      <figure class="portfolio__item" data-reveal><div class="ph">Foto progetto 4<br><small>portfolio-04.jpg</small></div><figcaption>Impianti — [zona]</figcaption></figure>
+      <figure class="portfolio__item" data-reveal><div class="ph">Foto progetto 5<br><small>portfolio-05.jpg</small></div><figcaption>Esterni — [zona]</figcaption></figure>
+      <figure class="portfolio__item" data-reveal><div class="ph">Foto progetto 6<br><small>portfolio-06.jpg</small></div><figcaption>Chiavi in mano — [zona]</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       RECENSIONI
+       ============================================================ -->
+  <section class="reviews" id="recensioni">
+    <p class="section-kicker">Recensioni</p>
+    <h2 class="section-title">Dicono di noi</h2>
+    <div class="reviews__grid">
+      <!-- ✏️ Recensioni placeholder: incolla qui quelle reali (Google ecc.) -->
+      <blockquote class="review" data-reveal>
+        <p>"[Placeholder] Recensione cliente 1 — lavoro puntuale e preciso."</p>
+        <footer>— Nome Cliente, Bologna</footer>
+      </blockquote>
+      <blockquote class="review" data-reveal>
+        <p>"[Placeholder] Recensione cliente 2."</p>
+        <footer>— Nome Cliente, Bologna</footer>
+      </blockquote>
+      <blockquote class="review" data-reveal>
+        <p>"[Placeholder] Recensione cliente 3."</p>
+        <footer>— Nome Cliente, Bologna</footer>
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       CONTATTI — form che apre WhatsApp precompilato
+       ☎️ DA PERSONALIZZARE: numero WhatsApp/telefono e indirizzo
+       (cerca "391234567890" in script.js e qui sotto)
+       ============================================================ -->
+  <section class="contact" id="contatti">
+    <div class="contact__inner">
+      <div class="contact__info">
+        <p class="section-kicker">Contatti</p>
+        <h2 class="section-title">Prenota un sopralluogo</h2>
+        <p>[Placeholder] Due righe di invito al contatto: sopralluogo e preventivo senza impegno.</p>
+        <ul class="contact__list">
+          <!-- ✏️ Sostituisci con i dati reali -->
+          <li><strong>Telefono</strong> <a href="tel:+391234567890">+39 123 456 7890</a></li>
+          <li><strong>WhatsApp</strong> <a href="https://wa.me/391234567890" target="_blank" rel="noopener">Scrivici su WhatsApp</a></li>
+          <li><strong>Zona</strong> Bologna e provincia</li>
+        </ul>
+      </div>
+
+      <form class="contact__form" id="whatsapp-form">
+        <label>Nome
+          <input type="text" name="nome" placeholder="Il tuo nome" required>
+        </label>
+        <label>Che lavoro devi fare?
+          <select name="tipo">
+            <option>Ristrutturazione completa</option>
+            <option>Bagno</option>
+            <option>Impianti / Fotovoltaico</option>
+            <option>Altro</option>
+          </select>
+        </label>
+        <label>Messaggio
+          <textarea name="messaggio" rows="4" placeholder="Raccontaci brevemente il progetto"></textarea>
+        </label>
+        <button type="submit" class="btn btn--accent btn--full">Invia su WhatsApp</button>
+        <p class="contact__note">Il messaggio si apre precompilato su WhatsApp: nulla viene inviato senza il tuo ok.</p>
+      </form>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>© <span id="anno"></span> Mondial Service — Ristrutturazioni · Bologna</p>
+    <p class="footer__small">P.IVA [da inserire] · <a href="#hero">Torna su</a></p>
+  </footer>
+
+  <!-- Librerie in locale (assets/lib/): Lenis + GSAP con ScrollTrigger
+       (versioni: lenis 1.1.18, gsap 3.12.5 — scaricate da npm) -->
+  <script src="assets/lib/lenis.min.js"></script>
+  <script src="assets/lib/gsap.min.js"></script>
+  <script src="assets/lib/ScrollTrigger.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
