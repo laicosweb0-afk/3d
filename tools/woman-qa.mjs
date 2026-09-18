@@ -67,10 +67,35 @@ const scatto = (n) => p.screenshot({ path: `${out}/${n}.png` });
 
 /* ---- 2. il percorso ------------------------------------------------- */
 await p.goto(url, { waitUntil: 'networkidle' });
+
+// L'apertura ha tre tempi e l'ordine è quello che il cliente ha chiesto:
+// prima il buio, poi il coniglio che attraversa, e solo dopo «Hey».
+await p.waitForSelector('.coniglio', { timeout: 6000 }).catch(() => {
+  errori.push('APERTURA: il Bianconiglio non attraversa lo schermo');
+});
+await scatto('0-coniglio');
+{
+  // Mentre corre non ci deve essere niente da leggere: se le due cose si
+  // sovrappongono non se ne ricorda nessuna.
+  const parole = (await p.locator('.intro-parola.show').allTextContents()).join(' ').trim();
+  if (parole) errori.push(`APERTURA: «${parole}» è già a schermo mentre passa il coniglio`);
+}
+// La prima parola che compare, qualunque sia il ritardo della rete.
+await p.waitForSelector('.intro-parola.show', { timeout: 8000 });
+{
+  const hey = await p.locator('.intro-parola.show').first().innerText().catch(() => '');
+  if (!/^Hey/i.test(hey.trim())) {
+    errori.push(`APERTURA: dopo il coniglio si legge «${hey.trim()}» invece di «Hey.»`);
+  }
+  // Il coniglio può essere ancora appeso al DOM, ma deve essere già uscito
+  // dalla destra dello schermo: la corsa è finita prima della parola.
+  const box = await p.locator('.coniglio').boundingBox().catch(() => null);
+  const largo = p.viewportSize().width;
+  if (box && box.x < largo) errori.push('APERTURA: il coniglio è ancora in scena sul «Hey»');
+}
+await scatto('0b-hey');
 await p.waitForTimeout(1600);
-await scatto('0-hey');
-await p.waitForTimeout(1600);
-await scatto('0b-profumo');
+await scatto('0c-profumo');
 await p.waitForSelector('.intro', { state: 'detached', timeout: 12000 });
 await p.waitForTimeout(700);
 await scatto('1-ingresso');

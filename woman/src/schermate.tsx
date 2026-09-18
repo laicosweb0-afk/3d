@@ -22,40 +22,19 @@ export function indirizzo(file: string): string {
 /* 1 — L'ingresso                                                      */
 /* ------------------------------------------------------------------ */
 
-/** Il coniglio corre una volta per sessione, non a ogni ricomincia. */
-let visto = false;
-
 /**
  * La prima schermata, scura: il profumo è già stato annusato, la domanda è
  * solo una, e si comincia da qui.
+ *
+ * Il Bianconiglio non passa più di qui: corre nell'apertura (`Intro`), prima
+ * del «Hey». Quando si arriva a questa schermata è già uscito di scena.
  */
 export function Ingresso({ onAvanti }: { onAvanti: () => void }) {
-  /*
-   * Il Bianconiglio passa una volta sola, e solo la prima. Chi ricomincia la
-   * prova non se lo rivede: una gag che si ripete smette di essere una gag,
-   * e chi sta rifacendo il giro vuole arrivare alla domanda.
-   */
-  const [corre] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
-    if (visto) return false;
-    visto = true;
-    return true;
-  });
-  const tardi = corre ? ' tardi' : '';
-
   return (
-    <Step scuro bottom={<span className={tardi}><Cta onClick={onAvanti}>Inizia il quiz</Cta></span>}>
-      {corre && (
-        <div className="coniglio-pista" aria-hidden>
-          <div className="coniglio" />
-        </div>
-      )}
-      <div className={tardi}>
-        <p className="eyebrow">The Fragrance Experience</p>
-        <h1 className="h1">{'Riconosci la\nfragranza?'}</h1>
-        <p className="lede">{'Annusa la tua fialetta.\nPoi prova a indovinare.'}</p>
-      </div>
+    <Step scuro bottom={<Cta onClick={onAvanti}>Inizia il quiz</Cta>}>
+      <p className="eyebrow">The Fragrance Experience</p>
+      <h1 className="h1">{'Riconosci la\nfragranza?'}</h1>
+      <p className="lede">{'Annusa la tua fialetta.\nPoi prova a indovinare.'}</p>
     </Step>
   );
 }

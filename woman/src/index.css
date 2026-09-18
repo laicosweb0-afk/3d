@@ -240,14 +240,15 @@
 
   /* ---- il Bianconiglio ----
    *
-   * Attraversa la prima schermata una volta sola, in un secondo e due: entra
-   * da sinistra fuori campo e esce a destra, correndo. È uno sprite di
-   * diciotto fotogrammi su una striscia sola — `steps(18)` li fa scattare
-   * invece di sfumarli, che è quello che rende la corsa una corsa.
+   * Attraversa l'apertura una volta sola, in un secondo e due: entra da
+   * sinistra fuori campo ed esce a destra, correndo. È uno sprite di diciotto
+   * fotogrammi su una striscia sola — `steps(18)` li fa scattare invece di
+   * sfumarli, che è quello che rende la corsa una corsa.
    *
-   * Il contenuto della schermata entra **dopo** che è passato: prima si
-   * guarda lui, poi si legge. Per questo `.tardi` ha 1200ms di ritardo,
-   * esattamente la durata della traversata.
+   * L'ordine dell'apertura è: prima il buio, poi lui, poi «Hey». Le parole
+   * arrivano a 1500ms, cioè dopo che la traversata (1200ms) è finita: prima
+   * si guarda lui, poi si legge. Se le due cose si sovrapponessero non se ne
+   * ricorderebbe nessuna.
    */
   .coniglio-pista {
     position: absolute; top: clamp(120px, 30vh, 38vh); left: 0;
@@ -264,9 +265,6 @@
     animation: corre 0.6s steps(18) infinite;
   }
   @keyframes corre { to { background-position: -3600px 0; } }
-
-  .tardi { animation: tardi 400ms var(--ease) 1.2s both; }
-  @keyframes tardi { from { opacity: 0; transform: translateY(12px); } }
 
   /* La foto del flacone nella rivelazione: piccola, senza cornice, con
      l'ombra che la stacca dal fondo. Sopra i 200px ruba la scena al nome. */

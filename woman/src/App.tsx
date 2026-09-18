@@ -100,10 +100,9 @@ export default function App() {
         a ogni cambio: senza, React riuserebbe i nodi e la schermata nuova
         comparirebbe di colpo.
 
-        Finché l'apertura è a schermo non si monta niente sotto, e non è una
-        pignoleria: la prima schermata fa correre il Bianconiglio all'arrivo,
-        e se venisse montata dietro l'apertura lui attraverserebbe lo schermo
-        mentre nessuno lo sta guardando.
+        Finché l'apertura è a schermo non si monta niente sotto: le schermate
+        sono alte 100dvh e, montate dietro, allungherebbero la pagina mentre
+        l'apertura è ancora lì.
       */}
       {!apertura && <div key={fase}>{schermata}</div>}
       <MuteButton />
