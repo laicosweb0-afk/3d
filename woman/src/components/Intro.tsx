@@ -41,7 +41,7 @@ export function Intro({ onFine }: { onFine: () => void }) {
     >
       {marchio && (
         <span className="intro-marchio show">
-          <WomanLogo size={22} variante="chiaro" coda animato />
+          <WomanLogo size={30} variante="chiaro" />
         </span>
       )}
       {hey !== 'via' && <span className={`intro-parola ${hey}`}>Hey.</span>}

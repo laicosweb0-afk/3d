@@ -99,8 +99,13 @@ export default function App() {
         precedente. La chiave sulla fase fa ripartire l'animazione d'ingresso
         a ogni cambio: senza, React riuserebbe i nodi e la schermata nuova
         comparirebbe di colpo.
+
+        Finché l'apertura è a schermo non si monta niente sotto, e non è una
+        pignoleria: la prima schermata fa correre il Bianconiglio all'arrivo,
+        e se venisse montata dietro l'apertura lui attraverserebbe lo schermo
+        mentre nessuno lo sta guardando.
       */}
-      <div key={fase}>{schermata}</div>
+      {!apertura && <div key={fase}>{schermata}</div>}
       <MuteButton />
     </>
   );
