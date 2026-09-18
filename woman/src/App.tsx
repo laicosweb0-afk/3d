@@ -1,43 +1,26 @@
 import { useCallback, useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Header } from './components/Header';
 import { Intro } from './components/Intro';
-import { StepDomanda } from './screens/StepDomanda';
-import { StepRisposta } from './screens/StepRisposta';
-import { StepRuota } from './screens/StepRuota';
-import { StepRivelazione } from './screens/StepRivelazione';
-import { StepDati } from './screens/StepDati';
-import { StepFine } from './screens/StepFine';
+import { MuteButton } from './components/MuteButton';
 import {
-  OSPITE, SPICCHI, famigliaDi, generaCodice, livelloDi, scadenza, type Spicchio,
-} from './config/gioco';
+  Consigli, Credito, Dati, Domanda, Fine, Giro, Ingresso, Rivelazione, type DatiModulo,
+} from './schermate';
+import { OSPITE, famigliaDi, generaCodice, livelloDi, scadenza } from './config/gioco';
 import { submitLead, type Lead } from './lib/lead';
-import type { DatiModulo } from './components/LeadForm';
 
-type Fase = 'domanda' | 'risposta' | 'ruota' | 'rivelazione' | 'dati' | 'fine';
-
-/** I tre passaggi dichiarati: la risposta, il premio, il credito. */
-const PASSO_DI: Record<Fase, number> = {
-  domanda: 1, risposta: 1, ruota: 2, rivelazione: 2, dati: 3, fine: 3,
-};
+type Fase = 'ingresso' | 'domanda' | 'rivelazione' | 'ruota' | 'credito' | 'consigli' | 'dati' | 'fine';
 
 export default function App() {
   const [apertura, setApertura] = useState(true);
-  const [fase, setFase] = useState<Fase>('domanda');
-  const [avanti, setAvanti] = useState(true);
+  const [fase, setFase] = useState<Fase>('ingresso');
   /** Cosa ha sentito: l'unica risposta, e il dato che conta. */
   const [scelta, setScelta] = useState<string | null>(null);
-  const [premio, setPremio] = useState<Spicchio>(SPICCHI[0]);
+  /** Il credito uscito dalla ruota. */
+  const [credito, setCredito] = useState(0);
   const [lead, setLead] = useState<Lead | null>(null);
   const [inCorso, setInCorso] = useState(false);
   const [errore, setErrore] = useState<string | null>(null);
 
   const chiudiApertura = useCallback(() => setApertura(false), []);
-
-  const vai = useCallback((f: Fase, indietro = false) => {
-    setAvanti(!indietro);
-    setFase(f);
-  }, []);
 
   const invia = useCallback(async (d: DatiModulo) => {
     setInCorso(true);
@@ -52,7 +35,7 @@ export default function App() {
       famiglia: famigliaDi(scelta)?.etichetta ?? '',
       centrato,
       livello: livelloDi(centrato),
-      credito: premio.valore,
+      credito,
       codiceCredito: generaCodice(),
       scadenza: scadenza().toISOString(),
       consensoMarketing: d.consenso,
@@ -63,78 +46,62 @@ export default function App() {
     try {
       await submitLead(nuovo);
       setLead(nuovo);
-      vai('fine');
+      setFase('fine');
     } catch (e) {
       // I dati restano nei campi: si riprova senza riscrivere niente.
       setErrore(
         e instanceof Error && e.message
-          ? `Non siamo riusciti a registrare il credito. ${e.message}. Riprova.`
-          : 'Non siamo riusciti a registrare il credito. Riprova fra un istante.',
+          ? `Non siamo riusciti a salvare il credito. ${e.message}. Riprova.`
+          : 'Non siamo riusciti a salvare il credito. Riprova fra un istante.',
       );
     } finally {
       setInCorso(false);
     }
-  }, [scelta, premio, vai]);
+  }, [scelta, credito]);
 
   const ricomincia = useCallback(() => {
-    setScelta(null); setPremio(SPICCHI[0]); setLead(null); setErrore(null);
-    vai('domanda', true);
-  }, [vai]);
+    setScelta(null); setCredito(0); setLead(null); setErrore(null);
+    setFase('ingresso');
+  }, []);
 
   const schermata = useMemo(() => {
     switch (fase) {
+      case 'ingresso':
+        return <Ingresso onAvanti={() => setFase('domanda')} />;
       case 'domanda':
-        return <StepDomanda onRisposto={(f) => { setScelta(f); vai('risposta'); }} />;
-      case 'risposta':
+        return <Domanda onRisposto={(f) => { setScelta(f); setFase('rivelazione'); }} />;
+      case 'rivelazione':
         return scelta
-          ? <StepRisposta scelta={scelta} onAvanti={() => vai('ruota')} />
+          ? <Rivelazione scelta={scelta} onAvanti={() => setFase('ruota')} />
           : null;
       case 'ruota':
-        return <StepRuota onVinto={(s) => { setPremio(s); vai('rivelazione'); }} />;
-      case 'rivelazione':
-        return <StepRivelazione premio={premio} onAvanti={() => vai('dati')} />;
+        return <Giro onVinto={(v) => { setCredito(v); setFase('credito'); }} />;
+      case 'credito':
+        return <Credito valore={credito} onAvanti={() => setFase('consigli')} />;
+      case 'consigli':
+        return scelta
+          ? <Consigli scelta={scelta} valore={credito} onAvanti={() => setFase('dati')} />
+          : null;
       case 'dati':
-        return <StepDati onInvia={invia} inCorso={inCorso} errore={errore} />;
+        return <Dati onInvia={invia} inCorso={inCorso} errore={errore} />;
       case 'fine':
-        return lead ? <StepFine lead={lead} onRicomincia={ricomincia} /> : null;
+        return lead
+          ? <Fine codice={lead.codiceCredito} centrato={lead.centrato} onRicomincia={ricomincia} />
+          : null;
     }
-  }, [fase, scelta, premio, lead, inCorso, errore, invia, vai, ricomincia]);
-
-  /*
-   * Indietro solo dal modulo. Dalla risposta non si torna: la domanda è una
-   * sola e non c'è un secondo tentativo — è la regola del documento, e una
-   * freccia che la aggira la smonterebbe senza dirlo a nessuno.
-   */
-  const indietro = fase === 'dati' ? () => vai('rivelazione', true) : undefined;
+  }, [fase, scelta, credito, lead, inCorso, errore, invia, ricomincia]);
 
   return (
     <>
-    {apertura && <Intro onFine={chiudiApertura} />}
-    <div className="flex w-full flex-col" style={{ minHeight: '100dvh' }}>
-      <Header
-        passo={PASSO_DI[fase]} totale={3}
-        mostraContatore={fase !== 'fine'}
-        onIndietro={indietro}
-      />
-
-      <main
-        className="relative flex flex-1 flex-col overflow-hidden"
-        style={{ paddingBottom: 'calc(24px + env(safe-area-inset-bottom))' }}
-      >
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={fase}
-            initial={{ opacity: 0, x: avanti ? 26 : -26, scale: 0.985 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: avanti ? -20 : 20, scale: 0.99 }}
-            transition={{ type: 'spring', stiffness: 320, damping: 34, mass: 0.7 }}
-            className="flex flex-1 flex-col px-6 pt-8"
-          >
-            {schermata}
-          </motion.div>
-        </AnimatePresence>
-      </main>
-    </div>
+      {apertura && <Intro onFine={chiudiApertura} />}
+      {/*
+        Ogni schermata è alta quanto lo schermo e si sostituisce alla
+        precedente. La chiave sulla fase fa ripartire l'animazione d'ingresso
+        a ogni cambio: senza, React riuserebbe i nodi e la schermata nuova
+        comparirebbe di colpo.
+      */}
+      <div key={fase}>{schermata}</div>
+      <MuteButton />
     </>
   );
 }

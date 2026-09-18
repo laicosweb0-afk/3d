@@ -11,9 +11,14 @@
  *   1. UNA SOLA DOMANDA. Ogni domanda in più abbassa i completamenti.
  *   2. NESSUN SECONDO TENTATIVO. Il gioco perderebbe peso e la risposta
  *      perderebbe valore come dato.
- *   3. UN SOLO PREMIO, uguale per tutti: 15 € in tre fialette da 5 €.
- *      Se il premio dipendesse dall'abilità cambierebbe categoria di
+ *   3. IL PREMIO NON DIPENDE MAI DALLE RISPOSTE. Il documento lo voleva
+ *      uguale per tutti; il cliente ha scelto di farlo estrarre da una ruota
+ *      fra 5, 10 e 15 €. Quello che resta intatto è il punto vero: **il quiz
+ *      non c'entra col premio.** Si vince sempre, e si vince lo stesso sia
+ *      che si indovini sia che no — altrimenti cambierebbe categoria di
  *      manifestazione a premio, con gli adempimenti che ne seguono.
+ *      Da sapere comunque, e sta scritto nel README: una ruota che assegna
+ *      importi diversi a sorte è un concorso a premi (DPR 430/2001).
  *   4. IL RISULTATO NON È MAI UNA SCONFITTA. Chi non indovina riceve una
  *      spiegazione e una consulenza, che per una profumeria è il servizio
  *      più prezioso.
@@ -171,43 +176,60 @@ export const CONSIGLI: Record<string, Consiglio[]> = {
 };
 
 /* ------------------------------------------------------------------ */
-/* Il premio                                                           */
+/* Il premio: la ruota                                                 */
 /* ------------------------------------------------------------------ */
 
-/** Quanto vale il credito, in euro, e in quante fialette si ritira. */
-export const PREMIO = { valore: 15, fialette: 3, taglio: 5 };
+/** In quante fialette si spende il credito: una ogni 5 €. */
+export const TAGLIO = 5;
 
-export type Spicchio = {
-  /** Sempre `PREMIO.valore`: è la regola. Sta qui perché la ruota lo legge. */
+export type Premio = {
+  /** Il credito in euro. */
   valore: number;
-  /** Cosa arriva insieme alle tre fialette su questo spicchio. */
-  extra?: string;
+  /** Quante fialette ci si porta a casa: `valore / TAGLIO`. */
+  fialette: number;
 };
 
 /**
- * Gli spicchi della ruota.
+ * Gli spicchi della ruota, in senso orario.
  *
- * **Valgono tutti 15 €**: non c'è un premio grosso che nessuno può vincere,
- * perché una ruota con un premio irraggiungibile è esattamente la pratica che
- * il documento evita — e, in Italia, una pratica commerciale ingannevole ai
- * sensi del Codice del Consumo.
+ * **Ogni spicchio è un premio vero.** Non c'è il 100 € che nessuno vince:
+ * mostrare un premio irraggiungibile è pratica commerciale ingannevole
+ * (Codice del Consumo, artt. 20-23), e sarebbe l'unica cosa disonesta di
+ * un'esperienza costruita tutta sull'onestà.
  *
- * Quello che cambia da spicchio a spicchio è l'`extra`: un omaggio in più,
- * di valore trascurabile, che dà alla ruota qualcosa da estrarre. Da sapere
- * con gli occhi aperti: **il credito da 15 € garantito a tutti non è un
- * concorso a premi, l'omaggio estratto a sorte sì.** Se si vuole restare
- * nella sobrietà del documento senza toccare la scenografia, basta lasciare
- * tutti gli `extra` vuoti: la ruota gira, il premio è uno solo, e non c'è
- * niente da dichiarare.
+ * **Le probabilità stanno nella geometria, non nel codice.** Undici spicchi:
+ * sei da 15 €, tre da 10 €, due da 5 €. Fanno 54,5% · 27,3% · 18,2%, cioè
+ * i 55/27/18 chiesti, a meno di mezzo punto. Per questo l'estrazione è
+ * davvero casuale e uniforme — la ruota non bara, non ha bisogno di barare:
+ * il 15 esce più spesso perché occupa più ruota, e si vede guardandola.
+ *
+ * Se un giorno servono percentuali diverse, si cambia la composizione di
+ * questa lista e le probabilità seguono da sole. La funzione `probabilita()`
+ * qui sotto le ricalcola e la passata automatica le controlla.
  */
-export const SPICCHI: Spicchio[] = [
-  { valore: PREMIO.valore },
-  { valore: PREMIO.valore, extra: 'e la pochette Woman' },
-  { valore: PREMIO.valore },
-  { valore: PREMIO.valore, extra: 'e un campione in più' },
-  { valore: PREMIO.valore },
-  { valore: PREMIO.valore, extra: 'e la consulenza in negozio' },
-];
+export const SPICCHI: number[] = [15, 10, 15, 5, 15, 10, 15, 5, 15, 10, 15];
+
+/** Il credito più alto: quello che si annuncia prima di girare. */
+export const PREMIO_MASSIMO = Math.max(...SPICCHI);
+
+/** Quante volte esce ciascun importo, in percentuale, sulla geometria. */
+export function probabilita(): { valore: number; pct: number }[] {
+  const conta = new Map<number, number>();
+  SPICCHI.forEach((v) => conta.set(v, (conta.get(v) ?? 0) + 1));
+  return [...conta.entries()]
+    .sort((a, b) => b[0] - a[0])
+    .map(([valore, n]) => ({ valore, pct: Math.round((n / SPICCHI.length) * 1000) / 10 }));
+}
+
+/** Il credito medio per cliente: serve a chi fa i conti, non all'app. */
+export function creditoMedio(): number {
+  return SPICCHI.reduce((s, v) => s + v, 0) / SPICCHI.length;
+}
+
+export const premioDi = (valore: number): Premio => ({
+  valore,
+  fialette: Math.round(valore / TAGLIO),
+});
 
 /** Durata della rotazione in millisecondi e giri completi prima di fermarsi. */
 export const GIRO = {

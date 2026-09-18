@@ -9,8 +9,8 @@ online e come si arriva alla pagina dal mondo fisico.
 
 Tutto quello che c'è dentro viene dal documento strategico *The Fragrance
 Experience* (settembre 2026). Le quattro regole che l'hanno disegnata — una
-domanda sola, nessun secondo tentativo, un premio solo uguale per tutti, e un
-risultato che non è mai una sconfitta — sono scritte in cima a
+domanda sola, nessun secondo tentativo, un premio che non dipende mai dalle
+risposte, e un risultato che non è mai una sconfitta — sono scritte in cima a
 `woman/src/config/gioco.ts`, dove chi tocca il codice le trova prima di
 cambiare qualcosa.
 
@@ -87,11 +87,13 @@ node tools/woman-qa.mjs <cartella-screenshot>
 ```
 
 Ripercorre tutte le schermate su un viewport da iPhone, fotografa ognuna e
-fallisce se una delle regole del documento è stata rotta: se le famiglie non
-sono quattro, se compare una freccia per tornare a rispondere, se gli spicchi
-della ruota non valgono tutti 15 €, se la rivelazione tratta la risposta come
-un errore, se compare una percentuale senza che il conteggio esista, se manca
-la consulenza a chi ha sentito altro, o se il livello sparisce dalla tessera.
+fallisce se una delle regole è stata rotta: se le famiglie non sono quattro,
+se torna la freccia per rispondere di nuovo, se le percentuali della ruota non
+tornano con quelle attese, se compare uno spicchio non previsto, se il credito
+compare già nella rivelazione, se le fialette non tornano con il credito, se
+la rivelazione tratta la risposta come un errore, se compare una percentuale
+senza conteggio, se i consigli non sono tre, se sparisce il livello, se il
+font non è Inter o non si carica, o se la pagina chiama un indirizzo esterno.
 
 Resta da fare un giro sul cartoncino vero, con un iPhone e un Android: la
 scansione e il browser in-app sono l'unico pezzo che non si simula da qui.
@@ -121,13 +123,15 @@ un pezzo di server:
 
 ## 6. Due cose da decidere prima dei clienti veri
 
-**L'omaggio estratto a sorte.** Gli spicchi della ruota valgono tutti 15 €,
-quindi non c'è nessun premio irraggiungibile; quello che cambia è l'omaggio in
-più (`extra` in `gioco.ts`). Da sapere: il credito garantito a tutti non è un
-concorso a premi, **l'omaggio estratto a sorte sì**. Se si vuole restare nella
-sobrietà del documento senza toccare la scenografia, basta svuotare tutti gli
-`extra`: la ruota gira lo stesso, il premio resta uno solo, e non c'è niente
-da dichiarare.
+**La ruota è un concorso a premi.** Gli spicchi sono tutti premi veri — sei da
+15 €, tre da 10, due da 5, nessun 100 € che non può uscire — e le percentuali
+vengono dalla geometria, non da un peso nascosto nel codice. Ma un premio
+estratto a sorte, di importo variabile, **è un concorso a premi ai sensi del
+DPR 430/2001**: regolamento, cauzione, comunicazione al Ministero. Un premio
+uguale per tutti e garantito no, è una semplice operazione a sconto. Per
+tornare lì basta riempire `SPICCHI` di soli 15 in `gioco.ts`: la ruota gira
+uguale e non c'è niente da dichiarare. È una scelta commerciale, e va fatta
+sapendo cosa costa.
 
 **La privacy.** Il link all'informativa nel modulo è un segnaposto. Da lì
 passano nome, email e telefono di persone vere: va messo l'indirizzo giusto
