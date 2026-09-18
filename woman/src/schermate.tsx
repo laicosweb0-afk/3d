@@ -3,7 +3,7 @@ import { Step, Cta } from './components/Step';
 import { Ruota, type RuotaHandle } from './components/Ruota';
 import {
   CONSIGLI, CONTATTO_RICHIESTO, DOMANDA, ESITO, FAMIGLIE, OSPITE, PERCENTUALI,
-  PREMIO_MASSIMO, TAGLIO, VALIDITA_GIORNI, famigliaDi, livelloDi, premioDi,
+  TAGLIO, VALIDITA_GIORNI, famigliaDi, livelloDi, premioDi,
 } from './config/gioco';
 import { tocco as toccoAptico, vittoria as vittoriaAptica } from './lib/haptics';
 import { arresto, conteggio, pop, vittoria as suonoVittoria } from './lib/suono';
@@ -154,7 +154,7 @@ export function Giro({ onVinto }: { onVinto: (valore: number) => void }) {
           }}
         />
       </div>
-      <p className="nota mt-7">Fino a {PREMIO_MASSIMO} € in fialette. Si vince sempre.</p>
+      <p className="nota mt-7">Si vince sempre: il credito diventa fialette.</p>
     </Step>
   );
 }

@@ -1,25 +1,19 @@
 import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
-import { GIRO, SPICCHI } from '../config/gioco';
+import { GIRO, SPICCHI, estrai } from '../config/gioco';
 import { tick as tickAptico } from '../lib/haptics';
 import { tick as tickSuono, fruscioRuota, sblocca } from '../lib/suono';
 
 const N = SPICCHI.length;
 const PASSO = 360 / N;
 
-/**
- * Il colore dice il valore.
- *
- * Magenta il 15, viola il 10, crema il 5: guardando la ruota si capisce
- * subito quale premio occupa più spazio, e siccome l'estrazione è uniforme
- * quello spazio **è** la probabilità. Non c'è niente da spiegare e niente da
- * nascondere: la ruota è onesta per costruzione.
- */
-const TINTE: Record<number, { fondo: string; testo: string }> = {
-  15: { fondo: '#e966b5', testo: '#0f0e12' },
-  10: { fondo: '#966edc', testo: '#f7f3ee' },
-  5: { fondo: '#f7f3ee', testo: '#0f0e12' },
-};
-const tintaDi = (v: number) => TINTE[v] ?? { fondo: '#f7f3ee', testo: '#0f0e12' };
+/** Le quattro tinte si alternano lungo la ruota: magenta, nero, viola, crema. */
+const TINTE = [
+  { fondo: '#e966b5', testo: '#0f0e12' },
+  { fondo: '#1a1720', testo: '#f7f3ee' },
+  { fondo: '#966edc', testo: '#f7f3ee' },
+  { fondo: '#f7f3ee', testo: '#0f0e12' },
+];
+const tintaDi = (i: number) => TINTE[i % TINTE.length];
 
 /** Nella metà bassa della ruota la scritta arriverebbe a testa in giù. */
 const capovolto = (i: number) => {
@@ -53,11 +47,9 @@ export type RuotaHandle = { gira: () => void };
 /**
  * La ruota.
  *
- * **L'estrazione è casuale e uniforme**: `Math.floor(Math.random() * N)`, una
- * riga sola, senza pesi e senza bersagli imposti. Le percentuali chieste —
- * 55 per il 15 €, 27 per il 10 €, 18 per il 5 € — vengono dalla composizione
- * degli spicchi in `gioco.ts`, non da un trucco qui dentro. È la differenza
- * fra una ruota che sembra giusta e una che lo è.
+ * Gli importi a schermo sono otto e tutti diversi; quelli che escono davvero
+ * sono tre, con le percentuali di `PESI` in `gioco.ts` — 55% il 15 €, 27% il
+ * 10 €, 18% il 5 €. Si vince sempre.
  */
 export const Ruota = forwardRef<RuotaHandle, {
   onFermata: (valore: number) => void;
@@ -77,14 +69,22 @@ export const Ruota = forwardRef<RuotaHandle, {
     // svegliare l'audio.
     sblocca();
 
-    const bersaglio = Math.floor(Math.random() * N);
+    /*
+     * Prima si estrae il credito secondo i pesi, poi si cerca lo spicchio che
+     * lo porta: la ruota si ferma lì. È il contrario di una ruota vera, dove
+     * il premio lo decide dove si ferma — e sta scritto in gioco.ts cosa
+     * comporta.
+     */
+    const valore = estrai();
+    const candidati = SPICCHI.map((v, i) => (v === valore ? i : -1)).filter((i) => i >= 0);
+    const bersaglio = candidati[Math.floor(Math.random() * candidati.length)];
     const giri = GIRO.giriMin + Math.floor(Math.random() * (GIRO.giriMax - GIRO.giriMin + 1));
     const dentro = (Math.random() - 0.5) * PASSO * 0.7;
     const finale = giri * 360 + (360 - bersaglio * PASSO) + dentro;
 
     const chiudi = () => {
       setGirando(false);
-      setVinto(SPICCHI[bersaglio]);
+      setVinto(valore);
       onFermata(SPICCHI[bersaglio]);
     };
 
@@ -165,8 +165,8 @@ export const Ruota = forwardRef<RuotaHandle, {
 
         <g ref={ruotaRef} style={{ transformOrigin: '100px 100px', willChange: 'transform' }}>
           {SPICCHI.map((valore, i) => {
-            const t = tintaDi(valore);
-            const vincente = !girando && vinto !== null && spicchioSotto(0) === i;
+            const t = tintaDi(i);
+            const vincente = !girando && vinto === valore;
             return (
               <g key={i}>
                 <path d={settore(i)} fill={t.fondo} stroke="#0b0a0e" strokeWidth=".5" />

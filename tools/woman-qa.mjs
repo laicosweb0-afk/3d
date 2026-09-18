@@ -17,7 +17,10 @@ const RISPOSTA = 'Legnoso';
 /* ---- quello che il codice promette, letto dal codice ---- */
 const gioco = readFileSync(new URL('../woman/src/config/gioco.ts', import.meta.url), 'utf8');
 const SPICCHI = JSON.parse(gioco.match(/export const SPICCHI: number\[\] = (\[[^\]]+\])/)[1]);
-const ATTESE = { 15: 55, 10: 27, 5: 18 };  // le percentuali chieste dal cliente
+// I tre importi che si possono vincere davvero, con le percentuali chieste.
+const PESI = [...gioco.matchAll(/\{ valore: (\d+), peso: (\d+) \}/g)]
+  .map(([, v, w]) => ({ valore: Number(v), peso: Number(w) }));
+const VINCIBILI = PESI.map((p) => p.valore);
 
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 const p = await b.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
@@ -46,27 +49,20 @@ await p.addInitScript(() => {
 
 const scatto = (n) => p.screenshot({ path: `${out}/${n}.png` });
 
-/* ---- 1. la ruota è onesta? ------------------------------------------ */
-// Le percentuali devono venire dalla geometria: tanti spicchi quante volte
-// esce un premio. Se qualcuno mettesse i pesi nel codice, o uno spicchio da
-// 100 € che non può uscire, qui si vede subito.
+/* ---- 1. la ruota ---------------------------------------------------- */
 {
-  const conta = {};
-  SPICCHI.forEach((v) => { conta[v] = (conta[v] ?? 0) + 1; });
-  for (const [valore, attesa] of Object.entries(ATTESE)) {
-    const pct = ((conta[valore] ?? 0) / SPICCHI.length) * 100;
-    if (Math.abs(pct - attesa) > 1.5) {
-      errori.push(`RUOTA: il ${valore}€ esce nel ${pct.toFixed(1)}% degli spicchi invece del ${attesa}%`);
-    }
+  // Ogni importo compare una volta sola: è così che il cliente l'ha voluta.
+  const doppi = SPICCHI.filter((v, i) => SPICCHI.indexOf(v) !== i);
+  if (doppi.length) errori.push(`RUOTA: ${doppi.join(', ')} compaiono più di una volta`);
+  // I tre premi veri devono esserci tutti, o la ruota non può fermarcisi.
+  for (const v of VINCIBILI) {
+    if (!SPICCHI.includes(v)) errori.push(`RUOTA: manca lo spicchio da ${v}€, ma è fra i vincibili`);
   }
-  for (const valore of Object.keys(conta)) {
-    if (!(valore in ATTESE)) errori.push(`RUOTA: c'è uno spicchio da ${valore}€ che non è previsto`);
-  }
-  if (/Math\.random\(\)\s*[<>]/.test(gioco)) {
-    errori.push('RUOTA: sembra esserci un sorteggio pesato nel codice; le probabilità devono stare negli spicchi');
-  }
-  console.log('spicchi:', SPICCHI.join(' · '), '→ credito medio',
-    (SPICCHI.reduce((s, v) => s + v, 0) / SPICCHI.length).toFixed(2) + ' €');
+  const somma = PESI.reduce((s, p) => s + p.peso, 0);
+  if (somma !== 100) errori.push(`PESI: fanno ${somma} invece di 100`);
+  const medio = PESI.reduce((s, p) => s + p.valore * p.peso, 0) / somma;
+  console.log('spicchi:', SPICCHI.join(' · '), '→ si vince', VINCIBILI.join('/'),
+    '· credito medio', medio.toFixed(2) + ' €');
 }
 
 /* ---- 2. il percorso ------------------------------------------------- */
@@ -130,7 +126,7 @@ await scatto('4-ruota');
 {
   const valori = (await p.locator('.step svg text').allTextContents()).map((v) => v.trim());
   const unici = [...new Set(valori)].sort();
-  const attesi = [...new Set(SPICCHI.map((v) => `${v}€`))].sort();
+  const attesi = SPICCHI.map((v) => `${v}€`).sort();
   if (unici.join(',') !== attesi.join(',')) {
     errori.push(`RUOTA: a schermo ${unici.join('/')}, negli spicchi ${attesi.join('/')}`);
   }
@@ -146,8 +142,8 @@ await p.waitForTimeout(2600);
 await scatto('5-credito');
 
 const credito = (await p.locator('.premio-cifra').innerText()).replace(/[^\d]/g, '');
-if (!SPICCHI.includes(Number(credito))) {
-  errori.push(`CREDITO: ${credito} € non è uno dei premi della ruota`);
+if (!VINCIBILI.includes(Number(credito))) {
+  errori.push(`CREDITO: ${credito} € non è fra i premi che si possono vincere (${VINCIBILI.join('/')})`);
 }
 // Le fialette devono tornare con il credito: 5 € una, 10 € due, 15 € tre.
 {

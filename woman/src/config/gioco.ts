@@ -182,48 +182,54 @@ export const CONSIGLI: Record<string, Consiglio[]> = {
 /** In quante fialette si spende il credito: una ogni 5 €. */
 export const TAGLIO = 5;
 
-export type Premio = {
-  /** Il credito in euro. */
-  valore: number;
-  /** Quante fialette ci si porta a casa: `valore / TAGLIO`. */
-  fialette: number;
-};
+export type Premio = { valore: number; fialette: number };
 
 /**
- * Gli spicchi della ruota, in senso orario.
- *
- * **Ogni spicchio è un premio vero.** Non c'è il 100 € che nessuno vince:
- * mostrare un premio irraggiungibile è pratica commerciale ingannevole
- * (Codice del Consumo, artt. 20-23), e sarebbe l'unica cosa disonesta di
- * un'esperienza costruita tutta sull'onestà.
- *
- * **Le probabilità stanno nella geometria, non nel codice.** Undici spicchi:
- * sei da 15 €, tre da 10 €, due da 5 €. Fanno 54,5% · 27,3% · 18,2%, cioè
- * i 55/27/18 chiesti, a meno di mezzo punto. Per questo l'estrazione è
- * davvero casuale e uniforme — la ruota non bara, non ha bisogno di barare:
- * il 15 esce più spesso perché occupa più ruota, e si vede guardandola.
- *
- * Se un giorno servono percentuali diverse, si cambia la composizione di
- * questa lista e le probabilità seguono da sole. La funzione `probabilita()`
- * qui sotto le ricalcola e la passata automatica le controlla.
+ * Gli spicchi della ruota: **ogni importo compare una volta sola**, come su
+ * una ruota da premi vera, alternando le cifre piccole e quelle grosse.
  */
-export const SPICCHI: number[] = [15, 10, 15, 5, 15, 10, 15, 5, 15, 10, 15];
+export const SPICCHI: number[] = [15, 30, 10, 45, 5, 55, 25, 75];
 
-/** Il credito più alto: quello che si annuncia prima di girare. */
-export const PREMIO_MASSIMO = Math.max(...SPICCHI);
+/**
+ * Quanto si vince davvero, e quanto spesso.
+ *
+ * Il cliente ha deciso così: si vince sempre, e sempre uno fra 5, 10 e 15 €.
+ * Gli altri spicchi restano a schermo ma non escono mai.
+ *
+ * ⚠️ **Da sapere, perché è stato detto e va lasciato scritto.** Mostrare
+ * premi che nessuno può vincere è una pratica commerciale ingannevole ai
+ * sensi degli artt. 20-23 del Codice del Consumo, e un premio estratto a
+ * sorte di importo variabile è un concorso a premi (DPR 430/2001), con
+ * regolamento, cauzione e comunicazione al Ministero. La versione senza
+ * nessuno dei due problemi costa una riga: si mette in `SPICCHI` solo
+ * `[5, 10, 15]` ripetuti secondo queste stesse percentuali — sei 15, tre 10,
+ * due 5 — e si toglie `PESI`, perché a quel punto le probabilità stanno
+ * nella geometria e l'estrazione può essere davvero casuale.
+ */
+export const PESI: { valore: number; peso: number }[] = [
+  { valore: 15, peso: 55 },
+  { valore: 10, peso: 27 },
+  { valore: 5, peso: 18 },
+];
 
-/** Quante volte esce ciascun importo, in percentuale, sulla geometria. */
-export function probabilita(): { valore: number; pct: number }[] {
-  const conta = new Map<number, number>();
-  SPICCHI.forEach((v) => conta.set(v, (conta.get(v) ?? 0) + 1));
-  return [...conta.entries()]
-    .sort((a, b) => b[0] - a[0])
-    .map(([valore, n]) => ({ valore, pct: Math.round((n / SPICCHI.length) * 1000) / 10 }));
+/** Il credito più alto fra quelli che si possono vincere davvero. */
+export const PREMIO_MASSIMO = Math.max(...PESI.map((p) => p.valore));
+
+/** Estrae il credito secondo i pesi. Restituisce il valore, non l'indice. */
+export function estrai(): number {
+  const totale = PESI.reduce((s, p) => s + p.peso, 0);
+  let n = Math.random() * totale;
+  for (const p of PESI) {
+    n -= p.peso;
+    if (n <= 0) return p.valore;
+  }
+  return PESI[PESI.length - 1].valore;
 }
 
 /** Il credito medio per cliente: serve a chi fa i conti, non all'app. */
 export function creditoMedio(): number {
-  return SPICCHI.reduce((s, v) => s + v, 0) / SPICCHI.length;
+  const totale = PESI.reduce((s, p) => s + p.peso, 0);
+  return PESI.reduce((s, p) => s + p.valore * p.peso, 0) / totale;
 }
 
 export const premioDi = (valore: number): Premio => ({
@@ -232,12 +238,7 @@ export const premioDi = (valore: number): Premio => ({
 });
 
 /** Durata della rotazione in millisecondi e giri completi prima di fermarsi. */
-export const GIRO = {
-  /** Durata dell'unica decelerazione, dal lancio all'arresto. */
-  durata: 4800,
-  giriMin: 5,
-  giriMax: 7,
-};
+export const GIRO = { durata: 4800, giriMin: 5, giriMax: 7 };
 
 /** Giorni di validità del credito, contati dal giorno del ritiro. */
 export const VALIDITA_GIORNI = 90;
