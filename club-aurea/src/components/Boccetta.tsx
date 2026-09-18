@@ -14,13 +14,27 @@ import { motion } from 'framer-motion';
  * il cliente riconosce quella che ha appena visto sullo scaffale. Il disegno
  * resta come rete: niente foto, niente schermata vuota.
  */
+/**
+ * Il percorso della foto, servito come si deve anche da una sottocartella.
+ *
+ * La build gira con `base: './'` — sta alla radice di un dominio oggi e sotto
+ * `/3d/club-aurea/` sull'indirizzo di prova. Un `/fragranze/x.png` scritto
+ * con la barra davanti cercherebbe il file alla radice del dominio, e lì non
+ * c'è: la foto sparisce solo online, dove nessuno la sta guardando mentre
+ * sviluppa. `BASE_URL` toglie di mezzo il problema una volta per tutte.
+ */
+function indirizzo(file: string): string {
+  if (/^(https?:)?\/\//.test(file) || file.startsWith('data:')) return file;
+  return import.meta.env.BASE_URL + file.replace(/^\/+/, '');
+}
+
 export function Boccetta({
   size = 190, immagine, nome,
 }: { size?: number; immagine?: string; nome?: string }) {
   if (immagine) {
     return (
       <motion.img
-        src={immagine}
+        src={indirizzo(immagine)}
         alt={nome ? `Il flacone di ${nome}` : ''}
         initial={{ opacity: 0, scale: 0.9, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
