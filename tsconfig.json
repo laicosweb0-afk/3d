@@ -19,11 +19,11 @@
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": [
     "node_modules",
-    // club-rama/ e club-aurea/ sono progetti Vite a se': hanno il loro
+    // club-rama/ e woman/ sono progetti Vite a se': hanno il loro
     // tsconfig, le loro dipendenze e un altro jsx. Lasciarli dentro a questo
     // include li fa controllare col compilatore sbagliato e la build di Next
     // fallisce.
     "club-rama",
-    "club-aurea"
+    "woman"
   ]
 }

@@ -14,7 +14,7 @@ Un unico piano sequenza: il visitatore assiste alla trasformazione di uno spazio
 | [TECH_ARCHITECTURE.md](./TECH_ARCHITECTURE.md) | Architettura tecnica e milestone |
 | [PORTFOLIO.md](./PORTFOLIO.md) | La pagina `/portfolio/`: come si aggiorna |
 | [CLUB-RAMA.md](./CLUB-RAMA.md) | La landing `/club/` della card NFC di Rama Ceramiche: messa online e dominio |
-| [CLUB-AUREA.md](./CLUB-AUREA.md) | La card NFC del mondo Woman / Aurea: il quiz delle fragranze, la card al posto del QR, messa online |
+| [WOMAN.md](./WOMAN.md) | Woman — The Fragrance Experience: la pagina della fialetta sorpresa, QR e NFC, messa online |
 
 ## Stato
 
