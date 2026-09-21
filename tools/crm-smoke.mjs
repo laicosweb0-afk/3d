@@ -340,9 +340,140 @@ try {
   else if (dentroFlusso !== quanti) segna(`il Flusso dice ${dentroFlusso} persone, i Contatti ne elencano ${quanti}`);
   else ok(`${quanti} persone, contate uguali dalle due pagine`);
 
-  console.log('\n14. Su telefono non deve esserci scorrimento orizzontale');
+  console.log('\n14. Un preventivo si fa dalla scheda e compare fra i Preventivi');
+  // Serve un contatto che abbia già un lavoro aperto: il preventivo sta
+  // sopra l'opportunità, e chi non ne ha non può averne uno. Il più caro ce
+  // l'ha per forza.
+  await vai('/contatti?ordine=valore');
+  const conLavoro = await p.locator('a[href^="/contatti/"]').evaluateAll(
+    (nodi) => nodi.map((n) => n.getAttribute('href')).find((h) => h && !h.includes('nuovo')),
+  );
+  await vai(conLavoro);
+  const apriPreventivo = p.locator('summary:has-text("preventivo")').first();
+  if (await apriPreventivo.count()) {
+    await apriPreventivo.click();
+    const modulo = p.locator('form:has(select[name="stato_preventivo"])').first();
+    await modulo.locator('select[name="stato_preventivo"]').selectOption('inviato');
+    await modulo.locator('input[name="valore_preventivo"]').fill('7250');
+    const numeroPrev = `PREV-COLLAUDO-${timbro}`;
+    await modulo.locator('input[name="numero_preventivo"]').fill(numeroPrev);
+    await modulo.locator('button[type="submit"]').click();
+
+    // Tre effetti, non uno: la storia, il promemoria e la sezione Preventivi.
+    const inStoria = await attendi(
+      'il preventivo non è finito nella storia del contatto',
+      async () => (await p.locator('.tempo').first().innerText()).includes('Preventivo inviato'),
+    );
+    if (inStoria) ok('registrato nella storia del contatto');
+
+    await vai('/preventivi?periodo=tutto');
+    const testoPrev = await p.locator('main').innerText();
+    if (!testoPrev.includes(numeroPrev)) segna(`«${numeroPrev}» non compare nei Preventivi`);
+    else ok('compare nella sezione Preventivi, con il suo numero');
+    // La scadenza la mette il CRM da sé quando non la si scrive.
+    if (!/scade|Scade/i.test(testoPrev)) segna('la colonna della scadenza non c\'è');
+  } else segna('nessun modulo del preventivo nella scheda del contatto');
+
+  console.log('\n15. Le Attività raccolgono eventi e promemoria insieme');
+  await vai('/attivita?periodo=tutto');
+  const attivitaTesto = await p.locator('main').innerText();
+  if (!/cos.è successo/i.test(attivitaTesto)) segna('mancano i filtri delle attività');
+  else {
+    await p.locator('a.scorciatoia:has-text("Cosa è stato deciso")').click();
+    const soloAzioni = await attendi(
+      'il filtro «cosa è stato deciso» non cambia la lista',
+      async () => (await p.locator('main').innerText()).includes('da fare')
+        || (await p.locator('main').innerText()).includes('fatta'),
+    );
+    if (soloAzioni) ok('eventi e promemoria, filtrabili');
+  }
+
+  console.log('\n16. Toccare una card NFC conta un tocco e porta avanti la persona');
+  // I tocchi si leggono dal riquadro in cima alla pagina, non con una regex
+  // sull'HTML: il numero a schermo è quello che conta e non si rompe se
+  // cambia il markup.
+  const contaTocchi = async () => {
+    await vai('/card');
+    const testo = await p.locator('main').innerText();
+    return Number(testo.match(/TOCCHI\s*\n\s*([\d.]+)/i)?.[1]?.replace('.', '') ?? '-1');
+  };
+  const primaTocchi = await contaTocchi();
+  const rispostaNfc = await p.request.get(`${url}/nfc/bancone-01`, { maxRedirects: 0 });
+  if (rispostaNfc.status() !== 307) segna(`/nfc/bancone-01 risponde ${rispostaNfc.status()} invece di 307`);
+  else {
+    const dove = rispostaNfc.headers()['location'] ?? '';
+    // L'attribuzione deve viaggiare nel link, o il tocco non serve a niente.
+    if (!dove.includes('card=bancone-01') || !dove.includes('utm_source=nfc')) {
+      segna(`il rinvio della card non porta l'attribuzione: ${dove}`);
+    } else ok('rinvio con l\'attribuzione attaccata al link');
+  }
+  const dopoTocchi = await contaTocchi();
+  if (dopoTocchi <= primaTocchi) segna(`il tocco non è stato contato (${primaTocchi} → ${dopoTocchi})`);
+  else ok(`tocco contato: ${primaTocchi} → ${dopoTocchi}`);
+
+  // Una card che non esiste non deve mai lasciare il cliente su un errore.
+  const nfcIgnota = await p.request.get(`${url}/nfc/non-esiste-${timbro}`, { maxRedirects: 0 });
+  if (nfcIgnota.status() !== 307) segna('una card sconosciuta non rimanda da nessuna parte');
+  else ok('card sconosciuta: rimanda comunque, senza attribuzione');
+
+  console.log('\n17. Un modulo del sito entra dal webhook e non sdoppia la persona');
+  const emailModulo = `modulo${timbro}@example.it`;
+  const daModulo = await p.request.post(`${url}/api/webhooks/forms`, {
+    headers: { 'content-type': 'application/json' },
+    // Nomi di campo come li manda un modulo WordPress, non come piacerebbe a noi.
+    data: {
+      'your-name': `Paolo Modulo${timbro}`,
+      'your-email': emailModulo,
+      'your-phone': `+3933${timbro}0`,
+      'your-message': 'Vorrei rifare il terrazzo',
+      utm_source: 'google', utm_medium: 'cpc',
+    },
+  });
+  if (daModulo.status() !== 200) segna(`/api/webhooks/forms risponde ${daModulo.status()}`);
+  else ok('modulo del sito: 200');
+
+  // Lo stesso modulo mandato due volte — succede, la gente clicca due volte —
+  // non deve produrre due schede.
+  await p.request.post(`${url}/api/webhooks/forms`, {
+    headers: { 'content-type': 'application/json' },
+    data: { 'your-name': `Paolo Modulo${timbro}`, 'your-email': emailModulo, 'your-message': 'Di nuovo' },
+  });
+  await vai(`/contatti?q=Modulo${timbro}`);
+  const schedeModulo = await p.locator('a[href^="/contatti/"]').evaluateAll(
+    (nodi) => [...new Set(nodi.map((n) => n.getAttribute('href')).filter((h) => h && !h.includes('nuovo')))],
+  );
+  if (schedeModulo.length !== 1) segna(`due invii dello stesso modulo hanno fatto ${schedeModulo.length} schede`);
+  else ok('due invii, una scheda sola');
+
+  console.log('\n18. Le impostazioni salvate cambiano davvero il comportamento');
+  await vai('/impostazioni');
+  const campoSilenzio = p.locator('#soglie_silenzioGrave');
+  const primaSoglia = await campoSilenzio.inputValue();
+  const nuovaSoglia = primaSoglia === '21' ? '18' : '21';
+  await campoSilenzio.fill(nuovaSoglia);
+  await p.locator('button:has-text("Salva le impostazioni")').click();
+  const salvate = await attendi(
+    'le impostazioni non risultano salvate',
+    async () => (await p.locator('main').innerText()).includes('Impostazioni salvate'),
+  );
+  if (salvate) {
+    // La prova vera: il numero deve comparire nel testo dell'avviso in
+    // Attenzioni, che lo legge dalle impostazioni e non da una costante.
+    await vai('/attenzioni');
+    const testoAttenzioni = await p.locator('main').innerText();
+    if (testoAttenzioni.includes('fermi da più di') && !testoAttenzioni.includes(`${nuovaSoglia} giorni`)) {
+      segna(`Attenzioni non usa la soglia salvata (${nuovaSoglia})`);
+    } else ok(`la soglia salvata (${nuovaSoglia}) vale anche in Attenzioni`);
+    // Si rimette com'era: il collaudo non deve lasciare il CRM diverso.
+    await vai('/impostazioni');
+    await p.locator('#soglie_silenzioGrave').fill(primaSoglia);
+    await p.locator('button:has-text("Salva le impostazioni")').click();
+    await p.waitForTimeout(600);
+  }
+
+  console.log('\n19. Su telefono non deve esserci scorrimento orizzontale');
   const tel = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
-  for (const percorso of ['/', '/flusso', '/pipeline', '/contatti', '/campagne', '/attenzioni', '/analisi']) {
+  for (const percorso of ['/', '/flusso', '/pipeline', '/contatti', '/preventivi', '/attivita', '/campagne', '/card', '/impostazioni', '/attenzioni', '/analisi']) {
     await tel.goto(`${url}${percorso}`, { waitUntil: 'networkidle' });
     const overflow = await tel.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     if (overflow > 1) segna(`${percorso}: la pagina scorre di lato di ${overflow}px`);

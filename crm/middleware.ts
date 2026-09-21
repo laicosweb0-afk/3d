@@ -4,7 +4,15 @@ import { NextResponse, type NextRequest } from 'next/server';
 // Due compiti: rinnovare la sessione a ogni richiesta (i cookie di Supabase
 // scadono in fretta) e tenere fuori dal CRM chi non ha fatto login.
 
-const PUBBLICHE = ['/login', '/api/lead'];
+// Le porte che devono rispondere a chi non è entrato nel CRM: il cliente che
+// appoggia il telefono sulla card, il modulo del sito, i webhook di Meta.
+// Ognuna si difende da sé — firma HMAC, origine consentita, campo trappola —
+// perché qui il controllo dell'accesso non c'è per definizione.
+//
+// Dimenticarne una qui non si vede in modalità dimostrativa (senza Supabase
+// il middleware lascia passare tutto): si scoprirebbe in produzione, con
+// Meta che riceve un redirect al posto di un 200.
+const PUBBLICHE = ['/login', '/api/lead', '/api/ingresso', '/api/webhooks', '/nfc'];
 
 export async function middleware(richiesta: NextRequest) {
   let risposta = NextResponse.next({ request: richiesta });

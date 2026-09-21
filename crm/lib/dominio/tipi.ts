@@ -139,6 +139,23 @@ export const MOTIVI_PERSO = [
 ] as const;
 export type MotivoPerso = (typeof MOTIVI_PERSO)[number];
 
+// ---------------------------------------------------------------------------
+// IL PREVENTIVO — non è un'entità a parte, e c'è una ragione.
+//
+// Un preventivo è l'offerta che sta sopra un lavoro: numero, importo, data,
+// scadenza, com'è finita. Poteva essere una tabella sua. Non lo è perché in
+// questo mestiere un lavoro ha **un** preventivo corrente: se lo si rifà, il
+// nuovo sostituisce il vecchio e la storia del cambio è già negli eventi.
+// Tenere gli importi in due tabelle avrebbe significato due verità sullo
+// stesso numero, e prima o poi due numeri diversi.
+//
+// Quindi: l'opportunità *è* il lavoro, e porta con sé il suo preventivo.
+// «Scaduto» non si salva: si calcola dalla data. Uno stato salvato invecchia
+// da solo e serve qualcuno che lo aggiorni; una data no.
+// ---------------------------------------------------------------------------
+export const STATI_PREVENTIVO = ['nessuno', 'bozza', 'inviato', 'accettato', 'rifiutato'] as const;
+export type StatoPreventivo = (typeof STATI_PREVENTIVO)[number];
+
 export type Opportunita = {
   id: string;
   contattoId: string;
@@ -153,6 +170,10 @@ export type Opportunita = {
   chiusuraPrevista: string | null;
   motivoPerso: MotivoPerso | null;
   creataIl: string;
+  // Il preventivo, quando c'è.
+  numeroPreventivo: string | null;
+  scadenzaPreventivo: string | null;
+  statoPreventivo: StatoPreventivo;
 };
 
 // ---------------------------------------------------------------------------

@@ -1,17 +1,30 @@
 import type {
-  ChiaviCampagna, Deposito, NuovaAzione, NuovaCampagna, NuovaConversazione,
-  NuovaOpportunita, NuovoContatto, NuovoEvento, PatchAzione, PatchCampagna,
-  PatchContatto, PatchConversazione, PatchOpportunita,
+  ChiaviCampagna, Deposito, NuovaAzione, NuovaCampagna, NuovaCard, NuovaConversazione,
+  NuovaOpportunita, NuovoContatto, NuovoEvento, PatchAzione, PatchCampagna, PatchCard,
+  PatchContatto, PatchConversazione, PatchOpportunita, Profilo,
 } from './deposito';
 import { adesso, identificativo } from './deposito';
 import type { Azione, Evento, Fase, Operatore, Opportunita } from '@/lib/dominio/tipi';
 import type { Campagna, Canale, Conversazione, TipoIdentita } from '@/lib/dominio/campagne';
 import { normalizzaIdentita } from '@/lib/dominio/campagne';
+import type { CardNfc } from '@/lib/dominio/card';
+import { normalizzaCodiceCard } from '@/lib/dominio/card';
+import type { Impostazioni } from '@/lib/dominio/impostazioni';
+import { conPredefinite } from '@/lib/dominio/impostazioni';
 import type { Istantanea } from './istantanea';
+import { ISTANTANEA_VUOTA, prossimoNumeroPreventivo } from './istantanea';
 import { indicizzaRecapiti } from './identita';
 import { semina } from './demo-semina';
 import { nomeFase } from '@/lib/dominio/fasi';
 import { propostaPerEvento, propostaPerFase, scadenzaFra } from '@/lib/dominio/automazioni';
+
+// La data (senza ora) fra N giorni: le scadenze dei preventivi sono giorni,
+// non istanti.
+const fraGiorniData = (giorni: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() + giorni);
+  return d.toISOString().slice(0, 10);
+};
 
 // Il CRM che gira senza database. Serve per provarlo, per farlo vedere e per
 // lavorare sull'interfaccia: le scritture sono vere, ma stanno in memoria e
@@ -48,6 +61,8 @@ export class DepositoDemo implements Deposito {
       campagne: [...dati.campagne],
       conversazioni: [...dati.conversazioni],
       identita: [...dati.identita],
+      card: [...dati.card],
+      impostazioni: dati.impostazioni,
     };
   }
 
@@ -93,6 +108,9 @@ export class DepositoDemo implements Deposito {
         valorePreventivo: null,
         probabilita: null,
         stato: 'aperta',
+        numeroPreventivo: null,
+        scadenzaPreventivo: null,
+        statoPreventivo: 'nessuno',
         dataPreventivo: null,
         chiusuraPrevista: null,
         motivoPerso: null,
@@ -241,7 +259,18 @@ export class DepositoDemo implements Deposito {
     // Un preventivo inviato porta con sé l'importo dell'opportunità aperta.
     if (input.tipo === 'preventivo_inviato' && input.valore) {
       const o = dati.opportunita.find((x) => x.contattoId === input.contattoId && x.stato === 'aperta');
-      if (o) { o.valorePreventivo = input.valore; o.dataPreventivo = quando; }
+      if (o) {
+        o.valorePreventivo = input.valore;
+        o.dataPreventivo = quando;
+        // Registrare «preventivo inviato» *è* mandare il preventivo: lo stato
+        // e la scadenza si scrivono da sé, o la sezione Preventivi resterebbe
+        // vuota mentre la storia dice il contrario.
+        o.statoPreventivo = 'inviato';
+        if (!o.numeroPreventivo) o.numeroPreventivo = prossimoNumeroPreventivo(dati);
+        if (!o.scadenzaPreventivo) {
+          o.scadenzaPreventivo = fraGiorniData(dati.impostazioni.preventivo.validitaGiorni);
+        }
+      }
     }
   }
 
@@ -253,6 +282,8 @@ export class DepositoDemo implements Deposito {
       valoreStimato: input.valoreStimato ?? null, valorePreventivo: input.valorePreventivo ?? null,
       probabilita: null, stato: 'aperta', dataPreventivo: null,
       chiusuraPrevista: input.chiusuraPrevista ?? null, motivoPerso: null, creataIl: adesso(),
+      numeroPreventivo: null, scadenzaPreventivo: null,
+      statoPreventivo: input.valorePreventivo ? 'bozza' : 'nessuno',
     };
     dati.opportunita.push(o);
   }
@@ -427,5 +458,111 @@ export class DepositoDemo implements Deposito {
         quando: adesso(), valore: o.valorePreventivo ?? o.valoreStimato, operatore, automatico: true,
       });
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // Chi sta usando il CRM
+  // -------------------------------------------------------------------------
+  // Senza database non c'è login, quindi non c'è nemmeno un utente: chi apre
+  // la demo può fare tutto, altrimenti metà delle funzioni non sarebbe
+  // provabile. Con Supabase collegato il ruolo è quello vero, e i controlli
+  // nelle azioni sul server sono gli stessi in tutti e due i casi.
+  async profilo(): Promise<Profilo | null> {
+    return { id: 'demo', nome: 'Demo', ruolo: 'admin' };
+  }
+
+  async ingressiInSospeso() {
+    return [];
+  }
+
+  // -------------------------------------------------------------------------
+  // Impostazioni
+  // -------------------------------------------------------------------------
+  async salvaImpostazioni(impostazioni: Impostazioni): Promise<void> {
+    const { dati } = magazzino();
+    dati.impostazioni = conPredefinite(impostazioni);
+  }
+
+  // -------------------------------------------------------------------------
+  // Card NFC
+  // -------------------------------------------------------------------------
+  async creaCard(input: NuovaCard): Promise<string> {
+    const { dati } = magazzino();
+    const codice = normalizzaCodiceCard(input.codice);
+    if (!codice) throw new Error('codice card non valido');
+    if (dati.card.some((c) => c.codice === codice)) throw new Error('codice card già usato');
+
+    const card: CardNfc = {
+      id: identificativo(),
+      codice,
+      nome: input.nome,
+      luogo: input.luogo ?? null,
+      campagnaId: input.campagnaId ?? null,
+      destinazione: input.destinazione ?? null,
+      attiva: input.attiva ?? true,
+      tocchi: 0,
+      ultimoToccoIl: null,
+      note: input.note ?? null,
+      demo: false,
+      creataIl: adesso(),
+    };
+    dati.card.push(card);
+    return card.id;
+  }
+
+  async aggiornaCard(id: string, patch: PatchCard): Promise<void> {
+    const { dati } = magazzino();
+    const c = dati.card.find((x) => x.id === id);
+    if (!c) return;
+    const { codice, ...resto } = patch;
+    Object.assign(c, resto);
+    if (codice !== undefined) {
+      const pulito = normalizzaCodiceCard(codice);
+      // Cambiare il codice di una card già in giro vuol dire che la card
+      // fisica smette di funzionare: si lascia fare, ma non si permette di
+      // rubare un codice a un'altra.
+      if (pulito && !dati.card.some((x) => x.id !== id && x.codice === pulito)) c.codice = pulito;
+    }
+  }
+
+  async eliminaCard(id: string): Promise<void> {
+    const { dati } = magazzino();
+    dati.card = dati.card.filter((c) => c.id !== id);
+  }
+
+  async trovaCardPerCodice(codice: string): Promise<CardNfc | null> {
+    const { dati } = magazzino();
+    return dati.card.find((c) => c.codice === normalizzaCodiceCard(codice)) ?? null;
+  }
+
+  async registraToccoCard(id: string): Promise<void> {
+    const { dati } = magazzino();
+    const c = dati.card.find((x) => x.id === id);
+    if (!c || !c.attiva) return;
+    c.tocchi += 1;
+    c.ultimoToccoIl = adesso();
+  }
+
+  // -------------------------------------------------------------------------
+  // Dati di esempio
+  // -------------------------------------------------------------------------
+  // Qui dentro è tutto di esempio per definizione: caricare vuol dire
+  // ricominciare da capo, eliminare vuol dire restare con un CRM vuoto —
+  // che è esattamente come si presenta il primo giorno di lavoro vero.
+  async caricaDatiDemo(): Promise<void> {
+    const m = magazzino();
+    m.dati = semina();
+  }
+
+  async eliminaDatiDemo(): Promise<number> {
+    const m = magazzino();
+    const quante = m.dati.contatti.length + m.dati.campagne.length + m.dati.card.length;
+    m.dati = { ...ISTANTANEA_VUOTA, impostazioni: m.dati.impostazioni };
+    return quante;
+  }
+
+  async quantiDatiDemo(): Promise<number> {
+    const { dati } = magazzino();
+    return dati.contatti.length + dati.campagne.length + dati.card.length;
   }
 }

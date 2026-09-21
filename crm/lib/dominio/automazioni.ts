@@ -1,5 +1,6 @@
 import type { Fase, TipoAzione, TipoEvento } from './tipi';
 import { fase as descriviFase } from './fasi';
+import { IMPOSTAZIONI_PREDEFINITE, type GiorniAutomazioni } from './impostazioni';
 
 // Le regole "quando succede X, da fare Y". Sono funzioni pure: decidono cosa
 // proporre, non lo scrivono da nessuna parte. È il deposito ad applicarle
@@ -15,12 +16,9 @@ export type Proposta = {
   priorita?: 'urgente' | 'da_fare' | 'normale';
 };
 
-export const GIORNI = {
-  followUpPreventivo: 4,     // dopo un preventivo inviato
-  rientroCampione: 10,       // dopo un campione consegnato
-  dopoAppuntamento: 1,       // il giorno dopo l'incontro
-  primoContatto: 0,          // un lead nuovo si risponde oggi
-};
+// I giorni arrivano dalle impostazioni: sono numeri di mestiere, e il
+// mestiere lo sa il titolare. Questi sono solo il punto di partenza.
+export const GIORNI_PREDEFINITI: GiorniAutomazioni = IMPOSTAZIONI_PREDEFINITE.giorni;
 
 // Cosa proporre quando un contatto entra in una fase.
 export function propostaPerFase(nuova: Fase): Proposta | null {
@@ -35,7 +33,11 @@ export function propostaPerFase(nuova: Fase): Proposta | null {
 }
 
 // Cosa proporre quando viene registrato un evento.
-export function propostaPerEvento(tipo: TipoEvento): Proposta | null {
+export function propostaPerEvento(
+  tipo: TipoEvento,
+  giorni: GiorniAutomazioni = GIORNI_PREDEFINITI,
+): Proposta | null {
+  const GIORNI = giorni;
   switch (tipo) {
     case 'lead_ricevuto':
       return { tipo: 'rispondere', descrizione: 'Rispondere al nuovo contatto', fraGiorni: GIORNI.primoContatto, priorita: 'urgente' };

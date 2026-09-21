@@ -1,13 +1,16 @@
 import type {
   Azione, Contatto, ContattoInElenco, Evento, Fase, Fonte, Interesse,
-  Opportunita, Priorita, SchedaContatto,
+  Opportunita, Priorita, SchedaContatto, StatoPreventivo,
 } from '@/lib/dominio/tipi';
 import { nomeCompleto } from '@/lib/dominio/tipi';
 import type { Campagna, Conversazione, Identita } from '@/lib/dominio/campagne';
 import { IDENTITA_TRASVERSALI, normalizzaTelefono } from '@/lib/dominio/campagne';
+import type { CardNfc } from '@/lib/dominio/card';
+import type { Impostazioni } from '@/lib/dominio/impostazioni';
+import { IMPOSTAZIONI_PREDEFINITE } from '@/lib/dominio/impostazioni';
 import { FASI_DESCRITTE, FASI_IN_TRATTATIVA, fase as descriviFase } from '@/lib/dominio/fasi';
 import { FONTI_DESCRITTE } from '@/lib/dominio/fonti';
-import { ORDINE_PRIORITA, SOGLIE, calcolaPriorita } from '@/lib/dominio/priorita';
+import { ORDINE_PRIORITA, calcolaPriorita } from '@/lib/dominio/priorita';
 
 // Tutti i conti del CRM stanno qui: elenco, scheda, pipeline, ingressi,
 // analisi, attenzioni. Sono funzioni pure su un'istantanea dei dati, quindi
@@ -24,6 +27,20 @@ export type Istantanea = {
   campagne: Campagna[];
   conversazioni: Conversazione[];
   identita: Identita[];
+  // Le card NFC appoggiate in negozio, con quante volte le hanno toccate.
+  card: CardNfc[];
+  // Le soglie e i giorni decisi dal titolare. Stanno qui dentro perché tutti
+  // i conti li leggano dallo stesso posto: il numero che si vede in
+  // Impostazioni è lo stesso che fa diventare rossa una riga in Oggi.
+  impostazioni: Impostazioni;
+};
+
+// Un'istantanea vuota, per chi deve costruirne una pezzo per pezzo senza
+// dimenticarsi un campo nuovo.
+export const ISTANTANEA_VUOTA: Istantanea = {
+  contatti: [], opportunita: [], azioni: [], eventi: [],
+  campagne: [], conversazioni: [], identita: [], card: [],
+  impostazioni: IMPOSTAZIONI_PREDEFINITE,
 };
 
 export type Periodo = 'oggi' | '7' | '30' | 'mese' | 'tutto';
@@ -84,7 +101,7 @@ export function arricchisci(dati: Istantanea, c: Contatto): ContattoInElenco {
     interesse: aperta?.interesse ?? null,
     prossimaAzione,
     giorniDiSilenzio,
-    priorita: calcolaPriorita({ fase: c.fase, prossimaAzione, valore, giorniDiSilenzio }),
+    priorita: calcolaPriorita({ fase: c.fase, prossimaAzione, valore, giorniDiSilenzio }, dati.impostazioni.soglie),
   };
 }
 
@@ -410,6 +427,164 @@ export function conversazioniDaRispondere(dati: Istantanea) {
 }
 
 // ---------------------------------------------------------------------------
+// Preventivi
+// ---------------------------------------------------------------------------
+// «Scaduto» non è uno stato salvato: è una data confrontata con oggi. Uno
+// stato salvato invecchia da solo e serve qualcuno — o qualcosa — che lo
+// aggiorni ogni notte; una data no, e domattina è già giusta.
+export type StatoPreventivoVisto = StatoPreventivo | 'scaduto';
+
+export function statoPreventivoVisto(o: Opportunita): StatoPreventivoVisto {
+  if (o.statoPreventivo !== 'inviato') return o.statoPreventivo;
+  if (!o.scadenzaPreventivo) return 'inviato';
+  return o.scadenzaPreventivo < oggiIso() ? 'scaduto' : 'inviato';
+}
+
+const oggiIso = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+export const ETICHETTA_STATO_PREVENTIVO: Record<StatoPreventivoVisto, string> = {
+  nessuno: 'Nessun preventivo',
+  bozza: 'Bozza',
+  inviato: 'Inviato',
+  accettato: 'Accettato',
+  rifiutato: 'Rifiutato',
+  scaduto: 'Scaduto',
+};
+
+export type RigaPreventivo = {
+  opportunita: Opportunita;
+  contatto: ContattoInElenco;
+  stato: StatoPreventivoVisto;
+  valore: number;
+  giorniAllaScadenza: number | null;   // negativo = scaduto da tot giorni
+};
+
+export function preventivi(
+  dati: Istantanea,
+  filtri: { stato?: StatoPreventivoVisto | null; periodo?: Periodo } = {},
+): RigaPreventivo[] {
+  const da = filtri.periodo && filtri.periodo !== 'tutto'
+    ? inizioPeriodo(filtri.periodo).toISOString().slice(0, 10)
+    : null;
+
+  return dati.opportunita
+    .filter((o) => o.statoPreventivo !== 'nessuno')
+    .map((o) => {
+      const grezzo = dati.contatti.find((c) => c.id === o.contattoId);
+      if (!grezzo) return null;
+      const stato = statoPreventivoVisto(o);
+      const giorniAllaScadenza = o.scadenzaPreventivo
+        ? Math.round((new Date(`${o.scadenzaPreventivo}T12:00:00`).getTime() - Date.now()) / 86_400_000)
+        : null;
+      return {
+        opportunita: o,
+        contatto: arricchisci(dati, grezzo),
+        stato,
+        valore: o.valorePreventivo ?? o.valoreStimato ?? 0,
+        giorniAllaScadenza,
+      };
+    })
+    .filter((r): r is RigaPreventivo => r !== null)
+    .filter((r) => (filtri.stato ? r.stato === filtri.stato : true))
+    .filter((r) => (da && r.opportunita.dataPreventivo ? r.opportunita.dataPreventivo >= da : true))
+    .sort((a, b) => (b.opportunita.dataPreventivo ?? '').localeCompare(a.opportunita.dataPreventivo ?? ''));
+}
+
+// Il numero del prossimo preventivo: PREV-2026-007. Si guarda cosa c'è già e
+// si va avanti di uno. Non è una sequenza del database — con due persone che
+// lavorano non serve tanto, e un numero saltato non rompe niente.
+export function prossimoNumeroPreventivo(dati: Istantanea): string {
+  const anno = new Date().getFullYear();
+  const prefisso = `${dati.impostazioni.preventivo.prefissoNumero}-${anno}-`;
+  const massimo = dati.opportunita
+    .map((o) => o.numeroPreventivo)
+    .filter((n): n is string => !!n && n.startsWith(prefisso))
+    .map((n) => Number(n.slice(prefisso.length)))
+    .filter((n) => Number.isFinite(n))
+    .reduce((m, n) => Math.max(m, n), 0);
+  return `${prefisso}${String(massimo + 1).padStart(3, '0')}`;
+}
+
+// ---------------------------------------------------------------------------
+// Attività
+// ---------------------------------------------------------------------------
+// Tutto quello che è successo, in un posto solo: quello che è stato fatto
+// (gli eventi) e quello che è stato deciso di fare (le azioni). Sono due
+// tabelle diverse perché rispondono a due domande diverse — «cos'è successo»
+// e «cosa devo fare» — ma chi cerca «cosa è successo martedì» non deve
+// sapere che sono due tabelle.
+export type GenereAttivita = 'evento' | 'azione';
+
+export type VoceAttivita = {
+  id: string;
+  genere: GenereAttivita;
+  quando: string;
+  tipo: string;
+  descrizione: string;
+  contatto: ContattoInElenco;
+  valore: number | null;
+  automatico: boolean;
+  fatta: boolean | null;   // solo per le azioni: null per gli eventi
+};
+
+export function attivita(
+  dati: Istantanea,
+  filtri: { periodo?: Periodo; contattoId?: string | null; genere?: GenereAttivita | null } = {},
+): VoceAttivita[] {
+  const da = filtri.periodo && filtri.periodo !== 'tutto'
+    ? inizioPeriodo(filtri.periodo).toISOString()
+    : null;
+
+  const perContatto = new Map<string, ContattoInElenco>();
+  const chi = (id: string): ContattoInElenco | null => {
+    if (!perContatto.has(id)) {
+      const grezzo = dati.contatti.find((c) => c.id === id);
+      if (!grezzo) return null;
+      perContatto.set(id, arricchisci(dati, grezzo));
+    }
+    return perContatto.get(id) ?? null;
+  };
+
+  const voci: VoceAttivita[] = [];
+
+  if (filtri.genere !== 'azione') {
+    for (const e of dati.eventi) {
+      if (filtri.contattoId && e.contattoId !== filtri.contattoId) continue;
+      if (da && e.quando < da) continue;
+      const c = chi(e.contattoId);
+      if (!c) continue;
+      voci.push({
+        id: `e-${e.id}`, genere: 'evento', quando: e.quando, tipo: e.tipo,
+        descrizione: e.descrizione, contatto: c, valore: e.valore,
+        automatico: e.automatico, fatta: null,
+      });
+    }
+  }
+
+  if (filtri.genere !== 'evento') {
+    for (const a of dati.azioni) {
+      if (filtri.contattoId && a.contattoId !== filtri.contattoId) continue;
+      // Un'azione si colloca nel tempo dove conta: quando è stata fatta, o
+      // quando scade se non lo è ancora.
+      const quando = a.fattaIl ?? a.scadenza;
+      if (da && quando < da) continue;
+      const c = chi(a.contattoId);
+      if (!c) continue;
+      voci.push({
+        id: `a-${a.id}`, genere: 'azione', quando, tipo: a.tipo,
+        descrizione: a.descrizione, contatto: c, valore: null,
+        automatico: false, fatta: Boolean(a.fattaIl),
+      });
+    }
+  }
+
+  return voci.sort((a, b) => b.quando.localeCompare(a.quando));
+}
+
+// ---------------------------------------------------------------------------
 // Analisi
 // ---------------------------------------------------------------------------
 export type Analisi = {
@@ -550,7 +725,7 @@ export function contattiInAttenzione(dati: Istantanea, chiave: ChiaveAttenzione)
       });
 
     case 'fermo_da_troppo':
-      return attivi.filter((c) => silenzioGiorni(dati, c) >= SOGLIE.silenzioGrave);
+      return attivi.filter((c) => silenzioGiorni(dati, c) >= dati.impostazioni.soglie.silenzioGrave);
 
     case 'campione_senza_seguito':
       return attivi.filter((c) => {
@@ -570,7 +745,8 @@ export function contattiInAttenzione(dati: Istantanea, chiave: ChiaveAttenzione)
 
     case 'alto_valore_fermo':
       return attivi.filter((c) =>
-        valoreContatto(dati, c.id) >= 5000 && silenzioGiorni(dati, c) >= 7);
+        valoreContatto(dati, c.id) >= dati.impostazioni.soglie.valoreAlto
+        && silenzioGiorni(dati, c) >= dati.impostazioni.soglie.silenzioLungo);
 
     case 'possibile_duplicato':
       // Qui si guardano tutti, non solo i vivi: un doppione di un cliente già
@@ -579,16 +755,25 @@ export function contattiInAttenzione(dati: Istantanea, chiave: ChiaveAttenzione)
   }
 }
 
-const TITOLI: Record<ChiaveAttenzione, (n: number) => string> = {
+// Il titolo dell'avviso dice il numero che lo ha fatto scattare, e quel
+// numero arriva dalle impostazioni: se il titolare porta il silenzio grave a
+// 21 giorni, l'avviso deve dire 21, non restare a 14 raccontando una soglia
+// che non esiste più.
+const TITOLI: Record<ChiaveAttenzione, (n: number, imp: Impostazioni) => string> = {
   conversazione_senza_risposta: (n) =>
     `${n} ${n === 1 ? 'conversazione aspetta' : 'conversazioni aspettano'} una risposta da più di 4 ore`,
   senza_azione: (n) => `${n} ${n === 1 ? 'contatto non ha' : 'contatti non hanno'} una prossima azione`,
   azione_scaduta: (n) => `${n} ${n === 1 ? 'azione è scaduta' : 'azioni sono scadute'}`,
   preventivo_muto: (n) => `${n} ${n === 1 ? 'preventivo è' : 'preventivi sono'} senza risposta da più di 5 giorni`,
-  fermo_da_troppo: (n) => `${n} ${n === 1 ? 'contatto è fermo' : 'contatti sono fermi'} da più di ${SOGLIE.silenzioGrave} giorni`,
+  fermo_da_troppo: (n, imp) =>
+    `${n} ${n === 1 ? 'contatto è fermo' : 'contatti sono fermi'} da più di ${imp.soglie.silenzioGrave} giorni`,
   campione_senza_seguito: (n) => `${n} ${n === 1 ? 'campione consegnato' : 'campioni consegnati'} senza follow-up`,
   appuntamento_senza_seguito: (n) => `${n} ${n === 1 ? 'appuntamento passato' : 'appuntamenti passati'} senza nulla dopo`,
-  alto_valore_fermo: (n) => `${n} ${n === 1 ? 'opportunità sopra 5.000 € è ferma' : 'opportunità sopra 5.000 € sono ferme'} da più di 7 giorni`,
+  alto_valore_fermo: (n, imp) => {
+    const soglia = imp.soglie.valoreAlto.toLocaleString('it-IT');
+    return `${n} ${n === 1 ? `opportunità sopra ${soglia} € è ferma` : `opportunità sopra ${soglia} € sono ferme`}`
+      + ` da più di ${imp.soglie.silenzioLungo} giorni`;
+  },
   possibile_duplicato: (n) => `${n} ${n === 1 ? 'scheda potrebbe essere un doppione' : 'schede potrebbero essere doppioni'}`,
 };
 
@@ -608,7 +793,7 @@ export function attenzioni(dati: Istantanea): Attenzione[] {
   return CHIAVI_ATTENZIONE
     .map((chiave) => {
       const conteggio = contattiInAttenzione(dati, chiave).length;
-      return { chiave, conteggio, titolo: TITOLI[chiave](conteggio), gravita: GRAVITA[chiave] };
+      return { chiave, conteggio, titolo: TITOLI[chiave](conteggio, dati.impostazioni), gravita: GRAVITA[chiave] };
     })
     .filter((a) => a.conteggio > 0)
     .sort((a, b) => (a.gravita === b.gravita ? b.conteggio - a.conteggio : a.gravita === 'alta' ? -1 : 1));

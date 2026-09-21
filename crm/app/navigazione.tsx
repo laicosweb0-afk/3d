@@ -12,7 +12,9 @@ const VOCI = [
   { href: '/flusso', testo: 'Flusso', segno: 'flusso' },
   { href: '/pipeline', testo: 'Pipeline', segno: 'pipeline' },
   { href: '/contatti', testo: 'Contatti', segno: 'contatti' },
+  { href: '/preventivi', testo: 'Preventivi', segno: 'preventivi' },
   { href: '/campagne', testo: 'Campagne', segno: 'campagne' },
+  { href: '/attivita', testo: 'Attività', segno: 'attivita' },
   { href: '/attenzioni', testo: 'Attenzioni', segno: 'attenzioni' },
   { href: '/analisi', testo: 'Analisi', segno: 'analisi' },
   { href: '/ingressi', testo: 'Ingressi', segno: 'ingressi' },
@@ -20,7 +22,7 @@ const VOCI = [
 
 // In fondo allo schermo ci stanno cinque voci, non sette: si tengono quelle
 // che si toccano in negozio, il resto resta in alto sul computer.
-const NASCOSTE_IN_BASSO = ['ingressi', 'analisi', 'campagne'];
+const NASCOSTE_IN_BASSO = ['ingressi', 'analisi', 'campagne', 'attivita', 'flusso'];
 const VOCI_BASSE = VOCI.filter((v) => !NASCOSTE_IN_BASSO.includes(v.segno));
 
 function Icona({ segno }: { segno: string }) {
@@ -31,6 +33,10 @@ function Icona({ segno }: { segno: string }) {
       return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M6 10h12M9 15h6M11 20h2" /></svg>;
     case 'contatti':
       return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.4" /><path d="M5 20c0-3.6 3.1-5.6 7-5.6s7 2 7 5.6" /></svg>;
+    case 'preventivi':
+      return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" /><path d="M14 3v4h4" /><path d="M8.5 13h7M8.5 17h4" /></svg>;
+    case 'attivita':
+      return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2.5-6 4 13 2.5-7h5" /></svg>;
     case 'flusso':
       return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v5a3 3 0 0 0 3 3h10a3 3 0 0 1 3 3v5" /><path d="M4 20v-5a3 3 0 0 1 3-3" /><circle cx="4" cy="4" r="1.6" /><circle cx="4" cy="20" r="1.6" /><circle cx="20" cy="20" r="1.6" /></svg>;
     case 'campagne':
@@ -99,7 +105,7 @@ export function Navigazione({ urgenti, attenzioni }: { urgenti: number; attenzio
           <Link className="voce" href="/contatti/nuovo" role="menuitem">Nuovo contatto</Link>
           <Link className="voce" href="/campagne/nuova" role="menuitem">Nuova campagna</Link>
           <Link className="voce" href="/contatti?scegli=attivita" role="menuitem">Nuova attività</Link>
-          <Link className="voce" href="/contatti?scegli=preventivo" role="menuitem">Nuovo preventivo</Link>
+          <Link className="voce" href="/preventivi" role="menuitem">Preventivi</Link>
         </div>
       )}
     </>

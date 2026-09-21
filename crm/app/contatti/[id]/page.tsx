@@ -1,13 +1,16 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { deposito } from '@/lib/dati';
-import { possibiliDuplicati, scheda as leggiScheda } from '@/lib/dati/istantanea';
+import {
+  ETICHETTA_STATO_PREVENTIVO, possibiliDuplicati, prossimoNumeroPreventivo,
+  scheda as leggiScheda, statoPreventivoVisto,
+} from '@/lib/dati/istantanea';
 import {
   ETICHETTA_CANALE, ETICHETTA_IDENTITA, ETICHETTA_STATO_CONVERSAZIONE,
   ETICHETTA_PIATTAFORMA, COLORE_CANALE,
 } from '@/lib/dominio/campagne';
 import {
-  FASI, INTERESSI, MOTIVI_PERSO, PRIORITA, TIPI_AZIONE, TIPI_EVENTO,
+  FASI, INTERESSI, MOTIVI_PERSO, PRIORITA, STATI_PREVENTIVO, TIPI_AZIONE, TIPI_EVENTO,
 } from '@/lib/dominio/tipi';
 import { FASI_DESCRITTE, fase as descriviFase, nomeFase } from '@/lib/dominio/fasi';
 import { FONTI_DESCRITTE, coloreFonte } from '@/lib/dominio/fonti';
@@ -19,7 +22,7 @@ import { daQuanto, dataOra, inRitardo, quando, soloData } from '@/lib/formato';
 import {
   aggiornaContatto, aggiornaOpportunita, cambiaFase, collegaCampagna, completaAzione,
   creaAzione, creaOpportunita, eliminaContatto, modificaAzione, posticipaAzione,
-  registraEvento, segnaConversazione, unisciContatti,
+  registraEvento, salvaPreventivo, segnaConversazione, unisciContatti,
 } from '../../azioni';
 import { Fonte, Priorita } from '../../pezzi';
 
@@ -55,6 +58,7 @@ export default async function Scheda({
   const azioniFatte = s.azioni.filter((a) => a.fattaIl);
   const altreAperte = s.azioni.filter((a) => !a.fattaIl && a.id !== prossima?.id);
   const doppioni = possibiliDuplicati(dati, c.id);
+  const prossimoNumero = prossimoNumeroPreventivo(dati);
   const campagneOrdinate = [...dati.campagne].sort((a, b) => b.creataIl.localeCompare(a.creataIl));
 
   return (
@@ -426,6 +430,12 @@ export default async function Scheda({
                     <span className="euro">
                       {o.valorePreventivo ? `preventivo ${euro(o.valorePreventivo)}` : `stima ${euro(o.valoreStimato)}`}
                     </span>
+                    {o.statoPreventivo !== 'nessuno' && (
+                      <span className={`pastiglia ${statoPreventivoVisto(o) === 'scaduto' ? 'urgente' : ''}`}>
+                        {ETICHETTA_STATO_PREVENTIVO[statoPreventivoVisto(o)]}
+                        {o.numeroPreventivo ? ` · ${o.numeroPreventivo}` : ''}
+                      </span>
+                    )}
                     {o.stato === 'aperta' && (
                       <>
                         <form action={aggiornaOpportunita}>
@@ -452,6 +462,58 @@ export default async function Scheda({
                       </>
                     )}
                   </div>
+
+                  {/* Il preventivo sta sopra il lavoro: un lavoro, un'offerta
+                      corrente. Vedi la nota in lib/dominio/tipi.ts. */}
+                  <details style={{ marginTop: 10 }}>
+                    <summary className="nota-piede" style={{ cursor: 'pointer' }}>
+                      {o.statoPreventivo === 'nessuno' ? 'Fai il preventivo…' : 'Il preventivo…'}
+                    </summary>
+                    <form action={salvaPreventivo} style={{ marginTop: 10 }}>
+                      <input type="hidden" name="id" value={o.id} />
+                      <input type="hidden" name="contatto_id" value={c.id} />
+                      <div className="campi-3">
+                        <div className="campo">
+                          <label htmlFor={`prev-stato-${o.id}`}>A che punto è</label>
+                          <select id={`prev-stato-${o.id}`} name="stato_preventivo" defaultValue={o.statoPreventivo === 'nessuno' ? 'bozza' : o.statoPreventivo}>
+                            {STATI_PREVENTIVO.map((x) => (
+                              <option key={x} value={x}>{ETICHETTA_STATO_PREVENTIVO[x]}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="campo">
+                          <label htmlFor={`prev-valore-${o.id}`}>Importo €</label>
+                          <input
+                            id={`prev-valore-${o.id}`} name="valore_preventivo" type="text" inputMode="numeric"
+                            defaultValue={o.valorePreventivo ?? ''} placeholder={String(o.valoreStimato ?? '')}
+                          />
+                        </div>
+                        <div className="campo">
+                          <label htmlFor={`prev-numero-${o.id}`}>Numero</label>
+                          <input
+                            id={`prev-numero-${o.id}`} name="numero_preventivo" type="text"
+                            defaultValue={o.numeroPreventivo ?? ''} placeholder={prossimoNumero}
+                          />
+                        </div>
+                      </div>
+                      <div className="campi-2">
+                        <div className="campo">
+                          <label htmlFor={`prev-data-${o.id}`}>Mandato il</label>
+                          <input id={`prev-data-${o.id}`} name="data_preventivo" type="date" defaultValue={(o.dataPreventivo ?? '').slice(0, 10)} />
+                        </div>
+                        <div className="campo">
+                          <label htmlFor={`prev-scad-${o.id}`}>Scade il</label>
+                          <input id={`prev-scad-${o.id}`} name="scadenza_preventivo" type="date" defaultValue={o.scadenzaPreventivo ?? ''} />
+                        </div>
+                      </div>
+                      <p className="nota-piede" style={{ marginTop: -2 }}>
+                        Se lasci vuota la scadenza e lo segni «inviato», la mette il CRM
+                        a {dati.impostazioni.preventivo.validitaGiorni} giorni — si cambia in Impostazioni. Segnarlo inviato scrive
+                        anche l&apos;attività nella storia e apre da sé il promemoria di follow-up.
+                      </p>
+                      <button type="submit" className="bottone-fantasma">Salva il preventivo</button>
+                    </form>
+                  </details>
                 </div>
               ))}
             </div>
@@ -617,6 +679,8 @@ export default async function Scheda({
       </section>
 
       <p className="nota-piede">
+        <Link href={`/attivita?contatto=${c.id}&periodo=tutto`}>Tutte le attività di {c.nome} →</Link>
+        {' · '}
         Colore della fonte: <span className="punto" style={{ background: coloreFonte(c.fonte), display: 'inline-block' }} />{' '}
         {opportunitaAperta ? `lavoro aperto: ${opportunitaAperta.titolo}` : 'nessun lavoro aperto'}
         {' · '}

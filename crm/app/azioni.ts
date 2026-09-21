@@ -5,6 +5,8 @@ import { redirect } from 'next/navigation';
 import { deposito, modoDati } from '@/lib/dati';
 import { supabaseServer } from '@/lib/supabase-server';
 import { scadenzaFra } from '@/lib/dominio/automazioni';
+import { normalizzaCodiceCard } from '@/lib/dominio/card';
+import { prossimoNumeroPreventivo } from '@/lib/dati/istantanea';
 import { daOrarioItaliano } from '@/lib/formato';
 import {
   FASI, FONTI, INTERESSI, MOTIVI_PERSO, PRIORITA, TIPI_AZIONE, TIPI_EVENTO,
@@ -15,6 +17,11 @@ import {
   CANALI, PIATTAFORME, STATI_CAMPAGNA, STATI_CONVERSAZIONE,
   type Canale, type Piattaforma, type StatoCampagna, type StatoConversazione,
 } from '@/lib/dominio/campagne';
+import {
+  NUMERI_MODIFICABILI, conPredefinite, puo,
+  type Impostazioni, type Permesso, type Ruolo,
+} from '@/lib/dominio/impostazioni';
+import { STATI_PREVENTIVO, type StatoPreventivo } from '@/lib/dominio/tipi';
 
 // Tutto ciò che il CRM scrive passa da qui, e da qui passa al deposito.
 // Nessuna pagina tocca il database per conto suo: quando si clicca, succede
@@ -40,12 +47,26 @@ function scelta<T extends string>(dati: FormData, campo: string, ammessi: readon
 
 async function contesto() {
   const dep = await deposito();
-  if (modoDati() === 'demo') return { dep, operatore: null };
+  if (modoDati() === 'demo') {
+    return { dep, operatore: null, ruolo: 'admin' as Ruolo };
+  }
 
   const supabase = await supabaseServer();
   const { data } = await supabase.auth.getUser();
   if (!data.user) redirect('/login');
-  return { dep, operatore: data.user.id };
+  const profilo = await dep.profilo();
+  // Ruolo sconosciuto = il meno potente. Se la lettura del profilo è andata
+  // storta si perde un permesso, non se ne regala uno.
+  return { dep, operatore: data.user.id, ruolo: profilo?.ruolo ?? ('operatore' as Ruolo) };
+}
+
+// Il controllo vero dei permessi sta qui, sul server, non nel bottone che si
+// nasconde: un bottone nascosto è un suggerimento, non una porta chiusa.
+// Chi non può, torna indietro con il motivo scritto nell'indirizzo — non con
+// una pagina di errore che non spiega niente.
+function esigi(ruolo: Ruolo, permesso: Permesso, tornaA: string): void {
+  if (puo(ruolo, permesso)) return;
+  redirect(`${tornaA}${tornaA.includes('?') ? '&' : '?'}errore=permesso`);
 }
 
 // Le viste che cambiano quando cambia un contatto. Aggiornarle tutte insieme
@@ -58,6 +79,9 @@ function aggiornaTutto(contattoId?: string) {
   revalidatePath('/analisi');
   revalidatePath('/attenzioni');
   revalidatePath('/campagne');
+  revalidatePath('/flusso');
+  revalidatePath('/preventivi');
+  revalidatePath('/attivita');
   if (contattoId) revalidatePath(`/contatti/${contattoId}`);
 }
 
@@ -148,9 +172,10 @@ export async function cambiaFase(dati: FormData) {
 }
 
 export async function eliminaContatto(dati: FormData) {
-  const { dep } = await contesto();
+  const { dep, ruolo } = await contesto();
   const id = testo(dati, 'id', 60);
   if (!id) return;
+  esigi(ruolo, 'elimina_contatto', `/contatti/${id}`);
 
   await dep.eliminaContatto(id);
   aggiornaTutto();
@@ -373,12 +398,192 @@ export async function segnaConversazione(dati: FormData) {
 // Unione di due schede della stessa persona
 // ---------------------------------------------------------------------------
 export async function unisciContatti(dati: FormData) {
-  const { dep } = await contesto();
+  const { dep, ruolo } = await contesto();
   const principale = testo(dati, 'principale', 60);
   const assorbito = testo(dati, 'assorbito', 60);
   if (!principale || !assorbito || principale === assorbito) return;
+  esigi(ruolo, 'unisci_contatti', `/contatti/${principale}`);
 
   await dep.unisciContatti(principale, assorbito);
   aggiornaTutto(principale);
   redirect(`/contatti/${principale}?avviso=unito`);
+}
+
+
+// ---------------------------------------------------------------------------
+// Preventivi
+// ---------------------------------------------------------------------------
+// Il preventivo sta sopra l'opportunità: un lavoro, un'offerta corrente. Vedi
+// la nota in lib/dominio/tipi.ts sul perché non è una tabella a parte.
+export async function salvaPreventivo(dati: FormData) {
+  const { dep, operatore } = await contesto();
+  const id = testo(dati, 'id', 60);
+  const contattoId = testo(dati, 'contatto_id', 60);
+  if (!id) return;
+
+  const stato = scelta<StatoPreventivo>(dati, 'stato_preventivo', STATI_PREVENTIVO, 'bozza');
+  const istantanea = await dep.istantanea();
+  const opportunita = istantanea.opportunita.find((o) => o.id === id);
+  if (!opportunita) return;
+
+  const numeroPreventivo = testo(dati, 'numero_preventivo', 40)
+    || opportunita.numeroPreventivo
+    || prossimoNumeroPreventivo(istantanea);
+
+  // Mandare un preventivo senza dire quando scade è come non mandarlo: la
+  // scadenza serve a sapere quando risentire. Se non la si scrive, la mette
+  // il CRM con la validità decisa in Impostazioni.
+  const data = testo(dati, 'data_preventivo', 12) || null;
+  let scadenza = testo(dati, 'scadenza_preventivo', 12) || null;
+  if (!scadenza && stato === 'inviato') {
+    const d = data ? new Date(`${data}T12:00:00`) : new Date();
+    d.setDate(d.getDate() + istantanea.impostazioni.preventivo.validitaGiorni);
+    scadenza = d.toISOString().slice(0, 10);
+  }
+
+  await dep.aggiornaOpportunita(id, {
+    valorePreventivo: numero(dati, 'valore_preventivo') ?? opportunita.valorePreventivo,
+    numeroPreventivo: stato === 'nessuno' ? null : numeroPreventivo,
+    dataPreventivo: stato === 'nessuno' ? null : (data ?? opportunita.dataPreventivo ?? new Date().toISOString().slice(0, 10)),
+    scadenzaPreventivo: stato === 'nessuno' ? null : scadenza,
+    statoPreventivo: stato,
+  }, operatore);
+
+  // Un preventivo che parte adesso è una cosa successa: entra nella storia,
+  // e da lì nasce da sé il promemoria di follow-up.
+  if (stato === 'inviato' && opportunita.statoPreventivo !== 'inviato') {
+    await dep.registraEvento({
+      contattoId: opportunita.contattoId,
+      tipo: 'preventivo_inviato',
+      descrizione: `Preventivo ${numeroPreventivo} — ${opportunita.titolo}`,
+      valore: numero(dati, 'valore_preventivo') ?? opportunita.valorePreventivo,
+      operatore,
+    });
+  }
+
+  aggiornaTutto(contattoId || opportunita.contattoId);
+  if (contattoId) redirect(`/contatti/${contattoId}`);
+}
+
+// ---------------------------------------------------------------------------
+// Impostazioni
+// ---------------------------------------------------------------------------
+export async function salvaImpostazioni(dati: FormData) {
+  const { dep, ruolo, operatore } = await contesto();
+  esigi(ruolo, 'impostazioni', '/impostazioni');
+
+  const attuali = (await dep.istantanea()).impostazioni;
+
+  // Si legge solo quello che è dichiarato modificabile, e ogni numero passa
+  // dal controllo dei limiti: nel database non entra una soglia assurda
+  // nemmeno scrivendola a mano nel modulo.
+  const soglie = { ...attuali.soglie };
+  const giorni = { ...attuali.giorni };
+  const preventivo = { ...attuali.preventivo };
+
+  for (const voce of NUMERI_MODIFICABILI) {
+    const grezzo = testo(dati, `${voce.gruppo}_${voce.chiave}`, 12);
+    if (!grezzo) continue;
+    const n = Number(grezzo.replace(/\./g, ''));
+    if (!Number.isFinite(n)) continue;
+    const dentro = Math.min(voce.max, Math.max(voce.min, Math.round(n)));
+    if (voce.gruppo === 'soglie') (soglie as Record<string, number>)[voce.chiave] = dentro;
+    else if (voce.gruppo === 'giorni') (giorni as Record<string, number>)[voce.chiave] = dentro;
+    else preventivo.validitaGiorni = dentro;
+  }
+
+  const nuove: Impostazioni = conPredefinite({
+    soglie,
+    giorni,
+    preventivo: { ...preventivo, prefissoNumero: testo(dati, 'preventivo_prefisso', 12) || preventivo.prefissoNumero },
+    azienda: {
+      nome: testo(dati, 'azienda_nome', 120) || attuali.azienda.nome,
+      telefono: testo(dati, 'azienda_telefono', 40),
+      email: testo(dati, 'azienda_email', 120),
+      citta: testo(dati, 'azienda_citta', 120),
+    },
+  });
+
+  await dep.salvaImpostazioni(nuove, operatore);
+  aggiornaTutto();
+  revalidatePath('/impostazioni');
+  redirect('/impostazioni?avviso=salvate');
+}
+
+// ---------------------------------------------------------------------------
+// Card NFC
+// ---------------------------------------------------------------------------
+export async function creaCard(dati: FormData) {
+  const { dep, ruolo } = await contesto();
+  esigi(ruolo, 'gestisci_card', '/card');
+
+  const codice = normalizzaCodiceCard(testo(dati, 'codice', 40));
+  const nome = testo(dati, 'nome', 80);
+  if (!codice || !nome) redirect('/card?errore=dati');
+
+  try {
+    await dep.creaCard({
+      codice,
+      nome,
+      luogo: testo(dati, 'luogo', 120) || null,
+      campagnaId: testo(dati, 'campagna_id', 60) || null,
+      destinazione: testo(dati, 'destinazione', 300) || null,
+      note: testo(dati, 'note', 500) || null,
+    });
+  } catch (errore) {
+    const messaggio = errore instanceof Error ? errore.message : '';
+    redirect(`/card?errore=${messaggio.includes('già usato') ? 'doppio' : 'dati'}`);
+  }
+
+  revalidatePath('/card');
+  redirect('/card?avviso=creata');
+}
+
+export async function aggiornaCard(dati: FormData) {
+  const { dep, ruolo } = await contesto();
+  esigi(ruolo, 'gestisci_card', '/card');
+  const id = testo(dati, 'id', 60);
+  if (!id) return;
+
+  await dep.aggiornaCard(id, {
+    nome: testo(dati, 'nome', 80),
+    luogo: testo(dati, 'luogo', 120) || null,
+    campagnaId: testo(dati, 'campagna_id', 60) || null,
+    destinazione: testo(dati, 'destinazione', 300) || null,
+    attiva: dati.get('attiva') === 'si',
+    note: testo(dati, 'note', 500) || null,
+  });
+  revalidatePath('/card');
+  redirect('/card?avviso=salvata');
+}
+
+export async function eliminaCard(dati: FormData) {
+  const { dep, ruolo } = await contesto();
+  esigi(ruolo, 'gestisci_card', '/card');
+  const id = testo(dati, 'id', 60);
+  if (!id) return;
+  await dep.eliminaCard(id);
+  revalidatePath('/card');
+  redirect('/card?avviso=eliminata');
+}
+
+// ---------------------------------------------------------------------------
+// Dati di esempio
+// ---------------------------------------------------------------------------
+export async function caricaDatiDemo() {
+  const { dep, ruolo } = await contesto();
+  esigi(ruolo, 'dati_demo', '/impostazioni');
+  await dep.caricaDatiDemo();
+  aggiornaTutto();
+  revalidatePath('/impostazioni');
+  redirect('/impostazioni?avviso=demo-caricati');
+}
+
+export async function eliminaDatiDemo() {
+  const { dep, ruolo } = await contesto();
+  esigi(ruolo, 'dati_demo', '/impostazioni');
+  const quanti = await dep.eliminaDatiDemo();
+  aggiornaTutto();
+  revalidatePath('/impostazioni');
+  redirect(`/impostazioni?avviso=demo-eliminati&quanti=${quanti}`);
 }

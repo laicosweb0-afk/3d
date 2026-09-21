@@ -6,6 +6,8 @@ import type {
   Campagna, Canale, Conversazione, Piattaforma, StatoCampagna, StatoConversazione,
   TipoIdentita,
 } from '@/lib/dominio/campagne';
+import type { CardNfc } from '@/lib/dominio/card';
+import type { Impostazioni, Ruolo } from '@/lib/dominio/impostazioni';
 import type { Istantanea } from './istantanea';
 
 // L'unico punto in cui il CRM tocca i dati. Le pagine e le azioni non sanno
@@ -136,15 +138,43 @@ export type NuovaOpportunita = {
 
 export type PatchOpportunita = Partial<Pick<Opportunita,
   'titolo' | 'interesse' | 'descrizione' | 'valoreStimato' | 'valorePreventivo' |
-  'probabilita' | 'chiusuraPrevista' | 'dataPreventivo'>> & {
+  'probabilita' | 'chiusuraPrevista' | 'dataPreventivo' |
+  'numeroPreventivo' | 'scadenzaPreventivo' | 'statoPreventivo'>> & {
   stato?: StatoOpportunita;
   motivoPerso?: MotivoPerso | null;
+};
+
+// ---------------------------------------------------------------------------
+// Card NFC
+// ---------------------------------------------------------------------------
+export type NuovaCard = {
+  codice: string;
+  nome: string;
+  luogo?: string | null;
+  campagnaId?: string | null;
+  destinazione?: string | null;
+  attiva?: boolean;
+  note?: string | null;
+};
+
+export type PatchCard = Partial<NuovaCard>;
+
+// ---------------------------------------------------------------------------
+// Chi sta usando il CRM
+// ---------------------------------------------------------------------------
+export type Profilo = {
+  id: string;
+  nome: string;
+  ruolo: Ruolo;
 };
 
 export interface Deposito {
   readonly modo: 'demo' | 'supabase';
   istantanea(): Promise<Istantanea>;
   operatori(): Promise<Operatore[]>;
+  // Chi sta usando il CRM adesso, e cosa gli è permesso. Null quando non si
+  // sa (senza database non c'è un utente: vedi la nota nel deposito demo).
+  profilo(): Promise<Profilo | null>;
 
   creaContatto(input: NuovoContatto, operatore?: string | null): Promise<string>;
   aggiornaContatto(id: string, patch: PatchContatto): Promise<void>;
@@ -179,6 +209,27 @@ export interface Deposito {
   // --- la coda grezza dei webhook ----------------------------------------
   salvaIngressoGrezzo(canale: string, payload: unknown): Promise<string>;
   segnaIngressoLavorato(id: string, esito: string, contattoId?: string | null, errore?: string | null): Promise<void>;
+  // Quello che è arrivato e non si è riusciti a leggere: serve alla pagina
+  // Ingressi per dirlo invece di far finta di niente.
+  ingressiInSospeso(): Promise<{ id: string; canale: string; quando: string; errore: string | null }[]>;
+
+  // --- impostazioni -------------------------------------------------------
+  salvaImpostazioni(impostazioni: Impostazioni, operatore?: string | null): Promise<void>;
+
+  // --- card NFC -----------------------------------------------------------
+  creaCard(input: NuovaCard): Promise<string>;
+  aggiornaCard(id: string, patch: PatchCard): Promise<void>;
+  eliminaCard(id: string): Promise<void>;
+  trovaCardPerCodice(codice: string): Promise<CardNfc | null>;
+  // Un tocco non è un contatto: si conta e basta.
+  registraToccoCard(id: string): Promise<void>;
+
+  // --- dati di esempio ----------------------------------------------------
+  // Separati dai dati veri da una colonna, non da una convenzione: così
+  // cancellarli è una riga di SQL e non una caccia al tesoro.
+  caricaDatiDemo(): Promise<void>;
+  eliminaDatiDemo(): Promise<number>;   // quante righe ha tolto
+  quantiDatiDemo(): Promise<number>;
 }
 
 // Utili a tutte e due le attuazioni.

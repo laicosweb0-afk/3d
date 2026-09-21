@@ -1,6 +1,8 @@
 import type { Azione, Contatto, Evento, Opportunita } from '@/lib/dominio/tipi';
 import type { Campagna, Conversazione, Identita } from '@/lib/dominio/campagne';
+import type { CardNfc } from '@/lib/dominio/card';
 import type { Istantanea } from './istantanea';
+import { ISTANTANEA_VUOTA } from './istantanea';
 
 // I dati di esempio. Non sono decorazione: coprono i dieci casi che il CRM
 // deve saper gestire, così ogni funzione (attenzioni, priorità, follow-up,
@@ -9,6 +11,9 @@ import type { Istantanea } from './istantanea';
 // Le date sono sempre relative a oggi: il CRM demo non invecchia.
 
 const OGGI = () => new Date();
+// Le scadenze dei preventivi sono giorni, non istanti.
+const soloGiorno = (iso: string) => iso.slice(0, 10);
+
 const g = (giorniFa: number, ora = 10) => {
   const d = OGGI();
   d.setDate(d.getDate() - giorniFa);
@@ -25,7 +30,10 @@ type CasoDemo = {
   // Quale campagna l'ha portata: è il collegamento che fa esistere la domanda
   // «questa campagna cosa ha prodotto?».
   campagna?: string;
-  opportunita?: Omit<Opportunita, 'id' | 'contattoId'>[];
+  // Il preventivo (numero, scadenza, stato) è facoltativo nei casi di
+  // esempio: chi non lo dichiara non ha un preventivo, ed è la maggioranza.
+  opportunita?: (Omit<Opportunita, 'id' | 'contattoId' | 'numeroPreventivo' | 'scadenzaPreventivo' | 'statoPreventivo'>
+    & Partial<Pick<Opportunita, 'numeroPreventivo' | 'scadenzaPreventivo' | 'statoPreventivo'>>)[];
   azioni?: Omit<Azione, 'id' | 'contattoId' | 'creataIl'>[];
   eventi?: Omit<Evento, 'id' | 'contattoId'>[];
   conversazioni?: (Omit<Conversazione, 'id' | 'contattoId' | 'campagnaId'> & { campagna?: string })[];
@@ -45,6 +53,21 @@ const base = {
 // N/D, perché finché non colleghiamo le statistiche di Google quel numero non
 // lo sappiamo — e un CRM che inventa un costo è peggio di uno che tace.
 // ---------------------------------------------------------------------------
+// Le card di esempio: due, per far vedere che la domanda «quale card
+// funziona» ha una risposta solo se le card sono distinte.
+const CARD_DEMO: Omit<CardNfc, 'id' | 'campagnaId' | 'demo' | 'creataIl'>[] = [
+  {
+    codice: 'bancone-01', nome: 'Bancone showroom', luogo: 'Cassa, piano terra',
+    destinazione: null, attiva: true, tocchi: 34, ultimoToccoIl: g(1),
+    note: 'La prima, quella sempre appoggiata in cassa.',
+  },
+  {
+    codice: 'vetrina-02', nome: 'Vetrina bagni', luogo: 'Esposizione bagni',
+    destinazione: null, attiva: true, tocchi: 9, ultimoToccoIl: g(6),
+    note: 'Messa a settembre vicino ai lavabi.',
+  },
+];
+
 const CAMPAGNE_DEMO: (Omit<Campagna, 'id' | 'creataIl'> & { chiave: string })[] = [
   {
     chiave: 'bagno-settembre',
@@ -195,6 +218,7 @@ const CASI: CasoDemo[] = [
       descrizione: 'Gres effetto rovere, posa a correre', valoreStimato: 3600,
       valorePreventivo: 3480, probabilita: 60, stato: 'aperta',
       dataPreventivo: g(1), chiusuraPrevista: fra(14), motivoPerso: null, creataIl: g(10),
+      numeroPreventivo: 'PREV-2026-121', scadenzaPreventivo: soloGiorno(fra(29)), statoPreventivo: 'inviato',
     }],
     azioni: [{
       tipo: 'follow_up', descrizione: 'Sentire se il preventivo convince',
@@ -229,6 +253,7 @@ const CASI: CasoDemo[] = [
       descrizione: 'Calacatta per il bagno, rovere in cucina', valoreStimato: 5200,
       valorePreventivo: 4850, probabilita: 55, stato: 'aperta',
       dataPreventivo: g(8), chiusuraPrevista: fra(6), motivoPerso: null, creataIl: g(15),
+      numeroPreventivo: 'PREV-2026-118', scadenzaPreventivo: soloGiorno(fra(22)), statoPreventivo: 'inviato',
     }],
     azioni: [{
       tipo: 'richiamare', descrizione: 'Richiamare: preventivo di 4.850 € fermo da otto giorni',
@@ -264,6 +289,7 @@ const CASI: CasoDemo[] = [
       descrizione: 'Nero lucido per il bagno degli ospiti', valoreStimato: 5200,
       valorePreventivo: 5200, probabilita: 45, stato: 'aperta',
       dataPreventivo: g(13), chiusuraPrevista: fra(10), motivoPerso: null, creataIl: g(20),
+      numeroPreventivo: 'PREV-2026-114', scadenzaPreventivo: soloGiorno(fra(17)), statoPreventivo: 'inviato',
     }],
     azioni: [{
       tipo: 'richiamare', descrizione: 'Far rientrare i campioni di Nero Marquina e chiudere',
@@ -293,6 +319,7 @@ const CASI: CasoDemo[] = [
       descrizione: 'Calacatta, gres cemento, rovere naturale', valoreStimato: 16000,
       valorePreventivo: 15600, probabilita: 95, stato: 'aperta',
       dataPreventivo: g(17), chiusuraPrevista: fra(5), motivoPerso: null, creataIl: g(40),
+      numeroPreventivo: 'PREV-2026-109', scadenzaPreventivo: soloGiorno(g(2)), statoPreventivo: 'inviato',
     }],
     azioni: [{
       tipo: 'confermare_ordine', descrizione: 'Confermare le misure col posatore prima della consegna',
@@ -319,6 +346,7 @@ const CASI: CasoDemo[] = [
       descrizione: 'Gres effetto marmo, consegnato e posato', valoreStimato: 6400,
       valorePreventivo: 6250, probabilita: 100, stato: 'vinta',
       dataPreventivo: g(70), chiusuraPrevista: g(25), motivoPerso: null, creataIl: g(85),
+      numeroPreventivo: 'PREV-2026-088', scadenzaPreventivo: soloGiorno(g(40)), statoPreventivo: 'accettato',
     }],
     eventi: [
       { tipo: 'lead_ricevuto', descrizione: 'Passaparola del geometra', quando: g(90, 10), valore: null, operatore: null, automatico: true },
@@ -341,6 +369,7 @@ const CASI: CasoDemo[] = [
       descrizione: 'Gres 20 mm per esterno', valoreStimato: 2800,
       valorePreventivo: 2750, probabilita: 0, stato: 'persa',
       dataPreventivo: g(30), chiusuraPrevista: g(16), motivoPerso: 'prezzo', creataIl: g(40),
+      numeroPreventivo: 'PREV-2026-095', scadenzaPreventivo: soloGiorno(g(1)), statoPreventivo: 'rifiutato',
     }],
     eventi: [
       { tipo: 'lead_ricevuto', descrizione: 'Form preventivo dal sito', quando: g(45, 14), valore: null, operatore: null, automatico: true },
@@ -438,7 +467,18 @@ export function semina(): Istantanea {
     const c: Contatto = { ...caso.contatto, campagnaId, aggiornatoIl: caso.contatto.creatoIl };
     contatti.push(c);
 
-    for (const o of caso.opportunita ?? []) opportunita.push({ ...o, id: id('opp'), contattoId: c.id });
+    for (const o of caso.opportunita ?? []) {
+      // Se c'è una data di preventivo ma nessuno stato dichiarato, quel
+      // preventivo è stato mandato: è l'unica lettura sensata del dato.
+      opportunita.push({
+        numeroPreventivo: null,
+        scadenzaPreventivo: null,
+        statoPreventivo: o.dataPreventivo ? 'inviato' : 'nessuno',
+        ...o,
+        id: id('opp'),
+        contattoId: c.id,
+      });
+    }
     for (const a of caso.azioni ?? []) azioni.push({ ...a, id: id('az'), contattoId: c.id, creataIl: c.creatoIl });
 
     // Le conversazioni prima degli eventi, così un evento può citarle.
@@ -474,5 +514,15 @@ export function semina(): Istantanea {
     }
   }
 
-  return { contatti, opportunita, azioni, eventi, campagne, conversazioni, identita };
+  return {
+    ...ISTANTANEA_VUOTA,
+    contatti, opportunita, azioni, eventi, campagne, conversazioni, identita,
+    card: CARD_DEMO.map((c, i) => ({
+      ...c,
+      id: `card-demo-${i + 1}`,
+      campagnaId: null,
+      demo: true,
+      creataIl: g(90),
+    })),
+  };
 }
