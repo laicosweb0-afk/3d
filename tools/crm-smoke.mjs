@@ -320,9 +320,29 @@ try {
     await p.screenshot({ path: `${out}/crm-06-una-persona.png`, fullPage: true });
   }
 
-  console.log('\n13. Su telefono non deve esserci scorrimento orizzontale');
+  console.log('\n13. Il Flusso conta le stesse persone della pipeline');
+  await vai('/flusso?periodo=tutto');
+  const flusso = await p.locator('main').innerText();
+  // I riquadri non sono decorazione: si aprono su chi c'è dentro.
+  const portaHref = await p.locator('a.tessera').first().getAttribute('href');
+  if (!portaHref || !portaHref.startsWith('/contatti?')) {
+    segna('le porte d\'ingresso del Flusso non portano a nessun elenco');
+  } else ok('ogni riquadro si apre sull\'elenco delle persone');
+
+  // Lo stesso numero, contato dalle due pagine: se non combaciano, una delle
+  // due sta mentendo.
+  const dentroFlusso = Number((flusso.match(/DENTRO IL CRM\s*\n\s*([\d.]+)/i) || [])[1]?.replace('.', ''));
+  await vai('/contatti');
+  const quanti = await p.locator('a[href^="/contatti/"]').evaluateAll(
+    (nodi) => new Set(nodi.map((n) => n.getAttribute('href')).filter((h) => h && !h.includes('nuovo'))).size,
+  );
+  if (!Number.isFinite(dentroFlusso)) segna('il Flusso non mostra quante persone ci sono dentro');
+  else if (dentroFlusso !== quanti) segna(`il Flusso dice ${dentroFlusso} persone, i Contatti ne elencano ${quanti}`);
+  else ok(`${quanti} persone, contate uguali dalle due pagine`);
+
+  console.log('\n14. Su telefono non deve esserci scorrimento orizzontale');
   const tel = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
-  for (const percorso of ['/', '/pipeline', '/contatti', '/campagne', '/attenzioni', '/analisi']) {
+  for (const percorso of ['/', '/flusso', '/pipeline', '/contatti', '/campagne', '/attenzioni', '/analisi']) {
     await tel.goto(`${url}${percorso}`, { waitUntil: 'networkidle' });
     const overflow = await tel.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     if (overflow > 1) segna(`${percorso}: la pagina scorre di lato di ${overflow}px`);

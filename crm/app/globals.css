@@ -1,28 +1,43 @@
 /* ===========================================================================
    Il sistema visivo del CRM. Scuro, perché è uno strumento di lavoro che sta
-   aperto tutto il giorno; l'oro di Rama solo dove serve identità, mai come
-   decorazione. La gerarchia è quella del lavoro: prima cosa devo fare, poi
-   cos'è urgente, poi dove sono i contatti, poi i numeri.
+   aperto tutto il giorno. La gerarchia è quella del lavoro: prima cosa devo
+   fare, poi cos'è urgente, poi dove sono i contatti, poi i numeri.
+
+   Il fondo è un blu di notte, le superfici sono vetro appoggiato sopra, e la
+   luce è un'informazione: brilla quello che è vivo e quello che sta passando
+   da una parte all'altra. Niente brilla per fare scena — se tutto brilla,
+   non brilla niente. L'oro di Rama resta il colore dell'identità e del
+   gesto principale.
    =========================================================================== */
 
 :root {
-  /* Fondo e superfici: grafite con una punta di caldo, non grigio da ufficio */
-  --fondo: #0e0e10;
-  --carta: #16161a;
-  --carta-2: #1d1d22;
-  --carta-3: #24242a;
-  --linea: rgba(255, 255, 255, .085);
-  --linea-forte: rgba(255, 255, 255, .17);
+  /* Fondo e superfici: blu di notte, con il vetro che ci sta sopra */
+  --fondo: #070a14;
+  --fondo-2: #0b1020;
+  --carta: rgba(255, 255, 255, .038);
+  --carta-piena: #101627;
+  --carta-2: rgba(255, 255, 255, .062);
+  --carta-3: rgba(255, 255, 255, .092);
+  --linea: rgba(255, 255, 255, .09);
+  --linea-forte: rgba(255, 255, 255, .19);
+  --vetro-luce: rgba(255, 255, 255, .13);
 
   /* Inchiostri */
-  --ink: #f1eee8;
-  --ink-2: rgba(241, 238, 232, .66);
-  --ink-3: rgba(241, 238, 232, .42);
+  --ink: #f4f7ff;
+  --ink-2: rgba(226, 234, 252, .68);
+  --ink-3: rgba(226, 234, 252, .44);
 
   /* Accento: l'oro di Rama */
   --oro: #c9a227;
   --oro-chiaro: #e7cd86;
-  --oro-velo: rgba(201, 162, 39, .14);
+  --oro-velo: rgba(201, 162, 39, .16);
+
+  /* I colori del flusso: da dove arriva una persona e dove sta andando */
+  --blu: #3b82f6;
+  --blu-chiaro: #7dabff;
+  --ciano: #2fd6d0;
+  --viola: #8b5cf6;
+  --blu-velo: rgba(59, 130, 246, .16);
 
   /* Stato — separati dall'accento, sempre con una parola accanto */
   --urgente: #e8746c;
@@ -50,6 +65,17 @@ body {
   font-size: 15px;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
+}
+
+/* Due luci ferme dietro tutto: danno profondità alla pagina senza muoversi
+   e senza costare niente. Stanno dietro al contenuto, sempre. */
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(60% 45% at 18% 0%, rgba(59, 130, 246, .16), transparent 70%),
+    radial-gradient(55% 40% at 88% 8%, rgba(139, 92, 246, .13), transparent 72%),
+    linear-gradient(180deg, var(--fondo-2), var(--fondo) 55%);
 }
 
 a { color: inherit; text-decoration: none; }
@@ -84,9 +110,17 @@ p { margin: 0 0 10px; }
 
 .sezione + .sezione { margin-top: 26px; }
 
+/* Il vetro: una superficie sola, ripetuta ovunque. Il filo di luce in cima è
+   quello che la stacca dal fondo — è il bordo illuminato, non un'ombra. */
 .scheda {
-  background: var(--carta); border: 1px solid var(--linea);
-  border-radius: var(--r-g); padding: 16px;
+  position: relative;
+  background: var(--carta);
+  border: 1px solid var(--linea);
+  border-radius: var(--r-g);
+  padding: 16px;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 1px 0 var(--vetro-luce) inset, 0 12px 34px rgba(0, 0, 0, .34);
 }
 .scheda-fitta { padding: 4px 16px; }
 
@@ -98,8 +132,9 @@ p { margin: 0 0 10px; }
    -------------------------------------------------------------------------- */
 .barra {
   position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30;
-  background: rgba(14, 14, 16, .88);
-  backdrop-filter: saturate(160%) blur(14px);
+  background: rgba(7, 10, 20, .72);
+  backdrop-filter: saturate(180%) blur(22px);
+  -webkit-backdrop-filter: saturate(180%) blur(22px);
   border-bottom: 1px solid var(--linea);
 }
 .barra-dentro {
@@ -129,7 +164,8 @@ p { margin: 0 0 10px; }
 .barra-bassa {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
   display: none; justify-content: space-around; align-items: stretch;
-  background: rgba(14, 14, 16, .95); backdrop-filter: blur(14px);
+  background: rgba(7, 10, 20, .82); backdrop-filter: saturate(180%) blur(22px);
+  -webkit-backdrop-filter: saturate(180%) blur(22px);
   border-top: 1px solid var(--linea);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -242,7 +278,12 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
    Numeri
    -------------------------------------------------------------------------- */
 .numeri { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-.numero { background: var(--carta); border: 1px solid var(--linea); border-radius: var(--r); padding: 13px 14px; }
+.numero {
+  background: var(--carta); border: 1px solid var(--linea); border-radius: var(--r);
+  padding: 13px 14px; backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 1px 0 var(--vetro-luce) inset;
+}
 .numero .eti { font-size: 11.5px; color: var(--ink-3); display: block; margin-bottom: 3px; }
 .numero .val { font-family: var(--font-mono), monospace; font-size: 24px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; display: block; }
 .numero .sotto { font-size: 11.5px; color: var(--ink-2); }
@@ -261,13 +302,17 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .gradino .barra-valore { flex: 1; height: 8px; background: var(--carta-3); border-radius: 999px; overflow: hidden; }
 /* display:block o l'altezza non si applica: uno span resta inline e la barra
    sembra vuota. */
-.gradino .riempimento { display: block; height: 100%; min-width: 3px; background: linear-gradient(90deg, var(--oro), var(--oro-chiaro)); border-radius: 999px; }
+/* Stessa barra, stesso colore: in Pipeline e in Flusso misura la stessa cosa
+   — quante persone stanno in una fase — quindi non può cambiare tinta da una
+   pagina all'altra. L'oro resta ai soldi e al gesto principale. */
+.gradino .riempimento { display: block; height: 100%; min-width: 3px; background: linear-gradient(90deg, var(--blu), var(--ciano)); border-radius: 999px; }
 .gradino .conta { font-family: var(--font-mono), monospace; font-size: 14px; min-width: 28px; text-align: right; }
 .gradino .valore { font-family: var(--font-mono), monospace; font-size: 12.5px; color: var(--ink-2); min-width: 78px; text-align: right; }
 
 .kanban { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 12px; scroll-snap-type: x proximity; }
 .colonna {
   flex: 0 0 248px; background: var(--carta); border: 1px solid var(--linea);
+  backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
   border-radius: var(--r); padding: 10px; scroll-snap-align: start;
   display: flex; flex-direction: column; gap: 8px; min-height: 150px;
 }
@@ -295,6 +340,8 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .prossima-azione {
   background: var(--carta); border: 1px solid var(--linea-forte); border-radius: var(--r-g);
   padding: 16px; border-left: 4px solid var(--da-fare);
+  backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 1px 0 var(--vetro-luce) inset, 0 12px 34px rgba(0, 0, 0, .34);
 }
 .prossima-azione.urgente { border-left-color: var(--urgente); background: linear-gradient(90deg, var(--urgente-velo), var(--carta) 60%); }
 .prossima-azione.nessuna { border-left-color: var(--urgente); }
@@ -306,7 +353,10 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .tempo li:last-child { padding-bottom: 0; }
 .tempo li::before {
   content: ""; position: absolute; left: 3px; top: 6px; width: 9px; height: 9px;
-  border-radius: 50%; background: var(--segno, var(--ink-3)); box-shadow: 0 0 0 3px var(--carta);
+  border-radius: 50%; background: var(--segno, var(--ink-3));
+  /* L'anello copre la linea che passa dietro: serve un colore pieno, non il
+     vetro, altrimenti la linea si vede attraverso il pallino. */
+  box-shadow: 0 0 0 3px var(--fondo);
 }
 .tempo li::after { content: ""; position: absolute; left: 7px; top: 16px; bottom: 0; width: 1px; background: var(--linea); }
 .tempo li:last-child::after { display: none; }
@@ -371,6 +421,146 @@ tbody tr:hover { background: var(--carta-2); }
    -------------------------------------------------------------------------- */
 .accesso { min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
 .accesso .scheda { width: 100%; max-width: 350px; padding: 22px; }
+
+/* --------------------------------------------------------------------------
+   Il menu del "+"
+   -------------------------------------------------------------------------- */
+.menu-piu {
+  position: fixed; right: 16px; z-index: 31; min-width: 210px; padding: 8px;
+  bottom: calc(var(--barra-mobile) + 80px + env(safe-area-inset-bottom, 0px));
+  background: rgba(16, 22, 39, .86); border: 1px solid var(--linea-forte);
+  border-radius: 16px; box-shadow: 0 18px 46px rgba(0, 0, 0, .55);
+  backdrop-filter: blur(22px) saturate(160%); -webkit-backdrop-filter: blur(22px) saturate(160%);
+}
+.menu-piu .voce { display: flex; }
+
+/* --------------------------------------------------------------------------
+   Flusso — la pagina che si guarda per capire, in un colpo d'occhio, da dove
+   arriva la gente e dove si ferma.
+
+   Tre fasce: le porte d'ingresso, il CRM in mezzo, il percorso fino
+   all'ordine. Le linee di luce che le uniscono sono un SVG solo, dietro; i
+   riquadri stanno sopra e sono link veri — si clicca e si vede chi sono
+   quelle persone. Nessun numero è una stima: sono conteggi.
+   -------------------------------------------------------------------------- */
+.flusso { position: relative; }
+
+/* I fili: una fascia bassa fra una fila e l'altra. Non si clicca e non si
+   legge — si guarda. */
+.fili { display: block; width: 100%; height: 76px; pointer-events: none; }
+.filo-alone { fill: none; stroke-width: 9; opacity: .3; filter: blur(6px); }
+.filo-base { fill: none; stroke-width: 1.25; opacity: .5; }
+.filo-vivo {
+  fill: none; stroke-width: 2.2; opacity: .95; stroke-linecap: round;
+  stroke-dasharray: 22 160;
+  animation: scorre 3.2s linear infinite;
+}
+/* La scintilla parte da fuori e arriva a fondo corsa: 22 + 160 = 182, cioè
+   un giro intero del tratteggio. */
+@keyframes scorre {
+  from { stroke-dashoffset: 182; }
+  to { stroke-dashoffset: 0; }
+}
+
+.flusso-fascia { position: relative; z-index: 1; display: grid; gap: 12px; }
+.flusso-fascia.porte { grid-template-columns: repeat(4, 1fr); }
+.flusso-fascia.esiti { grid-template-columns: repeat(3, 1fr); }
+
+/* La tessera: un riquadro di vetro con una luce propria, del colore del
+   canale. La luce dice "di qui è passato qualcosa"; se il numero è zero la
+   luce si spegne, perché non c'è niente da guardare. */
+.tessera {
+  --luce: var(--blu);
+  position: relative; display: block; padding: 15px 16px 16px;
+  background: var(--carta); border: 1px solid var(--linea); border-radius: var(--r-g);
+  backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 1px 0 var(--vetro-luce) inset, 0 12px 34px rgba(0, 0, 0, .34);
+  overflow: hidden; transition: transform .18s ease, border-color .18s ease;
+}
+.tessera::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--luce), transparent);
+  opacity: .9;
+}
+.tessera::after {
+  content: ''; position: absolute; left: 50%; top: -46px; width: 150px; height: 92px;
+  transform: translateX(-50%); border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, var(--luce), transparent);
+  opacity: .22; filter: blur(12px);
+}
+.tessera.spenta { opacity: .5; }
+.tessera.spenta::before, .tessera.spenta::after { opacity: 0; }
+.tessera:hover { transform: translateY(-2px); border-color: var(--linea-forte); }
+.tessera .eti {
+  display: block; font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-3); margin-bottom: 6px;
+}
+.tessera .val {
+  display: block; font-family: var(--font-mono), monospace; font-size: 30px; font-weight: 600;
+  letter-spacing: -.03em; font-variant-numeric: tabular-nums; line-height: 1.05;
+}
+.tessera .sotto { display: block; font-size: 12.5px; color: var(--ink-2); margin-top: 4px; }
+
+/* Il cuore: il CRM. Non è decorazione — dice quante persone ci sono dentro
+   in tutto e quante aspettano qualcosa da noi adesso. */
+.nucleo {
+  position: relative; z-index: 1; margin: 22px auto; max-width: 420px; text-align: center;
+  padding: 22px 24px; border-radius: 24px;
+  background: linear-gradient(180deg, rgba(59, 130, 246, .13), rgba(139, 92, 246, .09));
+  border: 1px solid var(--linea-forte);
+  backdrop-filter: blur(22px) saturate(160%); -webkit-backdrop-filter: blur(22px) saturate(160%);
+  box-shadow: 0 1px 0 var(--vetro-luce) inset, 0 20px 60px rgba(59, 130, 246, .16);
+}
+.nucleo .eti { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.nucleo .val {
+  font-family: var(--font-mono), monospace; font-size: 42px; font-weight: 600;
+  letter-spacing: -.035em; font-variant-numeric: tabular-nums; display: block; margin: 2px 0;
+}
+.nucleo .sotto { font-size: 13px; color: var(--ink-2); margin: 0; }
+
+/* Il percorso: una riga per fase, con quanti ci sono dentro. */
+.scia { display: flex; flex-direction: column; gap: 2px; }
+.scia-passo {
+  position: relative; z-index: 1; display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border-radius: 12px; border: 1px solid transparent;
+}
+.scia-passo:hover { background: var(--carta-2); border-color: var(--linea); }
+.scia-passo .segno {
+  width: 9px; height: 9px; border-radius: 50%; flex: none;
+  background: var(--luce, var(--blu)); box-shadow: 0 0 12px var(--luce, var(--blu));
+}
+.scia-passo.vuoto .segno { background: var(--linea-forte); box-shadow: none; }
+/* Il nome non si accartoccia e non scivola sotto la barra: se non ci sta,
+   si accorcia con i puntini. */
+.scia-passo .nome {
+  flex: 1; min-width: 92px; font-size: 14px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.scia-passo .barra-valore { flex: 1.4; height: 6px; background: var(--carta-3); border-radius: 999px; overflow: hidden; }
+.scia-passo .riempimento {
+  display: block; height: 100%; min-width: 3px; border-radius: 999px;
+  background: linear-gradient(90deg, var(--blu), var(--ciano));
+}
+.scia-passo .conta { font-family: var(--font-mono), monospace; font-size: 14px; min-width: 30px; text-align: right; }
+.scia-passo .valore { font-family: var(--font-mono), monospace; font-size: 12.5px; color: var(--ink-2); min-width: 86px; text-align: right; }
+
+@media (max-width: 900px) {
+  /* Su telefono i fili non aiutano: è una colonna, si legge dall'alto in
+     basso e basta. */
+  .fili { height: 30px; opacity: .55; }
+  .flusso-fascia.porte { grid-template-columns: repeat(2, 1fr); }
+  .flusso-fascia.esiti { grid-template-columns: 1fr; }
+  .nucleo { margin: 14px auto; }
+  .tessera .val { font-size: 26px; }
+}
+
+@media (max-width: 560px) {
+  /* Su uno schermo stretto la barra ruba lo spazio al nome e non aggiunge
+     niente: il numero c'è già. Via la barra, resta il dato. */
+  .scia-passo .barra-valore { display: none; }
+  .scia-passo { padding: 12px 12px; }
+  .scia-passo .valore { min-width: 74px; font-size: 12px; }
+}
 
 /* --------------------------------------------------------------------------
    Schermi stretti

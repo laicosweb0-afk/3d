@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 
 const VOCI = [
   { href: '/', testo: 'Oggi', segno: 'oggi' },
+  { href: '/flusso', testo: 'Flusso', segno: 'flusso' },
   { href: '/pipeline', testo: 'Pipeline', segno: 'pipeline' },
   { href: '/contatti', testo: 'Contatti', segno: 'contatti' },
   { href: '/campagne', testo: 'Campagne', segno: 'campagne' },
@@ -19,7 +20,7 @@ const VOCI = [
 
 // In fondo allo schermo ci stanno cinque voci, non sette: si tengono quelle
 // che si toccano in negozio, il resto resta in alto sul computer.
-const NASCOSTE_IN_BASSO = ['ingressi', 'analisi'];
+const NASCOSTE_IN_BASSO = ['ingressi', 'analisi', 'campagne'];
 const VOCI_BASSE = VOCI.filter((v) => !NASCOSTE_IN_BASSO.includes(v.segno));
 
 function Icona({ segno }: { segno: string }) {
@@ -30,6 +31,8 @@ function Icona({ segno }: { segno: string }) {
       return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M6 10h12M9 15h6M11 20h2" /></svg>;
     case 'contatti':
       return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.4" /><path d="M5 20c0-3.6 3.1-5.6 7-5.6s7 2 7 5.6" /></svg>;
+    case 'flusso':
+      return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v5a3 3 0 0 0 3 3h10a3 3 0 0 1 3 3v5" /><path d="M4 20v-5a3 3 0 0 1 3-3" /><circle cx="4" cy="4" r="1.6" /><circle cx="4" cy="20" r="1.6" /><circle cx="20" cy="20" r="1.6" /></svg>;
     case 'campagne':
       return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5 15 5v14L4 14.5Z" /><path d="M7 15v4.5h3V16" /><path d="M18 10.5a2.6 2.6 0 0 1 0 3" /></svg>;
     case 'attenzioni':
@@ -92,18 +95,11 @@ export function Navigazione({ urgenti, attenzioni }: { urgenti: number; attenzio
       </button>
 
       {menuAperto && (
-        <div
-          style={{
-            position: 'fixed', right: 16, bottom: 'calc(var(--barra-mobile) + 80px)', zIndex: 31,
-            background: 'var(--carta-2)', border: '1px solid var(--linea-forte)',
-            borderRadius: 14, padding: 8, minWidth: 210, boxShadow: '0 16px 40px rgba(0,0,0,.5)',
-          }}
-          role="menu"
-        >
-          <Link className="voce" style={{ display: 'flex' }} href="/contatti/nuovo" role="menuitem">Nuovo contatto</Link>
-          <Link className="voce" style={{ display: 'flex' }} href="/contatti?scegli=attivita" role="menuitem">Nuova attività</Link>
-          <Link className="voce" style={{ display: 'flex' }} href="/contatti?scegli=preventivo" role="menuitem">Nuovo preventivo</Link>
-          <Link className="voce" style={{ display: 'flex' }} href="/contatti?scegli=nota" role="menuitem">Nuova nota</Link>
+        <div className="menu-piu" role="menu">
+          <Link className="voce" href="/contatti/nuovo" role="menuitem">Nuovo contatto</Link>
+          <Link className="voce" href="/campagne/nuova" role="menuitem">Nuova campagna</Link>
+          <Link className="voce" href="/contatti?scegli=attivita" role="menuitem">Nuova attività</Link>
+          <Link className="voce" href="/contatti?scegli=preventivo" role="menuitem">Nuovo preventivo</Link>
         </div>
       )}
     </>
