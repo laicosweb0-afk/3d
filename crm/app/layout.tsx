@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0e0e10',
+  themeColor: '#070a14',
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
@@ -41,6 +41,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <div className="striscia-demo">
             <strong>Modalità dimostrativa</strong> — dati di esempio, tutto funziona davvero ma niente è reale.
             Con le chiavi di Supabase il CRM passa ai dati veri da solo.
+            {/* Online la memoria è quella del server, e il server va a dormire:
+                dirlo è l'unico modo perché una modifica che sparisce sembri
+                quello che è — la demo, non un difetto del CRM. */}
+            {process.env.VERCEL && (
+              <> <strong>Qui online</strong> le modifiche restano finché il server è sveglio: dopo qualche
+                minuto di inattività i dati di esempio tornano come erano. Con Supabase collegato non succede.</>
+            )}
           </div>
         )}
         <Navigazione urgenti={urgenti} attenzioni={quanteAttenzioni} />
