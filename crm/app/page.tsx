@@ -1,113 +1,127 @@
 import Link from 'next/link';
-import { supabaseServer } from '@/lib/supabase-server';
-import { dataOra, inRitardo, quando } from '@/lib/formato';
-import { ETICHETTE_TIPO, TIPI_ATTIVITA, type Attivita, type Contatto, type TipoAttivita } from '@/lib/tipi';
-import { creaAttivita, segnaAttivitaFatta } from './azioni';
+import { deposito } from '@/lib/dati';
+import {
+  ETICHETTA_PERIODO, analisi as calcolaAnalisi, attenzioni as calcolaAttenzioni,
+  contattiInAttenzione, daFare, elenco, type Periodo,
+} from '@/lib/dati/istantanea';
+import { euro } from '@/lib/dominio/etichette';
+import { inRitardo } from '@/lib/formato';
+import { Numero, RigaContatto, VoceDaFare } from './pezzi';
 
-// La prima cosa che si vede aprendo il CRM: chi va richiamato oggi e chi è
-// arrivato dalla card e non ha ancora sentito nessuno.
+// La home risponde a due domande, in quest'ordine: cosa devo fare adesso, e
+// cosa sta succedendo. Non è un elenco di persone: è una coda di lavoro.
 
 export const dynamic = 'force-dynamic';
 
-type AttivitaConContatto = Attivita & { contatti: { nome: string } | null };
+const PERIODI: Periodo[] = ['oggi', '7', '30', 'mese'];
 
-export default async function Oggi() {
-  const supabase = await supabaseServer();
+export default async function Oggi({
+  searchParams,
+}: {
+  searchParams: Promise<{ periodo?: string }>;
+}) {
+  const parametri = await searchParams;
+  const periodo = (PERIODI.includes(parametri.periodo as Periodo) ? parametri.periodo : '30') as Periodo;
 
-  const [{ data: daFare }, { data: nuovi }] = await Promise.all([
-    supabase
-      .from('attivita')
-      .select('id, titolo, tipo, scadenza, contatto_id, contatti(nome)')
-      .is('fatta_il', null)
-      .order('scadenza', { ascending: true })
-      .limit(30),
-    supabase
-      .from('contatti')
-      .select('id, nome, email, creato_il, provenienza')
-      .eq('stato', 'nuovo')
-      .order('creato_il', { ascending: false })
-      .limit(8),
-  ]);
-
-  const attivita = (daFare ?? []) as unknown as AttivitaConContatto[];
-  const leadNuovi = (nuovi ?? []) as unknown as Pick<Contatto, 'id' | 'nome' | 'email' | 'creato_il' | 'provenienza'>[];
-  const scadute = attivita.filter((a) => inRitardo(a.scadenza));
+  const dati = await (await deposito()).istantanea();
+  const coda = daFare(dati, 3);
+  const adesso = coda.filter((v) => inRitardo(v.azione.scadenza) || v.priorita === 'urgente');
+  const dopo = coda.filter((v) => !adesso.includes(v));
+  const numeri = calcolaAnalisi(dati, periodo);
+  const avvisi = calcolaAttenzioni(dati).slice(0, 3);
+  const senzaAzione = contattiInAttenzione(dati, 'senza_azione').length;
+  const maiSentiti = elenco(dati, { fase: 'nuovo', ordine: 'recenti' }).slice(0, 5);
 
   return (
     <main>
-      <header className="intestazione">
-        <p className="occhiello">Club Rama</p>
-        <h1>Oggi</h1>
-        <p className="lede">
-          {attivita.length === 0
-            ? 'Niente in sospeso.'
-            : `${attivita.length} ${attivita.length === 1 ? 'cosa da fare' : 'cose da fare'}${scadute.length ? `, ${scadute.length} in ritardo` : ''}.`}
-        </p>
+      <header className="testata-pagina">
+        <div>
+          <h1>Oggi</h1>
+          <p className="lede">
+            {coda.length === 0
+              ? 'Niente in scadenza nei prossimi giorni.'
+              : `${adesso.length} da fare adesso, ${dopo.length} nei prossimi tre giorni.`}
+          </p>
+        </div>
+        <nav className="azioni-riga" aria-label="Periodo dei numeri">
+          {PERIODI.map((p) => (
+            <Link
+              key={p}
+              href={p === '30' ? '/' : `/?periodo=${p}`}
+              className={`voce${periodo === p ? ' attiva' : ''}`}
+            >
+              {ETICHETTA_PERIODO[p]}
+            </Link>
+          ))}
+        </nav>
       </header>
 
-      <section className="scheda">
-        <h2>Da fare</h2>
-        {attivita.length === 0 && <p className="vuoto">Nessun promemoria aperto.</p>}
-        {attivita.map((voce) => (
-          <div key={voce.id} className="riga">
-            <div className="cresce">
-              <div className="nome">{voce.titolo}</div>
-              <div className="sotto">
-                {ETICHETTE_TIPO[voce.tipo as TipoAttivita]} · {quando(voce.scadenza)}
-                {voce.contatti?.nome ? ` · ${voce.contatti.nome}` : ''}
-              </div>
-            </div>
-            {inRitardo(voce.scadenza) && <span className="pastiglia ritardo">in ritardo</span>}
-            {voce.contatto_id && (
-              <Link href={`/contatti/${voce.contatto_id}`} className="bottone bottone-secondario bottone-minuto">
-                Apri
-              </Link>
-            )}
-            <form action={segnaAttivitaFatta}>
-              <input type="hidden" name="id" value={voce.id} />
-              <button type="submit" className="bottone-minuto">Fatto</button>
-            </form>
-          </div>
-        ))}
+      {avvisi.length > 0 && (
+        <section className="sezione" aria-label="Attenzioni">
+          {avvisi.map((a) => (
+            <Link
+              key={a.chiave}
+              href={`/contatti?attenzione=${a.chiave}`}
+              className={`avviso ${a.gravita === 'alta' ? 'rosso' : 'giallo'}`}
+              style={{ display: 'block' }}
+            >
+              {a.gravita === 'alta' ? '▲' : '●'} {a.titolo} →
+            </Link>
+          ))}
+        </section>
+      )}
+
+      <section className="sezione">
+        <h2>Da fare adesso</h2>
+        <div className="scheda scheda-fitta">
+          {adesso.length === 0 && (
+            <p className="elenco-vuoto">Niente di urgente. Se hai tempo, guarda cosa arriva domani qui sotto.</p>
+          )}
+          {adesso.map((v) => (
+            <VoceDaFare key={v.azione.id} azione={v.azione} contatto={v.contatto} />
+          ))}
+        </div>
       </section>
 
-      <section className="scheda">
-        <h2>Arrivati e mai sentiti</h2>
-        {leadNuovi.length === 0 && <p className="vuoto">Nessun contatto in attesa.</p>}
-        {leadNuovi.map((contatto) => (
-          <Link key={contatto.id} href={`/contatti/${contatto.id}`} className="riga">
-            <div className="cresce">
-              <div className="nome">{contatto.nome}</div>
-              <div className="sotto">{contatto.email ?? 'senza email'} · {dataOra(contatto.creato_il)}</div>
-            </div>
-            <span className="pastiglia nuovo">nuovo</span>
-          </Link>
-        ))}
-      </section>
+      <div className="colonne">
+        <section className="sezione" style={{ marginTop: 26 }}>
+          <h2>Nei prossimi giorni</h2>
+          <div className="scheda scheda-fitta">
+            {dopo.length === 0 && <p className="elenco-vuoto">Niente in calendario.</p>}
+            {dopo.map((v) => (
+              <VoceDaFare key={v.azione.id} azione={v.azione} contatto={v.contatto} compatta />
+            ))}
+          </div>
+        </section>
 
-      <section className="scheda">
-        <h2>Aggiungi un promemoria</h2>
-        <form action={creaAttivita}>
-          <div className="campo">
-            <label htmlFor="titolo">Cosa</label>
-            <input id="titolo" name="titolo" type="text" required placeholder="Richiamare la signora Bianchi" />
+        <section className="sezione" style={{ marginTop: 26 }}>
+          <h2>Arrivati e mai sentiti</h2>
+          <div className="scheda scheda-fitta">
+            {maiSentiti.length === 0 && <p className="elenco-vuoto">Nessun lead in attesa: buon segno.</p>}
+            {maiSentiti.map((c) => <RigaContatto key={c.id} contatto={c} />)}
           </div>
-          <div className="campi-affiancati">
-            <div className="campo">
-              <label htmlFor="tipo">Tipo</label>
-              <select id="tipo" name="tipo" defaultValue="chiamata">
-                {TIPI_ATTIVITA.map((tipo) => (
-                  <option key={tipo} value={tipo}>{ETICHETTE_TIPO[tipo]}</option>
-                ))}
-              </select>
-            </div>
-            <div className="campo">
-              <label htmlFor="scadenza">Quando</label>
-              <input id="scadenza" name="scadenza" type="datetime-local" />
-            </div>
-          </div>
-          <button type="submit">Aggiungi</button>
-        </form>
+        </section>
+      </div>
+
+      <section className="sezione">
+        <h2>Il quadro · {ETICHETTA_PERIODO[periodo].toLowerCase()}</h2>
+        <div className="numeri">
+          <Numero etichetta="Persone entrate" valore={numeri.ingressi} sotto={`${numeri.qualificati} qualificate`} href="/ingressi" />
+          <Numero etichetta="Valore in pipeline" valore={euro(numeri.valorePipeline)} sotto={`${numeri.preventivi} preventivi`} href="/pipeline" />
+          <Numero
+            etichetta="Ordini chiusi"
+            valore={numeri.ordiniChiusi}
+            sotto={numeri.ordiniChiusi ? euro(numeri.valoreOrdiniChiusi) : 'nessuno nel periodo'}
+            href="/analisi"
+          />
+          <Numero
+            etichetta="Senza prossima azione"
+            valore={senzaAzione}
+            sotto={senzaAzione ? 'rischiano di essere dimenticati' : 'nessuno lasciato indietro'}
+            allarme={senzaAzione > 0}
+            href="/contatti?attenzione=senza_azione"
+          />
+        </div>
       </section>
     </main>
   );

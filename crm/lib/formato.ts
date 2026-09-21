@@ -41,6 +41,13 @@ export function inRitardo(iso: string): boolean {
   return new Date(iso).getTime() < Date.now();
 }
 
+// "oggi", "ieri", "3 giorni fa": al singolare e al plurale come si deve.
+export function daQuanto(giorni: number): string {
+  if (giorni <= 0) return 'oggi';
+  if (giorni === 1) return 'ieri';
+  return `${giorni} giorni fa`;
+}
+
 // Il campo <input type="datetime-local"> manda un orario senza fuso
 // ("2026-09-16T14:30"). Il server sta in UTC: letto così com'è, un richiamo
 // fissato alle 14:30 finirebbe alle 16:30. Qui lo si legge come ora di Roma.

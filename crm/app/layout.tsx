@@ -1,26 +1,49 @@
 import type { Metadata, Viewport } from 'next';
+import { IBM_Plex_Mono, Schibsted_Grotesk } from 'next/font/google';
 import './globals.css';
-import { Barra } from './barra';
+import { Navigazione } from './navigazione';
+import { deposito, modoDati } from '@/lib/dati';
+import { attenzioni as calcolaAttenzioni, daFare } from '@/lib/dati/istantanea';
+
+const ui = Schibsted_Grotesk({ subsets: ['latin'], display: 'swap', variable: '--font-ui' });
+const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500', '600'], display: 'swap', variable: '--font-mono' });
 
 export const metadata: Metadata = {
   title: 'CRM Rama Ceramiche',
-  description: 'Contatti, credito Club Rama e promemoria dello showroom.',
-  // Gestionale interno: fuori dai motori di ricerca.
+  description: 'Cabina di regia commerciale dello showroom di Lugo.',
   robots: { index: false, follow: false },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#F5F5F3',
+  themeColor: '#0e0e10',
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Il numero sulle voci di menu non è un vezzo: è la ragione per cui uno
+  // apre il CRM. Si calcola qui una volta per tutte le pagine.
+  let urgenti = 0;
+  let quanteAttenzioni = 0;
+  try {
+    const dati = await (await deposito()).istantanea();
+    urgenti = daFare(dati, 0).length;
+    quanteAttenzioni = calcolaAttenzioni(dati).reduce((s, a) => s + a.conteggio, 0);
+  } catch {
+    // Senza configurazione le pagine lo dicono da sé: la barra resta muta.
+  }
+
   return (
-    <html lang="it">
+    <html lang="it" className={`${ui.variable} ${mono.variable}`}>
       <body>
-        <Barra />
+        {modoDati() === 'demo' && (
+          <div className="striscia-demo">
+            <strong>Modalità dimostrativa</strong> — dati di esempio, tutto funziona davvero ma niente è reale.
+            Con le chiavi di Supabase il CRM passa ai dati veri da solo.
+          </div>
+        )}
+        <Navigazione urgenti={urgenti} attenzioni={quanteAttenzioni} />
         <div className="guscio">{children}</div>
       </body>
     </html>

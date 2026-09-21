@@ -1,145 +1,396 @@
-/* I colori sono quelli della card NFC (public/club/index.html): chi passa dal
-   tocco sulla card al gestionale vede la stessa casa. Mobile-first, perché in
-   showroom il CRM si apre dal telefono. */
+/* ===========================================================================
+   Il sistema visivo del CRM. Scuro, perché è uno strumento di lavoro che sta
+   aperto tutto il giorno; l'oro di Rama solo dove serve identità, mai come
+   decorazione. La gerarchia è quella del lavoro: prima cosa devo fare, poi
+   cos'è urgente, poi dove sono i contatti, poi i numeri.
+   =========================================================================== */
+
 :root {
-  --crema: #f5f5f3;
-  --fondo: #ebe9e5;
-  --carta: #ffffff;
-  --inchiostro: #1d1d1f;
-  --inchiostro-molle: rgba(29, 29, 31, 0.62);
-  --inchiostro-lieve: rgba(29, 29, 31, 0.4);
-  --linea: rgba(29, 29, 31, 0.1);
-  --oro: #b8912a;
-  --oro-chiaro: #f1d98a;
-  --oro-cupo: #8c6a17;
-  --allarme: #9d2f2f;
-  --bene: #2f6b46;
-  --raggio: 18px;
-  --raggio-grande: 26px;
-  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  /* Fondo e superfici: grafite con una punta di caldo, non grigio da ufficio */
+  --fondo: #0e0e10;
+  --carta: #16161a;
+  --carta-2: #1d1d22;
+  --carta-3: #24242a;
+  --linea: rgba(255, 255, 255, .085);
+  --linea-forte: rgba(255, 255, 255, .17);
+
+  /* Inchiostri */
+  --ink: #f1eee8;
+  --ink-2: rgba(241, 238, 232, .66);
+  --ink-3: rgba(241, 238, 232, .42);
+
+  /* Accento: l'oro di Rama */
+  --oro: #c9a227;
+  --oro-chiaro: #e7cd86;
+  --oro-velo: rgba(201, 162, 39, .14);
+
+  /* Stato — separati dall'accento, sempre con una parola accanto */
+  --urgente: #e8746c;
+  --urgente-velo: rgba(232, 116, 108, .14);
+  --da-fare: #d8a447;
+  --da-fare-velo: rgba(216, 164, 71, .14);
+  --bene: #6fbf92;
+  --bene-velo: rgba(111, 191, 146, .14);
+
+  --r: 12px;
+  --r-g: 18px;
+  --barra-mobile: 62px;
+
+  color-scheme: dark;
 }
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+* { box-sizing: border-box; }
 
 html, body { margin: 0; padding: 0; }
 
 body {
   background: var(--fondo);
-  color: var(--inchiostro);
-  font-family: var(--font);
+  color: var(--ink);
+  font-family: var(--font-ui), ui-sans-serif, system-ui, -apple-system, sans-serif;
   font-size: 15px;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
 }
 
-a { color: inherit; }
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; border-radius: 6px; }
 
-h1 { font-size: 23px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 4px; }
-h2 { font-size: 15px; font-weight: 600; margin: 0 0 10px; }
+/* --------------------------------------------------------------------------
+   Impianto
+   -------------------------------------------------------------------------- */
+.guscio {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-inline: 16px;
+  padding-block: 0 calc(var(--barra-mobile) + 40px);
+}
+
+.testata-pagina {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap; padding-block: 20px 16px;
+}
+.testata-pagina h1 {
+  font-size: 25px; font-weight: 600; letter-spacing: -.02em; margin: 0;
+  text-wrap: balance;
+}
+.testata-pagina .lede { color: var(--ink-2); margin: 4px 0 0; font-size: 14px; }
+
+h2 {
+  font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-3); margin: 0 0 12px;
+}
+h3 { font-size: 15px; font-weight: 600; margin: 0 0 8px; }
 p { margin: 0 0 10px; }
 
-.guscio { max-width: 880px; margin: 0 auto; padding: 0 16px 96px; }
+.sezione + .sezione { margin-top: 26px; }
 
-/* Barra in alto: marchio a tessere + voci. */
+.scheda {
+  background: var(--carta); border: 1px solid var(--linea);
+  border-radius: var(--r-g); padding: 16px;
+}
+.scheda-fitta { padding: 4px 16px; }
+
+.colonne { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; align-items: start; }
+.colonne-pari { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+
+/* --------------------------------------------------------------------------
+   Barra in alto e navigazione
+   -------------------------------------------------------------------------- */
 .barra {
-  position: sticky; top: 0; z-index: 10;
-  background: rgba(245, 245, 243, 0.92);
-  backdrop-filter: saturate(180%) blur(12px);
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30;
+  background: rgba(14, 14, 16, .88);
+  backdrop-filter: saturate(160%) blur(14px);
   border-bottom: 1px solid var(--linea);
 }
 .barra-dentro {
-  max-width: 880px; margin: 0 auto;
-  display: flex; align-items: center; gap: 14px;
-  padding: 10px 16px;
+  max-width: 1180px; margin: 0 auto; padding: 10px 16px;
+  display: flex; align-items: center; gap: 16px;
 }
-.marchio { display: flex; align-items: center; gap: 8px; font-weight: 600; letter-spacing: -0.01em; }
-/* Le tessere del marchio, stesse proporzioni e stesso taglio della card NFC. */
-.tessere { width: 20px; height: 20px; flex-shrink: 0; display: grid; grid-template-columns: 1.15fr 1fr; grid-template-rows: 1.1fr 1fr; gap: 2px; }
+.marchio { display: flex; align-items: center; gap: 9px; font-weight: 600; letter-spacing: -.01em; flex: none; }
+.marchio small { display: block; font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; }
+.tessere { width: 20px; height: 20px; display: grid; grid-template-columns: 1.15fr 1fr; grid-template-rows: 1.1fr 1fr; gap: 2px; flex: none; }
 .tessere i { display: block; background: linear-gradient(135deg, var(--oro-chiaro), var(--oro)); clip-path: polygon(32% 0%, 100% 0%, 68% 100%, 0% 100%); }
-.tessere i:nth-child(3) { background: linear-gradient(135deg, var(--oro), var(--oro-cupo)); }
-.voci { display: flex; gap: 4px; margin-left: auto; align-items: center; overflow-x: auto; scrollbar-width: none; }
-.voci::-webkit-scrollbar { display: none; }
+.tessere i:nth-child(3) { background: linear-gradient(135deg, var(--oro), #6d5314); }
+
+.voci { display: flex; gap: 2px; align-items: center; margin-left: auto; }
 .voce {
-  padding: 7px 12px; border-radius: 999px; text-decoration: none;
-  font-size: 13.5px; color: var(--inchiostro-molle);
+  padding: 7px 12px; border-radius: 999px; font-size: 13.5px; color: var(--ink-2);
+  display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
 }
-.voce:hover { background: rgba(29, 29, 31, 0.05); }
-.voce.attiva { background: var(--inchiostro); color: var(--crema); }
+.voce:hover { background: var(--carta-2); color: var(--ink); }
+.voce.attiva { background: var(--ink); color: var(--fondo); font-weight: 550; }
+.voce .conta {
+  font-family: var(--font-mono), monospace; font-size: 11px; padding: 1px 6px; border-radius: 999px;
+  background: var(--urgente-velo); color: var(--urgente);
+}
+.voce.attiva .conta { background: var(--urgente); color: #fff; }
 
-.intestazione { padding: 22px 0 14px; }
-.occhiello { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--oro-cupo); margin: 0 0 6px; }
-.lede { color: var(--inchiostro-molle); margin: 0; }
+/* Navigazione bassa: sul telefono il pollice sta in fondo, non in cima. */
+.barra-bassa {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  display: none; justify-content: space-around; align-items: stretch;
+  background: rgba(14, 14, 16, .95); backdrop-filter: blur(14px);
+  border-top: 1px solid var(--linea);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.voce-bassa {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; padding: 9px 4px; font-size: 10.5px; color: var(--ink-3); min-height: var(--barra-mobile);
+  position: relative;
+}
+.voce-bassa svg { width: 21px; height: 21px; stroke: currentColor; fill: none; stroke-width: 1.7; }
+.voce-bassa.attiva { color: var(--oro); }
+.voce-bassa .pallino {
+  position: absolute; top: 7px; right: 50%; margin-right: -16px;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--urgente);
+}
 
-.scheda { background: var(--carta); border-radius: var(--raggio-grande); padding: 18px; margin-bottom: 14px; }
-.scheda + .scheda { margin-top: 0; }
+/* --------------------------------------------------------------------------
+   Elementi di stato
+   -------------------------------------------------------------------------- */
+.pastiglia {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono), monospace; font-size: 10.5px; letter-spacing: .04em;
+  text-transform: uppercase; padding: 3px 8px; border-radius: 6px;
+  border: 1px solid var(--linea-forte); color: var(--ink-2); white-space: nowrap;
+}
+.pastiglia.urgente { background: var(--urgente-velo); border-color: transparent; color: var(--urgente); }
+.pastiglia.da_fare { background: var(--da-fare-velo); border-color: transparent; color: var(--da-fare); }
+.pastiglia.normale { background: transparent; }
+.pastiglia.bene { background: var(--bene-velo); border-color: transparent; color: var(--bene); }
+.pastiglia.oro { background: var(--oro-velo); border-color: transparent; color: var(--oro-chiaro); }
 
-.riga { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--linea); text-decoration: none; }
+/* La fonte: un punto colorato più la parola. Mai il colore da solo. */
+.fonte { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-2); white-space: nowrap; }
+.punto { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+
+.euro { font-family: var(--font-mono), monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mono { font-family: var(--font-mono), monospace; font-variant-numeric: tabular-nums; }
+
+/* Striscia di gravità sul bordo sinistro: si legge prima del testo. */
+.con-striscia { border-left: 3px solid var(--linea-forte); }
+.con-striscia.urgente { border-left-color: var(--urgente); }
+.con-striscia.da_fare { border-left-color: var(--da-fare); }
+.con-striscia.normale { border-left-color: var(--linea-forte); }
+
+/* --------------------------------------------------------------------------
+   Righe ed elenchi
+   -------------------------------------------------------------------------- */
+.riga {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--linea);
+}
 .riga:last-child { border-bottom: 0; }
-.riga:hover { background: rgba(29, 29, 31, 0.02); }
 .riga .cresce { flex: 1; min-width: 0; }
-.riga .nome { font-weight: 550; }
-.riga .sotto { font-size: 13px; color: var(--inchiostro-lieve); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.riga .titolo { font-weight: 550; display: block; }
+.riga .sotto { font-size: 12.5px; color: var(--ink-3); display: block; }
+.riga.cliccabile:hover { background: var(--carta-2); }
 
-.vuoto { color: var(--inchiostro-lieve); font-size: 14px; padding: 8px 0; }
+.elenco-vuoto { color: var(--ink-3); font-size: 14px; padding: 14px 0; }
 
-/* Pastiglie di stato: il colore serve a distinguere, non a decorare. */
-.pastiglia { display: inline-block; font-size: 11.5px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--linea); color: var(--inchiostro-molle); white-space: nowrap; }
-.pastiglia.nuovo { background: linear-gradient(140deg, var(--oro-chiaro), #f8ebc2); border-color: transparent; color: var(--oro-cupo); }
-.pastiglia.cliente { background: rgba(47, 107, 70, 0.1); border-color: transparent; color: var(--bene); }
-.pastiglia.perso { background: rgba(29, 29, 31, 0.06); color: var(--inchiostro-lieve); }
-.pastiglia.ritardo { background: rgba(157, 47, 47, 0.1); border-color: transparent; color: var(--allarme); }
+/* --------------------------------------------------------------------------
+   Bottoni
+   -------------------------------------------------------------------------- */
+button, .bottone {
+  font: inherit; font-size: 14px; font-weight: 550; cursor: pointer;
+  border: 1px solid transparent; border-radius: 10px; padding: 9px 15px;
+  background: var(--ink); color: var(--fondo); display: inline-flex;
+  align-items: center; justify-content: center; gap: 7px; white-space: nowrap;
+}
+button:hover, .bottone:hover { opacity: .92; }
+button:disabled { opacity: .45; cursor: default; }
+.bottone-fantasma { background: transparent; color: var(--ink); border-color: var(--linea-forte); }
+.bottone-fantasma:hover { background: var(--carta-2); }
+.bottone-oro { background: var(--oro); color: #1a1408; }
+.bottone-pericolo { background: transparent; color: var(--urgente); border-color: rgba(232, 116, 108, .35); }
+.bottone-piccolo { padding: 6px 11px; font-size: 13px; border-radius: 8px; }
+.bottone-grande { padding: 13px 20px; font-size: 15px; width: 100%; }
 
-.codice { font-variant-numeric: tabular-nums; letter-spacing: 0.06em; font-weight: 600; }
+.azioni-riga { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
-/* Campi e bottoni. 16px sugli input: sotto, iOS ingrandisce la pagina da solo. */
-label { display: block; font-size: 12.5px; color: var(--inchiostro-lieve); margin: 0 0 5px; }
-input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="tel"], input[type="datetime-local"], select, textarea {
-  width: 100%; font: inherit; font-size: 16px; color: var(--inchiostro);
-  background: var(--crema); border: 1px solid var(--linea); border-radius: 14px;
-  padding: 11px 13px; outline: none;
+/* Il "+" sempre raggiungibile: su telefono sta sopra la barra bassa. */
+.piu {
+  position: fixed; right: 16px; bottom: calc(var(--barra-mobile) + 16px + env(safe-area-inset-bottom, 0px));
+  z-index: 31; width: 54px; height: 54px; border-radius: 50%; padding: 0;
+  background: var(--oro); color: #1a1408; font-size: 26px; font-weight: 400;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .45);
+}
+
+/* --------------------------------------------------------------------------
+   Moduli
+   -------------------------------------------------------------------------- */
+label { display: block; font-size: 12px; color: var(--ink-3); margin-bottom: 5px; }
+input[type="text"], input[type="email"], input[type="tel"], input[type="search"],
+input[type="number"], input[type="password"], input[type="date"], input[type="datetime-local"],
+select, textarea {
+  width: 100%; font: inherit; font-size: 16px; color: var(--ink);
+  background: var(--carta-2); border: 1px solid var(--linea);
+  border-radius: 10px; padding: 10px 12px; outline: none;
 }
 input:focus, select:focus, textarea:focus { border-color: var(--oro); }
-textarea { resize: vertical; min-height: 78px; }
+textarea { resize: vertical; min-height: 74px; }
+select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--ink-3) 50%), linear-gradient(135deg, var(--ink-3) 50%, transparent 50%); background-position: calc(100% - 17px) 18px, calc(100% - 12px) 18px; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 32px; }
 .campo { margin-bottom: 12px; }
-.campi-affiancati { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.campi-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.campi-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 
-button, .bottone {
-  font: inherit; font-size: 14.5px; font-weight: 550; cursor: pointer;
-  border: 1px solid transparent; border-radius: 999px; padding: 10px 18px;
-  background: var(--inchiostro); color: var(--crema); text-decoration: none;
-  display: inline-block; text-align: center;
+.filtri { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+.filtri input[type="search"] { flex: 1; min-width: 180px; }
+.filtri select { width: auto; min-width: 128px; }
+
+/* --------------------------------------------------------------------------
+   Numeri
+   -------------------------------------------------------------------------- */
+.numeri { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.numero { background: var(--carta); border: 1px solid var(--linea); border-radius: var(--r); padding: 13px 14px; }
+.numero .eti { font-size: 11.5px; color: var(--ink-3); display: block; margin-bottom: 3px; }
+.numero .val { font-family: var(--font-mono), monospace; font-size: 24px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; display: block; }
+.numero .sotto { font-size: 11.5px; color: var(--ink-2); }
+.numero.allarme .val { color: var(--urgente); }
+
+/* --------------------------------------------------------------------------
+   Pipeline e kanban
+   -------------------------------------------------------------------------- */
+.imbuto { display: flex; flex-direction: column; gap: 3px; }
+.gradino {
+  display: flex; align-items: center; gap: 12px; padding: 9px 12px;
+  border-radius: 9px; background: var(--carta-2); border: 1px solid transparent;
 }
-button:active, .bottone:active { opacity: 0.88; }
-button:disabled { opacity: 0.5; cursor: default; }
-.bottone-secondario { background: transparent; color: var(--inchiostro); border-color: var(--linea); }
-.bottone-pericolo { background: transparent; color: var(--allarme); border-color: rgba(157, 47, 47, 0.3); }
-.bottone-minuto { padding: 5px 12px; font-size: 13px; }
+.gradino:hover { border-color: var(--linea-forte); }
+.gradino .nome { min-width: 108px; font-size: 13.5px; }
+.gradino .barra-valore { flex: 1; height: 8px; background: var(--carta-3); border-radius: 999px; overflow: hidden; }
+/* display:block o l'altezza non si applica: uno span resta inline e la barra
+   sembra vuota. */
+.gradino .riempimento { display: block; height: 100%; min-width: 3px; background: linear-gradient(90deg, var(--oro), var(--oro-chiaro)); border-radius: 999px; }
+.gradino .conta { font-family: var(--font-mono), monospace; font-size: 14px; min-width: 28px; text-align: right; }
+.gradino .valore { font-family: var(--font-mono), monospace; font-size: 12.5px; color: var(--ink-2); min-width: 78px; text-align: right; }
 
-.azioni { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.filtri { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-.filtri form { display: contents; }
-.filtri input[type="search"] { flex: 1; min-width: 190px; }
-.filtri select { width: auto; }
+.kanban { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 12px; scroll-snap-type: x proximity; }
+.colonna {
+  flex: 0 0 248px; background: var(--carta); border: 1px solid var(--linea);
+  border-radius: var(--r); padding: 10px; scroll-snap-align: start;
+  display: flex; flex-direction: column; gap: 8px; min-height: 150px;
+}
+.colonna.bersaglio { border-color: var(--oro); background: var(--carta-2); }
+.colonna-capo { display: flex; align-items: baseline; gap: 8px; }
+.colonna-capo .nome { font-size: 12.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-2); }
+.colonna-capo .conta { font-family: var(--font-mono), monospace; font-size: 12px; color: var(--ink-3); margin-left: auto; }
+.colonna-capo .valore { font-family: var(--font-mono), monospace; font-size: 11.5px; color: var(--oro-chiaro); width: 100%; }
 
-.avviso { background: rgba(157, 47, 47, 0.08); color: var(--allarme); border-radius: 14px; padding: 10px 13px; font-size: 13.5px; margin-bottom: 12px; }
-.nota-piede { font-size: 12.5px; color: var(--inchiostro-lieve); }
+.carta-kanban {
+  background: var(--carta-2); border: 1px solid var(--linea); border-radius: 10px;
+  padding: 10px; display: block; cursor: grab;
+}
+.carta-kanban:hover { border-color: var(--linea-forte); }
+.carta-kanban.in-volo { opacity: .45; }
+.carta-kanban .nome { font-weight: 550; font-size: 14px; }
+.carta-kanban .meta { font-size: 11.5px; color: var(--ink-3); margin-top: 3px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.carta-kanban .prossima { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--linea); font-size: 12px; color: var(--ink-2); }
+.carta-kanban .sposta { margin-top: 8px; }
+.carta-kanban select { font-size: 12px; padding: 5px 8px; border-radius: 7px; }
 
-.dati { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; }
-.dati div { min-width: 0; }
-.dati dt { font-size: 12px; color: var(--inchiostro-lieve); margin-bottom: 2px; }
-.dati dd { margin: 0; overflow-wrap: anywhere; }
+/* --------------------------------------------------------------------------
+   Scheda contatto
+   -------------------------------------------------------------------------- */
+.prossima-azione {
+  background: var(--carta); border: 1px solid var(--linea-forte); border-radius: var(--r-g);
+  padding: 16px; border-left: 4px solid var(--da-fare);
+}
+.prossima-azione.urgente { border-left-color: var(--urgente); background: linear-gradient(90deg, var(--urgente-velo), var(--carta) 60%); }
+.prossima-azione.nessuna { border-left-color: var(--urgente); }
+.prossima-azione .cosa { font-size: 18px; font-weight: 600; letter-spacing: -.01em; margin: 6px 0 2px; }
+.prossima-azione .quando { font-size: 13px; color: var(--ink-2); }
 
-.timeline { list-style: none; margin: 0; padding: 0; }
-.timeline li { padding: 11px 0; border-bottom: 1px solid var(--linea); }
-.timeline li:last-child { border-bottom: 0; }
-.timeline .meta { font-size: 12px; color: var(--inchiostro-lieve); }
+.tempo { list-style: none; margin: 0; padding: 0; }
+.tempo li { position: relative; padding: 0 0 15px 22px; }
+.tempo li:last-child { padding-bottom: 0; }
+.tempo li::before {
+  content: ""; position: absolute; left: 3px; top: 6px; width: 9px; height: 9px;
+  border-radius: 50%; background: var(--segno, var(--ink-3)); box-shadow: 0 0 0 3px var(--carta);
+}
+.tempo li::after { content: ""; position: absolute; left: 7px; top: 16px; bottom: 0; width: 1px; background: var(--linea); }
+.tempo li:last-child::after { display: none; }
+.tempo .quando { font-family: var(--font-mono), monospace; font-size: 11px; color: var(--ink-3); letter-spacing: .03em; text-transform: uppercase; }
+.tempo .cosa { font-size: 14px; }
+.tempo .dettaglio { font-size: 13px; color: var(--ink-2); }
 
-/* Pagina di accesso: una carta al centro, niente altro. */
+.dati { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; margin: 0; }
+.dati dt { font-size: 11.5px; color: var(--ink-3); margin-bottom: 2px; }
+.dati dd { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
+
+/* --------------------------------------------------------------------------
+   Tabelle
+   -------------------------------------------------------------------------- */
+.tabella-scorri { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--linea); white-space: nowrap; }
+th { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; }
+td.num, th.num { text-align: right; font-family: var(--font-mono), monospace; font-variant-numeric: tabular-nums; }
+/* Le descrizioni lunghe non allargano la tabella oltre lo schermo: si
+   accorciano con i puntini e si leggono per intero nella scheda. */
+td.tronca { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+tbody tr:hover { background: var(--carta-2); }
+
+/* --------------------------------------------------------------------------
+   Avvisi
+   -------------------------------------------------------------------------- */
+.avviso { border-radius: 10px; padding: 10px 13px; font-size: 13.5px; margin-bottom: 12px; }
+.avviso.rosso { background: var(--urgente-velo); color: var(--urgente); }
+.avviso.giallo { background: var(--da-fare-velo); color: var(--da-fare); }
+.avviso.verde { background: var(--bene-velo); color: var(--bene); }
+
+.striscia-demo {
+  background: var(--oro-velo); color: var(--oro-chiaro); font-size: 12.5px;
+  padding: 7px 16px; text-align: center; border-bottom: 1px solid var(--linea);
+}
+.striscia-demo strong { color: var(--oro-chiaro); }
+
+.nota-piede { font-size: 12.5px; color: var(--ink-3); }
+.nota-piede a { color: var(--oro-chiaro); }
+
+/* Due presentazioni degli stessi dati: tabella dove c'è spazio, righe dove
+   non ce n'è. Non è duplicazione di contenuto, è la stessa lista vestita
+   in due modi. */
+.solo-stretto { display: none; }
+@media (max-width: 900px) {
+  .solo-largo { display: none; }
+  .solo-stretto { display: block; }
+}
+
+/* Scorciatoie di filtro: le domande che ci si fa davvero, in un tocco. */
+.scorciatoie { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+.scorciatoia {
+  font-size: 12.5px; padding: 6px 11px; border-radius: 999px;
+  border: 1px solid var(--linea-forte); color: var(--ink-2);
+}
+.scorciatoia:hover { background: var(--carta-2); color: var(--ink); }
+.scorciatoia.attiva { background: var(--oro-velo); border-color: transparent; color: var(--oro-chiaro); }
+
+/* --------------------------------------------------------------------------
+   Accesso
+   -------------------------------------------------------------------------- */
 .accesso { min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
-.accesso .scheda { width: 100%; max-width: 360px; }
+.accesso .scheda { width: 100%; max-width: 350px; padding: 22px; }
 
-@media (max-width: 520px) {
-  .campi-affiancati, .dati { grid-template-columns: 1fr; }
-  .voce { padding: 7px 10px; font-size: 13px; }
-  .barra-dentro { gap: 8px; }
+/* --------------------------------------------------------------------------
+   Schermi stretti
+   -------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .colonne, .colonne-pari { grid-template-columns: 1fr; }
+  .numeri { grid-template-columns: repeat(2, 1fr); }
+  .voci { display: none; }
+  .barra-bassa { display: flex; }
+  .campi-3 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .testata-pagina h1 { font-size: 22px; }
+  .campi-2, .campi-3 { grid-template-columns: 1fr; }
+  .dati { grid-template-columns: 1fr; }
+  .gradino .nome { min-width: 88px; font-size: 12.5px; }
+  .gradino .valore { min-width: 64px; font-size: 11.5px; }
+  .colonna { flex-basis: 84vw; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
 }

@@ -1,54 +1,131 @@
-# CRM Rama Ceramiche — i lead della card diventano clienti
+# CRM Rama Ceramiche — la cabina di regia commerciale
 
-La card NFC di Rama (`public/club/index.html`, vedi `CLUB-RAMA.md`) raccoglie
-ogni giorno contatti qualificati: nome, email, che stanza sta rifacendo, che
-stile preferisce, se vuole il credito in negozio o via email. Fino a ieri quel
-passaggio finiva nel vuoto — il codice `RAMA70-XXXX` se lo inventava il browser,
-il form non salvava niente e la schermata finale prometteva un'email che non
-partiva.
+Il CRM è **di Rama Ceramiche** e ci entrano in due: il titolare e l'agenzia. I
+clienti non devono sapere che esiste.
 
-Adesso il tocco sulla card scrive in un database. Il codice lo batte il server,
-è unico e si riscatta al banco. E chi sta in showroom, la mattina, apre una
-pagina che dice chi richiamare.
+Non è un cruscotto che mostra numeri: è uno strumento che dice **cosa fare
+adesso**. La regola che tiene in piedi tutto il resto è una sola:
 
-    card NFC  →  POST /api/lead  →  contatto + credito + promemoria  →  email
-                                              ↓
-                                    il CRM dello showroom
+> Nessun contatto attivo resta senza una prossima azione.
 
-## Dove sta
+Da lì discende il modello: ogni persona ha una **fonte** (da dove è arrivata),
+una **fase** (dove si trova nel percorso), una **prossima azione** con la sua
+data, un valore in gioco e una storia che non si cancella.
 
-Nella cartella **`crm/`**: un'applicazione Next.js a sé, con il suo
-`package.json` e la sua build. Non c'entra con il sito di Mondial Service che
-sta nella radice del repo — quello è un export statico, questo ha bisogno di un
-server (login, database, invio email). Convivono nello stesso repository come ci
-convive già la landing del club: due progetti, due pubblicazioni.
+    INGRESSO → CONTATTO → QUALIFICAZIONE → APPUNTAMENTO → PREVENTIVO
+             → FOLLOW-UP → ORDINE → CLIENTE          (oppure PERSO, col motivo)
 
-| Cosa | Dove |
+## Come è fatto dentro
+
+Tutto passa da un solo strato dati — il **deposito** — con due attuazioni
+intercambiabili. Le pagine non sanno cosa c'è sotto.
+
+```
+app/                        le pagine: Oggi, Pipeline, Contatti, Scheda,
+                            Ingressi, Analisi, Attenzioni, Codice
+app/azioni.ts               l'unico posto che scrive: server action → deposito
+lib/dominio/                il modello, senza database e senza interfaccia
+  tipi.ts                   contatto, fonte, fase, azione, evento, opportunità
+  fasi.ts                   le 10 fasi con trigger di entrata e di uscita
+  fonti.ts                  le 10 fonti, raggruppate in famiglie e colori
+  priorita.ts               urgente / da fare / normale — soglie in cima
+  automazioni.ts            «dopo un preventivo, follow-up a 4 giorni»
+lib/dati/
+  istantanea.ts             TUTTI i conti: elenco, pipeline, ingressi,
+                            analisi, attenzioni. Funzioni pure.
+  deposito.ts               l'interfaccia
+  deposito-supabase.ts      Postgres
+  deposito-demo.ts          in memoria, per far girare tutto senza database
+  demo-semina.ts            i dieci casi di prova
+supabase/migrazioni/
+  0001_schema.sql           impianto iniziale (card NFC)
+  0002_crm.sql              il CRM commerciale: fonte, fase, azioni, eventi,
+                            opportunità — da eseguire dopo il primo
+```
+
+**Perché i conti stanno in un file solo.** `istantanea.ts` lavora su una
+fotografia dei dati, quindi la versione demo e quella su Postgres danno per
+forza gli stessi numeri: non ci sono due implementazioni da tenere allineate.
+Per un negozio (centinaia di righe) si legge tutto e si calcola in memoria; se
+un giorno i contatti diventassero decine di migliaia, si spezza in query
+mirate **lì dentro**, e le pagine non se ne accorgono.
+
+## Modalità dimostrativa
+
+Senza le chiavi di Supabase il CRM parte lo stesso, con dieci scenari di
+esempio, e **funziona davvero**: completi un'azione e sparisce dalla coda,
+sposti una card e la fase cambia, registri un preventivo e nasce il follow-up.
+Le scritture vivono in memoria: al riavvio si torna ai dati di partenza.
+
+```bash
+cd crm
+npm install
+npm run dev          # http://localhost:3100 — modalità dimostrativa
+```
+
+I dieci casi coprono: lead Instagram appena arrivato, lead Google qualificato,
+appuntamento fissato, preventivo appena mandato, preventivo muto da otto
+giorni, campione consegnato e mai rientrato, ordine confermato, cliente
+servito, opportunità persa col motivo, e un contatto vivo **senza prossima
+azione** — quello che il CRM deve gridare.
+
+Con le chiavi presenti passa da sé ai dati veri. `CRM_MODO=demo` forza la
+modalità dimostrativa anche con le chiavi configurate: utile per far vedere il
+CRM senza toccare niente.
+
+## Le pagine
+
+| Pagina | A cosa serve |
 |---|---|
-| Applicazione | `crm/app/`, `crm/lib/` |
-| Schema del database | `crm/supabase/migrazioni/0001_schema.sql` |
-| Variabili d'ambiente | `crm/.env.example` (il modello, senza segreti) |
-| Collaudo | `tools/crm-smoke.mjs` |
+| **Oggi** | La coda di lavoro: cosa è urgente adesso, cosa arriva nei prossimi tre giorni, chi è entrato e non ha ancora sentito nessuno. Ogni voce ha Completato, Posticipa, Apri contatto. |
+| **Pipeline** | Dove sono ferme le persone (quante e quanto valgono) e il tabellone: trascini una card, cambia la fase davvero — con evento in timeline e nuova azione se resterebbe scoperta. |
+| **Contatti** | Ricerca, filtri combinabili e scorciatoie alle domande vere: senza prossima azione, preventivi sopra 3.000 €, zitti da più di cinque giorni, azioni scadute. |
+| **Scheda** | Prossima azione in testa, il percorso in ordine di tempo, le opportunità col loro valore, il registratore di attività, l'anagrafica e la cancellazione definitiva. |
+| **Ingressi** | Cosa porta ogni fonte: lead, qualificati, preventivi, ordini, valori. La domanda vera è quali portano lavoro, non messaggi. |
+| **Analisi** | Valore in pipeline, ordini chiusi, tempi medi, dove si perde per strada, e le risposte già calcolate («cosa devo fare oggi», «quali preventivi seguire»). |
+| **Attenzioni** | Le anomalie: senza azione, preventivo muto, fermo da troppo, campione senza seguito, appuntamento senza seguito, alto valore fermo. |
+| **Codice** | Il banco della card NFC: batti `RAMA70-XXXX` e lo segni riscattato. Richiede Supabase. |
 
-## 1. Il database (Supabase)
+## Le regole che il CRM applica da sé
 
-1. Su [supabase.com](https://supabase.com) → **New project**. Piano gratuito.
-   **Region: Frankfurt (eu-central-1)** — sono dati personali di clienti
+Stanno in `lib/dominio/`, in chiaro, con le soglie in cima al file:
+
+- **priorità** — urgente: azione scaduta o in scadenza oggi, oppure silenzio da
+  14 giorni, oppure nessuna azione su un contatto sopra 3.000 €. Da fare: in
+  scadenza entro tre giorni, o silenzio da una settimana. Il valore conta
+  nell'ordinamento, non nel colore: se tutto è urgente, niente lo è.
+- **automazioni** — nuovo lead → rispondere oggi; preventivo inviato →
+  follow-up a 4 giorni; campione consegnato → richiamo per il rientro a 10
+  giorni; appuntamento → preparare il preventivo il giorno dopo; cambio fase →
+  l'azione tipica di quella fase, ma solo se il contatto resterebbe scoperto.
+
+Nessuna di queste regole manda messaggi a nessuno: **aprono promemoria**. Un
+motore di invii veri (email, WhatsApp, code differite) si aggancia lì, senza
+toccare le pagine.
+
+## Messa online
+
+### 1. Il database (Supabase)
+
+1. **New project** su [supabase.com](https://supabase.com), piano gratuito,
+   **region Frankfurt (eu-central-1)**: sono dati personali di clienti
    italiani, restano in Europa.
-2. **SQL Editor → New query**: incolla tutto `crm/supabase/migrazioni/0001_schema.sql`
-   e premi **Run**. Crea tabelle, indici, regole di accesso e il trigger che
-   apre il profilo a ogni persona invitata.
-3. **Authentication → Providers → Email**: lascia acceso *Email*, **spegni
-   "Enable sign ups"**. Nel CRM non c'è registrazione: si entra solo su invito.
-4. **Authentication → Users → Invite user**: una per ogni persona dello
-   showroom. Ricevono l'email, scelgono la password, entrano.
+2. **SQL Editor**: esegui prima `crm/supabase/migrazioni/0001_schema.sql`, poi
+   `0002_crm.sql`. Il secondo trasforma l'impianto della card nel CRM
+   commerciale senza perdere niente: traduce le vecchie provenienze in fonti,
+   gli stati in fasi, spezza il nome in nome e cognome, trasforma le note in
+   eventi e crea un'opportunità per ogni credito già emesso.
+3. **Authentication → Providers → Email**: acceso, ma **"Enable sign ups"
+   spento**. Si entra solo su invito.
+4. **Authentication → Users → Invite user**: due account, il tuo e quello del
+   titolare.
 5. **Project Settings → API**: copia `Project URL`, `anon public` e
-   `service_role`. Le prime due sono pubbliche per natura; **la terza no**:
-   scavalca tutte le regole di accesso, vive solo nelle variabili del server.
+   `service_role`. La terza scavalca tutte le regole di accesso: vive solo
+   nelle variabili del server, mai nel browser.
 
-## 2. La pubblicazione (Vercel)
+### 2. La pubblicazione (Vercel)
 
-Come per il club, un progetto Vercel che guarda una sola cartella:
+Un progetto che guarda una cartella sola:
 
 | Campo | Valore |
 |---|---|
@@ -56,137 +133,64 @@ Come per il club, un progetto Vercel che guarda una sola cartella:
 | Root Directory | **`crm`** |
 | Production Branch | `main` |
 
-`crm/vercel.json` fissa già la regione **fra1** (Francoforte) e gli header di
-sicurezza. In **Settings → Environment Variables** vanno:
+`crm/vercel.json` fissa già la regione **fra1** e gli header di sicurezza.
+Variabili d'ambiente (il modello è in `crm/.env.example`):
 
 | Variabile | Valore |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | il Project URL di Supabase |
+| `NEXT_PUBLIC_SUPABASE_URL` | il Project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | la chiave `anon public` |
 | `SUPABASE_SERVICE_ROLE_KEY` | la chiave `service_role` |
-| `LEAD_IP_PEPE` | una stringa casuale lunga, inventata da te |
+| `LEAD_IP_PEPE` | una stringa casuale lunga |
 | `ORIGINI_CONSENTITE` | `https://club.ramastore.it` |
-| `RESEND_API_KEY` | la chiave di Resend (punto 4) |
-| `EMAIL_MITTENTE` | `Rama Ceramiche <club@ramastore.it>` |
-| `EMAIL_RISPOSTA` | l'indirizzo vero del negozio |
+| `RESEND_API_KEY`, `EMAIL_MITTENTE`, `EMAIL_RISPOSTA` | invio del codice della card |
 
-Poi **Settings → Domains → `crm.ramastore.it`**, e nel DNS del dominio un solo
-record:
+Poi **Settings → Domains → `crm.ramastore.it`** e nel DNS un CNAME `crm` →
+il valore **esatto** che mostra Vercel in quella schermata.
 
-    Tipo    CNAME
-    Nome    crm
-    Valore  <quello che ti mostra Vercel>
+### 3. La card NFC
 
-Vale lo stesso avvertimento del club: copia il valore **esatto** dalla
-schermata di Vercel, non da qui. Il dominio nudo e `www` non si toccano.
+`public/club/index.html` manda il lead a `/api/lead`. Da lì entra nel CRM come
+qualsiasi altro contatto: fonte `card_nfc`, fase `nuovo`, un'opportunità col
+lavoro del quiz e il promemoria di richiamo a due giorni — più il credito del
+Club, che resta sulla sua tabella. Dettagli e collaudo della card in
+`CLUB-RAMA.md`.
 
-## 3. La card che parla col CRM
+### 4. L'email (Resend)
 
-In `public/club/index.html`, in cima allo script, c'è:
+Piano gratuito, dominio `ramastore.it` da verificare nel DNS. Senza chiave il
+CRM registra il lead lo stesso e la card, invece di promettere un'email, dice
+al cliente di mostrare il codice in negozio.
 
-```js
-const CONFIG = {
-  api: '…/api/lead',   // in locale punta a localhost:3100
-  privacy: ''          // ← l'informativa privacy di Rama
-};
-```
-
-L'indirizzo dell'API è già `https://crm.ramastore.it/api/lead`: se il CRM finisce
-altrove, si cambia lì e basta.
-
-**`privacy` va riempito.** Finché è vuoto, accanto alla spunta del consenso non
-compare nessun link — meglio niente che un link rotto — ma stai raccogliendo
-nome ed email di privati: l'informativa ci vuole. Appena Rama la pubblica,
-incolla l'indirizzo lì dentro.
-
-Cosa succede se la rete manca proprio in quel momento: la pagina **non** inventa
-un codice. Dice che non riesce, lascia riprovare, e intanto tiene il contatto da
-parte per rispedirlo al caricamento successivo.
-
-## 4. L'email (Resend)
-
-Su [resend.com](https://resend.com) (piano gratuito: 3.000 email al mese) →
-**Domains → Add domain**: `ramastore.it`, e nel DNS i record che ti dà
-(SPF/DKIM). Poi **API Keys → Create**, e la chiave va in `RESEND_API_KEY`.
-
-Senza chiave il CRM non si rompe: registra il lead lo stesso e la card, invece
-di promettere un'email, dice al cliente di mostrare il codice in negozio.
-
-## 5. Come si usa, la mattina
-
-| Pagina | A cosa serve |
-|---|---|
-| **Oggi** | Chi va richiamato (con quelli in ritardo in rosso) e chi è arrivato dalla card senza che nessuno l'abbia ancora sentito. Ogni lead nuovo si porta dietro un promemoria automatico a due giorni. |
-| **Contatti** | La rubrica: ricerca per nome o email, filtro per stato, scheda con note, promemoria, crediti, tag e chi lo segue. |
-| **Codice** | Il banco: il cliente mostra `RAMA70-XXXX`, tu lo batti e vedi di chi è, quanto vale, se è scaduto o già usato. Un tocco e risulta riscattato. |
-| **Impostazioni** | Chi ha accesso, quanti dati ci sono, e il pulsante per scaricare tutto in CSV. |
-
-Gli stati di un contatto vanno da *Nuovo* a *Cliente* (o *Perso*) passando per
-*Contattato*, *Venuto in showroom*, *Preventivo fatto*: servono a sapere a colpo
-d'occhio chi è rimasto indietro.
-
-## 6. Sviluppo e collaudo
+## Collaudo
 
 ```bash
-cd crm
-cp .env.example .env.local     # e riempi i valori del tuo progetto Supabase
-npm install
-npm run dev                    # http://localhost:3100
-npm run build && npm run typecheck
+cd crm && npm run build && npm run typecheck   # verdi
+npm start &                                    # modalità dimostrativa
+
+node tools/crm-smoke.mjs /tmp/scatti           # il giro completo
 ```
 
-Con il CRM in piedi, la prova completa del giro:
+Il collaudo non guarda se le pagine sono belle, guarda se **cliccare cambia
+davvero le cose**: completa un'azione e verifica che sparisca dalla coda e
+resti nella storia, sposta una card nel kanban e verifica la fase e l'evento,
+crea un contatto e verifica che nasca con la prossima azione, registra un
+preventivo, cerca, elimina, e controlla che su telefono non ci sia
+scorrimento laterale. Esce 1 al primo scostamento.
 
-```bash
-# il lead come lo manda la card
-curl -X POST http://localhost:3100/api/lead -H 'Content-Type: application/json' \
-  -d '{"nome":"Mario Rossi","email":"mario@example.it","consenso":true,
-       "progetto":"Bagno","stile":"Minimal","consegna":"Negozio",
-       "client_token":"prova-1"}'
-# → {"codice":"RAMA70-…","scadenza":"…","emailInviata":false}
-# ripetendo la stessa chiamata esce lo stesso codice: non si duplica niente
+Contro l'istanza vera servono anche `CRM_URL`, `CRM_EMAIL`, `CRM_PASSWORD`.
 
-# il giro completo dell'interfaccia
-CRM_URL=http://localhost:3100 CRM_EMAIL=tu@ramastore.it CRM_PASSWORD=… \
-  node tools/crm-smoke.mjs /tmp/scatti
-```
+## I dati personali
 
-E la card, che va provata anche da sola (il CRM lì è simulato, non serve
-accenderlo):
+Tutto in Europa (Supabase Francoforte, Vercel `fra1`). Consenso con data,
+IP solo in impronta, cancellazione definitiva dalla scheda, export CSV.
+Restano a Rama: informativa privacy pubblicata e contratti di trattamento con
+Supabase, Vercel e Resend.
 
-```bash
-node tools/static-server.mjs public 8932 &
-node tools/club-mobile.mjs /tmp/scatti-club
-```
+## Cosa non c'è ancora
 
-## 7. I dati personali
-
-Quello che il codice fa già:
-
-- tutto in Europa: Supabase a Francoforte, Vercel in `fra1`;
-- il consenso promozionale salvato con la data in cui è stato dato;
-- dell'IP di chi compila resta solo un'impronta con pepe, mai l'indirizzo;
-- niente entra e niente esce senza login: l'unica porta aperta è `/api/lead`,
-  che scrive soltanto;
-- cancellazione definitiva di una persona dalla sua scheda — sparisce con note,
-  promemoria e crediti;
-- export CSV, così i dati restano del cliente qualunque cosa succeda a questo
-  programma.
-
-Quello che resta a Rama, e non posso fare io: pubblicare l'informativa privacy
-(e incollarne l'indirizzo in `CONFIG.privacy`), firmare i contratti di
-trattamento con Supabase, Vercel e Resend, e decidere per quanto tenere i
-contatti che non diventano mai clienti.
-
-## 8. Cosa non fa (ancora)
-
-Niente colonne trascinabili della trattativa, niente preventivi, niente invio
-WhatsApp, nessuna statistica di conversione della card, nessuna importazione
-dell'anagrafica storica del negozio. Sono i passi successivi, da decidere
-quando il primo mese di lead avrà detto cosa serve davvero.
-
-## 9. Quanto costa
-
-Zero, all'inizio: Supabase (piano gratuito, 500 MB di database), Vercel (Hobby)
-e Resend (3.000 email al mese) bastano per un negozio. Il dominio è già di Rama.
-Si paga quando il volume cresce — e a quel punto sarà un buon segno.
+Invii automatici veri (email e WhatsApp), assistente in linguaggio naturale
+(l'impianto c'è: le risposte in Analisi sono calcolate dalle stesse funzioni
+da cui dovrà leggere), importazione dell'anagrafica storica del negozio,
+gestione dei campioni come tabella a sé — oggi vivono come eventi
+«campione consegnato» e «campione reso», che bastano per il follow-up.
