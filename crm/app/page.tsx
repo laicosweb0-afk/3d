@@ -2,10 +2,12 @@ import Link from 'next/link';
 import { deposito } from '@/lib/dati';
 import {
   ETICHETTA_PERIODO, analisi as calcolaAnalisi, attenzioni as calcolaAttenzioni,
-  contattiInAttenzione, daFare, elenco, type Periodo,
+  contattiInAttenzione, conversazioniDaRispondere, daFare, elenco, type Periodo,
 } from '@/lib/dati/istantanea';
+import { COLORE_CANALE, ETICHETTA_CANALE } from '@/lib/dominio/campagne';
 import { euro } from '@/lib/dominio/etichette';
-import { inRitardo } from '@/lib/formato';
+import { dataOra, inRitardo } from '@/lib/formato';
+import { segnaConversazione } from './azioni';
 import { Numero, RigaContatto, VoceDaFare } from './pezzi';
 
 // La home risponde a due domande, in quest'ordine: cosa devo fare adesso, e
@@ -31,6 +33,9 @@ export default async function Oggi({
   const avvisi = calcolaAttenzioni(dati).slice(0, 3);
   const senzaAzione = contattiInAttenzione(dati, 'senza_azione').length;
   const maiSentiti = elenco(dati, { fase: 'nuovo', ordine: 'recenti' }).slice(0, 5);
+  // Un messaggio senza risposta viene prima di tutto: quello lì è già stato
+  // pagato, e sta aspettando.
+  const daRispondere = conversazioniDaRispondere(dati);
 
   return (
     <main>
@@ -68,6 +73,34 @@ export default async function Oggi({
               {a.gravita === 'alta' ? '▲' : '●'} {a.titolo} →
             </Link>
           ))}
+        </section>
+      )}
+
+      {daRispondere.length > 0 && (
+        <section className="sezione">
+          <h2>Messaggi senza risposta</h2>
+          <div className="scheda scheda-fitta">
+            {daRispondere.map(({ conversazione: f, contatto }) => (
+              <div key={f.id} className="riga">
+                <span className="cresce">
+                  <Link href={`/contatti/${contatto.id}`} className="titolo">
+                    <span className="punto" style={{ background: COLORE_CANALE[f.canale], display: 'inline-block', marginRight: 6 }} aria-hidden="true" />
+                    {`${contatto.nome} ${contatto.cognome}`.trim()}
+                  </Link>
+                  <span className="sotto">
+                    {ETICHETTA_CANALE[f.canale]} · {dataOra(f.ultimoMessaggioIl)}
+                    {f.ultimoMessaggioTesto ? ` · «${f.ultimoMessaggioTesto.slice(0, 70)}»` : ''}
+                  </span>
+                </span>
+                <form action={segnaConversazione}>
+                  <input type="hidden" name="id" value={f.id} />
+                  <input type="hidden" name="contatto_id" value={contatto.id} />
+                  <input type="hidden" name="stato" value="gestita" />
+                  <button type="submit" className="bottone-fantasma bottone-piccolo">Ho risposto</button>
+                </form>
+              </div>
+            ))}
+          </div>
         </section>
       )}
 

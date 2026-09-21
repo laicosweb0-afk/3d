@@ -1,10 +1,14 @@
 import type {
-  Deposito, NuovaAzione, NuovaOpportunita, NuovoContatto, NuovoEvento,
-  PatchAzione, PatchContatto, PatchOpportunita,
+  ChiaviCampagna, Deposito, NuovaAzione, NuovaCampagna, NuovaConversazione,
+  NuovaOpportunita, NuovoContatto, NuovoEvento, PatchAzione, PatchCampagna,
+  PatchContatto, PatchConversazione, PatchOpportunita,
 } from './deposito';
 import { adesso, identificativo } from './deposito';
 import type { Azione, Evento, Fase, Operatore, Opportunita } from '@/lib/dominio/tipi';
+import type { Campagna, Canale, Conversazione, TipoIdentita } from '@/lib/dominio/campagne';
+import { normalizzaIdentita } from '@/lib/dominio/campagne';
 import type { Istantanea } from './istantanea';
+import { indicizzaRecapiti } from './identita';
 import { semina } from './demo-semina';
 import { nomeFase } from '@/lib/dominio/fasi';
 import { propostaPerEvento, propostaPerFase, scadenzaFra } from '@/lib/dominio/automazioni';
@@ -41,6 +45,9 @@ export class DepositoDemo implements Deposito {
       opportunita: [...dati.opportunita],
       azioni: [...dati.azioni],
       eventi: [...dati.eventi],
+      campagne: [...dati.campagne],
+      conversazioni: [...dati.conversazioni],
+      identita: [...dati.identita],
     };
   }
 
@@ -63,6 +70,7 @@ export class DepositoDemo implements Deposito {
       provincia: input.provincia ?? null,
       fonte: input.fonte,
       fonteDettaglio: input.fonteDettaglio ?? null,
+      campagnaId: input.campagnaId ?? null,
       fase: input.fase,
       assegnatoA: operatore,
       tag: input.tag ?? [],
@@ -92,11 +100,13 @@ export class DepositoDemo implements Deposito {
       });
     }
 
-    dati.eventi.push({
-      id: identificativo(), contattoId: id, tipo: 'lead_ricevuto',
-      descrizione: `Contatto inserito${input.fonteDettaglio ? ` — ${input.fonteDettaglio}` : ''}`,
-      quando: ora, valore: null, operatore, automatico: false,
-    });
+    if (!input.silenzioso) {
+      dati.eventi.push({
+        id: identificativo(), contattoId: id, tipo: 'lead_ricevuto',
+        descrizione: `Contatto inserito${input.fonteDettaglio ? ` — ${input.fonteDettaglio}` : ''}`,
+        quando: ora, valore: null, operatore, automatico: false,
+      });
+    }
 
     dati.azioni.push({
       id: identificativo(), contattoId: id,
@@ -106,6 +116,7 @@ export class DepositoDemo implements Deposito {
       fattaIl: null, operatore, creataIl: ora,
     });
 
+    await indicizzaRecapiti(this, id, { telefono: input.telefono, email: input.email });
     return id;
   }
 
@@ -114,6 +125,7 @@ export class DepositoDemo implements Deposito {
     const c = dati.contatti.find((x) => x.id === id);
     if (!c) return;
     Object.assign(c, patch, { aggiornatoIl: adesso() });
+    await indicizzaRecapiti(this, id, { telefono: c.telefono, email: c.email });
   }
 
   async cambiaFase(id: string, fase: Fase, operatore: string | null = null): Promise<void> {
@@ -206,6 +218,7 @@ export class DepositoDemo implements Deposito {
       id: identificativo(), contattoId: input.contattoId, tipo: input.tipo,
       descrizione: input.descrizione, quando, valore: input.valore ?? null,
       operatore: input.operatore ?? null, automatico: input.automatico ?? false,
+      conversazioneId: input.conversazioneId ?? null,
     };
     dati.eventi.push(evento);
 
@@ -242,6 +255,159 @@ export class DepositoDemo implements Deposito {
       chiusuraPrevista: input.chiusuraPrevista ?? null, motivoPerso: null, creataIl: adesso(),
     };
     dati.opportunita.push(o);
+  }
+
+  // -------------------------------------------------------------------------
+  // Campagne
+  // -------------------------------------------------------------------------
+  async creaCampagna(input: NuovaCampagna): Promise<string> {
+    const { dati } = magazzino();
+    const campagna: Campagna = {
+      id: identificativo(),
+      nome: input.nome,
+      piattaforma: input.piattaforma,
+      obiettivo: input.obiettivo ?? null,
+      canaleIngresso: input.canaleIngresso,
+      stato: input.stato ?? 'attiva',
+      dataInizio: input.dataInizio ?? null,
+      dataFine: input.dataFine ?? null,
+      budget: input.budget ?? null,
+      spesa: input.spesa ?? null,
+      spesaAggiornataIl: input.spesa != null ? adesso() : null,
+      idEsterno: input.idEsterno ?? null,
+      adsetId: input.adsetId ?? null,
+      adId: input.adId ?? null,
+      parametroRef: input.parametroRef ?? null,
+      utmSource: input.utmSource ?? null,
+      utmMedium: input.utmMedium ?? null,
+      utmCampaign: input.utmCampaign ?? null,
+      landing: input.landing ?? null,
+      note: input.note ?? null,
+      creataIl: adesso(),
+    };
+    dati.campagne.push(campagna);
+    return campagna.id;
+  }
+
+  async aggiornaCampagna(id: string, patch: PatchCampagna): Promise<void> {
+    const { dati } = magazzino();
+    const c = dati.campagne.find((x) => x.id === id);
+    if (!c) return;
+    Object.assign(c, patch);
+    if (patch.spesa !== undefined) c.spesaAggiornataIl = adesso();
+  }
+
+  async trovaCampagna(chiavi: ChiaviCampagna): Promise<Campagna | null> {
+    const { dati } = magazzino();
+    // L'ordine conta: l'annuncio è più preciso della campagna, il ref è
+    // quello che abbiamo scritto noi e vale come ultima spiaggia.
+    return (
+      (chiavi.adId && dati.campagne.find((c) => c.adId === chiavi.adId)) ||
+      (chiavi.idEsterno && dati.campagne.find((c) => c.idEsterno === chiavi.idEsterno)) ||
+      (chiavi.ref && dati.campagne.find((c) => c.parametroRef === chiavi.ref)) ||
+      null
+    );
+  }
+
+  // -------------------------------------------------------------------------
+  // Identità e unione dei doppioni
+  // -------------------------------------------------------------------------
+  async trovaContattoPerIdentita(tipo: TipoIdentita, valore: string): Promise<string | null> {
+    const { dati } = magazzino();
+    const pulito = normalizzaIdentita(tipo, valore);
+    return dati.identita.find((i) => i.tipo === tipo && i.valore === pulito)?.contattoId ?? null;
+  }
+
+  async collegaIdentita(contattoId: string, tipo: TipoIdentita, valore: string, verificata = true): Promise<void> {
+    const { dati } = magazzino();
+    const pulito = normalizzaIdentita(tipo, valore);
+    if (dati.identita.some((i) => i.tipo === tipo && i.valore === pulito)) return;
+    dati.identita.push({
+      id: identificativo(), contattoId, tipo, valore: pulito, verificata, creataIl: adesso(),
+    });
+  }
+
+  // Due schede della stessa persona: tutto passa sulla principale e la
+  // seconda sparisce. La storia non si perde, si somma.
+  async unisciContatti(principaleId: string, assorbitoId: string): Promise<void> {
+    const { dati } = magazzino();
+    if (principaleId === assorbitoId) return;
+    const principale = dati.contatti.find((c) => c.id === principaleId);
+    const assorbito = dati.contatti.find((c) => c.id === assorbitoId);
+    if (!principale || !assorbito) return;
+
+    for (const elenco of [dati.opportunita, dati.azioni, dati.eventi, dati.conversazioni, dati.identita]) {
+      for (const riga of elenco as { contattoId: string }[]) {
+        if (riga.contattoId === assorbitoId) riga.contattoId = principaleId;
+      }
+    }
+
+    // Si tiene il dato che c'è: se la principale non aveva il telefono e
+    // l'altra sì, adesso ce l'ha.
+    principale.telefono = principale.telefono ?? assorbito.telefono;
+    principale.email = principale.email ?? assorbito.email;
+    principale.citta = principale.citta ?? assorbito.citta;
+    principale.campagnaId = principale.campagnaId ?? assorbito.campagnaId;
+    principale.consensoMarketing = principale.consensoMarketing || assorbito.consensoMarketing;
+    principale.aggiornatoIl = adesso();
+
+    dati.eventi.push({
+      id: identificativo(), contattoId: principaleId, tipo: 'nota',
+      descrizione: `Unita la scheda doppia di ${assorbito.nome} ${assorbito.cognome}`.trim(),
+      quando: adesso(), valore: null, operatore: null, automatico: true, conversazioneId: null,
+    });
+
+    dati.contatti = dati.contatti.filter((c) => c.id !== assorbitoId);
+  }
+
+  // -------------------------------------------------------------------------
+  // Conversazioni
+  // -------------------------------------------------------------------------
+  async trovaConversazione(canale: Canale, idEsterno: string): Promise<Conversazione | null> {
+    const { dati } = magazzino();
+    return dati.conversazioni.find((c) => c.canale === canale && c.idEsterno === idEsterno) ?? null;
+  }
+
+  async creaConversazione(input: NuovaConversazione): Promise<string> {
+    const { dati } = magazzino();
+    const ora = adesso();
+    const conversazione: Conversazione = {
+      id: identificativo(),
+      contattoId: input.contattoId,
+      campagnaId: input.campagnaId ?? null,
+      canale: input.canale,
+      idEsterno: input.idEsterno ?? null,
+      stato: 'aperta',
+      assegnataA: null,
+      nonLetta: true,
+      primoMessaggioIl: input.primoMessaggioIl ?? ora,
+      ultimoMessaggioIl: input.ultimoMessaggioIl ?? ora,
+      ultimoMessaggioTesto: input.ultimoMessaggioTesto ?? null,
+      riferimento: input.riferimento ?? null,
+    };
+    dati.conversazioni.push(conversazione);
+    return conversazione.id;
+  }
+
+  async aggiornaConversazione(id: string, patch: PatchConversazione): Promise<void> {
+    const { dati } = magazzino();
+    const c = dati.conversazioni.find((x) => x.id === id);
+    if (!c) return;
+    Object.assign(c, patch);
+  }
+
+  // -------------------------------------------------------------------------
+  // Coda grezza dei webhook
+  // -------------------------------------------------------------------------
+  async salvaIngressoGrezzo(canale: string, payload: unknown): Promise<string> {
+    // In modalità dimostrativa non c'è niente da conservare: la coda serve a
+    // non perdere i payload veri quando un adattatore sbaglia la mappatura.
+    console.info('[ingresso demo]', canale, JSON.stringify(payload).slice(0, 200));
+    return identificativo();
+  }
+
+  async segnaIngressoLavorato(): Promise<void> {
+    // Niente da fare: in demo la coda non esiste.
   }
 
   async aggiornaOpportunita(id: string, patch: PatchOpportunita, operatore: string | null = null): Promise<void> {

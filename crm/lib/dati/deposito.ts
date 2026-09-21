@@ -2,6 +2,10 @@ import type {
   Azione, Contatto, Evento, Fase, Interesse, Fonte, MotivoPerso, Operatore,
   Opportunita, Priorita, StatoOpportunita, TipoAzione, TipoEvento,
 } from '@/lib/dominio/tipi';
+import type {
+  Campagna, Canale, Conversazione, Piattaforma, StatoCampagna, StatoConversazione,
+  TipoIdentita,
+} from '@/lib/dominio/campagne';
 import type { Istantanea } from './istantanea';
 
 // L'unico punto in cui il CRM tocca i dati. Le pagine e le azioni non sanno
@@ -22,6 +26,7 @@ export type NuovoContatto = {
   provincia?: string | null;
   fonte: Fonte;
   fonteDettaglio?: string | null;
+  campagnaId?: string | null;
   fase: Fase;
   note?: string | null;
   consensoMarketing?: boolean;
@@ -31,11 +36,70 @@ export type NuovoContatto = {
   interesse?: Interesse | null;
   valoreStimato?: number | null;
   azione: { tipo: TipoAzione; descrizione: string; scadenza: string; priorita?: Priorita };
+  // Chi arriva da un canale porta con sé il suo messaggio, e quello merita
+  // la riga nella storia — non un generico «contatto inserito». Chi crea il
+  // contatto in quel caso scrive l'evento da sé e mette questa a `true`.
+  silenzioso?: boolean;
 };
 
 export type PatchContatto = Partial<Pick<Contatto,
   'nome' | 'cognome' | 'telefono' | 'email' | 'citta' | 'provincia' |
-  'fonte' | 'fonteDettaglio' | 'assegnatoA' | 'tag' | 'note' | 'consensoMarketing'>>;
+  'fonte' | 'fonteDettaglio' | 'campagnaId' | 'assegnatoA' | 'tag' | 'note' | 'consensoMarketing'>>;
+
+// ---------------------------------------------------------------------------
+// Campagne, conversazioni, identità
+// ---------------------------------------------------------------------------
+export type NuovaCampagna = {
+  nome: string;
+  piattaforma: Piattaforma;
+  canaleIngresso: Canale;
+  obiettivo?: string | null;
+  stato?: StatoCampagna;
+  dataInizio?: string | null;
+  dataFine?: string | null;
+  budget?: number | null;
+  spesa?: number | null;
+  idEsterno?: string | null;
+  adsetId?: string | null;
+  adId?: string | null;
+  parametroRef?: string | null;
+  utmSource?: string | null;
+  utmMedium?: string | null;
+  utmCampaign?: string | null;
+  landing?: string | null;
+  note?: string | null;
+};
+
+export type PatchCampagna = Partial<NuovaCampagna>;
+
+export type NuovaConversazione = {
+  contattoId: string;
+  canale: Canale;
+  campagnaId?: string | null;
+  idEsterno?: string | null;
+  primoMessaggioIl?: string;
+  ultimoMessaggioIl?: string;
+  ultimoMessaggioTesto?: string | null;
+  riferimento?: Record<string, unknown> | null;
+};
+
+export type PatchConversazione = {
+  stato?: StatoConversazione;
+  nonLetta?: boolean;
+  assegnataA?: string | null;
+  campagnaId?: string | null;
+  ultimoMessaggioIl?: string;
+  ultimoMessaggioTesto?: string | null;
+};
+
+// Come si cerca la campagna a cui appartiene un messaggio in arrivo: per
+// identificativo dell'annuncio, per campagna, o per il ref= che abbiamo messo
+// noi nel link. Il primo che combacia vince.
+export type ChiaviCampagna = {
+  adId?: string | null;
+  idEsterno?: string | null;
+  ref?: string | null;
+};
 
 export type NuovaAzione = {
   contattoId: string;
@@ -57,6 +121,7 @@ export type NuovoEvento = {
   valore?: number | null;
   operatore?: string | null;
   automatico?: boolean;
+  conversazioneId?: string | null;
 };
 
 export type NuovaOpportunita = {
@@ -95,6 +160,25 @@ export interface Deposito {
 
   creaOpportunita(input: NuovaOpportunita): Promise<void>;
   aggiornaOpportunita(id: string, patch: PatchOpportunita, operatore?: string | null): Promise<void>;
+
+  // --- campagne -----------------------------------------------------------
+  creaCampagna(input: NuovaCampagna): Promise<string>;
+  aggiornaCampagna(id: string, patch: PatchCampagna): Promise<void>;
+  trovaCampagna(chiavi: ChiaviCampagna): Promise<Campagna | null>;
+
+  // --- identità: è questo che evita «Giulia 1» e «Giulia 2» ---------------
+  trovaContattoPerIdentita(tipo: TipoIdentita, valore: string): Promise<string | null>;
+  collegaIdentita(contattoId: string, tipo: TipoIdentita, valore: string, verificata?: boolean): Promise<void>;
+  unisciContatti(principaleId: string, assorbitoId: string): Promise<void>;
+
+  // --- conversazioni ------------------------------------------------------
+  trovaConversazione(canale: Canale, idEsterno: string): Promise<Conversazione | null>;
+  creaConversazione(input: NuovaConversazione): Promise<string>;
+  aggiornaConversazione(id: string, patch: PatchConversazione): Promise<void>;
+
+  // --- la coda grezza dei webhook ----------------------------------------
+  salvaIngressoGrezzo(canale: string, payload: unknown): Promise<string>;
+  segnaIngressoLavorato(id: string, esito: string, contattoId?: string | null, errore?: string | null): Promise<void>;
 }
 
 // Utili a tutte e due le attuazioni.

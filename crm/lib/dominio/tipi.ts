@@ -91,8 +91,10 @@ export type Azione = {
 // ---------------------------------------------------------------------------
 export const TIPI_EVENTO = [
   'lead_ricevuto',
+  'messaggio',
   'telefonata',
   'whatsapp',
+  'messenger',
   'instagram',
   'email',
   'appuntamento',
@@ -116,6 +118,8 @@ export type Evento = {
   valore: number | null;    // euro, quando l'evento ne ha uno
   operatore: string | null;
   automatico: boolean;      // generato da una regola, non scritto a mano
+  // Se è nato dentro una conversazione (Messenger, WhatsApp…), quale.
+  conversazioneId?: string | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -164,6 +168,9 @@ export type Contatto = {
   provincia: string | null;
   fonte: Fonte;
   fonteDettaglio: string | null;   // "campagna bagno-settembre", "storia del 3 set"
+  // La campagna che l'ha portata, quando c'è. Resta null per chi entra in
+  // negozio o arriva per passaparola: non si inventa un'attribuzione.
+  campagnaId: string | null;
   fase: Fase;
   assegnatoA: string | null;
   tag: string[];
@@ -188,6 +195,9 @@ export type ContattoInElenco = Contatto & {
 
 export type SchedaContatto = {
   contatto: Contatto;
+  campagna: import('./campagne').Campagna | null;
+  conversazioni: import('./campagne').Conversazione[];
+  identita: import('./campagne').Identita[];
   opportunita: Opportunita[];
   azioni: Azione[];
   eventi: Evento[];

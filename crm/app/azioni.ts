@@ -11,6 +11,10 @@ import {
   type Fase, type Fonte, type Interesse, type MotivoPerso, type Priorita,
   type TipoAzione, type TipoEvento,
 } from '@/lib/dominio/tipi';
+import {
+  CANALI, PIATTAFORME, STATI_CAMPAGNA, STATI_CONVERSAZIONE,
+  type Canale, type Piattaforma, type StatoCampagna, type StatoConversazione,
+} from '@/lib/dominio/campagne';
 
 // Tutto ciò che il CRM scrive passa da qui, e da qui passa al deposito.
 // Nessuna pagina tocca il database per conto suo: quando si clicca, succede
@@ -53,6 +57,7 @@ function aggiornaTutto(contattoId?: string) {
   revalidatePath('/ingressi');
   revalidatePath('/analisi');
   revalidatePath('/attenzioni');
+  revalidatePath('/campagne');
   if (contattoId) revalidatePath(`/contatti/${contattoId}`);
 }
 
@@ -271,4 +276,109 @@ export async function aggiornaOpportunita(dati: FormData) {
   }, operatore);
 
   aggiornaTutto(contattoId || undefined);
+}
+
+// ---------------------------------------------------------------------------
+// Campagne
+// ---------------------------------------------------------------------------
+export async function creaCampagna(dati: FormData) {
+  const { dep } = await contesto();
+  const nome = testo(dati, 'nome', 160);
+  if (!nome) redirect('/campagne/nuova?errore=nome');
+
+  const id = await dep.creaCampagna({
+    nome,
+    piattaforma: scelta<Piattaforma>(dati, 'piattaforma', PIATTAFORME, 'meta'),
+    canaleIngresso: scelta<Canale>(dati, 'canale_ingresso', CANALI, 'messenger'),
+    obiettivo: testo(dati, 'obiettivo', 120) || null,
+    stato: scelta<StatoCampagna>(dati, 'stato', STATI_CAMPAGNA, 'attiva'),
+    dataInizio: testo(dati, 'data_inizio', 12) || null,
+    dataFine: testo(dati, 'data_fine', 12) || null,
+    budget: numero(dati, 'budget'),
+    // La spesa resta vuota se non la sappiamo: N/D è un dato, zero è una bugia.
+    spesa: numero(dati, 'spesa'),
+    idEsterno: testo(dati, 'id_esterno', 60) || null,
+    adsetId: testo(dati, 'adset_id', 60) || null,
+    adId: testo(dati, 'ad_id', 60) || null,
+    parametroRef: testo(dati, 'parametro_ref', 60) || null,
+    utmSource: testo(dati, 'utm_source', 60) || null,
+    utmMedium: testo(dati, 'utm_medium', 60) || null,
+    utmCampaign: testo(dati, 'utm_campaign', 60) || null,
+    landing: testo(dati, 'landing', 300) || null,
+    note: testo(dati, 'note', 1000) || null,
+  });
+
+  aggiornaTutto();
+  redirect(`/campagne/${id}`);
+}
+
+export async function aggiornaCampagna(dati: FormData) {
+  const { dep } = await contesto();
+  const id = testo(dati, 'id', 60);
+  if (!id) return;
+
+  await dep.aggiornaCampagna(id, {
+    nome: testo(dati, 'nome', 160),
+    piattaforma: scelta<Piattaforma>(dati, 'piattaforma', PIATTAFORME, 'meta'),
+    canaleIngresso: scelta<Canale>(dati, 'canale_ingresso', CANALI, 'messenger'),
+    obiettivo: testo(dati, 'obiettivo', 120) || null,
+    stato: scelta<StatoCampagna>(dati, 'stato', STATI_CAMPAGNA, 'attiva'),
+    dataInizio: testo(dati, 'data_inizio', 12) || null,
+    dataFine: testo(dati, 'data_fine', 12) || null,
+    budget: numero(dati, 'budget'),
+    spesa: numero(dati, 'spesa'),
+    idEsterno: testo(dati, 'id_esterno', 60) || null,
+    adsetId: testo(dati, 'adset_id', 60) || null,
+    adId: testo(dati, 'ad_id', 60) || null,
+    parametroRef: testo(dati, 'parametro_ref', 60) || null,
+    landing: testo(dati, 'landing', 300) || null,
+    note: testo(dati, 'note', 1000) || null,
+  });
+
+  aggiornaTutto();
+  revalidatePath(`/campagne/${id}`);
+}
+
+// Collega o scollega una persona da una campagna, a mano: serve per i
+// contatti entrati prima che le integrazioni fossero accese.
+export async function collegaCampagna(dati: FormData) {
+  const { dep } = await contesto();
+  const contattoId = testo(dati, 'contatto_id', 60);
+  if (!contattoId) return;
+
+  const campagnaId = testo(dati, 'campagna_id', 60);
+  await dep.aggiornaContatto(contattoId, { campagnaId: campagnaId || null });
+  aggiornaTutto(contattoId);
+}
+
+// ---------------------------------------------------------------------------
+// Conversazioni
+// ---------------------------------------------------------------------------
+export async function segnaConversazione(dati: FormData) {
+  const { dep, operatore } = await contesto();
+  const id = testo(dati, 'id', 60);
+  if (!id) return;
+
+  const stato = scelta<StatoConversazione>(dati, 'stato', STATI_CONVERSAZIONE, 'gestita');
+  await dep.aggiornaConversazione(id, {
+    stato,
+    nonLetta: false,
+    assegnataA: operatore,
+  });
+
+  aggiornaTutto(testo(dati, 'contatto_id', 60) || undefined);
+}
+
+// ---------------------------------------------------------------------------
+// Unione di due schede della stessa persona
+// ---------------------------------------------------------------------------
+export async function unisciContatti(dati: FormData) {
+  const { dep } = await contesto();
+  const principale = testo(dati, 'principale', 60);
+  const assorbito = testo(dati, 'assorbito', 60);
+  if (!principale || !assorbito || principale === assorbito) return;
+
+  await dep.unisciContatti(principale, assorbito);
+  aggiornaTutto(principale);
+  redirect(`/contatti/${principale}?avviso=unito`);
 }

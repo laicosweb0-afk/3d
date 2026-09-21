@@ -1,4 +1,5 @@
 import type { Azione, Contatto, Evento, Opportunita } from '@/lib/dominio/tipi';
+import type { Campagna, Conversazione, Identita } from '@/lib/dominio/campagne';
 import type { Istantanea } from './istantanea';
 
 // I dati di esempio. Non sono decorazione: coprono i dieci casi che il CRM
@@ -20,10 +21,15 @@ let n = 0;
 const id = (p: string) => `${p}-${String(++n).padStart(3, '0')}`;
 
 type CasoDemo = {
-  contatto: Omit<Contatto, 'id' | 'aggiornatoIl'> & { id: string };
+  contatto: Omit<Contatto, 'id' | 'aggiornatoIl' | 'campagnaId'> & { id: string };
+  // Quale campagna l'ha portata: è il collegamento che fa esistere la domanda
+  // «questa campagna cosa ha prodotto?».
+  campagna?: string;
   opportunita?: Omit<Opportunita, 'id' | 'contattoId'>[];
   azioni?: Omit<Azione, 'id' | 'contattoId' | 'creataIl'>[];
   eventi?: Omit<Evento, 'id' | 'contattoId'>[];
+  conversazioni?: (Omit<Conversazione, 'id' | 'contattoId' | 'campagnaId'> & { campagna?: string })[];
+  identita?: Omit<Identita, 'id' | 'contattoId' | 'creataIl'>[];
 };
 
 const base = {
@@ -34,6 +40,56 @@ const base = {
   provincia: 'RA',
 };
 
+// ---------------------------------------------------------------------------
+// LE CAMPAGNE. La spesa di quella Google è `null` apposta: nel CRM si legge
+// N/D, perché finché non colleghiamo le statistiche di Google quel numero non
+// lo sappiamo — e un CRM che inventa un costo è peggio di uno che tace.
+// ---------------------------------------------------------------------------
+const CAMPAGNE_DEMO: (Omit<Campagna, 'id' | 'creataIl'> & { chiave: string })[] = [
+  {
+    chiave: 'bagno-settembre',
+    nome: 'Bagno completo — Settembre',
+    piattaforma: 'meta', obiettivo: 'Messaggi', canaleIngresso: 'messenger', stato: 'attiva',
+    dataInizio: g(30).slice(0, 10), dataFine: null,
+    budget: 450, spesa: 312.40, spesaAggiornataIl: g(1),
+    idEsterno: '120210000000123456', adsetId: '120210000000123457', adId: '120210000000123458',
+    parametroRef: 'bagno-settembre',
+    utmSource: 'facebook', utmMedium: 'cpc', utmCampaign: 'bagno-settembre',
+    landing: null, note: 'Click-to-Messenger. Il ref= è impostato nell\u2019annuncio.',
+  },
+  {
+    chiave: 'bagno-chiavi-in-mano',
+    nome: 'Bagno chiavi in mano — WhatsApp',
+    piattaforma: 'meta', obiettivo: 'Messaggi', canaleIngresso: 'whatsapp', stato: 'attiva',
+    dataInizio: g(40).slice(0, 10), dataFine: null,
+    budget: 300, spesa: 268.90, spesaAggiornataIl: g(1),
+    idEsterno: '120210000000223456', adsetId: null, adId: '120210000000223458',
+    parametroRef: 'bagno-chiavi', utmSource: 'facebook', utmMedium: 'cpc', utmCampaign: 'bagno-chiavi',
+    landing: null, note: 'Click-to-WhatsApp: l\u2019attribuzione arriva col ctwa_clid.',
+  },
+  {
+    chiave: 'grandi-formati',
+    nome: 'Grandi formati — Estate',
+    piattaforma: 'meta', obiettivo: 'Modulo istantaneo', canaleIngresso: 'messenger', stato: 'conclusa',
+    dataInizio: g(75).slice(0, 10), dataFine: g(20).slice(0, 10),
+    budget: 800, spesa: 742.15, spesaAggiornataIl: g(20),
+    idEsterno: '120210000000323456', adsetId: null, adId: '120210000000323458',
+    parametroRef: null, utmSource: 'facebook', utmMedium: 'cpc', utmCampaign: 'grandi-formati',
+    landing: null, note: null,
+  },
+  {
+    chiave: 'ristrutturazioni-google',
+    nome: 'Ristrutturazioni — Google',
+    piattaforma: 'google', obiettivo: 'Traffico al sito', canaleIngresso: 'sito', stato: 'attiva',
+    dataInizio: g(25).slice(0, 10), dataFine: null,
+    // Spesa sconosciuta: Google non è collegato. N/D, non zero.
+    budget: null, spesa: null, spesaAggiornataIl: null,
+    idEsterno: null, adsetId: null, adId: null, parametroRef: null,
+    utmSource: 'google', utmMedium: 'cpc', utmCampaign: 'ristrutturazioni',
+    landing: 'https://ramastore.it/preventivo', note: 'Spesa da collegare con Google Ads.',
+  },
+];
+
 const CASI: CasoDemo[] = [
   // 1 — nuovo lead Instagram, arrivato ieri sera, mai toccato
   {
@@ -43,14 +99,36 @@ const CASI: CasoDemo[] = [
       fonte: 'instagram', fonteDettaglio: 'DM dopo la storia del 19',
       fase: 'nuovo', consensoIl: g(1), ultimoContattoIl: null, creatoIl: g(1, 21),
     },
+    campagna: 'bagno-settembre',
     azioni: [{
       tipo: 'rispondere', descrizione: 'Rispondere al DM: chiede il gres effetto cemento',
       scadenza: fra(0, 12), haOra: false, priorita: 'urgente', fattaIl: null, operatore: null,
     }],
-    eventi: [{
-      tipo: 'lead_ricevuto', descrizione: 'DM su Instagram: «Avete il gres che sembra cemento?»',
-      quando: g(1, 21), valore: null, operatore: null, automatico: true,
-    }],
+    eventi: [
+      { tipo: 'lead_ricevuto', descrizione: 'Instagram — campagna «Bagno completo — Settembre»: «Avete il gres che sembra cemento?»', quando: g(1, 21), valore: null, operatore: null, automatico: true },
+      { tipo: 'whatsapp', descrizione: 'WhatsApp: «Sono quella di ieri su Instagram, passo sabato?»', quando: g(0, 9), valore: null, operatore: null, automatico: true },
+    ],
+    // Due canali, una persona sola: è il caso che il CRM deve saper tenere
+    // insieme invece di fare «Giulia 1» e «Giulia 2».
+    conversazioni: [
+      {
+        canale: 'instagram', idEsterno: 'igsid-demo-9931', stato: 'aperta', assegnataA: null,
+        nonLetta: true, primoMessaggioIl: g(1, 21), ultimoMessaggioIl: g(1, 21),
+        ultimoMessaggioTesto: 'Avete il gres che sembra cemento?',
+        riferimento: { ad_id: '120210000000123458', ref: 'bagno-settembre', source: 'ADS' },
+        campagna: 'bagno-settembre',
+      },
+      {
+        canale: 'whatsapp', idEsterno: '+393401122334', stato: 'aperta', assegnataA: null,
+        nonLetta: true, primoMessaggioIl: g(0, 9), ultimoMessaggioIl: g(0, 9),
+        ultimoMessaggioTesto: 'Sono quella di ieri su Instagram, passo sabato?',
+        riferimento: null, campagna: 'bagno-settembre',
+      },
+    ],
+    identita: [
+      { tipo: 'instagram_igsid', valore: 'igsid-demo-9931', verificata: true },
+      { tipo: 'whatsapp_telefono', valore: '+393401122334', verificata: true },
+    ],
   },
 
   // 2 — lead da Google, qualificato, appuntamento da fissare
@@ -62,6 +140,7 @@ const CASI: CasoDemo[] = [
       fase: 'qualificato', consensoIl: g(6), ultimoContattoIl: g(5), creatoIl: g(6, 9),
       tag: ['ristrutturazione'],
     },
+    campagna: 'ristrutturazioni-google',
     opportunita: [{
       titolo: 'Ristrutturazione completa 140 mq', interesse: 'ristrutturazione',
       descrizione: 'Casa intera, vuole partire subito', valoreStimato: 12000,
@@ -136,6 +215,15 @@ const CASI: CasoDemo[] = [
       fase: 'follow_up', consensoIl: g(20), ultimoContattoIl: g(8), creatoIl: g(20, 12),
       tag: ['bagno', 'seconda casa'],
     },
+    campagna: 'bagno-settembre',
+    conversazioni: [{
+      canale: 'messenger', idEsterno: 'psid-demo-4412', stato: 'gestita', assegnataA: null,
+      nonLetta: false, primoMessaggioIl: g(20, 12), ultimoMessaggioIl: g(12, 16),
+      ultimoMessaggioTesto: 'Ci vediamo giovedì in showroom',
+      riferimento: { ad_id: '120210000000123458', ref: 'bagno-settembre', source: 'ADS' },
+      campagna: 'bagno-settembre',
+    }],
+    identita: [{ tipo: 'messenger_psid', valore: 'psid-demo-4412', verificata: true }],
     opportunita: [{
       titolo: 'Bagno padronale + cucina', interesse: 'bagno',
       descrizione: 'Calacatta per il bagno, rovere in cucina', valoreStimato: 5200,
@@ -162,6 +250,15 @@ const CASI: CasoDemo[] = [
       fonte: 'campagna', fonteDettaglio: 'Meta «Bagno chiavi in mano» → WhatsApp',
       fase: 'follow_up', consensoIl: g(24), ultimoContattoIl: g(11), creatoIl: g(24, 19),
     },
+    campagna: 'bagno-chiavi-in-mano',
+    conversazioni: [{
+      canale: 'whatsapp', idEsterno: '+393356682310', stato: 'gestita', assegnataA: null,
+      nonLetta: false, primoMessaggioIl: g(24, 19), ultimoMessaggioIl: g(11, 11),
+      ultimoMessaggioTesto: 'Mi porto a casa i campioni e vi dico',
+      riferimento: { ctwa_clid: 'ctwa-demo-77123', source_type: 'ad', source_id: '120210000000223458' },
+      campagna: 'bagno-chiavi-in-mano',
+    }],
+    identita: [{ tipo: 'whatsapp_telefono', valore: '+393356682310', verificata: true }],
     opportunita: [{
       titolo: 'Bagno ospiti + lavanderia', interesse: 'bagno',
       descrizione: 'Nero lucido per il bagno degli ospiti', valoreStimato: 5200,
@@ -190,6 +287,7 @@ const CASI: CasoDemo[] = [
       fase: 'ordine', consensoIl: g(50), ultimoContattoIl: g(9), creatoIl: g(50, 8),
       tag: ['villa'],
     },
+    campagna: 'grandi-formati',
     opportunita: [{
       titolo: 'Villa: zona giorno e tre bagni', interesse: 'ristrutturazione',
       descrizione: 'Calacatta, gres cemento, rovere naturale', valoreStimato: 16000,
@@ -323,14 +421,58 @@ export function semina(): Istantanea {
   const opportunita: Opportunita[] = [];
   const azioni: Azione[] = [];
   const eventi: Evento[] = [];
+  const campagne: Campagna[] = [];
+  const conversazioni: Conversazione[] = [];
+  const identita: Identita[] = [];
 
-  for (const caso of CASI) {
-    const c: Contatto = { ...caso.contatto, aggiornatoIl: caso.contatto.creatoIl };
-    contatti.push(c);
-    for (const o of caso.opportunita ?? []) opportunita.push({ ...o, id: id('opp'), contattoId: c.id });
-    for (const a of caso.azioni ?? []) azioni.push({ ...a, id: id('az'), contattoId: c.id, creataIl: c.creatoIl });
-    for (const e of caso.eventi ?? []) eventi.push({ ...e, id: id('ev'), contattoId: c.id });
+  // Prima le campagne: sono il punto di partenza, tutto il resto ci si appende.
+  const perChiave = new Map<string, string>();
+  for (const { chiave, ...resto } of CAMPAGNE_DEMO) {
+    const campagna: Campagna = { ...resto, id: id('camp'), creataIl: resto.dataInizio ?? g(60) };
+    campagne.push(campagna);
+    perChiave.set(chiave, campagna.id);
   }
 
-  return { contatti, opportunita, azioni, eventi };
+  for (const caso of CASI) {
+    const campagnaId = caso.campagna ? perChiave.get(caso.campagna) ?? null : null;
+    const c: Contatto = { ...caso.contatto, campagnaId, aggiornatoIl: caso.contatto.creatoIl };
+    contatti.push(c);
+
+    for (const o of caso.opportunita ?? []) opportunita.push({ ...o, id: id('opp'), contattoId: c.id });
+    for (const a of caso.azioni ?? []) azioni.push({ ...a, id: id('az'), contattoId: c.id, creataIl: c.creatoIl });
+
+    // Le conversazioni prima degli eventi, così un evento può citarle.
+    const suoiFili: Conversazione[] = [];
+    for (const { campagna, ...resto } of caso.conversazioni ?? []) {
+      const filo: Conversazione = {
+        ...resto,
+        id: id('conv'),
+        contattoId: c.id,
+        campagnaId: campagna ? perChiave.get(campagna) ?? null : campagnaId,
+      };
+      conversazioni.push(filo);
+      suoiFili.push(filo);
+    }
+
+    for (const e of caso.eventi ?? []) {
+      // Un evento nato da un messaggio si aggancia al filo di quel canale.
+      const filo = suoiFili.find((f) =>
+        (e.tipo === 'whatsapp' && f.canale === 'whatsapp')
+        || (e.tipo === 'instagram' && f.canale === 'instagram')
+        || (e.tipo === 'messenger' && f.canale === 'messenger'));
+      eventi.push({ ...e, id: id('ev'), contattoId: c.id, conversazioneId: filo?.id ?? null });
+    }
+
+    // Le identità dichiarate, più quelle che si ricavano da email e telefono:
+    // sono le chiavi con cui il CRM riconosce la stessa persona domani.
+    const chiavi = [...(caso.identita ?? [])];
+    if (c.email) chiavi.push({ tipo: 'email', valore: c.email.toLowerCase(), verificata: true });
+    if (c.telefono) chiavi.push({ tipo: 'telefono', valore: c.telefono.replace(/[^\d+]/g, ''), verificata: true });
+    for (const k of chiavi) {
+      if (identita.some((i) => i.tipo === k.tipo && i.valore === k.valore)) continue;
+      identita.push({ ...k, id: id('idn'), contattoId: c.id, creataIl: c.creatoIl });
+    }
+  }
+
+  return { contatti, opportunita, azioni, eventi, campagne, conversazioni, identita };
 }

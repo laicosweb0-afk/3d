@@ -11,12 +11,16 @@ const VOCI = [
   { href: '/', testo: 'Oggi', segno: 'oggi' },
   { href: '/pipeline', testo: 'Pipeline', segno: 'pipeline' },
   { href: '/contatti', testo: 'Contatti', segno: 'contatti' },
+  { href: '/campagne', testo: 'Campagne', segno: 'campagne' },
   { href: '/attenzioni', testo: 'Attenzioni', segno: 'attenzioni' },
   { href: '/analisi', testo: 'Analisi', segno: 'analisi' },
   { href: '/ingressi', testo: 'Ingressi', segno: 'ingressi' },
 ] as const;
 
-const VOCI_BASSE = VOCI.filter((v) => v.segno !== 'ingressi');
+// In fondo allo schermo ci stanno cinque voci, non sette: si tengono quelle
+// che si toccano in negozio, il resto resta in alto sul computer.
+const NASCOSTE_IN_BASSO = ['ingressi', 'analisi'];
+const VOCI_BASSE = VOCI.filter((v) => !NASCOSTE_IN_BASSO.includes(v.segno));
 
 function Icona({ segno }: { segno: string }) {
   switch (segno) {
@@ -26,6 +30,8 @@ function Icona({ segno }: { segno: string }) {
       return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M6 10h12M9 15h6M11 20h2" /></svg>;
     case 'contatti':
       return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.4" /><path d="M5 20c0-3.6 3.1-5.6 7-5.6s7 2 7 5.6" /></svg>;
+    case 'campagne':
+      return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5 15 5v14L4 14.5Z" /><path d="M7 15v4.5h3V16" /><path d="M18 10.5a2.6 2.6 0 0 1 0 3" /></svg>;
     case 'attenzioni':
       return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5 3.6 19h16.8L12 4.5Z" /><path d="M12 10v4M12 16.6v.4" /></svg>;
     default:

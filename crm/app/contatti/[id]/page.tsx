@@ -1,7 +1,11 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { deposito } from '@/lib/dati';
-import { scheda as leggiScheda } from '@/lib/dati/istantanea';
+import { possibiliDuplicati, scheda as leggiScheda } from '@/lib/dati/istantanea';
+import {
+  ETICHETTA_CANALE, ETICHETTA_IDENTITA, ETICHETTA_STATO_CONVERSAZIONE,
+  ETICHETTA_PIATTAFORMA, COLORE_CANALE,
+} from '@/lib/dominio/campagne';
 import {
   FASI, INTERESSI, MOTIVI_PERSO, PRIORITA, TIPI_AZIONE, TIPI_EVENTO,
 } from '@/lib/dominio/tipi';
@@ -13,8 +17,9 @@ import {
 } from '@/lib/dominio/etichette';
 import { daQuanto, dataOra, inRitardo, quando, soloData } from '@/lib/formato';
 import {
-  aggiornaContatto, aggiornaOpportunita, cambiaFase, completaAzione, creaAzione,
-  creaOpportunita, eliminaContatto, modificaAzione, posticipaAzione, registraEvento,
+  aggiornaContatto, aggiornaOpportunita, cambiaFase, collegaCampagna, completaAzione,
+  creaAzione, creaOpportunita, eliminaContatto, modificaAzione, posticipaAzione,
+  registraEvento, segnaConversazione, unisciContatti,
 } from '../../azioni';
 import { Fonte, Priorita } from '../../pezzi';
 
@@ -31,8 +36,15 @@ const COLORE_EVENTO: Partial<Record<string, string>> = {
   cambio_fase: 'var(--ink-3)',
 };
 
-export default async function Scheda({ params }: { params: Promise<{ id: string }> }) {
+export default async function Scheda({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ avviso?: string }>;
+}) {
   const { id } = await params;
+  const { avviso } = await searchParams;
   const dati = await (await deposito()).istantanea();
   const s = leggiScheda(dati, id);
   if (!s) notFound();
@@ -42,6 +54,8 @@ export default async function Scheda({ params }: { params: Promise<{ id: string 
   const opportunitaAperta = s.opportunita.find((o) => o.stato === 'aperta');
   const azioniFatte = s.azioni.filter((a) => a.fattaIl);
   const altreAperte = s.azioni.filter((a) => !a.fattaIl && a.id !== prossima?.id);
+  const doppioni = possibiliDuplicati(dati, c.id);
+  const campagneOrdinate = [...dati.campagne].sort((a, b) => b.creataIl.localeCompare(a.creataIl));
 
   return (
     <main>
@@ -69,6 +83,13 @@ export default async function Scheda({ params }: { params: Promise<{ id: string 
           {c.email && <a className="bottone bottone-fantasma" href={`mailto:${c.email}`}>Email</a>}
         </div>
       </header>
+
+      {avviso === 'unito' && (
+        <p className="avviso verde">
+          Schede unite. Storia, opportunità, promemoria e conversazioni dell&apos;altra scheda sono qui dentro;
+          l&apos;altra non esiste più.
+        </p>
+      )}
 
       <div className="azioni-riga" style={{ marginBottom: 18 }}>
         <Fonte id={c.fonte} dettaglio={c.fonteDettaglio} />
@@ -192,6 +213,137 @@ export default async function Scheda({ params }: { params: Promise<{ id: string 
           </p>
         </div>
       </section>
+
+      {/* ------------------------------------------------------------------
+          2-bis. DA DOVE ARRIVA, E DOVE SI STA PARLANDO
+          ------------------------------------------------------------------ */}
+      <div className="colonne">
+        <section className="sezione">
+          <h2>Da quale campagna</h2>
+          <div className="scheda">
+            {s.campagna ? (
+              <p style={{ marginTop: 0 }}>
+                <Link href={`/campagne/${s.campagna.id}`} className="titolo">{s.campagna.nome}</Link>
+                <span className="sotto" style={{ display: 'block', marginTop: 2 }}>
+                  {ETICHETTA_PIATTAFORMA[s.campagna.piattaforma]} · porta su {ETICHETTA_CANALE[s.campagna.canaleIngresso]}
+                </span>
+              </p>
+            ) : (
+              <p className="elenco-vuoto" style={{ marginTop: 0 }}>
+                Nessuna campagna attribuita. Se sai da dove è arrivato, scegli qui sotto: è l&apos;unico modo perché
+                quella campagna possa prendersi il merito dell&apos;ordine.
+              </p>
+            )}
+            <form action={collegaCampagna} className="azioni-riga">
+              <input type="hidden" name="contatto_id" value={c.id} />
+              <div style={{ flex: 1, minWidth: 190 }}>
+                <label htmlFor="campagna_id">Campagna</label>
+                <select id="campagna_id" name="campagna_id" defaultValue={c.campagnaId ?? ''}>
+                  <option value="">— nessuna —</option>
+                  {campagneOrdinate.map((x) => <option key={x.id} value={x.id}>{x.nome}</option>)}
+                </select>
+              </div>
+              <button type="submit" className="bottone-fantasma" style={{ marginTop: 17 }}>Collega</button>
+            </form>
+            {campagneOrdinate.length === 0 && (
+              <p className="nota-piede" style={{ marginBottom: 0 }}>
+                Nessuna campagna registrata: <Link href="/campagne/nuova">creane una</Link>.
+              </p>
+            )}
+          </div>
+        </section>
+
+        <section className="sezione">
+          <h2>Conversazioni</h2>
+          <div className="scheda scheda-fitta">
+            {s.conversazioni.length === 0 && (
+              <p className="elenco-vuoto">
+                Nessun filo di messaggi. Si aprono da sole quando i webhook di Meta saranno collegati
+                (vedi CAMPAIGN_INTEGRATION_PLAN.md), oppure quando un messaggio entra da{' '}
+                <code>/api/ingresso/…</code>.
+              </p>
+            )}
+            {s.conversazioni.map((f) => (
+              <div key={f.id} className="riga">
+                <span className="cresce">
+                  <span className="titolo">
+                    <span className="punto" style={{ background: COLORE_CANALE[f.canale], display: 'inline-block', marginRight: 6 }} aria-hidden="true" />
+                    {ETICHETTA_CANALE[f.canale]}
+                  </span>
+                  <span className="sotto">
+                    {dataOra(f.ultimoMessaggioIl)}
+                    {f.ultimoMessaggioTesto ? ` · «${f.ultimoMessaggioTesto.slice(0, 70)}»` : ''}
+                  </span>
+                </span>
+                <span className={`pastiglia ${f.nonLetta ? 'urgente' : 'bene'}`}>
+                  {ETICHETTA_STATO_CONVERSAZIONE[f.stato]}
+                </span>
+                {f.stato === 'aperta' && (
+                  <form action={segnaConversazione}>
+                    <input type="hidden" name="id" value={f.id} />
+                    <input type="hidden" name="contatto_id" value={c.id} />
+                    <input type="hidden" name="stato" value="gestita" />
+                    <button type="submit" className="bottone-fantasma bottone-piccolo">Ho risposto</button>
+                  </form>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {s.identita.length > 0 && (
+            <div className="scheda" style={{ marginTop: 10 }}>
+              <h3>Come lo riconosciamo</h3>
+              <div className="azioni-riga" style={{ flexWrap: 'wrap' }}>
+                {s.identita.map((i) => (
+                  <span key={i.id} className="pastiglia" title={i.valore}>
+                    {ETICHETTA_IDENTITA[i.tipo]}: {i.valore.length > 22 ? `${i.valore.slice(0, 19)}…` : i.valore}
+                  </span>
+                ))}
+              </div>
+              <p className="nota-piede" style={{ marginTop: 10, marginBottom: 0 }}>
+                Sono le chiavi con cui il CRM ricollega alla stessa persona i messaggi che arrivano da canali diversi.
+                Email e telefono valgono ovunque; l&apos;identificativo di Messenger e Instagram vale solo per la
+                Pagina di Rama, quindi non si può incrociare da solo con altri canali.
+              </p>
+            </div>
+          )}
+        </section>
+      </div>
+
+      {/* ------------------------------------------------------------------
+          2-ter. POSSIBILE DOPPIONE
+          ------------------------------------------------------------------ */}
+      {doppioni.length > 0 && (
+        <section className="sezione">
+          <h2>Possibile doppione</h2>
+          <div className="scheda">
+            <p style={{ marginTop: 0 }}>
+              {doppioni.length === 1 ? "C'è un'altra scheda" : `Ci sono altre ${doppioni.length} schede`} con lo stesso
+              telefono, la stessa email o lo stesso nome e cognome. Se è la stessa persona, uniscile: tutto finisce qui
+              e l&apos;altra scheda sparisce. <strong>Non si torna indietro</strong>, quindi lo decidi tu — il CRM non
+              unisce niente da solo.
+            </p>
+            {doppioni.map((d) => (
+              <div key={d.id} className="riga">
+                <span className="cresce">
+                  <Link href={`/contatti/${d.id}`} className="titolo">{`${d.nome} ${d.cognome}`.trim()}</Link>
+                  <span className="sotto">
+                    {[d.telefono, d.email, d.citta].filter(Boolean).join(' · ') || 'nessun recapito'}
+                    {' · '}entrata il {soloData(d.creatoIl)}
+                  </span>
+                </span>
+                <form action={unisciContatti}>
+                  <input type="hidden" name="principale" value={c.id} />
+                  <input type="hidden" name="assorbito" value={d.id} />
+                  <button type="submit" className="bottone-pericolo bottone-piccolo">
+                    Unisci qui
+                  </button>
+                </form>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="colonne">
         {/* ----------------------------------------------------------------

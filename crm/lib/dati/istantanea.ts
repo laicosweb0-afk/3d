@@ -3,6 +3,8 @@ import type {
   Opportunita, Priorita, SchedaContatto,
 } from '@/lib/dominio/tipi';
 import { nomeCompleto } from '@/lib/dominio/tipi';
+import type { Campagna, Conversazione, Identita } from '@/lib/dominio/campagne';
+import { IDENTITA_TRASVERSALI, normalizzaTelefono } from '@/lib/dominio/campagne';
 import { FASI_DESCRITTE, FASI_IN_TRATTATIVA, fase as descriviFase } from '@/lib/dominio/fasi';
 import { FONTI_DESCRITTE } from '@/lib/dominio/fonti';
 import { ORDINE_PRIORITA, SOGLIE, calcolaPriorita } from '@/lib/dominio/priorita';
@@ -17,6 +19,11 @@ export type Istantanea = {
   opportunita: Opportunita[];
   azioni: Azione[];
   eventi: Evento[];
+  // Il pezzo campaign-first: da dove nascono i contatti e su che filo si sta
+  // parlando con loro.
+  campagne: Campagna[];
+  conversazioni: Conversazione[];
+  identita: Identita[];
 };
 
 export type Periodo = 'oggi' | '7' | '30' | 'mese' | 'tutto';
@@ -81,12 +88,75 @@ export function arricchisci(dati: Istantanea, c: Contatto): ContattoInElenco {
   };
 }
 
+export const conversazioniDi = (dati: Istantanea, contattoId: string) =>
+  dati.conversazioni
+    .filter((c) => c.contattoId === contattoId)
+    .sort((a, b) => b.ultimoMessaggioIl.localeCompare(a.ultimoMessaggioIl));
+
+export const identitaDi = (dati: Istantanea, contattoId: string) =>
+  dati.identita.filter((i) => i.contattoId === contattoId);
+
+export const campagnaDi = (dati: Istantanea, contatto: Contatto) =>
+  contatto.campagnaId ? dati.campagne.find((c) => c.id === contatto.campagnaId) ?? null : null;
+
+// ---------------------------------------------------------------------------
+// Possibili doppioni
+// ---------------------------------------------------------------------------
+// La stessa persona che scrive su Messenger e poi manda un'email diventa due
+// schede: il riconoscimento automatico (lib/dati/ingresso.ts) le tiene unite
+// quando può, ma PSID e IGSID non si incrociano fra canali. Quello che resta
+// lo segnaliamo qui e lo decide una persona, con «Unisci».
+//
+// Non si unisce niente da soli: unire è irreversibile.
+function chiaviPersona(dati: Istantanea, c: Contatto): string[] {
+  const chiavi: string[] = [];
+  if (c.telefono?.trim()) chiavi.push(`tel:${normalizzaTelefono(c.telefono)}`);
+  if (c.email?.trim()) chiavi.push(`mail:${c.email.trim().toLowerCase()}`);
+  // Il nome vale come indizio solo se è nome **e** cognome: i soli "Giulia"
+  // che arrivano da Instagram sono tanti e non sono la stessa persona.
+  if (c.nome.trim() && c.cognome.trim()) {
+    chiavi.push(`nome:${`${c.nome} ${c.cognome}`.trim().toLowerCase().replace(/\s+/g, ' ')}`);
+  }
+  for (const i of dati.identita.filter((i) => i.contattoId === c.id && IDENTITA_TRASVERSALI.includes(i.tipo))) {
+    chiavi.push(`id:${i.valore}`);
+  }
+  return chiavi;
+}
+
+export function possibiliDuplicati(dati: Istantanea, contattoId: string): Contatto[] {
+  const c = dati.contatti.find((x) => x.id === contattoId);
+  if (!c) return [];
+  const mie = new Set(chiaviPersona(dati, c));
+  if (mie.size === 0) return [];
+  return dati.contatti.filter(
+    (altro) => altro.id !== c.id && chiaviPersona(dati, altro).some((k) => mie.has(k)),
+  );
+}
+
+// Tutte le coppie sospette, ciascuna una volta sola.
+export function coppieDuplicate(dati: Istantanea): Array<[Contatto, Contatto]> {
+  const coppie: Array<[Contatto, Contatto]> = [];
+  const viste = new Set<string>();
+  for (const c of dati.contatti) {
+    for (const altro of possibiliDuplicati(dati, c.id)) {
+      const chiave = [c.id, altro.id].sort().join('|');
+      if (viste.has(chiave)) continue;
+      viste.add(chiave);
+      coppie.push([c, altro]);
+    }
+  }
+  return coppie;
+}
+
 export function scheda(dati: Istantanea, id: string): SchedaContatto | null {
   const contatto = dati.contatti.find((c) => c.id === id);
   if (!contatto) return null;
   const arricchito = arricchisci(dati, contatto);
   return {
     contatto,
+    campagna: campagnaDi(dati, contatto),
+    conversazioni: conversazioniDi(dati, id),
+    identita: identitaDi(dati, id),
     opportunita: dati.opportunita.filter((o) => o.contattoId === id).sort((a, b) => b.creataIl.localeCompare(a.creataIl)),
     azioni: dati.azioni.filter((a) => a.contattoId === id).sort((a, b) => a.scadenza.localeCompare(b.scadenza)),
     eventi: dati.eventi.filter((e) => e.contattoId === id).sort((a, b) => b.quando.localeCompare(a.quando)),
@@ -269,6 +339,77 @@ export function ingressi(dati: Istantanea, periodo: Periodo = 'tutto'): RigaFont
 }
 
 // ---------------------------------------------------------------------------
+// Campagne: cosa ha prodotto davvero ciascuna
+// ---------------------------------------------------------------------------
+export type RigaCampagna = {
+  campagna: Campagna;
+  // `null` vuol dire N/D — non lo sappiamo. Non è mai zero per finta.
+  spesa: number | null;
+  contatti: number;
+  conversazioni: number;
+  lead: number;          // presi in carico: hanno superato «nuovo»
+  qualificati: number;
+  preventivi: number;
+  ordini: number;
+  valorePreventivi: number;
+  valoreOrdini: number;
+  costoPerContatto: number | null;
+  costoPerOrdine: number | null;
+};
+
+export function campagne(dati: Istantanea, periodo: Periodo = 'tutto'): RigaCampagna[] {
+  const da = inizioPeriodo(periodo).toISOString();
+
+  return dati.campagne
+    .map((campagna) => {
+      const suoi = dati.contatti.filter((c) => c.campagnaId === campagna.id && c.creatoIl >= da);
+      const idSuoi = new Set(suoi.map((c) => c.id));
+      const oppSue = dati.opportunita.filter((o) => idSuoi.has(o.contattoId));
+
+      const arrivatiA = (f: Fase) => suoi.filter((c) => RAGGIUNTA(c, f)).length;
+      const ordini = arrivatiA('ordine');
+
+      const valorePreventivi = oppSue
+        .filter((o) => o.valorePreventivo && o.stato !== 'persa')
+        .reduce((s, o) => s + (o.valorePreventivo ?? 0), 0);
+      const valoreOrdini = oppSue
+        .filter((o) => o.stato === 'vinta')
+        .reduce((s, o) => s + (o.valorePreventivo ?? o.valoreStimato ?? 0), 0);
+
+      const spesa = campagna.spesa;
+      return {
+        campagna,
+        spesa,
+        contatti: suoi.length,
+        conversazioni: dati.conversazioni.filter((c) => c.campagnaId === campagna.id).length,
+        lead: arrivatiA('contattato'),
+        qualificati: arrivatiA('qualificato'),
+        preventivi: arrivatiA('preventivo'),
+        ordini,
+        valorePreventivi,
+        valoreOrdini,
+        // Il costo si calcola solo se la spesa la conosciamo davvero.
+        costoPerContatto: spesa !== null && suoi.length ? Math.round((spesa / suoi.length) * 100) / 100 : null,
+        costoPerOrdine: spesa !== null && ordini ? Math.round((spesa / ordini) * 100) / 100 : null,
+      };
+    })
+    .sort((a, b) => b.contatti - a.contatti || a.campagna.nome.localeCompare(b.campagna.nome, 'it'));
+}
+
+// Le conversazioni aperte a cui nessuno ha ancora risposto: è la coda vera di
+// chi fa campagne che portano in chat.
+export function conversazioniDaRispondere(dati: Istantanea) {
+  return dati.conversazioni
+    .filter((c) => c.stato === 'aperta' && c.nonLetta)
+    .map((conversazione) => {
+      const grezzo = dati.contatti.find((c) => c.id === conversazione.contattoId);
+      return grezzo ? { conversazione, contatto: arricchisci(dati, grezzo) } : null;
+    })
+    .filter((v): v is { conversazione: Conversazione; contatto: ContattoInElenco } => v !== null)
+    .sort((a, b) => a.conversazione.ultimoMessaggioIl.localeCompare(b.conversazione.ultimoMessaggioIl));
+}
+
+// ---------------------------------------------------------------------------
 // Analisi
 // ---------------------------------------------------------------------------
 export type Analisi = {
@@ -351,6 +492,7 @@ export function analisi(dati: Istantanea, periodo: Periodo = '30'): Analisi {
 // Attenzioni: le cose che stanno per sfuggire di mano
 // ---------------------------------------------------------------------------
 export const CHIAVI_ATTENZIONE = [
+  'conversazione_senza_risposta',
   'senza_azione',
   'preventivo_muto',
   'fermo_da_troppo',
@@ -358,6 +500,7 @@ export const CHIAVI_ATTENZIONE = [
   'appuntamento_senza_seguito',
   'alto_valore_fermo',
   'azione_scaduta',
+  'possibile_duplicato',
 ] as const;
 export type ChiaveAttenzione = (typeof CHIAVI_ATTENZIONE)[number];
 
@@ -377,6 +520,18 @@ export function contattiInAttenzione(dati: Istantanea, chiave: ChiaveAttenzione)
   const attivi = dati.contatti.filter((c) => descriviFase(c.fase).attiva);
 
   switch (chiave) {
+    case 'conversazione_senza_risposta': {
+      // Un messaggio arrivato da una campagna e non ancora letto è la cosa
+      // più costosa che ci sia: si è pagato per farlo arrivare.
+      const soglia = new Date(Date.now() - 4 * 3_600_000).toISOString();
+      const fermi = new Set(
+        dati.conversazioni
+          .filter((c) => c.stato === 'aperta' && c.nonLetta && c.ultimoMessaggioIl < soglia)
+          .map((c) => c.contattoId),
+      );
+      return attivi.filter((c) => fermi.has(c.id));
+    }
+
     case 'senza_azione':
       return attivi.filter((c) => azioniAperte(dati, c.id).length === 0);
 
@@ -416,10 +571,17 @@ export function contattiInAttenzione(dati: Istantanea, chiave: ChiaveAttenzione)
     case 'alto_valore_fermo':
       return attivi.filter((c) =>
         valoreContatto(dati, c.id) >= 5000 && silenzioGiorni(dati, c) >= 7);
+
+    case 'possibile_duplicato':
+      // Qui si guardano tutti, non solo i vivi: un doppione di un cliente già
+      // chiuso è esattamente il caso che fa fare brutta figura al telefono.
+      return dati.contatti.filter((c) => possibiliDuplicati(dati, c.id).length > 0);
   }
 }
 
 const TITOLI: Record<ChiaveAttenzione, (n: number) => string> = {
+  conversazione_senza_risposta: (n) =>
+    `${n} ${n === 1 ? 'conversazione aspetta' : 'conversazioni aspettano'} una risposta da più di 4 ore`,
   senza_azione: (n) => `${n} ${n === 1 ? 'contatto non ha' : 'contatti non hanno'} una prossima azione`,
   azione_scaduta: (n) => `${n} ${n === 1 ? 'azione è scaduta' : 'azioni sono scadute'}`,
   preventivo_muto: (n) => `${n} ${n === 1 ? 'preventivo è' : 'preventivi sono'} senza risposta da più di 5 giorni`,
@@ -427,9 +589,11 @@ const TITOLI: Record<ChiaveAttenzione, (n: number) => string> = {
   campione_senza_seguito: (n) => `${n} ${n === 1 ? 'campione consegnato' : 'campioni consegnati'} senza follow-up`,
   appuntamento_senza_seguito: (n) => `${n} ${n === 1 ? 'appuntamento passato' : 'appuntamenti passati'} senza nulla dopo`,
   alto_valore_fermo: (n) => `${n} ${n === 1 ? 'opportunità sopra 5.000 € è ferma' : 'opportunità sopra 5.000 € sono ferme'} da più di 7 giorni`,
+  possibile_duplicato: (n) => `${n} ${n === 1 ? 'scheda potrebbe essere un doppione' : 'schede potrebbero essere doppioni'}`,
 };
 
 const GRAVITA: Record<ChiaveAttenzione, 'alta' | 'media'> = {
+  conversazione_senza_risposta: 'alta',
   senza_azione: 'alta',
   azione_scaduta: 'alta',
   preventivo_muto: 'alta',
@@ -437,6 +601,7 @@ const GRAVITA: Record<ChiaveAttenzione, 'alta' | 'media'> = {
   fermo_da_troppo: 'media',
   campione_senza_seguito: 'media',
   appuntamento_senza_seguito: 'media',
+  possibile_duplicato: 'media',
 };
 
 export function attenzioni(dati: Istantanea): Attenzione[] {

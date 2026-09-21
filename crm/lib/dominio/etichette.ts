@@ -18,8 +18,10 @@ export const ETICHETTA_AZIONE: Record<TipoAzione, string> = {
 
 export const ETICHETTA_EVENTO: Record<TipoEvento, string> = {
   lead_ricevuto: 'Lead ricevuto',
+  messaggio: 'Messaggio',
   telefonata: 'Telefonata',
   whatsapp: 'WhatsApp',
+  messenger: 'Messenger',
   instagram: 'Instagram',
   email: 'Email',
   appuntamento: 'Appuntamento',
