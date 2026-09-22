@@ -15,6 +15,19 @@ data, un valore in gioco e una storia che non si cancella.
     INGRESSO → CONTATTO → QUALIFICAZIONE → APPUNTAMENTO → PREVENTIVO
              → FOLLOW-UP → ORDINE → CLIENTE          (oppure PERSO, col motivo)
 
+## Gli altri documenti, e a cosa serve ciascuno
+
+Questo file racconta **com'è fatto**. Gli altri quattro rispondono a domande
+diverse, e conviene sapere quale aprire:
+
+| Documento | Risponde a |
+|---|---|
+| **`SETUP_GUIDE.md`** | «Come lo accendo?» — passo per passo, dall'inizio. |
+| **`INTEGRATIONS.md`** | «Cosa funziona davvero adesso?» — stato onesto di ogni collegamento. |
+| **`INTEGRATION_GAP_ANALYSIS.md`** | «Cosa manca, chi lo deve fare, in che ordine?» |
+| **`DATA_FLOW.md`** | «Che strada fa un dato?» — e dove guardare quando non torna. |
+| **`CAMPAIGN_INTEGRATION_PLAN.md`** | La ricerca sulle API di Meta, con le fonti. |
+
 ## Come è fatto dentro
 
 Tutto passa da un solo strato dati — il **deposito** — con due attuazioni
@@ -194,3 +207,7 @@ Invii automatici veri (email e WhatsApp), assistente in linguaggio naturale
 da cui dovrà leggere), importazione dell'anagrafica storica del negozio,
 gestione dei campioni come tabella a sé — oggi vivono come eventi
 «campione consegnato» e «campione reso», che bastano per il follow-up.
+
+E soprattutto: **nessuna integrazione esterna è collegata**. Il CRM gira, ma
+gira da solo. Lo stato vero di ciascuna sta in `INTEGRATIONS.md`, e cosa fare
+per chiuderle in `INTEGRATION_GAP_ANALYSIS.md`.

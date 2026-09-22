@@ -60,7 +60,7 @@ export default async function Card({
         <div className="numeri">
           <Numero etichetta="Card attive" valore={card.filter((c) => c.attiva).length} sotto={`${card.length} in tutto`} />
           <Numero etichetta="Tocchi" valore={tocchiTotali} sotto="telefoni appoggiati" />
-          <Numero etichetta="Contatti da card" valore={daCard} sotto="hanno lasciato il nome" />
+          <Numero etichetta="Contatti da card" valore={daCard} sotto={daCard === 1 ? 'ha lasciato il nome' : 'hanno lasciato il nome'} />
           <Numero
             etichetta="Chi lascia il nome"
             valore={resa === null ? '—' : `${resa}%`}

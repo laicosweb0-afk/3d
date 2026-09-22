@@ -81,8 +81,8 @@ export default async function Preventivi({
 
       <section className="sezione" style={{ marginTop: 0 }}>
         <div className="numeri">
-          <Numero etichetta="In attesa" valore={euro(inGioco)} sotto={`${quanti('inviato')} inviati`} />
-          <Numero etichetta="Accettati" valore={euro(somma('accettato'))} sotto={`${quanti('accettato')} lavori presi`} />
+          <Numero etichetta="In attesa" valore={euro(inGioco)} sotto={`${quanti('inviato')} ${quanti('inviato') === 1 ? 'inviato' : 'inviati'}`} />
+          <Numero etichetta="Accettati" valore={euro(somma('accettato'))} sotto={`${quanti('accettato')} ${quanti('accettato') === 1 ? 'lavoro preso' : 'lavori presi'}`} />
           <Numero
             etichetta="Scaduti"
             valore={scaduti}
