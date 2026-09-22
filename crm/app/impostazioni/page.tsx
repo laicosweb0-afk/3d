@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { deposito, modoDati } from '@/lib/dati';
 import { euro } from '@/lib/dominio/etichette';
 import {
-  ETICHETTA_RUOLO, NUMERI_MODIFICABILI, PERMESSI_ADMIN, SPIEGAZIONE_PERMESSO, puo,
+  ETICHETTA_RUOLO, NUMERI_MODIFICABILI, PERMESSI_TITOLARE, RUOLO_PRUDENTE, SPIEGAZIONE_PERMESSO, puo,
 } from '@/lib/dominio/impostazioni';
 import { valorePipeline } from '@/lib/dati/istantanea';
 import { caricaDatiDemo, eliminaDatiDemo, salvaImpostazioni } from '../azioni';
@@ -26,7 +26,7 @@ export default async function Impostazioni({
   ]);
 
   const imp = dati.impostazioni;
-  const ruolo = profilo?.ruolo ?? 'operatore';
+  const ruolo = profilo?.ruolo ?? RUOLO_PRUDENTE;
   const amministratore = puo(ruolo, 'impostazioni');
   const demo = modoDati() === 'demo';
 
@@ -81,9 +81,9 @@ export default async function Impostazioni({
           </div>
 
           <div className="scheda" style={{ marginTop: 10 }}>
-            <h3>Cosa può fare solo un amministratore</h3>
+            <h3>Cosa può fare solo il titolare</h3>
             <ul style={{ margin: '8px 0 0', paddingLeft: 18, color: 'var(--ink-2)', fontSize: 13.5 }}>
-              {PERMESSI_ADMIN.map((p) => <li key={p}>{SPIEGAZIONE_PERMESSO[p]}</li>)}
+              {PERMESSI_TITOLARE.map((p) => <li key={p}>{SPIEGAZIONE_PERMESSO[p]}</li>)}
             </ul>
             <p className="nota-piede" style={{ marginTop: 10, marginBottom: 0 }}>
               Tutto il resto — rispondere, spostare di fase, scrivere un&apos;attività, fare un preventivo — lo fanno

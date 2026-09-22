@@ -183,28 +183,39 @@ export function conPredefinite(grezzo: unknown): Impostazioni {
 // Il controllo vero sta nelle azioni sul server — nascondere un bottone non
 // è una protezione, è un suggerimento.
 
-export const RUOLI = ['admin', 'operatore'] as const;
+// I due ruoli esistono nel database dal primo giorno, con questi nomi:
+// `titolare` e `collaboratore`. Si riusano invece di inventarne altri —
+// «amministratore» e «operatore» sarebbero gli stessi due ruoli detti in
+// informatichese, e due nomi per la stessa cosa sono il modo più sicuro di
+// ritrovarsi con due elenchi che divergono.
+//
+// Qui dentro il titolare è l'amministratore: è casa sua.
+export const RUOLI = ['titolare', 'collaboratore'] as const;
 export type Ruolo = (typeof RUOLI)[number];
 
 export const ETICHETTA_RUOLO: Record<Ruolo, string> = {
-  admin: 'Amministratore',
-  operatore: 'Operatore',
+  titolare: 'Titolare',
+  collaboratore: 'Collaboratore',
 };
+
+// Il ruolo che vale meno: è quello che si assume quando non si riesce a
+// leggere il profilo. Sbagliando, si toglie un permesso — non se ne regala.
+export const RUOLO_PRUDENTE: Ruolo = 'collaboratore';
 
 // I permessi che non sono di tutti. Tutto quello che non è elencato qui lo
 // può fare chiunque sia entrato: rispondere, spostare di fase, scrivere
 // un'attività, fare un preventivo. È il lavoro, e il lavoro non si ingessa.
-export const PERMESSI_ADMIN = [
+export const PERMESSI_TITOLARE = [
   'elimina_contatto',    // cancellare una persona e tutta la sua storia
   'unisci_contatti',     // fondere due schede: non si torna indietro
   'impostazioni',        // cambiare le soglie che valgono per tutti
   'gestisci_card',       // creare e spegnere le card NFC
   'dati_demo',           // caricare o cancellare i dati di esempio
 ] as const;
-export type Permesso = (typeof PERMESSI_ADMIN)[number];
+export type Permesso = (typeof PERMESSI_TITOLARE)[number];
 
 export const puo = (ruolo: Ruolo, permesso: Permesso): boolean =>
-  ruolo === 'admin' || !(PERMESSI_ADMIN as readonly string[]).includes(permesso);
+  ruolo === 'titolare' || !(PERMESSI_TITOLARE as readonly string[]).includes(permesso);
 
 export const SPIEGAZIONE_PERMESSO: Record<Permesso, string> = {
   elimina_contatto: 'Eliminare un contatto con tutta la sua storia',

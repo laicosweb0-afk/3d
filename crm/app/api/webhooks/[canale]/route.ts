@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { NextResponse } from 'next/server';
-import { depositoPubblico } from '@/lib/dati';
+import { depositoPubblico, modoDati } from '@/lib/dati';
 import { registraIngresso } from '@/lib/dati/ingresso';
 import { traduciMessenger } from '@/lib/canali/messenger';
 import { traduciWhatsApp } from '@/lib/canali/whatsapp';
@@ -13,7 +13,8 @@ import { traduciWhatsApp } from '@/lib/canali/whatsapp';
 // farlo, sta in CAMPAIGN_INTEGRATION_PLAN.md e INTEGRATIONS.md.
 //
 // Finché `META_VERIFY_TOKEN` e `META_APP_SECRET` non sono configurati,
-// l'endpoint risponde 503: non finge di funzionare.
+// l'endpoint risponde 503: non finge di funzionare. L'unica eccezione è la
+// modalità dimostrativa, dove dietro non c'è nessun database vero.
 //
 // Il GET è la stretta di mano che Meta fa quando si iscrive il webhook.
 // Il POST conserva sempre il payload grezzo **prima** di tradurlo: se la
@@ -62,13 +63,22 @@ export async function POST(richiesta: Request, { params }: { params: Promise<{ c
   if (!canaleValido(canale)) return new NextResponse('canale sconosciuto', { status: 404 });
 
   const corpoGrezzo = await richiesta.text();
-  const adattatoreAcceso = process.env.META_ADATTATORI === 'attivo';
 
-  if (!process.env.META_APP_SECRET && !adattatoreAcceso) {
+  // La firma non si salta mai quando c'è un database vero dietro. L'unica
+  // scorciatoia è la modalità dimostrativa, dove `depositoPubblico()`
+  // restituisce il magazzino in memoria e non c'è niente da proteggere.
+  //
+  // Prima questa scorciatoia era legata a META_ADATTATORI, che è
+  // un'impostazione che parla d'altro: accendere i traduttori. Bastava
+  // metterla in produzione prima di aver messo l'app secret — ed è
+  // esattamente l'ordine in cui uno le configura — perché chiunque potesse
+  // scrivere nel CRM con la chiave di servizio, senza firmare niente.
+  const demo = modoDati() === 'demo';
+
+  if (!process.env.META_APP_SECRET && !demo) {
     return new NextResponse('webhook non configurato', { status: 503 });
   }
-  if (process.env.META_APP_SECRET
-      && !firmaMetaValida(corpoGrezzo, richiesta.headers.get('x-hub-signature-256'))) {
+  if (!demo && !firmaMetaValida(corpoGrezzo, richiesta.headers.get('x-hub-signature-256'))) {
     return new NextResponse('firma non valida', { status: 401 });
   }
 
@@ -83,6 +93,17 @@ export async function POST(richiesta: Request, { params }: { params: Promise<{ c
   const grezzoId = await dep.salvaIngressoGrezzo(canale, corpo);
 
   try {
+    // META_ADATTATORI accende **solo** la traduzione: è questo che dice di
+    // fare, ed è l'unica cosa che deve fare. In demo è sempre accesa,
+    // altrimenti il collaudo non potrebbe provare niente.
+    if (!demo && process.env.META_ADATTATORI !== 'attivo') {
+      await dep.segnaIngressoLavorato(
+        grezzoId, 'in_attesa', null,
+        'traduzione spenta: manca META_ADATTATORI=attivo. Il payload è al sicuro e si rilavora.',
+      );
+      return new NextResponse('EVENT_RECEIVED', { status: 200 });
+    }
+
     const ingressi = canale === 'whatsapp'
       ? traduciWhatsApp(corpo)
       : traduciMessenger(corpo, canale);

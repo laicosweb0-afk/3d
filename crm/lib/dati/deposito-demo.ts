@@ -468,7 +468,7 @@ export class DepositoDemo implements Deposito {
   // provabile. Con Supabase collegato il ruolo è quello vero, e i controlli
   // nelle azioni sul server sono gli stessi in tutti e due i casi.
   async profilo(): Promise<Profilo | null> {
-    return { id: 'demo', nome: 'Demo', ruolo: 'admin' };
+    return { id: 'demo', nome: 'Demo', ruolo: 'titolare' };
   }
 
   async ingressiInSospeso() {

@@ -65,7 +65,8 @@ L'ordine in cui conviene affrontarle sta in `INTEGRATION_GAP_ANALYSIS.md`.
   di uno showroom sta in poche decine di MB: nei fatti, zero.
 - **CONFIGURAZIONE MANUALE:** creare il progetto, eseguire le quattro
   migrazioni in ordine, copiare tre chiavi nelle variabili d'ambiente,
-  invitare i due account. Passo per passo in `SETUP_GUIDE.md` §1.
+  invitare i due account e dire chi dei due è il titolare. Passo per passo in
+  `SETUP_GUIDE.md` §1.
 - **AUTOMAZIONI POSSIBILI:** nessuna — è il database, non un servizio.
 - **COME SI VERIFICA:** con le chiavi configurate, `modoDati()` passa da
   `demo` a `supabase` da solo e la striscia gialla in cima sparisce. Poi:

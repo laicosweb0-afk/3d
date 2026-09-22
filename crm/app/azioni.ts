@@ -18,7 +18,7 @@ import {
   type Canale, type Piattaforma, type StatoCampagna, type StatoConversazione,
 } from '@/lib/dominio/campagne';
 import {
-  NUMERI_MODIFICABILI, conPredefinite, puo,
+  NUMERI_MODIFICABILI, RUOLO_PRUDENTE, conPredefinite, puo,
   type Impostazioni, type Permesso, type Ruolo,
 } from '@/lib/dominio/impostazioni';
 import { STATI_PREVENTIVO, type StatoPreventivo } from '@/lib/dominio/tipi';
@@ -48,7 +48,7 @@ function scelta<T extends string>(dati: FormData, campo: string, ammessi: readon
 async function contesto() {
   const dep = await deposito();
   if (modoDati() === 'demo') {
-    return { dep, operatore: null, ruolo: 'admin' as Ruolo };
+    return { dep, operatore: null, ruolo: 'titolare' as Ruolo };
   }
 
   const supabase = await supabaseServer();
@@ -57,7 +57,7 @@ async function contesto() {
   const profilo = await dep.profilo();
   // Ruolo sconosciuto = il meno potente. Se la lettura del profilo è andata
   // storta si perde un permesso, non se ne regala uno.
-  return { dep, operatore: data.user.id, ruolo: profilo?.ruolo ?? ('operatore' as Ruolo) };
+  return { dep, operatore: data.user.id, ruolo: profilo?.ruolo ?? RUOLO_PRUDENTE };
 }
 
 // Il controllo vero dei permessi sta qui, sul server, non nel bottone che si

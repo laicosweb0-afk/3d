@@ -654,7 +654,7 @@ export class DepositoSupabase implements Deposito {
       nome: String(data.nome || utente.user.email || 'senza nome'),
       // Il ruolo sconosciuto vale come il meno potente: se qualcosa è andato
       // storto nella lettura, si perde un permesso, non si regala.
-      ruolo: data.ruolo === 'admin' ? 'admin' : 'operatore',
+      ruolo: data.ruolo === 'titolare' ? 'titolare' : 'collaboratore',
     };
   }
 

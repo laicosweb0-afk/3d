@@ -36,7 +36,10 @@ export async function middleware(richiesta: NextRequest) {
 
   const { data } = await supabase.auth.getUser();
   const percorso = richiesta.nextUrl.pathname;
-  const pubblica = PUBBLICHE.some((p) => percorso.startsWith(p));
+  // Confronto sul segmento intero, non sul prefisso: con startsWith, un
+  // domani una rotta chiamata /nfc-admin risulterebbe pubblica per sbaglio,
+  // e non se ne accorgerebbe nessuno finché non è tardi.
+  const pubblica = PUBBLICHE.some((p) => percorso === p || percorso.startsWith(`${p}/`));
 
   if (!data.user && !pubblica) {
     const versoLogin = richiesta.nextUrl.clone();

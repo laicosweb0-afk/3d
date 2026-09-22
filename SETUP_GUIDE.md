@@ -65,9 +65,9 @@ rigenerala subito da quella stessa pagina.
 Poi **Authentication → Providers → Email**: togli *Enable sign-ups*. A questo
 CRM entrate in due, e nessun cliente deve sapere che esiste.
 
-### 1.5 Fare di uno dei due un amministratore
+### 1.5 Fare di uno dei due il titolare
 
-La migrazione `0004` rende amministratore il primo profilo creato. Per
+La migrazione `0004` rende titolare il primo profilo creato. Per
 controllarlo o cambiarlo, in **SQL Editor**:
 
 ```sql
@@ -75,14 +75,20 @@ controllarlo o cambiarlo, in **SQL Editor**:
 select id, nome, ruolo from profili order by creato_il;
 
 -- promuovere qualcuno (metti la sua email)
-update profili set ruolo = 'admin'
+update profili set ruolo = 'titolare'
  where id = (select id from auth.users where email = 'tua@email.it');
 ```
 
-**Cosa cambia fra i due ruoli:** l'amministratore può eliminare un contatto,
-unire due schede, cambiare le soglie e gestire le card. Tutto il resto —
-rispondere, spostare di fase, scrivere un'attività, fare un preventivo — lo
-fanno tutti e due. Il lavoro non si ingessa.
+**Cosa cambia fra i due ruoli:** il titolare può eliminare un contatto, unire
+due schede, cambiare le soglie e gestire le card. Tutto il resto — rispondere,
+spostare di fase, scrivere un'attività, fare un preventivo — lo fanno tutti e
+due. Il lavoro non si ingessa.
+
+Il ruolo si cambia **solo da qui, dal pannello Supabase**. Dall'applicazione
+non si può, e non è una dimenticanza: se ciascuno potesse modificare la
+propria riga per intero, un collaboratore si promuoverebbe titolare da solo.
+La migrazione `0004` restringe il permesso di scrittura alla sola colonna del
+nome proprio per questo.
 
 ---
 
@@ -314,8 +320,10 @@ Solo **dopo** che l'app è approvata, aggiungi su Vercel:
 META_ADATTATORI=attivo
 ```
 
-Finché non c'è, il webhook risponde correttamente ma non traduce. È voluto:
-meglio muto che sbagliato.
+Questa accende **solo la traduzione** dei payload. Non ha niente a che vedere
+con la sicurezza: senza `META_APP_SECRET` il webhook risponde 503 comunque, e
+con l'app secret ma senza questa, i messaggi arrivano, vengono conservati e
+restano «in attesa» finché non la si accende. Meglio muto che sbagliato.
 
 ### 6.6 Il primo test vero — 10 €
 

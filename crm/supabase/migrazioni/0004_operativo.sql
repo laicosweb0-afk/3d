@@ -14,19 +14,37 @@
 -- ---------------------------------------------------------------------------
 -- 1. RUOLI
 -- ---------------------------------------------------------------------------
-do $$ begin
-  create type ruolo_utente as enum ('admin', 'operatore');
-exception when duplicate_object then null; end $$;
+-- I due ruoli ci sono dal primo giorno: `profili.ruolo` è di tipo
+-- `ruolo_utente` con i valori 'titolare' e 'collaboratore' (migrazione 0001).
+-- Non se ne inventano altri: «amministratore» e «operatore» sarebbero gli
+-- stessi due ruoli detti in informatichese, e due nomi per la stessa cosa
+-- sono il modo più sicuro di ritrovarsi con due elenchi che divergono.
+--
+-- Quello che manca è solo questo: che quei ruoli **contino** qualcosa. Da qui
+-- in poi contano — nelle regole di riga qui sotto e nelle azioni sul server.
 
-alter table profili add column if not exists ruolo ruolo_utente not null default 'operatore';
-
--- Il primo profilo che esiste è l'amministratore: senza questo, un CRM appena
--- installato non avrebbe nessuno che può cambiare le impostazioni, e per
--- uscirne servirebbe entrare nel database.
+-- Il primo profilo è il titolare: senza, un CRM appena installato non avrebbe
+-- nessuno che può cambiare le impostazioni, e per uscirne servirebbe entrare
+-- nel database a mano.
 update profili
-   set ruolo = 'admin'
+   set ruolo = 'titolare'
  where id = (select id from profili order by creato_il limit 1)
-   and not exists (select 1 from profili where ruolo = 'admin');
+   and not exists (select 1 from profili where ruolo = 'titolare');
+
+-- ⚠️ La falla che questa riga chiude.
+--
+-- La 0001 lascia a ciascuno il permesso di aggiornare la propria riga di
+-- `profili` — pensato per farsi cambiare il nome. Ma quella regola dice
+-- *quale riga*, non *quali colonne*: da quando il ruolo decide chi può
+-- cancellare un contatto o unire due schede, un collaboratore potrebbe
+-- promuoversi titolare da solo, con una chiamata al database fatta dal
+-- browser. La chiave pubblica per farla ce l'ha, per definizione.
+--
+-- Quindi il permesso di scrittura si restringe alla sola colonna del nome.
+-- Il ruolo lo cambia chi entra nel pannello Supabase: è una cosa che si fa
+-- due volte in tutta la vita del CRM.
+revoke update on profili from authenticated;
+grant update (nome) on profili to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- 2. IMPOSTAZIONI
@@ -120,6 +138,14 @@ as $$
    where codice = p_codice and attiva;
 $$;
 
+-- Postgres dà il permesso di esecuzione a tutti per difetto. Questa funzione
+-- scavalca le regole di riga (security definer), quindi la si toglie a tutti
+-- e la si dà solo al ruolo di servizio — che è quello con cui risponde
+-- /nfc/<codice>. Senza questa riga, chiunque avesse la chiave pubblica
+-- potrebbe gonfiare i contatori delle card.
+revoke execute on function tocca_card(text) from public, anon, authenticated;
+grant execute on function tocca_card(text) to service_role;
+
 -- ---------------------------------------------------------------------------
 -- 5. DATI DI ESEMPIO, MARCATI
 -- ---------------------------------------------------------------------------
@@ -143,27 +169,29 @@ alter table impostazioni enable row level security;
 alter table card_nfc enable row level security;
 
 -- Le impostazioni le legge chiunque sia entrato (servono a ogni pagina), le
--- scrive solo un amministratore. Il controllo sta qui **e** nelle azioni sul
+-- scrive solo il titolare. Il controllo sta qui **e** nelle azioni sul
 -- server: nascondere un bottone non è una protezione.
 drop policy if exists "impostazioni lette da chi è entrato" on impostazioni;
 create policy "impostazioni lette da chi è entrato" on impostazioni
   for select to authenticated using (true);
 
 drop policy if exists "impostazioni scritte dagli admin" on impostazioni;
-create policy "impostazioni scritte dagli admin" on impostazioni
+drop policy if exists "impostazioni scritte dal titolare" on impostazioni;
+create policy "impostazioni scritte dal titolare" on impostazioni
   for all to authenticated
-  using (exists (select 1 from profili p where p.id = auth.uid() and p.ruolo = 'admin'))
-  with check (exists (select 1 from profili p where p.id = auth.uid() and p.ruolo = 'admin'));
+  using (exists (select 1 from profili p where p.id = auth.uid() and p.ruolo = 'titolare'))
+  with check (exists (select 1 from profili p where p.id = auth.uid() and p.ruolo = 'titolare'));
 
 drop policy if exists "card lette da chi è entrato" on card_nfc;
 create policy "card lette da chi è entrato" on card_nfc
   for select to authenticated using (true);
 
 drop policy if exists "card gestite dagli admin" on card_nfc;
-create policy "card gestite dagli admin" on card_nfc
+drop policy if exists "card gestite dal titolare" on card_nfc;
+create policy "card gestite dal titolare" on card_nfc
   for all to authenticated
-  using (exists (select 1 from profili p where p.id = auth.uid() and p.ruolo = 'admin'))
-  with check (exists (select 1 from profili p where p.id = auth.uid() and p.ruolo = 'admin'));
+  using (exists (select 1 from profili p where p.id = auth.uid() and p.ruolo = 'titolare'))
+  with check (exists (select 1 from profili p where p.id = auth.uid() and p.ruolo = 'titolare'));
 
 -- La pagina /nfc/<codice> risponde a chi non è entrato — è una card in mano a
 -- un cliente — quindi legge con la chiave di servizio, che salta le regole di

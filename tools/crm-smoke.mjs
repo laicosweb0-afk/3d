@@ -5,6 +5,11 @@
 //   cd crm && npm run build && npm start &
 //   node tools/crm-smoke.mjs <cartella-screenshot>
 //
+// Non serve nessuna variabile d'ambiente: in demo i webhook accettano il
+// payload senza firma perché dietro non c'è nessun database vero. Con
+// Supabase collegato la firma è obbligatoria e non c'è interruttore che la
+// spenga — è il motivo per cui questo collaudo non ne passa nessuno.
+//
 // Con Supabase collegato servono anche le credenziali:
 //   CRM_URL=https://crm.ramastore.it CRM_EMAIL=… CRM_PASSWORD=… node tools/crm-smoke.mjs
 //

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { deposito } from '@/lib/dati';
 import { DESTINAZIONE_PREDEFINITA } from '@/lib/dominio/card';
-import { puo } from '@/lib/dominio/impostazioni';
+import { RUOLO_PRUDENTE, puo } from '@/lib/dominio/impostazioni';
 import { dataOra } from '@/lib/formato';
 import { aggiornaCard, creaCard, eliminaCard } from '../azioni';
 import { Numero } from '../pezzi';
@@ -25,7 +25,7 @@ export default async function Card({
   const { avviso, errore } = await searchParams;
   const dep = await deposito();
   const [dati, profilo] = await Promise.all([dep.istantanea(), dep.profilo()]);
-  const amministratore = puo(profilo?.ruolo ?? 'operatore', 'gestisci_card');
+  const amministratore = puo(profilo?.ruolo ?? RUOLO_PRUDENTE, 'gestisci_card');
 
   const card = [...dati.card].sort((a, b) => b.tocchi - a.tocchi);
   const tocchiTotali = card.reduce((s, c) => s + c.tocchi, 0);
