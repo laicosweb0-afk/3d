@@ -8,5 +8,8 @@ tools/lugo/cache/
 tools/lugo/shots/
 club-rama/dist/
 club-rama/.env.local
+woman/dist/
+woman/.env.local
 
-# public/club-rama/ e' la build committata apposta: NON ignorarla.
+# public/club-rama/ e public/woman/ sono le build committate apposta,
+# quelle che GitHub Pages serve su /rama/ e /woman/: NON ignorarle.
