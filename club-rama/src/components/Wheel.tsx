@@ -1,5 +1,5 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { SPICCHI, OUTCOME, GIRO, ARRESTO } from '../config/game';
+import { SPICCHI, GIRO, ARRESTO, sorteggiaEsito, spicchioPer } from '../config/game';
 import { tick as tickAptico } from '../lib/haptics';
 import { tick as tickSuono, fruscioRuota, sblocca } from '../lib/suono';
 import { TESSERE, INCLINAZIONE } from './RamaLogo';
@@ -64,25 +64,26 @@ export const Wheel = forwardRef<WheelHandle, Props>(function Wheel(
     // svegliare l'audio.
     sblocca();
 
-    // Lo spicchio d'arrivo: quello imposto, o uno a caso.
-    const candidati = OUTCOME === null
-      ? SPICCHI.map((_, i) => i)
-      : SPICCHI.map((s, i) => (s.valore === OUTCOME ? i : -1)).filter((i) => i >= 0);
-    const bersaglio = candidati[Math.floor(Math.random() * candidati.length)];
+    // Il premio si sorteggia fra quelli previsti, poi si sceglie lo spicchio.
+    const bersaglio = spicchioPer(sorteggiaEsito());
 
     // Non al centro esatto dello spicchio: un po' fuori asse sembra naturale.
     const giri = GIRO.giriMin + Math.floor(Math.random() * (GIRO.giriMax - GIRO.giriMin + 1));
 
     /*
      * Dove si posa la lancetta dentro lo spicchio. Gli spicchi arrivano in
-     * ordine decrescente di indice, quindi il bordo appena superato è quello
-     * verso lo spicchio precedente: uno scostamento negativo lascia la
-     * lancetta lì accanto, appena dentro. È tutto qui l'effetto — nessuna
-     * pausa, nessuno scatto, solo un punto d'arresto scelto bene.
+     * ordine decrescente di indice, quindi quello che sfila via un attimo
+     * prima è il successivo nella lista. Se è il premio grosso, la lancetta si
+     * ferma appena dentro il bordo, a un soffio: è tutto qui l'effetto —
+     * nessuna pausa, nessuno scatto, solo un punto d'arresto scelto bene.
+     *
+     * Sugli altri esiti si posa in mezzo, dove si fermerebbe una ruota
+     * qualsiasi: se ogni giro finisse rasente al bordo si capirebbe il trucco.
      */
-    const dentro = ARRESTO
+    const sfioraIlGrosso = !!SPICCHI[(bersaglio + 1) % N].speciale;
+    const dentro = ARRESTO && sfioraIlGrosso
       ? ARRESTO.da + Math.random() * (ARRESTO.a - ARRESTO.da)
-      : Math.random();
+      : 0.3 + Math.random() * 0.4;
     const scostamento = (0.5 - dentro) * PASSO * -1;
     const finale = giri * 360 + (360 - bersaglio * PASSO) + scostamento;
     const durataTotale = GIRO.durata;
