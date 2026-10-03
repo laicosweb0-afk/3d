@@ -51,6 +51,24 @@ await p.addInitScript(() => {
 
 const scatto = (n) => p.screenshot({ path: `${out}/${n}.png` });
 
+/*
+ * Le parole di ogni schermata, raccolte man mano.
+ *
+ * Serve a un controllo che a mano non si riesce a fare: che due schermate
+ * vicine non dicano la stessa cosa. È già successo due volte — l'ingresso
+ * rimandava «la tua auto» dell'apertura e ripeteva pari pari l'occhiello
+ * della schermata dopo — e da dentro una sola schermata non si vede.
+ */
+const detto = [];
+async function raccogli(dove) {
+  for (const sel of ['.h1', '.lede', '.eyebrow']) {
+    for (const t of await p.locator(sel).allTextContents()) {
+      const pulito = t.replace(/\s+/g, ' ').trim();
+      if (pulito) detto.push({ dove, sel, testo: pulito });
+    }
+  }
+}
+
 /* ---- 1. la ruota ---------------------------------------------------- */
 {
   const doppi = SPICCHI.filter((v, i) => SPICCHI.indexOf(v) !== i);
@@ -111,6 +129,7 @@ await p.goto(url, { waitUntil: 'networkidle' });
 await p.waitForSelector('.intro', { state: 'detached', timeout: 12000 });
 await p.waitForTimeout(700);
 await scatto('1-ingresso');
+await raccogli('ingresso');
 
 // Il font deve essere davvero Inter, e deve arrivare da casa nostra.
 {
@@ -136,6 +155,7 @@ await scatto('1-ingresso');
 await p.getByRole('button', { name: /^Inizia/i }).click();
 await p.waitForTimeout(800);
 await scatto('2-domanda');
+await raccogli('domanda');
 
 // Una domanda sola, quattro fasce.
 const opzioni = await p.getByRole('radio').count();
@@ -144,6 +164,7 @@ if (opzioni !== 4) errori.push(`DOMANDA: ${opzioni} risposte invece di 4`);
 await p.getByRole('radio', { name: new RegExp(RISPOSTA) }).click();
 await p.waitForTimeout(1600);
 await scatto('3-risposta');
+await raccogli('risposta');
 
 {
   const testo = (await p.locator('.step').innerText()).replace(/\s+/g, ' ');
@@ -170,6 +191,7 @@ if (await p.getByRole('button', { name: /passaggio precedente/i }).count()) {
 await p.getByRole('button', { name: /Vinci il tuo credito/i }).click();
 await p.waitForTimeout(900);
 await scatto('4-ruota');
+await raccogli('ruota');
 
 // Sulla ruota si vedono solo gli importi dichiarati.
 {
@@ -198,6 +220,7 @@ if (!VINCIBILI.includes(Number(credito))) {
 await p.getByRole('button', { name: /Dove lo usi/i }).click();
 await p.waitForTimeout(900);
 await scatto('6-consigli');
+await raccogli('lavori');
 
 // Tre card, ognuna col suo tondo, il claim e il «quando serve».
 {
@@ -234,6 +257,7 @@ await scatto('6-consigli');
 await p.getByRole('button', { name: /Salva il tuo credito/i }).click();
 await p.waitForTimeout(800);
 await scatto('7-dati');
+await raccogli('dati');
 
 // Il modulo: col solo nome resta spento, con nome, contatto e consenso si accende.
 const salva = p.getByRole('button', { name: /Salva il mio credito/i });
@@ -260,6 +284,7 @@ await scatto('7b-compilato');
 await salva.click();
 await p.waitForTimeout(1600);
 await scatto('8-fine');
+await raccogli('fine');
 if (!(await p.locator('text=/CARG-[A-Z0-9]{4}/').count())) {
   errori.push('FINE: il codice credito non compare o è malformato');
 }
@@ -282,6 +307,41 @@ const audioDopo = await p.evaluate(() => ({ ...window.__audio }));
 const tick = audioDopo.osc - audioPrima.osc;
 if (tick < 8) errori.push(`SUONO: solo ${tick} nodi durante il giro, gli scatti non suonano`);
 if (audioDopo.buf - audioPrima.buf < 1) errori.push('SUONO: nessun fruscio della ruota');
+
+/* ---- nessuna schermata ripete un'altra ---- */
+{
+  // L'apertura entra nel conto: è lì che è nata la ripetizione segnalata.
+  const gioco3 = readFileSync(new URL('../carg/src/config/gioco.ts', import.meta.url), 'utf8');
+  const ap = gioco3.match(/riga1: '([^']+)',\s*\/\*\*[\s\S]*?\*\/\s*riga2: '([^']+)'/)
+    ?? gioco3.match(/riga1: '([^']+)'[\s\S]{0,400}?riga2: '([^']+)'/);
+  if (ap) detto.unshift({ dove: 'apertura', sel: '.h1', testo: `${ap[1]} ${ap[2]}` });
+
+  const parole = (t) => t.toLowerCase().replace(/[.,;:!?«»]/g, '').split(/\s+/).filter(Boolean);
+  const terzine = (t) => {
+    const w = parole(t);
+    return w.length < 3 ? [] : w.slice(0, -2).map((_, i) => w.slice(i, i + 3).join(' '));
+  };
+  const visto = new Map();
+  for (const voce of detto) {
+    for (const t of terzine(voce.testo)) {
+      const prima = visto.get(t);
+      if (prima && prima.dove !== voce.dove) {
+        errori.push(`RIPETIZIONE: «${t}» sta sia in ${prima.dove} che in ${voce.dove}`);
+      } else if (!prima) {
+        visto.set(t, voce);
+      }
+    }
+  }
+  // E nessuna frase intera identica fra due schermate.
+  const interi = new Map();
+  for (const voce of detto) {
+    const k = voce.testo.toLowerCase();
+    const prima = interi.get(k);
+    if (prima && prima.dove !== voce.dove) {
+      errori.push(`RIPETIZIONE: «${voce.testo}» identico in ${prima.dove} e ${voce.dove}`);
+    } else if (!prima) interi.set(k, voce);
+  }
+}
 
 const overflow = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 if (overflow > 0) errori.push(`OVERFLOW orizzontale: ${overflow}px`);
