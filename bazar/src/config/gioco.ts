@@ -44,14 +44,19 @@ export type Stile = {
   ritratto: string;
   /** I materiali e i colori, in ordine di lettura. */
   materiali: string[];
+  /**
+   * La foto del pezzo che rappresenta lo stile, in `public/foto/`. Compare
+   * nella rivelazione; se manca, la schermata resta tipografica.
+   */
+  foto?: string;
 };
 
 /**
- * I tre stili d'arredo vengono dai salotti che il negozio sta già
- * fotografando per il catalogo (`PRODUCT_PHOTOGRAPHY_PREMIUM.md`): velluto
- * tortora con l'oro, il grigio classico capitonné, il velluto scuro dei
- * chesterfield. Il quarto è il bazar vero e proprio: tappeti, lampadari,
- * profumi — gli altri reparti del biglietto.
+ * I tre stili d'arredo hanno ciascuno un pezzo vero del negozio, con la sua
+ * foto da catalogo: la poltrona tonda capitonné, il divano tortora con i
+ * profili oro, il chesterfield nero. Il quarto è il bazar vero e proprio:
+ * tappeti, lampadari, profumi — gli altri reparti del biglietto, che ancora
+ * non hanno foto.
  */
 export const STILI: Stile[] = [
   {
@@ -60,15 +65,17 @@ export const STILI: Stile[] = [
     nota: 'velluto, linee tonde, luce calda',
     nome: 'Velluto & Oro',
     ritratto: 'Una casa che abbraccia: niente spigoli, e l\'oro solo dove la luce lo trova.',
-    materiali: ['Velluto tortora', 'Capitonné', 'Profili oro'],
+    materiali: ['Velluto tortora', 'Linea tonda', 'Base girevole oro'],
+    foto: 'foto/poltrona-tonda.webp',
   },
   {
     id: 'classico',
     etichetta: 'Classico elegante',
-    nota: 'capitonné, braccioli, simmetria',
+    nota: 'capitonné, profili oro, simmetria',
     nome: 'Classico Senza Tempo',
     ritratto: 'Le cose fatte bene non passano di moda: si ereditano.',
-    materiali: ['Velluto grigio perla', 'Braccioli rollati', 'Cordonatura oro'],
+    materiali: ['Velluto tortora', 'Capitonné', 'Profili e slitta oro'],
+    foto: 'foto/divano-tortora.webp',
   },
   {
     id: 'notte',
@@ -76,7 +83,8 @@ export const STILI: Stile[] = [
     nota: 'nero, blu notte, carattere',
     nome: 'Notte a Marrakech',
     ritratto: 'Un salotto da sera: colori profondi e un filo d\'oro che li accende.',
-    materiali: ['Velluto nero e blu royal', 'Chesterfield', 'Piedini oro'],
+    materiali: ['Velluto nero', 'Capitonné', 'Filo e base oro'],
+    foto: 'foto/chesterfield-nero.webp',
   },
   {
     id: 'bazar',
@@ -106,31 +114,38 @@ export const REPARTI = {
   profumi: 'Profumi e casalinghi',
 } as const;
 
-export type Pezzo = { nome: string; reparto: keyof typeof REPARTI; riga: string };
+export type Pezzo = {
+  nome: string;
+  reparto: keyof typeof REPARTI;
+  riga: string;
+  /** La miniatura in `public/foto/`, quando il pezzo è stato fotografato. */
+  foto?: string;
+};
 
 /**
  * Per ogni stile, tre pezzi da tre reparti diversi: chi entra per un divano
  * esce sapendo che ci sono anche il tappeto e il lampadario che gli stanno
  * sopra. È la parte di consulenza, e il motivo per passare in negozio.
  *
- * ⚠️ I salotti sono quelli già in catalogo; tappeti, lampadari e profumi
- * sono descritti per genere e vanno confermati con il negozio. Un pezzo
+ * ⚠️ I salotti sono quelli fotografati, ma i nomi sono descrittivi: vanno
+ * sostituiti con quelli del negozio. Tappeti, lampadari e profumi sono
+ * descritti per genere e vanno confermati. Un pezzo
  * consigliato che in showroom non c'è è la delusione più facile da evitare.
  */
 export const PEZZI: Record<string, Pezzo[]> = {
   curvo: [
-    { nome: 'Divano curvo capitonné', reparto: 'salotti', riga: 'Velluto tortora, profilo e base oro.' },
+    { nome: 'Poltrona tonda capitonné', reparto: 'salotti', riga: 'Velluto tortora, girevole, profilo e base oro.', foto: 'foto/poltrona-tonda-mini.webp' },
     { nome: 'Tappeto chiaro a pelo lungo', reparto: 'tappeti', riga: 'Morbido sotto i piedi, come il velluto sopra.' },
     { nome: 'Lampadario dorato', reparto: 'lampadari', riga: 'La luce calda che fa cantare l\'oro.' },
   ],
   classico: [
-    { nome: 'Divano grigio capitonné', reparto: 'salotti', riga: 'Braccioli rollati, slitta oro.' },
-    { nome: 'Poltrona coordinata', reparto: 'salotti', riga: 'Stesso velluto, stessa cordonatura.' },
+    { nome: 'Divano capitonné tortora', reparto: 'salotti', riga: 'Profili oro che lo avvolgono, slitta oro.', foto: 'foto/divano-tortora-mini.webp' },
+    { nome: 'Poltrona tonda coordinata', reparto: 'salotti', riga: 'Stesso velluto, stesso capitonné.', foto: 'foto/poltrona-tonda-mini.webp' },
     { nome: 'Lampadario di cristallo', reparto: 'lampadari', riga: 'Il classico che non sbaglia.' },
   ],
   notte: [
-    { nome: 'Chesterfield nero o blu navy', reparto: 'salotti', riga: 'Velluto profondo, filo e piedini oro.' },
-    { nome: 'Tappeto dai toni scuri', reparto: 'tappeti', riga: 'Ancora la stanza, fa risaltare il velluto.' },
+    { nome: 'Chesterfield nero', reparto: 'salotti', riga: 'Velluto nero, filo e base oro.', foto: 'foto/chesterfield-nero-mini.webp' },
+    { nome: 'Poltrona bergère blu', reparto: 'salotti', riga: 'Velluto blu notte, gambe oro.', foto: 'foto/poltrona-blu-mini.webp' },
     { nome: 'Lampadario in ottone', reparto: 'lampadari', riga: 'Un punto d\'oro nel buio della sera.' },
   ],
   bazar: [

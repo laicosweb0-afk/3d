@@ -125,6 +125,11 @@ await p.waitForTimeout(800);
   if (/sbagliat|errat/i.test(t)) errori.push('RIVELAZIONE: la risposta è trattata come un errore');
   if (!t.includes('Notte')) errori.push('RIVELAZIONE: lo stile non è quello scelto');
 }
+{
+  // La foto del pezzo: c'è, e si è caricata davvero.
+  const w = await p.locator('.foto-stile').evaluate((i) => i.complete && i.naturalWidth).catch(() => 0);
+  if (!w) errori.push('RIVELAZIONE: la foto dello stile non si carica');
+}
 await scatto('3-rivelazione');
 await p.getByRole('button', { name: /Gira la ruota/ }).click();
 
@@ -151,6 +156,11 @@ await p.getByRole('button', { name: /pezzi/ }).click();
 // 6 — i pezzi: sempre tre
 await p.waitForSelector('.rec');
 if ((await p.locator('.rec').count()) !== 3) errori.push('PEZZI: non sono tre');
+{
+  await p.waitForTimeout(400);
+  const rotte = await p.locator('img.rec-foto').evaluateAll((im) => im.filter((i) => !i.naturalWidth).length);
+  if (rotte) errori.push(`PEZZI: ${rotte} miniature non si caricano`);
+}
 {
   const REPARTI = ['Salotti e poltrone', 'Tappeti', 'Lampadari', 'Profumi e casalinghi'];
   for (const r of await p.locator('.rec-reparto').allInnerTexts()) {

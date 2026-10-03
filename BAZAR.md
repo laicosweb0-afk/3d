@@ -57,13 +57,25 @@ scritte in cima a `bazar/src/config/gioco.ts`.
   (RA) (apre la mappa), @bazar.marrakech9 (apre Instagram). L'email
   bazarmarrakech.snc@hotmail.com è in configurazione.
 
-Tutto sta in `NEGOZIO` e `REPARTI` dentro `bazar/src/config/gioco.ts`.
+- **Le foto dei pezzi**, in `bazar/public/foto/`, ritagliate in 4:5 per la
+  rivelazione e quadrate per le miniature, in WebP (circa 20 KB l'una):
+  la poltrona tonda capitonné tortora (stile *Velluto & Oro*), il divano
+  capitonné tortora con profili oro (*Classico Senza Tempo*), il chesterfield
+  nero (*Notte a Marrakech*) e la poltrona bergère blu, fra i pezzi della
+  notte. Lo scatto del divano con i bank luce in vista non è usato: è lo
+  stesso divano, e quello pulito è migliore. *Spirito del Bazar* resta senza
+  foto finché non arrivano tappeti e lampadari; nella lista dei pezzi, al
+  posto della miniatura, c'è l'iniziale del reparto.
+
+Tutto sta in `NEGOZIO`, `REPARTI`, `STILI` e `PEZZI` dentro
+`bazar/src/config/gioco.ts`.
 
 ## Prima dei clienti veri
 
 1. **I pezzi consigliati** (`PEZZI` in `gioco.ts`): i salotti sono quelli
-   già in catalogo (`PRODUCT_PHOTOGRAPHY_PREMIUM.md`); tappeti, lampadari e
-   profumi sono descritti per genere. Vanno confermati con il negozio: un
+   fotografati, ma con nomi descrittivi (Poltrona tonda capitonné,
+   Chesterfield nero…) da sostituire con quelli del negozio; tappeti,
+   lampadari e profumi sono descritti per genere, e le loro foto mancano. Vanno confermati con il negozio: un
    pezzo consigliato che in showroom non c'è è la delusione più facile da
    evitare.
 2. **Gli importi della ruota** (`SPICCHI`): proposti 30/50/70 € — cinque
@@ -110,7 +122,8 @@ Fotografa ogni schermata su un viewport da iPhone e fallisce se le
 percentuali della ruota non sono quelle attese, se compare uno spicchio non
 previsto o un sorteggio pesato, se due spicchi uguali stanno vicini, se
 l'apertura non mostra il fronte del biglietto, se gli stili non sono quattro, se il credito compare già nello stile, se c'è un modo
-per rispondere di nuovo, se i pezzi non sono tre o vengono da un reparto
+per rispondere di nuovo, se la foto dello stile o una miniatura non si
+carica, se i pezzi non sono tre o vengono da un reparto
 che non è sul biglietto, se sulla tessera manca un contatto del biglietto, se il modulo si invia
 vuoto, se il codice è malformato o la tessera non torna con la ruota, se
 Poppins non si carica, se c'è overflow orizzontale o se la pagina chiama un

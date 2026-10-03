@@ -9,6 +9,15 @@ import type { Lead } from './lib/lead';
 import { tocco as toccoAptico, vittoria as vittoriaAptica } from './lib/haptics';
 import { arresto, conteggio, pop, vittoria as suonoVittoria } from './lib/suono';
 
+/**
+ * Il percorso di un file dentro `public/`, servito come si deve anche da una
+ * sottocartella: la build gira con `base: './'`, e un `/foto/x.webp` con la
+ * barra davanti cercherebbe il file alla radice del dominio.
+ */
+export function indirizzo(file: string): string {
+  return import.meta.env.BASE_URL + file.replace(/^\/+/, '');
+}
+
 /* ------------------------------------------------------------------ */
 /* 1 — L'ingresso                                                      */
 /* ------------------------------------------------------------------ */
@@ -44,6 +53,10 @@ export function Domanda({ onRisposto }: { onRisposto: (stile: string) => void })
     if (bloccato.current) return;
     bloccato.current = true;
     setScelta(id);
+    // La foto dello stile parte adesso: quando si arriva alla rivelazione è
+    // già scaricata, e non compare a metà dell'entrata.
+    const foto = stileDi(id)?.foto;
+    if (foto) new Image().src = indirizzo(foto);
     toccoAptico();
     pop();
     setTimeout(() => onRisposto(id), 300);
@@ -87,6 +100,14 @@ export function Rivelazione({ scelta, onAvanti }: { scelta: string; onAvanti: ()
 
   return (
     <Step bottom={<Cta onClick={onAvanti}>Gira la ruota</Cta>}>
+      {/* La foto vera del pezzo: vale più di qualunque descrizione. Sta su
+          un fondo crema da studio, dentro una cornice col filo d'oro. */}
+      {stile.foto && (
+        <img
+          className="foto-stile ra" src={indirizzo(stile.foto)} alt=""
+          width={800} height={1000} style={{ animationDelay: '120ms' }}
+        />
+      )}
       <p {...r(0)} className="eyebrow ra">Il tuo stile è</p>
       <h1 {...r(1)} className="h1 h1-oro ra">{stile.nome.replace(' ', '\n')}</h1>
       <p {...r(2)} className="lede ra">{stile.ritratto}</p>
@@ -209,9 +230,14 @@ export function Pezzi({ scelta, onAvanti }: { scelta: string; onAvanti: () => vo
       <ul className="recs vetro">
         {pezzi.map((c) => (
           <li key={c.nome} className="rec">
-            <p className="rec-reparto">{REPARTI[c.reparto]}</p>
-            <p className="rec-nome">{c.nome}</p>
-            <p className="rec-note">{c.riga}</p>
+            {c.foto
+              ? <img className="rec-foto" src={indirizzo(c.foto)} alt="" width={240} height={240} />
+              : <span className="rec-foto rec-foto-vuota" aria-hidden>{REPARTI[c.reparto][0]}</span>}
+            <div>
+              <p className="rec-reparto">{REPARTI[c.reparto]}</p>
+              <p className="rec-nome">{c.nome}</p>
+              <p className="rec-note">{c.riga}</p>
+            </div>
           </li>
         ))}
       </ul>

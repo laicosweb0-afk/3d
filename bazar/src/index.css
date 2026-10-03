@@ -217,7 +217,28 @@
 
   /* ---- i pezzi ---- */
   .recs { margin: 2.25rem 0 0; padding: 0; list-style: none; text-align: left; overflow: hidden; }
-  .rec { padding: 1.125rem 1.5rem; }
+  .rec { padding: 1rem 1.25rem; display: flex; gap: 1rem; align-items: center; }
+  /* La miniatura: il pezzo sul suo fondo crema da studio. Dove la foto non
+     c'è ancora, l'iniziale del reparto in oro tiene la colonna allineata. */
+  .rec-foto {
+    flex: none; width: 64px; height: 64px; border-radius: 0.75rem; object-fit: cover;
+    background: #E9E1D3;
+  }
+  .rec-foto-vuota {
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(216, 188, 134, 0.08); border: 1px solid rgba(216, 188, 134, 0.25);
+    color: var(--oro); font-size: 1.25rem; font-weight: 300;
+  }
+  /* La foto dello stile nella rivelazione: il fondo crema dello studio,
+     arrotondato, con il filo d'oro come cornice e l'ombra che la stacca dal
+     nero. Sopra i 220px ruba la scena al nome. */
+  .foto-stile {
+    width: min(56vw, 220px); height: auto; aspect-ratio: 4 / 5; object-fit: cover;
+    border-radius: 1.25rem; margin: 0 auto 1.75rem; display: block;
+    border: 1px solid rgba(216, 188, 134, 0.35);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    background: #E9E1D3;
+  }
   .rec + .rec { border-top: 1px solid var(--linea); }
   .rec-reparto {
     font-size: 0.625rem; font-weight: 500; text-transform: uppercase;
