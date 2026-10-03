@@ -5,45 +5,50 @@
 @tailwind utilities;
 
 /**
- * THE FRAGRANCE EXPERIENCE — il sistema.
+ * CAR.G MULTISERVICE — il sistema.
  *
- * Tutti i valori qui dentro vengono dal prototipo approvato: la tavolozza, il
- * mesh di sfondo, la curva del movimento, le misure della tipografia. Non
- * sono stati scelti a occhio e non si cambiano a occhio.
+ * L'impianto è quello di Woman, riga per riga: una schermata per volta, alta
+ * quanto lo schermo, marchio in alto, contenuto al centro, azione in fondo.
+ * Stessa tipografia (Inter, servito da noi), stessa curva del movimento,
+ * stesse misure. Quello che cambia è il colore, e cambia perché il marchio è
+ * un altro.
  *
- * L'impianto è editoriale: una schermata per volta, alta quanto lo schermo,
- * con il marchio in alto, il contenuto al centro e l'azione in fondo. Niente
- * barre, niente contatori di passi, niente cornici: l'aria fa il lavoro che
- * altrove fanno i bordi.
+ * La tavolozza esce dal logo, non dal gusto: il blu è campionato dal tondo
+ * (#183CE4 nel file originale, portato a #2B5CF0 perché su fondo scuro il
+ * blu puro del marchio si spegne), l'acciaio è il cromo delle lettere, il
+ * nero è quello della ghiera. Il crema di Woman qui sarebbe fuori posto: in
+ * officina il bianco è freddo, non caldo.
  */
 @layer base {
   :root {
-    --ink: #0f0e12;
-    --base: #fdfbf8;
-    --base-dark: #0b0a0e;
-    --light: #f7f3ee;
-    --light-soft: rgba(247, 243, 238, 0.55);
-    --eyebrow: #8a7f6f;
-    --sub: #6f6862;
-    --magenta: #e966b5;
-    --hairline: rgba(15, 14, 18, 0.08);
+    --ink: #0d1014;
+    --base: #f3f5f8;
+    --base-dark: #06080c;
+    --light: #eef2f7;
+    --light-soft: rgba(238, 242, 247, 0.55);
+    --eyebrow: #7c8694;
+    --sub: #646d7a;
+    /* Il colore dell'azione. Prende il posto che su Woman aveva il magenta. */
+    --magenta: #2b5cf0;
+    --acciaio: #c2c9d2;
+    --hairline: rgba(13, 16, 20, 0.09);
 
     /*
-     * Lo sfondo non è un colore: è una luce. Tre aloni che salgono dal basso
-     * — magenta, viola, pesca — e un velo di crema al centro che tiene il
-     * testo leggibile. È quello che fa sembrare la pagina profumata prima
-     * ancora di leggerla.
+     * Lo sfondo non è un colore: è una luce. Su Woman erano aloni di profumo;
+     * qui sono fari — due fasci di blu che salgono dal basso e un velo chiaro
+     * al centro che tiene il testo leggibile. Stessa costruzione, stessa
+     * opacità, altra temperatura.
      */
     --mesh-light:
-      radial-gradient(80% 55% at 18% 92%, rgba(233, 102, 181, 0.34) 0%, rgba(233, 102, 181, 0) 62%),
-      radial-gradient(75% 50% at 82% 88%, rgba(150, 110, 220, 0.30) 0%, rgba(150, 110, 220, 0) 60%),
-      radial-gradient(90% 45% at 50% 100%, rgba(255, 178, 140, 0.22) 0%, rgba(255, 178, 140, 0) 65%),
-      radial-gradient(70% 40% at 50% 30%, rgba(253, 251, 248, 0.9) 0%, rgba(253, 251, 248, 0) 70%),
-      #fdfbf8;
+      radial-gradient(80% 55% at 18% 92%, rgba(43, 92, 240, 0.30) 0%, rgba(43, 92, 240, 0) 62%),
+      radial-gradient(75% 50% at 82% 88%, rgba(90, 130, 220, 0.26) 0%, rgba(90, 130, 220, 0) 60%),
+      radial-gradient(90% 45% at 50% 100%, rgba(170, 185, 205, 0.26) 0%, rgba(170, 185, 205, 0) 65%),
+      radial-gradient(70% 40% at 50% 30%, rgba(243, 245, 248, 0.9) 0%, rgba(243, 245, 248, 0) 70%),
+      #f3f5f8;
     --mesh-dark:
-      radial-gradient(85% 55% at 20% 95%, rgba(233, 102, 181, 0.30) 0%, rgba(233, 102, 181, 0) 62%),
-      radial-gradient(75% 50% at 85% 92%, rgba(130, 90, 200, 0.26) 0%, rgba(130, 90, 200, 0) 60%),
-      #0b0a0e;
+      radial-gradient(85% 55% at 20% 95%, rgba(43, 92, 240, 0.34) 0%, rgba(43, 92, 240, 0) 62%),
+      radial-gradient(75% 50% at 85% 92%, rgba(24, 60, 228, 0.24) 0%, rgba(24, 60, 228, 0) 60%),
+      #06080c;
 
     --ease: cubic-bezier(0.32, 0.72, 0, 1);
     --dur: 520ms;
@@ -59,7 +64,7 @@
      * Il font di sistema per primo, come su Club Rama.
      *
      * Su iPhone e Mac `-apple-system` è il San Francisco vero: è il font per
-     * cui sono disegnate le interfacce che la cliente ha in mano tutto il
+     * cui sono disegnate le interfacce che il cliente ha in mano tutto il
      * giorno, non si scarica (zero byte, zero attesa) e non si può servire
      * da un sito, perché la licenza Apple non lo permette — questa è
      * l'unica strada legale per averlo.
@@ -162,12 +167,24 @@
     background: var(--light); border-color: var(--light); color: var(--ink);
   }
   .step[data-bg='dark'] .cta:disabled { background: transparent; color: var(--light); }
-  /* L'unica pill piena di tutto il percorso: la conferma finale. */
-  .cta-fill { background: var(--magenta); border-color: var(--magenta); color: var(--ink); }
+  /*
+   * La pill piena: su Woman era magenta con il testo d'inchiostro, perché
+   * quel rosa era chiaro. Il blu di Car.G è scuro — inchiostro su #2B5CF0 fa
+   * 3,5:1 e non si legge — quindi il testo qui va bianco, che fa 5,4:1.
+   */
+  .cta-fill { background: var(--magenta); border-color: var(--magenta); color: #fff; }
   .cta-fill:hover, .cta-fill:active {
-    background: var(--magenta); border-color: var(--magenta); color: var(--ink); filter: brightness(0.96);
+    background: var(--magenta); border-color: var(--magenta); color: #fff; filter: brightness(1.08);
   }
-  .cta-fill:disabled { background: var(--magenta); border-color: var(--magenta); color: var(--ink); }
+  .cta-fill:disabled { background: var(--magenta); border-color: var(--magenta); color: #fff; }
+  .step[data-bg='dark'] .cta-fill {
+    border-color: var(--magenta); color: #fff;
+  }
+  .step[data-bg='dark'] .cta-fill:hover, .step[data-bg='dark'] .cta-fill:active {
+    background: var(--magenta); border-color: var(--magenta); color: #fff;
+  }
+  /* La chiusura usa dei link al posto dei bottoni: stesso aspetto. */
+  a.cta, a.ghost { text-decoration: none; }
 
   .ghost {
     appearance: none; border: none; background: none; padding: 0.625rem;
@@ -253,41 +270,6 @@
   .consenso input { margin-top: 3px; accent-color: var(--ink); }
   .consenso a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 
-  /* ---- il Bianconiglio ----
-   *
-   * Attraversa l'apertura una volta sola, in un secondo e due: entra da
-   * sinistra fuori campo ed esce a destra, correndo. È uno sprite di diciotto
-   * fotogrammi su una striscia sola — `steps(18)` li fa scattare invece di
-   * sfumarli, che è quello che rende la corsa una corsa.
-   *
-   * L'ordine dell'apertura è: prima il buio, poi lui, poi «Hey». Le parole
-   * arrivano a 1500ms, cioè dopo che la traversata (1200ms) è finita: prima
-   * si guarda lui, poi si legge. Se le due cose si sovrapponessero non se ne
-   * ricorderebbe nessuna.
-   */
-  .coniglio-pista {
-    position: absolute; top: clamp(120px, 30vh, 38vh); left: 0;
-    will-change: transform; pointer-events: none; z-index: 5;
-    animation: attraversa 1.2s linear both;
-  }
-  @keyframes attraversa {
-    from { transform: translateX(-40vw); }
-    to { transform: translateX(120vw); }
-  }
-  .coniglio {
-    width: 200px; height: 250px;
-    background: url('../coniglio.png') 0 0 / 3600px 250px no-repeat;
-    animation: corre 0.6s steps(18) infinite;
-  }
-  @keyframes corre { to { background-position: -3600px 0; } }
-
-  /* La foto del flacone nella rivelazione: piccola, senza cornice, con
-     l'ombra che la stacca dal fondo. Sopra i 200px ruba la scena al nome. */
-  .flacone {
-    width: clamp(120px, 34vw, 168px); height: auto; margin: 0 auto 1.75rem;
-    display: block; filter: drop-shadow(0 18px 32px rgba(15, 14, 18, 0.18));
-  }
-
   .livello {
     font-size: 0.6875rem; font-weight: 500; text-transform: uppercase;
     letter-spacing: 0.22em; color: var(--light-soft); margin: 1.5rem 0 0;
@@ -295,6 +277,21 @@
   .codice {
     font-size: 0.8125rem; letter-spacing: 0.22em; color: var(--light-soft);
     font-variant-numeric: tabular-nums; margin: 0.5rem 0 0;
+  }
+
+  /* Il tondo del marchio sopra la chiusura: è l'unica volta in tutto il
+     percorso in cui il logo è il soggetto e non l'intestazione. */
+  .marchio-fine { display: block; margin: 0 auto 1.75rem; }
+
+  /*
+   * La riga del notturno. È l'unica frase di tutta la card scritta in blu
+   * pieno, e lo è perché è l'unica cosa che l'officina ha e i vicini no:
+   * se la evidenziassimo anche altrove, qui non si vedrebbe più.
+   */
+  .notturno {
+    margin: 1.75rem 0 0; font-size: 0.9375rem; font-weight: 500;
+    letter-spacing: -0.005em; line-height: 1.45;
+    color: #8fb4ff;
   }
 }
 
@@ -314,12 +311,40 @@
   }
   .intro-parola.show { opacity: 1; transform: scale(1); }
   .intro-parola.hide { opacity: 0; transform: scale(1.06); transition-duration: .4s; }
-  .intro-domanda { font-size: 34px; text-align: center; padding: 0 40px; line-height: 1.14; }
-  .intro-marchio {
-    position: absolute; top: calc(50% - 120px);
-    opacity: 0; transition: opacity .5s ease;
+
+  /* ---- l'apertura: il filmato del marchio ----
+   *
+   * Il clip riempie lo schermo con `cover`: è girato 9:16, ma su un telefono
+   * largo o su un desktop il rapporto non torna, e `contain` lascerebbe due
+   * bande nere ai lati che fanno sembrare la card un video incorporato
+   * invece che un'app. Con `cover` si perde qualche pixel di bordo, dove non
+   * c'è niente.
+   */
+  .apertura-clip {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center;
+    pointer-events: none; z-index: 1;
   }
-  .intro-marchio.show { opacity: 1; }
+
+  /* La velatura sotto: la frase cade sul riflesso, che è la zona più chiara
+     del fotogramma. Senza, il bianco su bianco si perde. */
+  .apertura-velo {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 52%;
+    background: linear-gradient(180deg,
+      rgba(6, 8, 12, 0) 0%, rgba(6, 8, 12, 0.55) 55%, rgba(6, 8, 12, 0.88) 100%);
+    pointer-events: none; z-index: 2;
+  }
+
+  /* La frase sta nel terzo basso, non al centro: al centro coprirebbe il
+     tondo proprio nel momento in cui si accende. */
+  .apertura-frase {
+    position: absolute; z-index: 3;
+    top: auto; bottom: clamp(44px, 8vh, 92px);
+    left: 1.5rem; right: 1.5rem; text-align: center;
+    font-size: clamp(1.625rem, 6.8vw, 2rem); line-height: 1.15;
+    white-space: pre-line;
+    text-shadow: 0 2px 24px rgba(6, 8, 12, 0.7);
+  }
 }
 
 @layer utilities {

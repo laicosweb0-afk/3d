@@ -1,26 +1,28 @@
-// Passata di controllo su Woman — The Fragrance Experience.
+// Passata di controllo su Car.G Multiservice — la card NFC.
 //
-//   node tools/static-server.mjs woman/dist 8934 &
-//   node tools/woman-qa.mjs <cartella-screenshot>
+//   node tools/static-server.mjs carg/dist 8937 &
+//   node tools/carg-qa.mjs <cartella-screenshot>
 //
-// Non controlla solo che la pagina funzioni: controlla che le regole del
-// documento strategico siano ancora rispettate, e che la ruota sia onesta.
+// Come quella di Woman, non controlla solo che la pagina funzioni: controlla
+// che le regole dell'impianto siano ancora rispettate e che la ruota sia
+// onesta. In più, qui controlla due cose che su una profumeria non c'erano:
+// che nessun esito rimproveri chi legge, e che la card non diagnostichi.
 import { chromium } from 'playwright-core';
 import { readFileSync } from 'node:fs';
 
 const out = process.argv[2];
-const url = process.argv[3] || 'http://localhost:8934/';
-// Si risponde con una famiglia diversa da quella giusta: il percorso di chi
-// non indovina è quello che porta la consulenza, ed è il più delicato.
-const RISPOSTA = 'Legnoso';
+const url = process.argv[3] || 'http://localhost:8937/';
+// Si risponde «non me lo ricordo»: è la risposta più scomoda, quella in cui
+// è più facile che il tono scivoli nel rimprovero.
+const RISPOSTA = 'Non me lo ricordo';
 
 /* ---- quello che il codice promette, letto dal codice ---- */
-const gioco = readFileSync(new URL('../woman/src/config/gioco.ts', import.meta.url), 'utf8');
+const gioco = readFileSync(new URL('../carg/src/config/gioco.ts', import.meta.url), 'utf8');
 const SPICCHI = JSON.parse(gioco.match(/export const SPICCHI: number\[\] = (\[[^\]]+\])/)[1]);
-// I tre importi che si possono vincere davvero, con le percentuali chieste.
 const PESI = [...gioco.matchAll(/\{ valore: (\d+), peso: (\d+) \}/g)]
   .map(([, v, w]) => ({ valore: Number(v), peso: Number(w) }));
 const VINCIBILI = PESI.map((p) => p.valore);
+const TELEFONO = gioco.match(/telefonoLink: '(\+\d+)'/)[1];
 
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 const p = await b.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
@@ -28,8 +30,8 @@ const errori = [];
 p.on('pageerror', (e) => errori.push(`PAGE ERROR: ${e.message}`));
 p.on('console', (m) => { if (m.type() === 'error') errori.push(`CONSOLE: ${m.text()}`); });
 
-// Nessuna chiamata fuori dal server locale: font compresi. La pagina si apre
-// in negozio con una riga di rete, e deve bastare a sé stessa.
+// Nessuna chiamata fuori dal server locale: font compresi. La card si apre
+// in officina con una riga di rete, e deve bastare a sé stessa.
 const fuori = [];
 await p.route('**', (route) => {
   const u = route.request().url();
@@ -51,10 +53,8 @@ const scatto = (n) => p.screenshot({ path: `${out}/${n}.png` });
 
 /* ---- 1. la ruota ---------------------------------------------------- */
 {
-  // Ogni importo compare una volta sola: è così che il cliente l'ha voluta.
   const doppi = SPICCHI.filter((v, i) => SPICCHI.indexOf(v) !== i);
   if (doppi.length) errori.push(`RUOTA: ${doppi.join(', ')} compaiono più di una volta`);
-  // I tre premi veri devono esserci tutti, o la ruota non può fermarcisi.
   for (const v of VINCIBILI) {
     if (!SPICCHI.includes(v)) errori.push(`RUOTA: manca lo spicchio da ${v}€, ma è fra i vincibili`);
   }
@@ -68,34 +68,40 @@ const scatto = (n) => p.screenshot({ path: `${out}/${n}.png` });
 /* ---- 2. il percorso ------------------------------------------------- */
 await p.goto(url, { waitUntil: 'networkidle' });
 
-// L'apertura ha tre tempi e l'ordine è quello che il cliente ha chiesto:
-// prima il buio, poi il coniglio che attraversa, e solo dopo «Hey».
-await p.waitForSelector('.coniglio', { timeout: 6000 }).catch(() => {
-  errori.push('APERTURA: il Bianconiglio non attraversa lo schermo');
-});
-await scatto('0-coniglio');
+// L'apertura è il filmato del marchio, e la frase entra sopra, non dopo.
 {
-  // Mentre corre non ci deve essere niente da leggere: se le due cose si
-  // sovrappongono non se ne ricorda nessuna.
-  const parole = (await p.locator('.intro-parola.show').allTextContents()).join(' ').trim();
-  if (parole) errori.push(`APERTURA: «${parole}» è già a schermo mentre passa il coniglio`);
+  const clip = p.locator('.apertura-clip');
+  if (!(await clip.count())) errori.push('APERTURA: manca il filmato del marchio');
+  // Muto e inline, o su iOS non parte da solo e Safari se lo apre a pieno
+  // schermo nel suo player.
+  const v = await clip.evaluate((el) => ({
+    muted: el.muted, inline: el.hasAttribute('playsinline'), auto: el.autoplay,
+  })).catch(() => null);
+  if (v && !(v.muted && v.inline && v.auto)) {
+    errori.push(`APERTURA: il video è muted=${v.muted} playsinline=${v.inline} autoplay=${v.auto}`);
+  }
+  // E deve davvero scorrere: un video fermo al primo fotogramma è un nero.
+  await p.waitForTimeout(2500);
+  const t = await clip.evaluate((el) => el.currentTime).catch(() => 0);
+  if (t < 0.5) errori.push(`APERTURA: il filmato è fermo a ${t}s, non sta partendo`);
+  await scatto('0-marchio');
+  const prima = (await p.locator('.intro-parola.show').allTextContents()).join(' ').trim();
+  if (prima) errori.push(`APERTURA: «${prima}» è a schermo prima che il marchio si componga`);
 }
-// La prima parola che compare, qualunque sia il ritardo della rete.
 await p.waitForSelector('.intro-parola.show', { timeout: 8000 });
 {
-  const hey = await p.locator('.intro-parola.show').first().innerText().catch(() => '');
-  if (!/^Hey/i.test(hey.trim())) {
-    errori.push(`APERTURA: dopo il coniglio si legge «${hey.trim()}» invece di «Hey.»`);
+  const frase = await p.locator('.intro-parola.show').first().innerText().catch(() => '');
+  if (!frase.trim()) errori.push('APERTURA: la frase non compare');
+  if (/da quanto non/i.test(frase)) {
+    errori.push(`APERTURA: è tornata la frase vecchia — «${frase.trim()}»`);
   }
-  // Il coniglio può essere ancora appeso al DOM, ma deve essere già uscito
-  // dalla destra dello schermo: la corsa è finita prima della parola.
-  const box = await p.locator('.coniglio').boundingBox().catch(() => null);
-  const largo = p.viewportSize().width;
-  if (box && box.x < largo) errori.push('APERTURA: il coniglio è ancora in scena sul «Hey»');
+  // Il filmato deve essere ancora a schermo quando la frase entra: messa in
+  // coda allungherebbe l'attesa prima della prima schermata.
+  if (!(await p.locator('.apertura-clip').count())) {
+    errori.push('APERTURA: la frase arriva a filmato finito, non sopra');
+  }
 }
-await scatto('0b-hey');
-await p.waitForTimeout(1600);
-await scatto('0c-profumo');
+await scatto('0b-frase');
 await p.waitForSelector('.intro', { state: 'detached', timeout: 12000 });
 await p.waitForTimeout(700);
 await scatto('1-ingresso');
@@ -121,43 +127,45 @@ await scatto('1-ingresso');
   if (!caricato) errori.push('FONT: Inter non risulta caricato — controlla public/fonts/');
 }
 
-await p.getByRole('button', { name: /Inizia il quiz/i }).click();
+await p.getByRole('button', { name: /^Inizia/i }).click();
 await p.waitForTimeout(800);
 await scatto('2-domanda');
 
-// Una domanda sola, quattro famiglie.
+// Una domanda sola, quattro fasce.
 const opzioni = await p.getByRole('radio').count();
-if (opzioni !== 4) errori.push(`DOMANDA: ${opzioni} famiglie invece di 4`);
-for (const f of ['Agrumato', 'Floreale', 'Legnoso', 'Ambrato']) {
-  if (!(await p.getByRole('radio', { name: new RegExp(f) }).count())) errori.push(`DOMANDA: manca «${f}»`);
-}
+if (opzioni !== 4) errori.push(`DOMANDA: ${opzioni} risposte invece di 4`);
 
 await p.getByRole('radio', { name: new RegExp(RISPOSTA) }).click();
 await p.waitForTimeout(1600);
-await scatto('3-rivelazione');
+await scatto('3-risposta');
 
-// Il credito NON deve comparire qui: quiz e premio sono due momenti diversi.
 {
   const testo = (await p.locator('.step').innerText()).replace(/\s+/g, ' ');
+  // Il credito NON deve comparire qui: risposta e premio sono due momenti.
   if (/€|credito di|\d+\s*€/.test(testo.replace(/vinci il tuo credito/i, ''))) {
-    errori.push('RIVELAZIONE: compare già il credito, ma la ruota deve venire dopo');
+    errori.push('RISPOSTA: compare già il credito, ma la ruota deve venire dopo');
   }
-  if (/sbagliat|errat|hai perso|purtroppo/i.test(testo)) {
-    errori.push('TONO: la rivelazione tratta la risposta come un errore');
+  // Nessuno esce rimproverato: è la regola che qui conta più che altrove.
+  if (/sbagliat|errat|hai perso|purtroppo|in ritardo|dovresti|trascurat|grave/i.test(testo)) {
+    errori.push(`TONO: la schermata rimprovera chi legge — «${testo.slice(0, 90)}…»`);
+  }
+  // E la card non diagnostica: non ha visto l'auto di nessuno.
+  if (/la tua auto ha|il tuo problema è|sicuramente è|hai sicuramente/i.test(testo)) {
+    errori.push('DIAGNOSI: la schermata dice cos’ha l’auto, ma non l’ha vista nessuno');
   }
   if (/\d+% ha risposto/.test(testo)) {
     errori.push('DATI: compare una percentuale, ma il conteggio vero non c’è ancora');
   }
 }
 if (await p.getByRole('button', { name: /passaggio precedente/i }).count()) {
-  errori.push('RIVELAZIONE: c’è una freccia indietro, ma il secondo tentativo non esiste');
+  errori.push('RISPOSTA: c’è una freccia indietro, ma il secondo tentativo non esiste');
 }
 
 await p.getByRole('button', { name: /Vinci il tuo credito/i }).click();
 await p.waitForTimeout(900);
 await scatto('4-ruota');
 
-// Sulla ruota si vedono solo premi veri.
+// Sulla ruota si vedono solo gli importi dichiarati.
 {
   const valori = (await p.locator('.step svg text').allTextContents()).map((v) => v.trim());
   const unici = [...new Set(valori)].sort();
@@ -180,26 +188,19 @@ const credito = (await p.locator('.premio-cifra').innerText()).replace(/[^\d]/g,
 if (!VINCIBILI.includes(Number(credito))) {
   errori.push(`CREDITO: ${credito} € non è fra i premi che si possono vincere (${VINCIBILI.join('/')})`);
 }
-// Le fialette devono tornare con il credito: 5 € una, 10 € due, 15 € tre.
-{
-  const testo = (await p.locator('.step').innerText()).replace(/\s+/g, ' ');
-  const attese = Number(credito) / 5;
-  const parole = { 1: /Una fialetta/i, 2: /2 fialette/i, 3: /3 fialette/i };
-  if (!parole[attese]?.test(testo)) {
-    errori.push(`CREDITO: con ${credito} € non dice ${attese} fialett${attese === 1 ? 'a' : 'e'}`);
-  }
-}
 
-await p.getByRole('button', { name: /Scopri le tue fragranze/i }).click();
+await p.getByRole('button', { name: /Dove lo usi/i }).click();
 await p.waitForTimeout(900);
 await scatto('6-consigli');
 
-// I consigli sono sempre tre: sono una consulenza, non il premio.
+// Tre lavori, e il credito dichiarato sopra deve essere lo stesso di qui.
 {
   const righe = await p.locator('.rec').count();
-  if (righe !== 3) errori.push(`CONSIGLI: ${righe} fragranze invece di 3`);
+  if (righe !== 3) errori.push(`CONSIGLI: ${righe} lavori invece di 3`);
   const testo = (await p.locator('.step').innerText()).replace(/\s+/g, ' ');
-  if (!/copre/i.test(testo)) errori.push('CONSIGLI: non dice quante ne copre il credito');
+  if (!new RegExp(`${credito}\\s*€`).test(testo)) {
+    errori.push(`CONSIGLI: non ripete il credito da ${credito} €`);
+  }
 }
 
 await p.getByRole('button', { name: /Salva il tuo credito/i }).click();
@@ -207,31 +208,45 @@ await p.waitForTimeout(800);
 await scatto('7-dati');
 
 // Il modulo: col solo nome resta spento, con nome, contatto e consenso si accende.
-const salva = p.getByRole('button', { name: /Salva le mie fialette/i });
-await p.fill('#nome', 'Giulia Bassi');
+const salva = p.getByRole('button', { name: /Salva il mio credito/i });
+await p.fill('#nome', 'Marco Berti');
 await p.waitForTimeout(200);
 if (!(await salva.isDisabled())) errori.push('MODULO: si invia senza nessun contatto');
-await p.fill('#email', 'giulia@esempio.it');
+await p.fill('#telefono', '3391234567');
 await p.waitForTimeout(200);
 if (!(await salva.isDisabled())) errori.push('MODULO: si invia senza consenso');
 await p.locator('.consenso input').check();
 await p.waitForTimeout(200);
-if (await salva.isDisabled()) errori.push('MODULO: resta bloccato anche con nome, email e consenso');
-await p.fill('#nome', 'Giulia');
+if (await salva.isDisabled()) errori.push('MODULO: resta bloccato con nome, telefono e consenso');
+await p.fill('#nome', 'Marco');
 await p.waitForTimeout(200);
 if (!(await salva.isDisabled())) errori.push('MODULO: accetta un nome senza cognome');
-await p.fill('#nome', 'Giulia Bassi');
+await p.fill('#nome', 'Marco Berti');
+// L'auto è facoltativa: se lasciarla vuota bloccasse l'invio, qualcuno molla qui.
+await p.waitForTimeout(200);
+if (await salva.isDisabled()) errori.push("MODULO: l'auto non è facoltativa, blocca l'invio");
+await p.fill('#auto', 'Golf 1.6 TDI');
 await p.waitForTimeout(200);
 await scatto('7b-compilato');
 
 await salva.click();
 await p.waitForTimeout(1600);
 await scatto('8-fine');
-if (!(await p.locator('text=/WOMAN-[A-Z0-9]{4}/').count())) {
+if (!(await p.locator('text=/CARG-[A-Z0-9]{4}/').count())) {
   errori.push('FINE: il codice credito non compare o è malformato');
 }
-if (!(await p.getByText(/Naso (curioso|allenato|esperto)/i).count())) {
-  errori.push('FINE: manca il livello, che è la cosa che resta');
+// La chiusura serve a prenotare: il bottone deve chiamare davvero.
+{
+  const tel = await p.locator('a[href^="tel:"]').getAttribute('href').catch(() => null);
+  if (tel !== `tel:${TELEFONO}`) {
+    errori.push(`FINE: il bottone chiama ${tel ?? 'nessuno'}, non ${TELEFONO}`);
+  }
+  if (!(await p.locator('a[href*="google.com/maps"]').count())) {
+    errori.push('FINE: manca il link per arrivare in officina');
+  }
+  if (!(await p.locator('.notturno').count())) {
+    errori.push('FINE: manca la riga del servizio notturno, che è il loro pezzo forte');
+  }
 }
 
 /* ---- 3. il contorno ------------------------------------------------- */
