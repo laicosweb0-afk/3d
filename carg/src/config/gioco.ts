@@ -63,6 +63,22 @@ export const OFFICINA = {
 export const WHATSAPP = '';
 
 /* ------------------------------------------------------------------ */
+/* L’apertura                                                          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * La frase che entra sopra il filmato del marchio, a 3,9 secondi.
+ *
+ * È l’unica cosa che si legge prima della prima schermata, quindi deve
+ * stare su due righe corte e non deve far sentire nessuno in colpa: chi
+ * avvicina il telefono al bancone non è lì per essere interrogato.
+ * Il «\n» è una riga spezzata a mano, non un a capo automatico.
+ */
+export const APERTURA = {
+  frase: 'Un minuto\nper la tua auto.',
+};
+
+/* ------------------------------------------------------------------ */
 /* L’unica domanda: da quanto non fa il tagliando                      */
 /* ------------------------------------------------------------------ */
 

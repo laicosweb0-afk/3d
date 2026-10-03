@@ -16,7 +16,7 @@ cambiare sono la tavolozza, il marchio e tutto quello che si legge.
 
 | # | Schermata | Cosa fa |
 |---|---|---|
-| 0 | Apertura | Buio · passa un'auto (due fasci di luce) · «Hey.» · «Da quanto non fai il tagliando?» |
+| 0 | Apertura | Il reveal del marchio (5 s) e, sopra, «Un minuto per la tua auto.» |
 | 1 | Ingresso | Il marchio e l'invito. Scuro. |
 | 2 | Domanda | Una sola: da quanto non fa il tagliando. Quattro risposte, si tocca e si va. |
 | 3 | Risposta | Cosa vuol dire quella risposta. **Senza il credito.** |
@@ -65,6 +65,7 @@ Tutto in **`src/config/gioco.ts`**. Nessun altro file va aperto.
 | Giorni di validità | `VALIDITA_GIORNI` |
 | Chiedere o no l'auto | `CHIEDI_AUTO` |
 | Numero WhatsApp | `WHATSAPP` |
+| La frase dell'apertura | `APERTURA.frase` |
 
 ## La ruota
 
@@ -114,16 +115,46 @@ l'inchiostro fa 3,5:1 e non si legge, il bianco fa 5,4:1.
 
 ## L'apertura
 
-Dove Woman faceva correre il Bianconiglio, qui passa un'auto: due fasci di
-luce che tagliano il buio in 1,1 secondi. Sono disegnati in CSS e pesano
-zero, quindi non c'è nessun file da aspettare — la card parte subito anche
-con una riga di rete lenta, mentre quella di Woman doveva scaricare uno
-sprite da 351 KB prima di partire.
+Il reveal del marchio fornito dal cliente, tagliato a **5,0 secondi** — il
+punto in cui il tondo è frontale e acceso; dopo si inclina e non serve più.
 
-Fari e non la sagoma di un'auto: di notte di un'auto che sfreccia si vedono
-quelli, e una luce fatta bene non si può sbagliare mentre una carrozzeria
-disegnata male si riconosce subito. E il notturno è esattamente quello che
-Car.G vende.
+La frase entra a **3,9 s**, cioè *mentre il marchio è ancora a schermo*, non
+dopo. Metterla in coda allungherebbe l'attesa di un secondo e mezzo: chi
+avvicina il telefono al bancone non sta guardando un film, e ogni secondo
+prima della prima schermata è un secondo in cui può rimettere il telefono in
+tasca. Tutta l'apertura dura 6,8 s.
+
+Due formati, e **l'MP4 per primo**: il browser prende il primo che sa
+leggere e ne scarica uno solo. L'MP4 (H.264, 253 KB) serve a iOS, che è la
+metà abbondante di chi userà la card; il WebM (VP9, 285 KB) copre i Chromium
+compilati senza H.264 — fra cui quello del collaudo, che altrimenti non
+riuscirebbe a verificare l'apertura.
+
+Il video è **muto e `playsInline`**: su iOS un video con audio non parte da
+solo, e senza `playsInline` Safari lo aprirebbe a tutto schermo nel suo
+player mangiandosi la pagina. Se non parte — rete lenta, autoplay negato,
+formato rifiutato — la frase entra lo stesso ai suoi 3,9 s: meglio
+un'apertura senza filmato che una card che non si apre.
+
+Per rifare il taglio da una nuova versione del filmato:
+
+```bash
+FF=node_modules/@ffmpeg-installer/linux-x64/ffmpeg
+$FF -i sorgente.mp4 -t 5.0 -an -c:v libx264 -profile:v main -pix_fmt yuv420p \
+   -crf 29 -preset slow -movflags +faststart -r 24 carg/public/apertura.mp4
+$FF -i sorgente.mp4 -t 5.0 -an -c:v libvpx-vp9 -crf 36 -b:v 0 -row-mt 1 \
+   -deadline good -cpu-used 2 -pix_fmt yuv420p -r 24 carg/public/apertura.webm
+```
+
+## Le dipendenze
+
+Solo React. **Niente framer-motion**: su Woman serviva un
+`MotionConfig reducedMotion="user"` che spegneva in un colpo solo le molle
+della libreria, ma qui tutto il movimento è CSS e `prefers-reduced-motion`
+lo gestiscono la regola globale in fondo a `index.css` e i tre componenti
+con un comportamento proprio (apertura, ruota, conteggio del credito).
+Tenerla solo per un contenitore che non configura più niente voleva dire
+spedire un pacchetto a ogni cliente per nulla.
 
 ## Il font
 
@@ -150,7 +181,8 @@ node tools/carg-qa.mjs /tmp/scatti
 ```
 
 Controlla: ogni importo una volta sola, i vincibili presenti, i pesi a 100,
-l'ordine dell'apertura (fari → «Hey.»), Inter caricato e usato, quattro
+il filmato dell'apertura (presente, muto, inline, e che scorra davvero) con
+la frase che entra sopra e non dopo, Inter caricato e usato, quattro
 risposte, nessun credito sulla schermata della risposta, nessun rimprovero,
 nessuna diagnosi, nessuna percentuale inventata, gli importi a schermo uguali
 a `SPICCHI`, il credito vinto fra i vincibili, tre lavori consigliati, il
