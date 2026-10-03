@@ -3,23 +3,20 @@ import { BazarLogo } from './BazarLogo';
 import { campanello, pronto, sblocca } from '../lib/suono';
 
 /**
- * L'apertura, in tre tempi.
+ * L'apertura, in due tempi.
  *
- *   1. Il nero del biglietto da visita, e **il filo d'oro** che si apre dal
- *      centro verso i due capi: lo stesso filo che sul biglietto separa
- *      BAZAR da MARRAKECH.
- *   2. «Marhaba.» — benvenuto, nella lingua di Marrakech.
- *   3. Il fronte del biglietto, com'è stampato — BAZAR, il filo, MARRAKECH,
- *      SHOWROOM ARREDAMENTO · LUGO — e sotto «Benvenuto nel Bazar.».
+ *   1. Il saluto: «Marhaba.» in oro e, subito sotto, «Benvenuto» — la stessa
+ *      parola nelle due lingue, un blocco solo al centro dello schermo.
+ *   2. Il marchio, da solo e al centro, che si compone come sul fronte del
+ *      biglietto: BAZAR che si stringe, il filo d'oro che si apre dal centro,
+ *      MARRAKECH, e per ultima la riga SHOWROOM ARREDAMENTO · LUGO.
  *
- * Prima si guarda, poi si legge: il filo finisce di aprirsi prima che
- * compaia la prima parola, e se ne va prima della frase.
+ * Il saluto se ne va prima che arrivi il marchio: due cose insieme a schermo
+ * non se le ricorda nessuno.
  */
 export function Intro({ onFine }: { onFine: () => void }) {
-  const [filo, setFilo] = useState<'' | 'show' | 'via'>('');
-  const [ciao, setCiao] = useState<'' | 'show' | 'hide' | 'via'>('');
+  const [saluto, setSaluto] = useState<'' | 'show' | 'hide' | 'via'>('');
   const [marchio, setMarchio] = useState(false);
-  const [frase, setFrase] = useState<'' | 'show' | 'hide'>('');
   const [uscita, setUscita] = useState(false);
 
   useEffect(() => {
@@ -28,20 +25,17 @@ export function Intro({ onFine }: { onFine: () => void }) {
       return;
     }
     const t = [
-      setTimeout(() => setFilo('show'), 150),
-      // il filo si apre in 1100ms: la parola aspetta che sia steso
-      setTimeout(() => setFilo('via'), 1450),
-      setTimeout(() => setCiao('show'), 1700),
-      setTimeout(() => setCiao('hide'), 2800),
+      setTimeout(() => setSaluto('show'), 250),
+      setTimeout(() => setSaluto('hide'), 2300),
       setTimeout(() => {
-        setCiao('via'); setMarchio(true); setFrase('show');
+        setSaluto('via'); setMarchio(true);
         // Suona solo se qualcuno ha già toccato lo schermo: prima di un
         // gesto iOS non lascia svegliare l'audio.
         if (pronto()) campanello();
-      }, 3100),
-      setTimeout(() => setFrase('hide'), 5000),
-      setTimeout(() => setUscita(true), 5300),
-      setTimeout(onFine, 5900),
+      }, 2750),
+      // il marchio si compone in 1800ms, poi resta fermo un momento
+      setTimeout(() => setUscita(true), 5600),
+      setTimeout(onFine, 6200),
     ];
     return () => t.forEach(clearTimeout);
   }, [onFine]);
@@ -52,16 +46,17 @@ export function Intro({ onFine }: { onFine: () => void }) {
       aria-hidden
       onPointerDown={() => { const gia = pronto(); sblocca(); if (!gia && marchio) campanello(); }}
     >
-      {filo && <span className={`intro-filo ${filo}`} />}
-      {marchio && (
-        <span className="intro-marchio show">
-          <BazarLogo size={17} esteso />
+      {saluto !== 'via' && (
+        <span className={`intro-saluto ${saluto}`}>
+          <span className="intro-marhaba">Marhaba.</span>
+          <span className="intro-benvenuto">Benvenuto</span>
         </span>
       )}
-      {ciao !== 'via' && <span className={`intro-parola ${ciao}`}>Marhaba.</span>}
-      <span className={`intro-parola intro-domanda ${frase}`}>
-        Benvenuto<br />nel Bazar.
-      </span>
+      {marchio && (
+        <span className="intro-marchio">
+          <BazarLogo size={21} esteso composto />
+        </span>
+      )}
     </div>
   );
 }

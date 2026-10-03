@@ -9,15 +9,17 @@
  * file vettoriale, si sostituisce questo componente e nient'altro.
  */
 export function BazarLogo({
-  size = 17, esteso = false, title,
+  size = 17, esteso = false, composto = false, title,
 }: {
   size?: number;
   esteso?: boolean;
+  /** Si compone pezzo per pezzo, come nell'apertura. */
+  composto?: boolean;
   title?: string;
 }) {
   return (
     <span
-      className="marchio"
+      className={composto ? 'marchio marchio-composto' : 'marchio'}
       style={{ fontSize: size }}
       role={title ? 'img' : undefined}
       aria-label={title}
