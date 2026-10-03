@@ -10,6 +10,8 @@ club-rama/dist/
 club-rama/.env.local
 woman/dist/
 woman/.env.local
+bazar/dist/
+bazar/.env.local
 
-# public/club-rama/ e public/woman/ sono le build committate apposta,
-# quelle che GitHub Pages serve su /rama/ e /woman/: NON ignorarle.
+# public/club-rama/, public/woman/ e public/bazar/ sono le build committate
+# apposta, quelle che GitHub Pages serve su /rama/, /woman/ e /bazar/: NON ignorarle.

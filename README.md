@@ -15,6 +15,7 @@ Un unico piano sequenza: il visitatore assiste alla trasformazione di uno spazio
 | [PORTFOLIO.md](./PORTFOLIO.md) | La pagina `/portfolio/`: come si aggiorna |
 | [CLUB-RAMA.md](./CLUB-RAMA.md) | La landing `/club/` della card NFC di Rama Ceramiche: messa online e dominio |
 | [WOMAN.md](./WOMAN.md) | Woman — The Fragrance Experience: la pagina della fialetta sorpresa, QR e NFC, messa online |
+| [BAZAR.md](./BAZAR.md) | Bazar Marrakech — Il tuo stile: la card NFC dello showroom di Lugo, messa online |
 
 ## Stato
 
