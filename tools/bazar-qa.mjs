@@ -104,6 +104,56 @@ await p.waitForSelector('.intro', { state: 'detached', timeout: 6000 });
   if (!f.poppins) errori.push('FONT: Poppins non si carica');
 }
 
+// 0 — la vetrina: due riquadri, carosello in 3D, scheda con le foto
+await p.waitForSelector('.riquadro');
+await p.waitForTimeout(600);
+{
+  const titoli = await p.locator('.riquadro-titolo').allInnerTexts();
+  if (titoli[0] !== 'Divani') errori.push(`VETRINA: il primo riquadro è «${titoli[0]}», non «Divani»`);
+  const giri = await p.locator('.riquadro').first().locator('.carta3d').evaluateAll((cs) => cs.map((c) => c.style.transform));
+  if (!giri[1] || !/rotateY\(-?[1-9]/.test(giri[1])) errori.push(`VETRINA: la seconda copertina non è girata in 3D («${giri[1]}»)`);
+  if (/rotateY\(-?[1-9]/.test(giri[0] || '')) errori.push('VETRINA: la copertina in centro è girata');
+}
+await scatto('0v-vetrina');
+await overflow('vetrina');
+{
+  // Scorrere il binario cambia l'articolo in centro.
+  const prima = await p.locator('.riquadro').first().locator('.riquadro-nome .nome').innerText();
+  await p.locator('.binario').first().evaluate((b) => b.scrollTo({ left: b.children[1].offsetLeft - (b.clientWidth - b.children[1].offsetWidth) / 2 }));
+  await p.waitForTimeout(500);
+  const dopo = await p.locator('.riquadro').first().locator('.riquadro-nome .nome').innerText();
+  if (prima === dopo) errori.push('VETRINA: scorrendo, il nome in centro non cambia');
+  await scatto('0v-scorsa');
+  await p.locator('.binario').first().evaluate((b) => b.scrollTo({ left: 0 }));
+  await p.waitForTimeout(400);
+}
+// La scheda: si apre, ha le foto, si scorre, il cuore funziona, si chiude.
+await p.locator('.carta3d').first().click();
+await p.waitForSelector('.scheda', { timeout: 3000 });
+await p.waitForTimeout(600);
+{
+  const foto = await p.locator('.galleria-foto').count();
+  if (foto < 2) errori.push(`SCHEDA: ${foto} foto, ne servono almeno due per scorrere`);
+  await scatto('0v-scheda');
+  await p.locator('.galleria').evaluate((g) => g.scrollTo({ left: g.clientWidth }));
+  await p.waitForTimeout(600);
+  const conta = await p.locator('.galleria-conta').innerText();
+  if (!conta.startsWith('2 /')) errori.push(`SCHEDA: dopo lo scorrimento il contatore dice «${conta}»`);
+  const rotte = await p.locator('.galleria-foto img').evaluateAll((im) => im.filter((i) => i.complete && !i.naturalWidth).length);
+  if (rotte) errori.push(`SCHEDA: ${rotte} foto non si caricano`);
+  await scatto('0v-scheda-2');
+  await p.locator('.cuore').click();
+  if ((await p.locator('.cuore').getAttribute('aria-pressed')) !== 'true') errori.push('SCHEDA: il cuore non resta acceso');
+  await p.locator('.scheda-chiudi').click();
+  await p.waitForSelector('.scheda', { state: 'detached', timeout: 2000 }).catch(() => errori.push('SCHEDA: non si chiude'));
+  if (!(await p.locator('.carta3d-cuore').count())) errori.push('VETRINA: il preferito non compare sulla copertina');
+}
+{
+  const rotte = await p.locator('.carta3d img').evaluateAll((im) => im.filter((i) => i.complete && !i.naturalWidth).length);
+  if (rotte) errori.push(`VETRINA: ${rotte} copertine non si caricano`);
+}
+await p.getByRole('button', { name: /Scopri il tuo stile/ }).click();
+
 // 1 — ingresso, con il velluto da vicino dietro
 await p.waitForTimeout(500);
 if (!(await p.locator('.step-sfondo').evaluate((i) => i.complete && i.naturalWidth).catch(() => 0))) {
@@ -193,6 +243,8 @@ await p.waitForSelector('.tessera', { timeout: 4000 });
   const codice = await p.locator('.codice').innerText();
   if (!/^BAZAR-[A-HJ-NP-Z2-9]{4}$/.test(codice)) errori.push(`FINE: codice malformato «${codice}»`);
   const cifra = Number((await p.locator('.tessera-cifra').innerText()).replace(/\D/g, ''));
+  const pref = await p.locator('.tessera-lista').innerText().catch(() => '');
+  if (!pref.includes('Capitonné Tortora')) errori.push(`FINE: i preferiti non arrivano sulla tessera («${pref}»)`);
   if (cifra !== credito) errori.push(`FINE: la tessera dice ${cifra}€ ma la ruota ${credito}€`);
 }
 {

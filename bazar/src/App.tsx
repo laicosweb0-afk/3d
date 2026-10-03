@@ -2,16 +2,26 @@ import { useCallback, useMemo, useState } from 'react';
 import { Intro } from './components/Intro';
 import { MuteButton } from './components/MuteButton';
 import {
-  Credito, Dati, Domanda, Fine, Giro, Ingresso, Pezzi, Rivelazione, type DatiModulo,
+  Credito, Dati, Domanda, Fine, Giro, Ingresso, Pezzi, Rivelazione, Vetrina, type DatiModulo,
 } from './schermate';
+import { articoloDi } from './config/catalogo';
 import { PEZZI, SPESA_MINIMA, generaCodice, scadenza, stileDi } from './config/gioco';
 import { submitLead, type Lead } from './lib/lead';
 
-type Fase = 'ingresso' | 'domanda' | 'rivelazione' | 'ruota' | 'credito' | 'pezzi' | 'dati' | 'fine';
+type Fase = 'vetrina' | 'ingresso' | 'domanda' | 'rivelazione' | 'ruota' | 'credito' | 'pezzi' | 'dati' | 'fine';
 
 export default function App() {
   const [apertura, setApertura] = useState(true);
-  const [fase, setFase] = useState<Fase>('ingresso');
+  const [fase, setFase] = useState<Fase>('vetrina');
+  /** Gli articoli col cuore nella vetrina. */
+  const [preferiti, setPreferiti] = useState<Set<string>>(() => new Set());
+  const commutaPreferito = useCallback((id: string) => {
+    setPreferiti((p) => {
+      const n = new Set(p);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      return n;
+    });
+  }, []);
   /** Lo stile scelto: l'unica risposta, e il dato che conta. */
   const [scelta, setScelta] = useState<string | null>(null);
   /** Il credito uscito dalla ruota. */
@@ -31,6 +41,7 @@ export default function App() {
       telefono: d.telefono,
       stile: stileDi(scelta)?.nome ?? '',
       pezzi: (PEZZI[scelta ?? ''] ?? []).map((p) => p.nome),
+      preferiti: [...preferiti].map((id) => articoloDi(id)?.nome ?? id),
       credito,
       spesaMinima: SPESA_MINIMA,
       codiceCredito: generaCodice(),
@@ -54,15 +65,20 @@ export default function App() {
     } finally {
       setInCorso(false);
     }
-  }, [scelta, credito]);
+  }, [scelta, credito, preferiti]);
 
   const ricomincia = useCallback(() => {
-    setScelta(null); setCredito(0); setLead(null); setErrore(null);
-    setFase('ingresso');
+    setScelta(null); setCredito(0); setLead(null); setErrore(null); setPreferiti(new Set());
+    setFase('vetrina');
   }, []);
 
   const schermata = useMemo(() => {
     switch (fase) {
+      case 'vetrina':
+        return (
+          <Vetrina preferiti={preferiti} onPreferito={commutaPreferito}
+            onAvanti={() => setFase('ingresso')} />
+        );
       case 'ingresso':
         return <Ingresso onAvanti={() => setFase('domanda')} />;
       case 'domanda':
@@ -86,7 +102,7 @@ export default function App() {
           ? <Fine lead={lead} onRicomincia={ricomincia} />
           : null;
     }
-  }, [fase, scelta, credito, lead, inCorso, errore, invia, ricomincia]);
+  }, [fase, scelta, credito, lead, inCorso, errore, invia, ricomincia, preferiti, commutaPreferito]);
 
   return (
     <>

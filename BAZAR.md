@@ -26,6 +26,7 @@ scritte in cima a `bazar/src/config/gioco.ts`.
 | | Schermata | Cosa succede |
 |---|---|---|
 | — | Apertura | il filo d'oro che si apre, «Marhaba.», poi il fronte del biglietto e «Benvenuto nel Bazar.» |
+| 0 | **La vetrina** | «Sfoglia il Bazar.»: i riquadri *Divani* e *Poltrone*, con il carosello 3D; ogni articolo si apre con le sue foto, e col cuore va fra i preferiti |
 | 1 | Ingresso | «Che casa sei?» — una domanda, poi la ruota |
 | 2 | La domanda | Curve morbide · Classico elegante · Scuro e deciso · Bazar e colore. Il tocco sceglie e avanza |
 | 3 | Lo stile | Velluto & Oro · Classico Senza Tempo · Notte a Marrakech · Spirito del Bazar. **Senza credito** |
@@ -33,7 +34,34 @@ scritte in cima a `bazar/src/config/gioco.ts`.
 | 5 | Il credito | la cifra che sale, su una spesa minima |
 | 6 | I pezzi | tre pezzi scelti sullo stile, da reparti diversi del negozio |
 | 7 | I dati | nome e cognome, email **oppure** telefono, consenso |
-| 8 | La tessera | credito, stile, codice `BAZAR-XXXX`, scadenza; sotto, i contatti del retro del biglietto |
+| 8 | La tessera | credito, stile, codice `BAZAR-XXXX`, scadenza, **i preferiti della vetrina**; sotto, i contatti del retro del biglietto |
+
+## La vetrina
+
+La prima schermata dopo l'apertura, come la vetrina di Rama: prima di
+chiedere qualcosa si fa vedere cosa c'è in showroom. È quasi un negozio:
+
+- **Un riquadro per collezione**, alla maniera di Apple — angoli larghi, un
+  nero appena più chiaro del fondo, titolo grande a sinistra: *Divani* e
+  *Poltrone*.
+- **Dentro, un carosello in 3D.** È uno scorrimento vero, agganciato al
+  centro, quindi segue il dito e l'inerzia del telefono. Le copertine si
+  sovrappongono come in un coverflow: quella in centro è dritta e piena, le
+  vicine girate, più indietro e più scure, con il riflesso sul pavimento
+  lucido. Il 3D è una funzione pura della posizione, ricalcolata a ogni
+  fotogramma, come la processione dei prodotti della Bufala — ma con le foto
+  vere e senza un filmato da scaricare. Sotto, il nome dell'articolo in
+  centro e la guida della Bufala: la frase e la pista che indica dove sei.
+- **Si tocca e si apre la scheda**, un foglio che sale dal basso come su
+  iOS: le foto si scorrono di lato con i puntini e il contatore, poi il
+  nome, i dettagli e il cuore **«Aggiungi ai preferiti»**.
+- **I preferiti viaggiano con il contatto** e compaiono sulla tessera
+  finale: in negozio si sa già cosa mostrare.
+
+Il catalogo sta in `bazar/src/config/catalogo.ts`: collezioni, articoli,
+foto (la prima è la copertina), dettagli, «Novità». Le foto in
+`bazar/public/foto/catalogo/`. Per aggiungere un divano basta un elemento
+in più nella lista.
 
 ## Da dove vengono i dati
 
@@ -81,6 +109,9 @@ Tutto sta in `NEGOZIO`, `REPARTI`, `STILI` e `PEZZI` dentro
 
 ## Prima dei clienti veri
 
+1. **I nomi del catalogo** (`catalogo.ts`) sono descrittivi — Capitonné
+   Tortora, Chesterfield Blu Notte… — e vanno sostituiti con quelli dei
+   modelli del negozio. Se servono i prezzi, il posto è lì.
 1. **I pezzi consigliati** (`PEZZI` in `gioco.ts`): i salotti sono quelli
    fotografati, ma con nomi descrittivi (Poltrona tonda capitonné,
    Divano chesterfield blu…) da sostituire con quelli del negozio; tappeti,
@@ -131,7 +162,11 @@ node tools/bazar-qa.mjs <cartella-screenshot>
 RISPOSTA="Curve morbide" node tools/bazar-qa.mjs <cartella>
 ```
 
-Fotografa ogni schermata su un viewport da iPhone e fallisce se le
+Fotografa ogni schermata su un viewport da iPhone e fallisce se la vetrina
+non ha il riquadro *Divani*, se le copertine ai lati non sono girate in 3D o
+quella in centro sì, se scorrendo non cambia l'articolo in centro, se la
+scheda non ha foto da scorrere o il contatore non le segue, se il cuore non
+resta acceso o il preferito non arriva sulla tessera, se le
 percentuali della ruota non sono quelle attese, se compare uno spicchio non
 previsto o un sorteggio pesato, se due spicchi uguali stanno vicini, se
 l'apertura non mostra il fronte del biglietto, se gli stili non sono quattro, se il credito compare già nello stile, se c'è un modo

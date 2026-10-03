@@ -6,6 +6,8 @@ export type Lead = {
   stile: string;
   /** I tre pezzi consigliati, per chi lo richiama dal negozio. */
   pezzi: string[];
+  /** Gli articoli col cuore nella vetrina: cosa mostrargli appena entra. */
+  preferiti: string[];
   credito: number;
   /** Da quale spesa vale il credito. */
   spesaMinima: number;

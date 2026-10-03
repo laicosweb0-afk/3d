@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Step, Cta } from './components/Step';
 import { Ruota, type RuotaHandle } from './components/Ruota';
+import { RiquadroCollezione, SchedaArticolo } from './components/Vetrina';
+import { CATALOGO, type Articolo, type Collezione } from './config/catalogo';
 import {
   CONTATTO_RICHIESTO, DOMANDA, NEGOZIO, PEZZI, REPARTI, SPESA_MINIMA, STILI, VALIDITA_GIORNI,
   WHATSAPP_NEGOZIO, dataBreve, messaggioWhatsApp, stileDi, telDi,
@@ -16,6 +18,58 @@ import { arresto, conteggio, pop, vittoria as suonoVittoria } from './lib/suono'
  */
 export function indirizzo(file: string): string {
   return import.meta.env.BASE_URL + file.replace(/^\/+/, '');
+}
+
+/* ------------------------------------------------------------------ */
+/* 0 — La vetrina: si sfoglia lo showroom                              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * La prima schermata dopo l'apertura, come la vetrina di Rama: prima di
+ * chiedere qualsiasi cosa, si fa vedere cosa c'è in negozio. Un riquadro per
+ * collezione, con il carosello 3D; ogni articolo si apre con le sue foto, e
+ * col cuore si mette fra i preferiti.
+ */
+export function Vetrina({
+  preferiti, onPreferito, onAvanti,
+}: {
+  preferiti: Set<string>;
+  onPreferito: (id: string) => void;
+  onAvanti: () => void;
+}) {
+  const [aperto, setAperto] = useState<{ a: Articolo; forma: Collezione['forma'] } | null>(null);
+
+  return (
+    <Step bottom={
+      <>
+        <p className="nota">
+          {preferiti.size
+            ? `${preferiti.size === 1 ? 'Un preferito' : `${preferiti.size} preferiti`}: li ritrovi sulla tua tessera.`
+            : 'Poi una domanda sola, e vinci un credito.'}
+        </p>
+        <Cta onClick={onAvanti}>Scopri il tuo stile</Cta>
+      </>
+    }>
+      <p className="eyebrow">Showroom arredamento · Lugo</p>
+      <h1 className="h1">{'Sfoglia\nil Bazar.'}</h1>
+      <div className="vetrina">
+        {CATALOGO.map((c) => (
+          <RiquadroCollezione
+            key={c.id} collezione={c} preferiti={preferiti}
+            onApri={(a) => setAperto({ a, forma: c.forma })}
+          />
+        ))}
+      </div>
+      {aperto && (
+        <SchedaArticolo
+          articolo={aperto.a} forma={aperto.forma}
+          preferito={preferiti.has(aperto.a.id)}
+          onPreferito={() => onPreferito(aperto.a.id)}
+          onChiudi={() => setAperto(null)}
+        />
+      )}
+    </Step>
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -366,6 +420,12 @@ export function Fine({ lead, onRicomincia }: { lead: Lead; onRicomincia: () => v
         <p className="tessera-scade">
           Da mostrare in negozio · scade il {dataBreve(new Date(lead.scadenza))}
         </p>
+        {lead.preferiti.length > 0 && (
+          <div className="tessera-preferiti">
+            <p className="tessera-stile">I tuoi preferiti</p>
+            <p className="tessera-lista">{lead.preferiti.join(' · ')}</p>
+          </div>
+        )}
       </div>
 
       {/* I contatti come sul retro del biglietto: due nomi, due numeri,
