@@ -3,8 +3,8 @@
  * Showroom arredamento · Via Fratelli Zucchini 5, 48022 Lugo (RA)
  *
  * I dati del negozio — reparti, contatti, indirizzo, Instagram — vengono dal
- * biglietto da visita, e solo da lì: se cambia il biglietto, cambia questo
- * file.
+ * biglietto da visita; il sito, le consegne e la nuova collezione «velluto
+ * blu e oro» dalle locandine. Se cambiano loro, cambia questo file.
  *
  * Tutta la configurazione sta qui. Per cambiare i testi, gli stili, i pezzi
  * consigliati o i premi della ruota non serve aprire nessun altro file.
@@ -49,12 +49,15 @@ export type Stile = {
    * nella rivelazione; se manca, la schermata resta tipografica.
    */
   foto?: string;
+  /** La foto è orizzontale (un salotto intero, un divano lungo): si mostra più larga. */
+  fotoLarga?: boolean;
 };
 
 /**
- * I tre stili d'arredo hanno ciascuno un pezzo vero del negozio, con la sua
- * foto da catalogo: la poltrona tonda capitonné, il divano tortora con i
- * profili oro, il chesterfield nero. Il quarto è il bazar vero e proprio:
+ * I tre stili d'arredo hanno ciascuno una foto vera del negozio: il salotto
+ * tortora completo (poltrone tonde, tavolini, divani), il divano capitonné
+ * ambientato in casa, il divano blu della nuova collezione «velluto blu e
+ * oro». Il quarto è il bazar vero e proprio:
  * tappeti, lampadari, profumi — gli altri reparti del biglietto, che ancora
  * non hanno foto.
  */
@@ -65,8 +68,9 @@ export const STILI: Stile[] = [
     nota: 'velluto, linee tonde, luce calda',
     nome: 'Velluto & Oro',
     ritratto: 'Una casa che abbraccia: niente spigoli, e l\'oro solo dove la luce lo trova.',
-    materiali: ['Velluto tortora', 'Linea tonda', 'Base girevole oro'],
-    foto: 'foto/poltrona-tonda.webp',
+    materiali: ['Velluto tortora', 'Linee tonde', 'Profili e basi oro'],
+    foto: 'foto/salotto-completo.webp',
+    fotoLarga: true,
   },
   {
     id: 'classico',
@@ -75,16 +79,19 @@ export const STILI: Stile[] = [
     nome: 'Classico Senza Tempo',
     ritratto: 'Le cose fatte bene non passano di moda: si ereditano.',
     materiali: ['Velluto tortora', 'Capitonné', 'Profili e slitta oro'],
-    foto: 'foto/divano-tortora.webp',
+    foto: 'foto/divano-ambientato.webp',
   },
   {
     id: 'notte',
     etichetta: 'Scuro e deciso',
-    nota: 'nero, blu notte, carattere',
+    nota: 'blu notte, nero, carattere',
     nome: 'Notte a Marrakech',
-    ritratto: 'Un salotto da sera: colori profondi e un filo d\'oro che li accende.',
-    materiali: ['Velluto nero', 'Capitonné', 'Filo e base oro'],
-    foto: 'foto/chesterfield-nero.webp',
+    // La riga della locandina della nuova collezione: «Profondo come la
+    // notte — velluto blu e oro».
+    ritratto: 'Profondo come la notte: velluto blu e oro, per un salotto da sera.',
+    materiali: ['Velluto blu e nero', 'Capitonné', 'Filo e gambe oro'],
+    foto: 'foto/divano-blu.webp',
+    fotoLarga: true,
   },
   {
     id: 'bazar',
@@ -120,6 +127,8 @@ export type Pezzo = {
   riga: string;
   /** La miniatura in `public/foto/`, quando il pezzo è stato fotografato. */
   foto?: string;
+  /** Della nuova collezione in showroom: compare l'etichetta «Novità». */
+  novita?: boolean;
 };
 
 /**
@@ -135,18 +144,18 @@ export type Pezzo = {
 export const PEZZI: Record<string, Pezzo[]> = {
   curvo: [
     { nome: 'Poltrona tonda capitonné', reparto: 'salotti', riga: 'Velluto tortora, girevole, profilo e base oro.', foto: 'foto/poltrona-tonda-mini.webp' },
-    { nome: 'Tappeto chiaro a pelo lungo', reparto: 'tappeti', riga: 'Morbido sotto i piedi, come il velluto sopra.' },
+    { nome: 'Tavolini nesting oro', reparto: 'salotti', riga: 'Tre, uno dentro l\'altro: si aprono quando servono.', foto: 'foto/tavolini-oro-mini.webp' },
     { nome: 'Lampadario dorato', reparto: 'lampadari', riga: 'La luce calda che fa cantare l\'oro.' },
   ],
   classico: [
     { nome: 'Divano capitonné tortora', reparto: 'salotti', riga: 'Profili oro che lo avvolgono, slitta oro.', foto: 'foto/divano-tortora-mini.webp' },
-    { nome: 'Poltrona tonda coordinata', reparto: 'salotti', riga: 'Stesso velluto, stesso capitonné.', foto: 'foto/poltrona-tonda-mini.webp' },
+    { nome: 'Divano chesterfield beige', reparto: 'salotti', riga: 'Con il tavolino in marmo e oro.', foto: 'foto/divano-beige-mini.webp' },
     { nome: 'Lampadario di cristallo', reparto: 'lampadari', riga: 'Il classico che non sbaglia.' },
   ],
   notte: [
+    { nome: 'Divano chesterfield blu', reparto: 'salotti', riga: 'Velluto blu notte, filo e gambe oro.', foto: 'foto/divano-blu-mini.webp', novita: true },
+    { nome: 'Poltrona bergère blu', reparto: 'salotti', riga: 'Lo stesso blu, le gambe oro.', foto: 'foto/poltrona-blu-mini.webp' },
     { nome: 'Chesterfield nero', reparto: 'salotti', riga: 'Velluto nero, filo e base oro.', foto: 'foto/chesterfield-nero-mini.webp' },
-    { nome: 'Poltrona bergère blu', reparto: 'salotti', riga: 'Velluto blu notte, gambe oro.', foto: 'foto/poltrona-blu-mini.webp' },
-    { nome: 'Lampadario in ottone', reparto: 'lampadari', riga: 'Un punto d\'oro nel buio della sera.' },
   ],
   bazar: [
     { nome: 'Tappeto orientale', reparto: 'tappeti', riga: 'Colore e disegno: nessuno uguale.' },
@@ -222,6 +231,10 @@ export const NEGOZIO = {
   ],
   email: 'bazarmarrakech.snc@hotmail.com',
   instagram: 'bazar.marrakech9',
+  /** Il sito delle locandine («Il tuo salotto ti aspetta»). */
+  sito: 'bazar-marrakech.com',
+  /** Dalle locandine: chi non è di Lugo deve saperlo. */
+  consegne: 'Consegne in tutta Italia',
   /** Apre la mappa solo quando si tocca: al caricamento non parte niente. */
   mappa: 'https://maps.google.com/?q=Via+Fratelli+Zucchini+5,+48022+Lugo+RA',
 };

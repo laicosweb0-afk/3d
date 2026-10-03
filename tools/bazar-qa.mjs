@@ -14,7 +14,8 @@ import { readFileSync } from 'node:fs';
 
 const out = process.argv[2];
 const url = process.argv[3] || 'http://localhost:8935/';
-const RISPOSTA = 'Scuro e deciso';
+const RISPOSTA = process.env.RISPOSTA || 'Scuro e deciso';
+const NOME_STILE = { 'Curve morbide': 'Velluto', 'Classico elegante': 'Classico', 'Scuro e deciso': 'Notte', 'Bazar e colore': 'Bazar' }[RISPOSTA];
 
 /* ---- quello che il codice promette, letto dal codice ---- */
 const gioco = readFileSync(new URL('../bazar/src/config/gioco.ts', import.meta.url), 'utf8');
@@ -103,7 +104,11 @@ await p.waitForSelector('.intro', { state: 'detached', timeout: 6000 });
   if (!f.poppins) errori.push('FONT: Poppins non si carica');
 }
 
-// 1 — ingresso
+// 1 — ingresso, con il velluto da vicino dietro
+await p.waitForTimeout(500);
+if (!(await p.locator('.step-sfondo').evaluate((i) => i.complete && i.naturalWidth).catch(() => 0))) {
+  errori.push('INGRESSO: la foto del velluto non si carica');
+}
 await scatto('1-ingresso');
 await overflow('ingresso');
 await p.getByRole('button', { name: /Inizia/ }).click();
@@ -123,9 +128,9 @@ await p.waitForTimeout(800);
   if (/€/.test(t)) errori.push('RIVELAZIONE: il credito compare già qui');
   if (/indietro|cambia risposta|riprova/i.test(t)) errori.push('RIVELAZIONE: c\'è un modo per rispondere di nuovo');
   if (/sbagliat|errat/i.test(t)) errori.push('RIVELAZIONE: la risposta è trattata come un errore');
-  if (!t.includes('Notte')) errori.push('RIVELAZIONE: lo stile non è quello scelto');
+  if (!t.includes(NOME_STILE)) errori.push('RIVELAZIONE: lo stile non è quello scelto');
 }
-{
+if (RISPOSTA !== 'Bazar e colore') {
   // La foto del pezzo: c'è, e si è caricata davvero.
   const w = await p.locator('.foto-stile').evaluate((i) => i.complete && i.naturalWidth).catch(() => 0);
   if (!w) errori.push('RIVELAZIONE: la foto dello stile non si carica');
@@ -163,7 +168,7 @@ if ((await p.locator('.rec').count()) !== 3) errori.push('PEZZI: non sono tre');
 }
 {
   const REPARTI = ['Salotti e poltrone', 'Tappeti', 'Lampadari', 'Profumi e casalinghi'];
-  for (const r of await p.locator('.rec-reparto').allInnerTexts()) {
+  for (const r of (await p.locator('.rec-reparto').allInnerTexts()).map((x) => x.replace(/\s*Novità$/i, ''))) {
     if (!REPARTI.some((x) => x.toUpperCase() === r.toUpperCase())) errori.push(`PEZZI: reparto «${r}» non è sul biglietto`);
   }
 }
@@ -194,7 +199,8 @@ await p.waitForSelector('.tessera', { timeout: 4000 });
   // I contatti del retro del biglietto, tutti.
   const t = await testo();
   for (const c of ['Fatima Zahra', '328 785 3098', 'Salah', '389 012 7054',
-    'Via Fratelli Zucchini 5', '48022 Lugo (RA)', '@bazar.marrakech9']) {
+    'Via Fratelli Zucchini 5', '48022 Lugo (RA)', '@bazar.marrakech9',
+    'bazar-marrakech.com', 'Consegne in tutta Italia']) {
     if (!t.includes(c)) errori.push(`FINE: manca «${c}»`);
   }
 }

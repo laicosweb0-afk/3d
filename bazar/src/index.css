@@ -85,6 +85,15 @@
     text-align: center;
   }
   .step[data-forte='true'] { background: var(--mesh-forte); }
+  /* La foto di sfondo: sotto a tutto, velata dal nero che sale dal basso,
+     così il testo resta leggibile e la foto si vede dove non c'è niente. */
+  .step-sfondo {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    z-index: 0; opacity: 0.55; pointer-events: none;
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0,0,0,.65) 40%, rgba(0,0,0,0) 85%);
+    mask-image: linear-gradient(180deg, #000 0%, rgba(0,0,0,.65) 40%, rgba(0,0,0,0) 85%);
+  }
+  .step > :not(.step-sfondo) { position: relative; z-index: 1; }
   @keyframes step-up {
     from { opacity: 0; transform: translateY(16px); }
     to { opacity: 1; transform: translateY(0); }
@@ -224,6 +233,11 @@
     flex: none; width: 64px; height: 64px; border-radius: 0.75rem; object-fit: cover;
     background: #E9E1D3;
   }
+  .novita {
+    display: inline-block; margin-left: 0.5rem; padding: 0.15rem 0.45rem; border-radius: 99px;
+    background: var(--oro); color: var(--nero); font-size: 0.5625rem; letter-spacing: 0.16em;
+    vertical-align: 1px;
+  }
   .rec-foto-vuota {
     display: flex; align-items: center; justify-content: center;
     background: rgba(216, 188, 134, 0.08); border: 1px solid rgba(216, 188, 134, 0.25);
@@ -239,6 +253,8 @@
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
     background: #E9E1D3;
   }
+  /* Un salotto intero o un divano lungo: orizzontale, più largo. */
+  .foto-stile-larga { width: min(84vw, 340px); aspect-ratio: auto; }
   .rec + .rec { border-top: 1px solid var(--linea); }
   .rec-reparto {
     font-size: 0.625rem; font-weight: 500; text-transform: uppercase;
@@ -300,6 +316,7 @@
   .indirizzo a { color: inherit; text-decoration: none; }
   .instagram { margin: 0.75rem 0 0; font-size: 0.875rem; }
   .instagram a { color: var(--oro); text-decoration: none; }
+  .instagram .sep { color: var(--grigio-tenue); }
 }
 
 @layer components {

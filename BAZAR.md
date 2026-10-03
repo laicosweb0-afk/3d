@@ -57,15 +57,24 @@ scritte in cima a `bazar/src/config/gioco.ts`.
   (RA) (apre la mappa), @bazar.marrakech9 (apre Instagram). L'email
   bazarmarrakech.snc@hotmail.com è in configurazione.
 
-- **Le foto dei pezzi**, in `bazar/public/foto/`, ritagliate in 4:5 per la
-  rivelazione e quadrate per le miniature, in WebP (circa 20 KB l'una):
-  la poltrona tonda capitonné tortora (stile *Velluto & Oro*), il divano
-  capitonné tortora con profili oro (*Classico Senza Tempo*), il chesterfield
-  nero (*Notte a Marrakech*) e la poltrona bergère blu, fra i pezzi della
-  notte. Lo scatto del divano con i bank luce in vista non è usato: è lo
-  stesso divano, e quello pulito è migliore. *Spirito del Bazar* resta senza
-  foto finché non arrivano tappeti e lampadari; nella lista dei pezzi, al
-  posto della miniatura, c'è l'iniziale del reparto.
+- **Dalle locandine**: il sito bazar-marrakech.com, le consegne in tutta
+  Italia (tutti e due sulla tessera finale) e la nuova collezione
+  «Profondo come la notte — velluto blu e oro», che diventa lo stile
+  *Notte a Marrakech* e porta l'etichetta «Novità» sul divano blu.
+- **Le foto**, in `bazar/public/foto/`, ritagliate senza testo né luci da
+  studio, in WebP:
+  - *ingresso*: il velluto da vicino con il profilo d'oro, a tutto schermo
+    dietro «Che casa sei?»;
+  - *Velluto & Oro*: il salotto tortora completo (poltrone tonde, tavolini
+    nesting, divani);
+  - *Classico Senza Tempo*: il divano capitonné ambientato, col marmo;
+  - *Notte a Marrakech*: il divano chesterfield blu della nuova collezione;
+  - *miniature dei pezzi*: poltrona tonda, tavolini nesting oro, divano
+    tortora, chesterfield beige con il tavolino in marmo, divano blu,
+    poltrona bergère blu, chesterfield nero.
+
+  *Spirito del Bazar* resta senza foto finché non arrivano tappeti e
+  lampadari: al posto della miniatura c'è l'iniziale del reparto.
 
 Tutto sta in `NEGOZIO`, `REPARTI`, `STILI` e `PEZZI` dentro
 `bazar/src/config/gioco.ts`.
@@ -74,7 +83,7 @@ Tutto sta in `NEGOZIO`, `REPARTI`, `STILI` e `PEZZI` dentro
 
 1. **I pezzi consigliati** (`PEZZI` in `gioco.ts`): i salotti sono quelli
    fotografati, ma con nomi descrittivi (Poltrona tonda capitonné,
-   Chesterfield nero…) da sostituire con quelli del negozio; tappeti,
+   Divano chesterfield blu…) da sostituire con quelli del negozio; tappeti,
    lampadari e profumi sono descritti per genere, e le loro foto mancano. Vanno confermati con il negozio: un
    pezzo consigliato che in showroom non c'è è la delusione più facile da
    evitare.
@@ -97,8 +106,10 @@ Tutto sta in `NEGOZIO`, `REPARTI`, `STILI` e `PEZZI` dentro
 
 ## Il dominio
 
-Sulle card va un indirizzo del negozio, mai quello di prova. Il biglietto
-non riporta un sito: il dominio va deciso (o confermato) con loro. Su Vercel: **Add New →
+Sulle card va un indirizzo del negozio, mai quello di prova. Il negozio ha
+già bazar-marrakech.com (è sulle locandine): il posto naturale è un
+sottodominio, per esempio `club.bazar-marrakech.com`, con un solo CNAME e il
+sito principale intatto. Su Vercel: **Add New →
 Project**, Root Directory **`bazar`**, Framework **Vite**, Output **`dist`**;
 poi in Domains il sottodominio e nel DNS **un solo CNAME** col valore che
 mostra Vercel. Il sito principale non si tocca. Dettagli identici a
@@ -107,7 +118,7 @@ mostra Vercel. Il sito principale non si tocca. Dettagli identici a
 Il QR, per la vetrina o per provarla senza card:
 
 ```bash
-python3 tools/qr.py https://<dominio-della-card> bazar-qr --neutro
+python3 tools/qr.py https://club.bazar-marrakech.com bazar-qr --neutro
 ```
 
 ## Controllo su telefono
@@ -116,6 +127,8 @@ python3 tools/qr.py https://<dominio-della-card> bazar-qr --neutro
 cd bazar && npm install && npm run build && cd ..
 node tools/static-server.mjs bazar/dist 8935 &
 node tools/bazar-qa.mjs <cartella-screenshot>
+# un percorso per stile:
+RISPOSTA="Curve morbide" node tools/bazar-qa.mjs <cartella>
 ```
 
 Fotografa ogni schermata su un viewport da iPhone e fallisce se le

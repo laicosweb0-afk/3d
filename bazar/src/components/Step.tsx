@@ -11,17 +11,20 @@ import { BazarLogo } from './BazarLogo';
  * è esattamente il contrario di quello che stiamo facendo.
  */
 export function Step({
-  scuro = false, children, bottom, className,
+  scuro = false, children, bottom, className, sfondo,
 }: {
   scuro?: boolean;
   children: ReactNode;
   bottom?: ReactNode;
   className?: string;
+  /** Una foto a tutto schermo dietro il testo, velata di nero. */
+  sfondo?: string;
 }) {
   return (
     // Il fondo è sempre scuro, come il biglietto da visita. `scuro` resta per
     // le schermate che devono pesare di più: lì la luce d'oro sale di più.
     <div className={`step ${className ?? ''}`} data-bg="dark" data-forte={scuro ? 'true' : undefined}>
+      {sfondo && <img className="step-sfondo" src={sfondo} alt="" aria-hidden />}
       <div className="step-top">
         <BazarLogo size={11} title="Bazar Marrakech" />
       </div>

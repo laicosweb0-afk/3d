@@ -28,7 +28,10 @@ export function indirizzo(file: string): string {
  */
 export function Ingresso({ onAvanti }: { onAvanti: () => void }) {
   return (
-    <Step scuro bottom={<Cta onClick={onAvanti}>Inizia</Cta>}>
+    // Dietro, il velluto da vicino con il suo profilo d'oro: la prima cosa
+    // che si vede dopo l'apertura è la materia, non un'interfaccia.
+    <Step scuro sfondo={indirizzo('foto/velluto-dettaglio.webp')}
+      bottom={<Cta onClick={onAvanti}>Inizia</Cta>}>
       <p className="eyebrow">Il tuo stile</p>
       <h1 className="h1">{'Che casa\nsei?'}</h1>
       <p className="lede">{'Una domanda sola.\nPoi gira la ruota: si vince sempre.'}</p>
@@ -104,8 +107,9 @@ export function Rivelazione({ scelta, onAvanti }: { scelta: string; onAvanti: ()
           un fondo crema da studio, dentro una cornice col filo d'oro. */}
       {stile.foto && (
         <img
-          className="foto-stile ra" src={indirizzo(stile.foto)} alt=""
-          width={800} height={1000} style={{ animationDelay: '120ms' }}
+          className={`foto-stile${stile.fotoLarga ? ' foto-stile-larga' : ''} ra`}
+          src={indirizzo(stile.foto)} alt=""
+          style={{ animationDelay: '120ms' }}
         />
       )}
       <p {...r(0)} className="eyebrow ra">Il tuo stile è</p>
@@ -234,7 +238,10 @@ export function Pezzi({ scelta, onAvanti }: { scelta: string; onAvanti: () => vo
               ? <img className="rec-foto" src={indirizzo(c.foto)} alt="" width={240} height={240} />
               : <span className="rec-foto rec-foto-vuota" aria-hidden>{REPARTI[c.reparto][0]}</span>}
             <div>
-              <p className="rec-reparto">{REPARTI[c.reparto]}</p>
+              <p className="rec-reparto">
+                {REPARTI[c.reparto]}
+                {c.novita && <span className="novita">Novità</span>}
+              </p>
               <p className="rec-nome">{c.nome}</p>
               <p className="rec-note">{c.riga}</p>
             </div>
@@ -377,10 +384,13 @@ export function Fine({ lead, onRicomincia }: { lead: Lead; onRicomincia: () => v
           {NEGOZIO.indirizzo}<br />{NEGOZIO.citta}
         </a>
       </p>
+      <p className="indirizzo">{NEGOZIO.consegne}</p>
       <p className="instagram">
         <a href={`https://instagram.com/${NEGOZIO.instagram}`} target="_blank" rel="noreferrer">
           @{NEGOZIO.instagram}
         </a>
+        <span className="sep"> · </span>
+        <a href={`https://${NEGOZIO.sito}`} target="_blank" rel="noreferrer">{NEGOZIO.sito}</a>
       </p>
     </Step>
   );
