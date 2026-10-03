@@ -22,7 +22,7 @@ cambiare sono la tavolozza, il marchio e tutto quello che si legge.
 | 3 | Risposta | Cosa vuol dire quella risposta. **Senza il credito.** |
 | 4 | Ruota | Otto spicchi, si gira una volta. Scuro. |
 | 5 | Credito | La cifra sale da zero. Scuro. |
-| 6 | Consigli | Tre lavori, scelti sulla risposta. |
+| 6 | Lavori | Tre card tonde, scelte sulla risposta: foto o disegno, cosa fa, quando serve. |
 | 7 | Dati | Nome e cognome, email **o** telefono, l'auto (facoltativa), consenso. |
 | 8 | Chiusura | Codice, bottone che chiama, strada, servizio notturno. Scuro. |
 
@@ -58,7 +58,8 @@ Tutto in **`src/config/gioco.ts`**. Nessun altro file va aperto.
 | Indirizzo, telefono, orari, Instagram | `OFFICINA` |
 | Le quattro risposte | `FASCE` |
 | Cosa si legge dopo ogni risposta | `ESITI` |
-| Il listino dei lavori | `SERVIZI` |
+| I lavori e il loro testo | `SERVIZI` |
+| Le foto dei lavori | `public/servizi/` — vedi il LEGGIMI lì dentro |
 | Quali tre lavori per quale risposta | `CONSIGLI` |
 | Gli importi sulla ruota | `SPICCHI` |
 | Quanto si vince e quanto spesso | `PESI` |
@@ -139,6 +140,53 @@ leggono nell'ordine giusto, insieme si leggono come un blocco e la seconda,
 che è quella colorata e quella che deve restare, si perde.
 
 Il testo si cambia in `APERTURA.riga1` e `APERTURA.riga2`.
+
+## I lavori
+
+Il titolare ha chiesto di spingere sui servizi, e la schermata è costruita
+intorno a quello.
+
+**Card tonde**, impianto Apple: raggio 26px, vetro, tondo a sinistra e testo
+a destra. Orizzontali e non impilate con l'immagine sopra, perché tre card
+verticali su un telefono fanno 1100 px e la terza non la vede nessuno —
+così le tre stanno insieme nello schermo, che è il punto: sono un confronto,
+non un catalogo da scorrere.
+
+Nel tondo ci va **la foto del lavoro**; finché non arriva, il disegno di
+quel servizio (`components/IconaServizio.tsx`). Stessa misura e stesso fondo
+nei due casi, così una card con la foto e una senza non si scompongono
+quando stanno in fila. Le foto si aggiungono una alla volta: istruzioni in
+`public/servizi/LEGGIMI.md`.
+
+Ogni servizio ha tre pezzi di testo, e ognuno fa un mestiere:
+
+| campo | mestiere |
+|---|---|
+| `nome` | Come si chiama il lavoro |
+| `claim` | Cosa fa, detto come lo direbbe un meccanico a un cliente |
+| `quando` | **Quando serve** — ed è questa la riga che converte |
+
+Due regole di scrittura, e si vedono:
+
+1. **Ogni claim ha un ritmo diverso.** Due frasi corte, un elenco di tre, un
+   contrasto. Costruiti tutti uguali — «facciamo questo, facciamo quello» —
+   in fila diventerebbero un listino, e un listino non lo legge nessuno.
+2. **`quando` non descrive il lavoro, descrive il cliente.** «Parte a fatica
+   la mattina» è la frase in cui qualcuno si riconosce; «prova e
+   sostituzione batterie» no.
+
+Il `quando` è in minuscolo e non in maiuscoletto spaziato: quello regge due
+o tre parole, non una frase, e «una spia accesa, un rumore nuovo, un consumo
+che non torna» diventava tre righe urlate che scavalcavano il nome del
+servizio.
+
+## L'instradamento
+
+Titolo e riga sopra le card **cambiano con la risposta** (`ESITI[x].titoloLavori`
+e `.rotta`): a chi ha il tagliando fresco non si dice la stessa cosa di chi
+non lo fa da tre anni. Se tutti leggessero la stessa frase si capirebbe in
+mezzo secondo che la domanda non serviva a niente — e il collaudo boccia la
+build se due risposte finiscono per leggere la stessa riga.
 
 ## La tipografia
 

@@ -252,17 +252,68 @@
   .premio-sub { font-size: 0.8125rem; letter-spacing: 0.08em; color: var(--sub); margin: 0.875rem 0 0; }
   .step[data-bg='dark'] .premio-sub { color: var(--light-soft); }
 
-  /* ---- i consigli ---- */
-  .recs { margin: 2.5rem 0 0; padding: 0; list-style: none; text-align: left; overflow: hidden; }
-  .rec { padding: 1.25rem 1.5rem; }
-  .rec + .rec { border-top: 1px solid var(--hairline); }
-  .rec-nome { font-size: 1.1875rem; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
-  .rec-maison {
-    font-size: 0.6875rem; font-weight: 500; text-transform: uppercase;
-    letter-spacing: 0.22em; color: var(--eyebrow); margin: 0.375rem 0 0;
+  /* ---- i lavori: card tonde ----
+   *
+   * L'impianto è quello delle schede di Apple: raggio grande, vetro,
+   * contenuto su una riga sola — tondo a sinistra, testo a destra.
+   *
+   * Orizzontali e non impilate con l'immagine sopra: tre card verticali su
+   * un telefono fanno 1100px e la terza non la vede nessuno. Così le tre
+   * stanno insieme nello schermo, che è il punto — sono un confronto, non un
+   * catalogo da scorrere.
+   *
+   * Il raggio è 26px su una card alta ~104: è la proporzione delle schede
+   * di iOS. Più stretto sembrerebbe un elenco, più largo una pillola.
+   */
+  .servizi {
+    width: 100%; margin: 2.25rem 0 0; padding: 0; list-style: none;
+    display: flex; flex-direction: column; gap: 0.75rem;
   }
-  .rec-note { font-size: 0.8125rem; letter-spacing: 0.08em; color: var(--sub); margin: 0.375rem 0 0; }
-  .rec[data-fuori='true'] { opacity: 0.45; }
+  .servizio {
+    /* Il tondo si allinea in alto, non al centro: accanto a un testo di tre
+       righe, centrato galleggerebbe a metà card senza agganciarsi a niente. */
+    display: flex; align-items: flex-start; gap: 1rem;
+    padding: 1rem 1.25rem; border-radius: 26px;
+    border: 1px solid var(--hairline);
+    background: rgba(255, 255, 255, 0.62);
+    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+    box-shadow: 0 1px 2px rgba(13, 16, 20, 0.04), 0 8px 24px rgba(13, 16, 20, 0.05);
+    text-align: left;
+  }
+
+  /* Il tondo: ci sta la foto del lavoro, e finché non arriva il disegno.
+     Stessa misura e stesso fondo nei due casi, così una card con la foto e
+     una senza non si scompongono quando stanno in fila. */
+  .servizio-tondo {
+    flex: 0 0 auto; width: 60px; height: 60px; border-radius: 50%;
+    display: grid; place-items: center; overflow: hidden;
+    background: linear-gradient(160deg, rgba(43, 92, 240, 0.16), rgba(43, 92, 240, 0.06));
+    color: var(--magenta);
+  }
+  .servizio-tondo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .servizio-testo { display: flex; flex-direction: column; gap: 0.1875rem; min-width: 0; }
+  .servizio-nome {
+    font-size: 1.0625rem; font-weight: 700; letter-spacing: -0.02em; color: var(--ink);
+  }
+  .servizio-claim {
+    font-size: 0.8125rem; line-height: 1.4; color: var(--sub);
+  }
+  /*
+   * La riga che fa riconoscere il proprio caso: piccola e nel colore del
+   * marchio, ma **non** in maiuscoletto spaziato.
+   *
+   * In maiuscolo con 0.14em di crenatura ci stava bene «CAMBIO AUTOMATICO»,
+   * ma «una spia accesa, un rumore nuovo, un consumo che non torna» diventa
+   * tre righe urlate che si mangiano la card e scavalcano il nome del
+   * servizio. Il maiuscoletto spaziato regge due o tre parole, non una
+   * frase: qui va il minuscolo.
+   */
+  .servizio-quando {
+    font-size: 0.75rem; font-weight: 600; line-height: 1.4;
+    letter-spacing: -0.005em; color: var(--magenta);
+    margin-top: 0.25rem;
+  }
 
   /* ---- i campi ---- */
   .campo {

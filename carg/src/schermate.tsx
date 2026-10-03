@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Step, Cta } from './components/Step';
 import { CargLogo } from './components/CargLogo';
+import { IconaServizio } from './components/IconaServizio';
 import { Ruota, type RuotaHandle } from './components/Ruota';
 import {
   CHIEDI_AUTO, CONSIGLI, CONTATTO_RICHIESTO, DOMANDA, ESITI, FASCE, OFFICINA,
@@ -8,6 +9,16 @@ import {
 } from './config/gioco';
 import { tocco as toccoAptico, vittoria as vittoriaAptica } from './lib/haptics';
 import { arresto, conteggio, pop, vittoria as suonoVittoria } from './lib/suono';
+
+/**
+ * Il percorso di un file dentro `public/`, servito come si deve anche da una
+ * sottocartella: la build gira con `base: './'`, e un `/servizi/x.webp` con
+ * la barra davanti cercherebbe il file alla radice del dominio, dove non c'è.
+ */
+export function indirizzo(file: string): string {
+  if (/^(https?:)?\/\//.test(file) || file.startsWith('data:')) return file;
+  return import.meta.env.BASE_URL + file.replace(/^\/+/, '');
+}
 
 /* ------------------------------------------------------------------ */
 /* 1 — L’ingresso                                                      */
@@ -201,30 +212,51 @@ export function Credito({ valore, onAvanti }: { valore: number; onAvanti: () => 
 /* ------------------------------------------------------------------ */
 
 /**
- * Tre lavori, scelti sulla risposta. A differenza di Woman non si oscura
- * niente: lì il credito comprava N fialette su tre, qui vale su qualunque
- * lavoro si scelga, quindi tutte e tre le righe restano piene.
+ * Tre lavori in card tonde, scelti sulla risposta.
  *
- * Il criterio è di buon senso, non commerciale: a chi ha il tagliando fresco
- * non si ripropone il tagliando. È quello che rende la schermata un consiglio
- * invece che un listino.
+ * Non si oscura niente: su Woman il credito comprava N fialette su tre, qui
+ * vale su qualunque lavoro si scelga, quindi tutte e tre le card restano
+ * piene.
+ *
+ * Ogni card ha il tondo con la foto del lavoro — o il disegno, finché la
+ * foto non arriva — il nome, cosa fa, e **quando serve**. È quest'ultima
+ * riga che fa il lavoro vero: «parte a fatica la mattina» è la frase in cui
+ * qualcuno si riconosce, «prova e sostituzione batterie» no.
+ *
+ * Il titolo e la riga sopra le card cambiano con la risposta data: a chi ha
+ * il tagliando fresco non si dice la stessa cosa di chi non lo fa da tre
+ * anni. Se tutti leggessero la stessa frase, si capirebbe in mezzo secondo
+ * che la domanda non serviva a niente.
  */
 export function Consigli({
   scelta, valore, onAvanti,
 }: { scelta: string; valore: number; onAvanti: () => void }) {
+  const esito = ESITI[scelta];
   const lavori = (CONSIGLI[scelta] ?? []).map(servizioDi).filter((s) => s !== null);
 
   return (
     <Step bottom={<Cta onClick={onAvanti}>Salva il tuo credito</Cta>}>
       <p className="eyebrow">{OFFICINA.insegna}</p>
-      <h1 className="h1">{'Da dove\npartiamo.'}</h1>
-      <p className="lede">Tre cose da guardare, scelte su quello che ci hai detto.</p>
+      <h1 className="h1">{esito.titoloLavori}</h1>
+      <p className="lede">{esito.rotta}</p>
 
-      <ul className="recs vetro">
-        {lavori.map((s) => (
-          <li key={s.id} className="rec">
-            <p className="rec-nome">{s.nome}</p>
-            <p className="rec-note">{s.riga}</p>
+      <ul className="servizi">
+        {lavori.map((s, i) => (
+          <li
+            key={s.id}
+            className="servizio ra"
+            style={{ animationDelay: `${260 + i * 90}ms` }}
+          >
+            <span className="servizio-tondo">
+              {s.foto
+                ? <img src={indirizzo(`servizi/${s.foto}`)} alt="" />
+                : <IconaServizio id={s.id} />}
+            </span>
+            <span className="servizio-testo">
+              <span className="servizio-nome">{s.nome}</span>
+              <span className="servizio-claim">{s.claim}</span>
+              <span className="servizio-quando">{s.quando}</span>
+            </span>
           </li>
         ))}
       </ul>

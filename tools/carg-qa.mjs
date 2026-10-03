@@ -199,14 +199,36 @@ await p.getByRole('button', { name: /Dove lo usi/i }).click();
 await p.waitForTimeout(900);
 await scatto('6-consigli');
 
-// Tre lavori, e il credito dichiarato sopra deve essere lo stesso di qui.
+// Tre card, ognuna col suo tondo, il claim e il «quando serve».
 {
-  const righe = await p.locator('.rec').count();
-  if (righe !== 3) errori.push(`CONSIGLI: ${righe} lavori invece di 3`);
+  const righe = await p.locator('.servizio').count();
+  if (righe !== 3) errori.push(`LAVORI: ${righe} card invece di 3`);
+  for (const campo of ['.servizio-tondo', '.servizio-nome', '.servizio-claim', '.servizio-quando']) {
+    const n = await p.locator(campo).count();
+    if (n !== 3) errori.push(`LAVORI: ${campo} compare ${n} volte invece di 3`);
+  }
+  // Ogni tondo deve avere qualcosa dentro: o la foto, o il disegno.
+  const vuoti = await p.locator('.servizio-tondo').evaluateAll(
+    (nodi) => nodi.filter((n) => !n.querySelector('img, svg')).length);
+  if (vuoti) errori.push(`LAVORI: ${vuoti} tondi vuoti, senza foto né disegno`);
+  // Tre claim diversi: se si ripetono, le card sono un listino.
+  const claim = await p.locator('.servizio-claim').allTextContents();
+  if (new Set(claim.map((c) => c.trim())).size !== claim.length) {
+    errori.push('LAVORI: due card dicono la stessa cosa');
+  }
   const testo = (await p.locator('.step').innerText()).replace(/\s+/g, ' ');
   if (!new RegExp(`${credito}\\s*€`).test(testo)) {
-    errori.push(`CONSIGLI: non ripete il credito da ${credito} €`);
+    errori.push(`LAVORI: non ripete il credito da ${credito} €`);
   }
+}
+
+// La riga che instrada deve essere diversa per ognuna delle quattro
+// risposte: se fosse la stessa, la domanda non servirebbe a niente.
+{
+  const gioco2 = readFileSync(new URL('../carg/src/config/gioco.ts', import.meta.url), 'utf8');
+  const rotte = [...gioco2.matchAll(/rotta:\s*((?:'[^']*'|\s*\+\s*)+)/g)].map(([, r]) => r.replace(/\s+/g, ' '));
+  if (rotte.length !== 4) errori.push(`ROTTE: ne trovo ${rotte.length} invece di 4`);
+  if (new Set(rotte).size !== rotte.length) errori.push('ROTTE: due risposte leggono la stessa frase');
 }
 
 await p.getByRole('button', { name: /Salva il tuo credito/i }).click();
