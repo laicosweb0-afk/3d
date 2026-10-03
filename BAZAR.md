@@ -1,7 +1,7 @@
 # Bazar Marrakech — Il tuo stile
 
-La card NFC dello showroom **Bazar Marrakech** (arredo, Lugo — Via Fratelli
-Zucchini 5). Si appoggia il telefono sulla card, si apre la pagina, e in
+La card NFC dello showroom **Bazar Marrakech** — showroom arredamento,
+Via Fratelli Zucchini 5, 48022 Lugo (RA). Si appoggia il telefono sulla card, si apre la pagina, e in
 novanta secondi: una domanda sullo stile, la ruota che estrae il credito, tre
 pezzi da venire a vedere, il modulo, la tessera da mostrare al banco.
 
@@ -25,34 +25,46 @@ scritte in cima a `bazar/src/config/gioco.ts`.
 
 | | Schermata | Cosa succede |
 |---|---|---|
-| — | Apertura | l'arco d'oro che si disegna, «*Marhaba.*», poi il marchio e «Benvenuto nel Bazar.» |
+| — | Apertura | il filo d'oro che si apre, «Marhaba.», poi il fronte del biglietto e «Benvenuto nel Bazar.» |
 | 1 | Ingresso | «Che casa sei?» — una domanda, poi la ruota |
 | 2 | La domanda | Curve morbide · Classico elegante · Scuro e deciso · Bazar e colore. Il tocco sceglie e avanza |
 | 3 | Lo stile | Velluto & Oro · Classico Senza Tempo · Notte a Marrakech · Spirito del Bazar. **Senza credito** |
 | 4 | La ruota | fondo scuro, «Ora vincilo» |
 | 5 | Il credito | la cifra che sale, su una spesa minima |
-| 6 | I pezzi | tre pezzi dello showroom scelti sullo stile |
+| 6 | I pezzi | tre pezzi scelti sullo stile, da reparti diversi del negozio |
 | 7 | I dati | nome e cognome, email **oppure** telefono, consenso |
-| 8 | La tessera | credito, stile, codice `BAZAR-XXXX`, scadenza, indirizzo e telefono |
+| 8 | La tessera | credito, stile, codice `BAZAR-XXXX`, scadenza; sotto, i contatti del retro del biglietto |
 
-## L'aspetto
+## Da dove vengono i dati
 
-Viene dalle locandine del negozio («PRESTO ONLINE»), non dall'occhio: il
-crema `240,237,227` e il grigio `83,81,75` sono campionati da lì, l'oro è la
-stessa rampa metallica di `tools/bazar_layout.py`, e i titoli sono in Didone
-come il titolo delle locandine — Bodoni Moda, licenza OFL, servito da noi
-insieme a Inter. Zero chiamate esterne al caricamento.
+**Tutto dal biglietto da visita del negozio**, e solo da lì:
 
-Il marchio è **ricostruito in tipografia** (BAZAR in oro, MARRAKECH sotto),
-perché il file del logo non c'è ancora: quando arriva si sostituisce
-`bazar/src/components/BazarLogo.tsx` e nient'altro.
+- **Il marchio**: BAZAR in crema molto spaziato, il filo d'oro che sfuma ai
+  capi, MARRAKECH in oro e, nell'apertura, SHOWROOM ARREDAMENTO · LUGO. È
+  ricostruito in tipografia (`bazar/src/components/BazarLogo.tsx`) con le
+  proporzioni del fronte: se arriva il file vettoriale, si cambia solo quello.
+- **Il carattere**: Poppins, lo stesso del biglietto, in quattro pesi da
+  circa 8 KB, servito da noi (licenza OFL accanto ai file). Nessuna chiamata
+  esterna al caricamento.
+- **I colori**, campionati dai pixel: nero `#16120F` che scende a
+  `#0D0A08`, crema `#EDE7DD`, oro `#D8BC86`, grigi `#AAA59E` e `#98948D`.
+  Come il biglietto, la card è tutta scura.
+- **I reparti**: Salotti e poltrone · Tappeti · Lampadari · Profumi e
+  casalinghi. I pezzi consigliati sono presi da qui, tre per stile da reparti
+  diversi, ciascuno con il suo reparto scritto sopra.
+- **I contatti**, sulla tessera finale: Fatima Zahra 328 785 3098, Salah
+  389 012 7054 (si toccano e chiamano), Via Fratelli Zucchini 5, 48022 Lugo
+  (RA) (apre la mappa), @bazar.marrakech9 (apre Instagram). L'email
+  bazarmarrakech.snc@hotmail.com è in configurazione.
+
+Tutto sta in `NEGOZIO` e `REPARTI` dentro `bazar/src/config/gioco.ts`.
 
 ## Prima dei clienti veri
 
-1. **I pezzi consigliati** (`PEZZI` in `gioco.ts`): i primi tre stili partono
-   dai divani già in catalogo (`PRODUCT_PHOTOGRAPHY_PREMIUM.md`), il quarto
-   (lanterne, tappeti, pouf) è un segnaposto. Vanno confermati con il negozio:
-   un pezzo consigliato che in showroom non c'è è la delusione più facile da
+1. **I pezzi consigliati** (`PEZZI` in `gioco.ts`): i salotti sono quelli
+   già in catalogo (`PRODUCT_PHOTOGRAPHY_PREMIUM.md`); tappeti, lampadari e
+   profumi sono descritti per genere. Vanno confermati con il negozio: un
+   pezzo consigliato che in showroom non c'è è la delusione più facile da
    evitare.
 2. **Gli importi della ruota** (`SPICCHI`): proposti 30/50/70 € — cinque
    spicchi da 30, tre da 50, due da 70, cioè 50% · 30% · 20%, credito medio
@@ -68,12 +80,13 @@ perché il file del logo non c'è ancora: quando arriva si sostituisce
 5. **I contatti**: senza `VITE_LEAD_WEBHOOK_URL` l'invio è simulato e non
    salva niente. Si collega come quelli di Club Rama.
 6. **WhatsApp**: `WHATSAPP_NEGOZIO` è vuoto, quindi il bottone non compare.
-   Se il 389 0127054 è anche WhatsApp, si scrive `393890127054`.
+   I due numeri sono cellulari ma il biglietto non dice che siano WhatsApp:
+   se lo sono, si scrive per esempio `393890127054` (Salah).
 
 ## Il dominio
 
-Sulle card va un indirizzo del negozio, per esempio
-`club.bazar-marrakech.com`, mai quello di prova. Su Vercel: **Add New →
+Sulle card va un indirizzo del negozio, mai quello di prova. Il biglietto
+non riporta un sito: il dominio va deciso (o confermato) con loro. Su Vercel: **Add New →
 Project**, Root Directory **`bazar`**, Framework **Vite**, Output **`dist`**;
 poi in Domains il sottodominio e nel DNS **un solo CNAME** col valore che
 mostra Vercel. Il sito principale non si tocca. Dettagli identici a
@@ -82,7 +95,7 @@ mostra Vercel. Il sito principale non si tocca. Dettagli identici a
 Il QR, per la vetrina o per provarla senza card:
 
 ```bash
-python3 tools/qr.py https://club.bazar-marrakech.com bazar-qr --neutro
+python3 tools/qr.py https://<dominio-della-card> bazar-qr --neutro
 ```
 
 ## Controllo su telefono
@@ -95,11 +108,12 @@ node tools/bazar-qa.mjs <cartella-screenshot>
 
 Fotografa ogni schermata su un viewport da iPhone e fallisce se le
 percentuali della ruota non sono quelle attese, se compare uno spicchio non
-previsto o un sorteggio pesato, se due spicchi uguali stanno vicini, se gli
-stili non sono quattro, se il credito compare già nello stile, se c'è un modo
-per rispondere di nuovo, se i pezzi non sono tre, se il modulo si invia
-vuoto, se il codice è malformato o la tessera non torna con la ruota, se i
-font non si caricano, se c'è overflow orizzontale o se la pagina chiama un
+previsto o un sorteggio pesato, se due spicchi uguali stanno vicini, se
+l'apertura non mostra il fronte del biglietto, se gli stili non sono quattro, se il credito compare già nello stile, se c'è un modo
+per rispondere di nuovo, se i pezzi non sono tre o vengono da un reparto
+che non è sul biglietto, se sulla tessera manca un contatto del biglietto, se il modulo si invia
+vuoto, se il codice è malformato o la tessera non torna con la ruota, se
+Poppins non si carica, se c'è overflow orizzontale o se la pagina chiama un
 indirizzo esterno.
 
 Resta da fare un giro con la card vera, iPhone e Android: il tocco NFC e il

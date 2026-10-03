@@ -1,6 +1,10 @@
 /**
  * IL TUO STILE — Bazar Marrakech
- * Arredo · Lugo, Via Fratelli Zucchini 5
+ * Showroom arredamento · Via Fratelli Zucchini 5, 48022 Lugo (RA)
+ *
+ * I dati del negozio — reparti, contatti, indirizzo, Instagram — vengono dal
+ * biglietto da visita, e solo da lì: se cambia il biglietto, cambia questo
+ * file.
  *
  * Tutta la configurazione sta qui. Per cambiare i testi, gli stili, i pezzi
  * consigliati o i premi della ruota non serve aprire nessun altro file.
@@ -43,10 +47,11 @@ export type Stile = {
 };
 
 /**
- * Le quattro risposte vengono dai quattro prodotti che il negozio sta già
+ * I tre stili d'arredo vengono dai salotti che il negozio sta già
  * fotografando per il catalogo (`PRODUCT_PHOTOGRAPHY_PREMIUM.md`): velluto
  * tortora con l'oro, il grigio classico capitonné, il velluto scuro dei
- * chesterfield e, accanto, il bazar vero e proprio.
+ * chesterfield. Il quarto è il bazar vero e proprio: tappeti, lampadari,
+ * profumi — gli altri reparti del biglietto.
  */
 export const STILI: Stile[] = [
   {
@@ -76,10 +81,10 @@ export const STILI: Stile[] = [
   {
     id: 'bazar',
     etichetta: 'Bazar e colore',
-    nota: 'lanterne, tappeti, pezzi unici',
+    nota: 'tappeti, lampadari, profumi',
     nome: 'Spirito del Bazar',
     ritratto: 'Ogni oggetto ha una storia, e la casa è il posto dove raccontarla.',
-    materiali: ['Lanterne in ottone', 'Tappeti', 'Pouf in pelle'],
+    materiali: ['Tappeti', 'Lampadari', 'Profumi d\'oriente'],
   },
 ];
 
@@ -90,41 +95,48 @@ export const DOMANDA = {
 };
 
 /* ------------------------------------------------------------------ */
-/* I tre pezzi consigliati per ogni stile                              */
+/* I reparti e i tre pezzi consigliati per ogni stile                  */
 /* ------------------------------------------------------------------ */
 
-export type Pezzo = { nome: string; riga: string };
+/** I reparti del negozio, come sono scritti sul biglietto da visita. */
+export const REPARTI = {
+  salotti: 'Salotti e poltrone',
+  tappeti: 'Tappeti',
+  lampadari: 'Lampadari',
+  profumi: 'Profumi e casalinghi',
+} as const;
+
+export type Pezzo = { nome: string; reparto: keyof typeof REPARTI; riga: string };
 
 /**
- * Per ogni stile, i tre pezzi che il negozio propone a chi l'ha scelto. È la
- * parte di consulenza: la risposta diventa un motivo per venire in showroom,
- * con tre cose precise da guardare.
+ * Per ogni stile, tre pezzi da tre reparti diversi: chi entra per un divano
+ * esce sapendo che ci sono anche il tappeto e il lampadario che gli stanno
+ * sopra. È la parte di consulenza, e il motivo per passare in negozio.
  *
- * ⚠️ I primi tre stili partono dai divani che sono già in catalogo; i nomi
- * vanno confermati con il negozio, e il quarto (il bazar) è un segnaposto da
- * riempire con i pezzi che ci sono davvero in esposizione. Un pezzo
- * consigliato che in negozio non c'è è la delusione più facile da evitare.
+ * ⚠️ I salotti sono quelli già in catalogo; tappeti, lampadari e profumi
+ * sono descritti per genere e vanno confermati con il negozio. Un pezzo
+ * consigliato che in showroom non c'è è la delusione più facile da evitare.
  */
 export const PEZZI: Record<string, Pezzo[]> = {
   curvo: [
-    { nome: 'Divano curvo capitonné', riga: 'Velluto tortora, profilo e base oro.' },
-    { nome: 'Poltrona a botte', riga: 'In coppia, ai lati del divano.' },
-    { nome: 'Tavolini nesting', riga: 'Oro e vetro, uno dentro l\'altro.' },
+    { nome: 'Divano curvo capitonné', reparto: 'salotti', riga: 'Velluto tortora, profilo e base oro.' },
+    { nome: 'Tappeto chiaro a pelo lungo', reparto: 'tappeti', riga: 'Morbido sotto i piedi, come il velluto sopra.' },
+    { nome: 'Lampadario dorato', reparto: 'lampadari', riga: 'La luce calda che fa cantare l\'oro.' },
   ],
   classico: [
-    { nome: 'Divano grigio capitonné', riga: 'Braccioli rollati, slitta oro.' },
-    { nome: 'Poltrona coordinata', riga: 'Stesso velluto, stessa cordonatura.' },
-    { nome: 'Tavolino in oro', riga: 'Il punto di luce al centro.' },
+    { nome: 'Divano grigio capitonné', reparto: 'salotti', riga: 'Braccioli rollati, slitta oro.' },
+    { nome: 'Poltrona coordinata', reparto: 'salotti', riga: 'Stesso velluto, stessa cordonatura.' },
+    { nome: 'Lampadario di cristallo', reparto: 'lampadari', riga: 'Il classico che non sbaglia.' },
   ],
   notte: [
-    { nome: 'Chesterfield nero', riga: 'Velluto nero, filo oro alla base.' },
-    { nome: 'Chesterfield blu navy', riga: 'Blu royal, piedini oro.' },
-    { nome: 'Poltrona blu', riga: 'Per chi il divano ce l\'ha già.' },
+    { nome: 'Chesterfield nero o blu navy', reparto: 'salotti', riga: 'Velluto profondo, filo e piedini oro.' },
+    { nome: 'Tappeto dai toni scuri', reparto: 'tappeti', riga: 'Ancora la stanza, fa risaltare il velluto.' },
+    { nome: 'Lampadario in ottone', reparto: 'lampadari', riga: 'Un punto d\'oro nel buio della sera.' },
   ],
   bazar: [
-    { nome: 'Lanterna in ottone', riga: 'Traforata a mano: la luce disegna.' },
-    { nome: 'Tappeto berbero', riga: 'Lana, colore, nessuno uguale.' },
-    { nome: 'Pouf in pelle', riga: 'Ricamato, da spostare dove serve.' },
+    { nome: 'Tappeto orientale', reparto: 'tappeti', riga: 'Colore e disegno: nessuno uguale.' },
+    { nome: 'Lampadario traforato', reparto: 'lampadari', riga: 'La luce che disegna sulle pareti.' },
+    { nome: 'Profumi d\'oriente', reparto: 'profumi', riga: 'Muschio, oud, ambra: la casa che profuma di bazar.' },
   ],
 };
 
@@ -187,16 +199,25 @@ export const VALIDITA_GIORNI = 90;
 export const NEGOZIO = {
   nome: 'Bazar Marrakech',
   indirizzo: 'Via Fratelli Zucchini 5',
-  citta: 'Lugo (RA)',
-  telefono: '389 0127054',
-  sito: 'bazar-marrakech.com',
+  citta: '48022 Lugo (RA)',
+  /** I due numeri del biglietto, ciascuno con il suo nome. */
+  contatti: [
+    { nome: 'Fatima Zahra', telefono: '328 785 3098' },
+    { nome: 'Salah', telefono: '389 012 7054' },
+  ],
+  email: 'bazarmarrakech.snc@hotmail.com',
+  instagram: 'bazar.marrakech9',
   /** Apre la mappa solo quando si tocca: al caricamento non parte niente. */
-  mappa: 'https://maps.google.com/?q=Bazar+Marrakech+Via+Fratelli+Zucchini+5+Lugo',
+  mappa: 'https://maps.google.com/?q=Via+Fratelli+Zucchini+5,+48022+Lugo+RA',
 };
+
+/** Il numero da comporre: `tel:+39…`, senza spazi. */
+export const telDi = (n: string) => `tel:+39${n.replace(/\D/g, '')}`;
 
 /**
  * Il numero WhatsApp del negozio, in formato internazionale senza segni
- * (es. `393890127054`). Finché è vuoto, alla fine non compare il bottone:
+ * (es. `393890127054` per Salah). I due numeri del biglietto sono
+ * cellulari, ma non è scritto che siano WhatsApp: finché è vuoto, alla fine non compare il bottone:
  * meglio nessun bottone che uno che apre una chat con un numero sbagliato.
  */
 export const WHATSAPP_NEGOZIO = '';

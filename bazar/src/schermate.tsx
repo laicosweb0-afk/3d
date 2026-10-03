@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Step, Cta } from './components/Step';
-import { Arco } from './components/BazarLogo';
 import { Ruota, type RuotaHandle } from './components/Ruota';
 import {
-  CONTATTO_RICHIESTO, DOMANDA, NEGOZIO, PEZZI, SPESA_MINIMA, STILI, VALIDITA_GIORNI,
-  WHATSAPP_NEGOZIO, dataBreve, messaggioWhatsApp, stileDi,
+  CONTATTO_RICHIESTO, DOMANDA, NEGOZIO, PEZZI, REPARTI, SPESA_MINIMA, STILI, VALIDITA_GIORNI,
+  WHATSAPP_NEGOZIO, dataBreve, messaggioWhatsApp, stileDi, telDi,
 } from './config/gioco';
 import type { Lead } from './lib/lead';
 import { tocco as toccoAptico, vittoria as vittoriaAptica } from './lib/haptics';
@@ -15,13 +14,12 @@ import { arresto, conteggio, pop, vittoria as suonoVittoria } from './lib/suono'
 /* ------------------------------------------------------------------ */
 
 /**
- * La prima schermata, scura: la porta del bazar è appena stata attraversata
- * nell'apertura, e qui si dice in una riga cosa succede.
+ * La prima schermata: il biglietto è appena passato nell'apertura, e qui si
+ * dice in una riga cosa succede.
  */
 export function Ingresso({ onAvanti }: { onAvanti: () => void }) {
   return (
     <Step scuro bottom={<Cta onClick={onAvanti}>Inizia</Cta>}>
-      <Arco className="arco-piccolo" />
       <p className="eyebrow">Il tuo stile</p>
       <h1 className="h1">{'Che casa\nsei?'}</h1>
       <p className="lede">{'Una domanda sola.\nPoi gira la ruota: si vince sempre.'}</p>
@@ -211,13 +209,14 @@ export function Pezzi({ scelta, onAvanti }: { scelta: string; onAvanti: () => vo
       <ul className="recs vetro">
         {pezzi.map((c) => (
           <li key={c.nome} className="rec">
+            <p className="rec-reparto">{REPARTI[c.reparto]}</p>
             <p className="rec-nome">{c.nome}</p>
             <p className="rec-note">{c.riga}</p>
           </li>
         ))}
       </ul>
 
-      <p className="nota mt-5">Il velluto va toccato: le foto non bastano.</p>
+      <p className="nota mt-5">Il velluto va toccato, il tappeto calpestato.</p>
     </Step>
   );
 }
@@ -328,6 +327,7 @@ export function Fine({ lead, onRicomincia }: { lead: Lead; onRicomincia: () => v
 
       <div className="tessera">
         <p className="tessera-cifra">{lead.credito}€</p>
+        <span className="filo" />
         <p className="tessera-stile">{lead.stile}</p>
         <p className="codice">{lead.codiceCredito}</p>
         <p className="tessera-scade">
@@ -335,12 +335,26 @@ export function Fine({ lead, onRicomincia }: { lead: Lead; onRicomincia: () => v
         </p>
       </div>
 
+      {/* I contatti come sul retro del biglietto: due nomi, due numeri,
+          l'indirizzo e Instagram. Si toccano e partono. */}
+      <ul className="contatti">
+        {NEGOZIO.contatti.map((c) => (
+          <li key={c.telefono}>
+            <a href={telDi(c.telefono)}>
+              <span className="contatto-nome">{c.nome}</span> · {c.telefono}
+            </a>
+          </li>
+        ))}
+      </ul>
       <p className="indirizzo">
         <a href={NEGOZIO.mappa} target="_blank" rel="noreferrer">
-          {NEGOZIO.indirizzo} · {NEGOZIO.citta}
+          {NEGOZIO.indirizzo}<br />{NEGOZIO.citta}
         </a>
-        <br />
-        <a href={`tel:+39${NEGOZIO.telefono.replace(/\D/g, '')}`}>{NEGOZIO.telefono}</a>
+      </p>
+      <p className="instagram">
+        <a href={`https://instagram.com/${NEGOZIO.instagram}`} target="_blank" rel="noreferrer">
+          @{NEGOZIO.instagram}
+        </a>
       </p>
     </Step>
   );

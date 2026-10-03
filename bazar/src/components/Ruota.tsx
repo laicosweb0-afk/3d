@@ -12,11 +12,11 @@ const PASSO = 360 / N;
  * quanta ruota occupa — cioè quanto spesso esce.
  */
 const TINTE: Record<number, { fondo: string; testo: string }> = {
-  70: { fondo: 'url(#r-oro)', testo: '#171310' },
-  50: { fondo: '#2a231d', testo: '#E9D49C' },
-  30: { fondo: '#F0EDE3', testo: '#2a231d' },
+  70: { fondo: 'url(#r-oro)', testo: '#16120F' },
+  50: { fondo: '#2a231d', testo: '#D8BC86' },
+  30: { fondo: '#EDE7DD', testo: '#16120F' },
 };
-const ALTRO = { fondo: '#8a6a3c', testo: '#F0EDE3' };
+const ALTRO = { fondo: '#8a6a3c', testo: '#EDE7DD' };
 const tintaDi = (i: number) => TINTE[SPICCHI[i]] ?? ALTRO;
 
 /** Nella metà bassa della ruota la scritta arriverebbe a testa in giù. */
@@ -145,7 +145,7 @@ export const Ruota = forwardRef<RuotaHandle, {
       <svg
         viewBox="0 0 200 200"
         className="w-full"
-        style={{ filter: 'drop-shadow(0 24px 60px rgba(201,174,110,.22))' }}
+        style={{ filter: 'drop-shadow(0 24px 60px rgba(216,188,134,.22))' }}
         role="img"
         aria-label={
           vinto !== null
@@ -159,10 +159,10 @@ export const Ruota = forwardRef<RuotaHandle, {
             <stop offset="72%" stopColor="#fff" stopOpacity="0" />
           </radialGradient>
           <linearGradient id="r-oro" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#9B7C3C" />
-            <stop offset="38%" stopColor="#E9D49C" />
-            <stop offset="62%" stopColor="#C9AE6E" />
-            <stop offset="100%" stopColor="#9B7C3C" />
+            <stop offset="0%" stopColor="#8E7751" />
+            <stop offset="45%" stopColor="#E6CD9A" />
+            <stop offset="60%" stopColor="#D8BC86" />
+            <stop offset="100%" stopColor="#8E7751" />
           </linearGradient>
           <filter id="r-alone" x="-40%" y="-40%" width="180%" height="180%">
             <feGaussianBlur stdDeviation="3" />
@@ -172,7 +172,7 @@ export const Ruota = forwardRef<RuotaHandle, {
         {/* Il cerchio esterno è un filo d'oro, come il profilo dei divani:
             una cornice piena farebbe fiera di paese. */}
         <circle cx={R} cy={R} r={R - 3} fill="none"
-          stroke="rgba(201,174,110,.55)" strokeWidth="1.2" />
+          stroke="rgba(216,188,134,.55)" strokeWidth="1.2" />
 
         <g ref={ruotaRef} style={{ transformOrigin: '100px 100px', willChange: 'transform' }}>
           {SPICCHI.map((valore, i) => {
@@ -180,7 +180,7 @@ export const Ruota = forwardRef<RuotaHandle, {
             const vincente = !girando && fermo === i;
             return (
               <g key={i}>
-                <path d={settore(i)} fill={t.fondo} stroke="#171310" strokeWidth=".5" />
+                <path d={settore(i)} fill={t.fondo} stroke="#16120F" strokeWidth=".5" />
                 {vincente && (
                   <path d={settore(i)} fill="#fff" opacity=".35" filter="url(#r-alone)" />
                 )}
@@ -191,8 +191,8 @@ export const Ruota = forwardRef<RuotaHandle, {
                     (capovolto(i) ? ` rotate(180 ${R} ${R - R * 0.6})` : '')
                   }
                   textAnchor="middle" dominantBaseline="middle"
-                  fontSize="15" fontWeight="600" letterSpacing="-0.3"
-                  fontFamily="'Bodoni Moda', Didot, serif"
+                  fontSize="13" fontWeight="500" letterSpacing="0.2"
+                  fontFamily="Poppins, sans-serif"
                   fill={t.testo}
                 >
                   {valore}€
@@ -206,13 +206,13 @@ export const Ruota = forwardRef<RuotaHandle, {
         <circle cx={R} cy={R} r={R - 3} fill="url(#r-luce)" pointerEvents="none" />
 
         {/* Il perno: una borchia d'ottone. */}
-        <circle cx={R} cy={R} r="15" fill="#171310" />
-        <circle cx={R} cy={R} r="15" fill="none" stroke="rgba(201,174,110,.5)" strokeWidth="1" />
+        <circle cx={R} cy={R} r="15" fill="#16120F" />
+        <circle cx={R} cy={R} r="15" fill="none" stroke="rgba(216,188,134,.5)" strokeWidth="1" />
         <circle cx={R} cy={R} r="5" fill="url(#r-oro)" />
 
         {/* La lancetta: un cuneo sottile, appoggiato sul bordo. */}
         <g ref={lancettaRef} style={{ transformOrigin: '100px 8px' }}>
-          <path d="M100 24 L94.5 4 H105.5 Z" fill="#F0EDE3" />
+          <path d="M100 24 L94.5 4 H105.5 Z" fill="#EDE7DD" />
         </g>
       </svg>
     </div>

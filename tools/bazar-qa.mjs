@@ -6,7 +6,8 @@
 // Ripercorre la card su un viewport da iPhone, fotografa ogni schermata e
 // fallisce se una delle regole è stata rotta: la ruota deve essere onesta
 // (nessun peso nascosto, nessuno spicchio che non può uscire), la domanda una
-// sola, il credito fuori dalla rivelazione, i pezzi tre, i font serviti da
+// sola, il credito fuori dalla rivelazione, i pezzi tre e dai reparti del
+// biglietto, i contatti del biglietto tutti sulla tessera, il font servito da
 // noi, e nessuna chiamata fuori dal server locale.
 import { chromium } from 'playwright-core';
 import { readFileSync } from 'node:fs';
@@ -67,33 +68,39 @@ const overflow = async (dove) => {
 
 await p.goto(url, { waitUntil: 'networkidle' });
 
-// L'apertura: prima l'arco, da solo; poi «Marhaba.»; poi il marchio.
+// L'apertura: prima il filo d'oro, da solo; poi «Marhaba.»; poi il fronte
+// del biglietto, con tutte e tre le righe.
 await p.waitForTimeout(900);
 {
-  if (!(await p.locator('.intro-arco').count())) errori.push('APERTURA: l\'arco non si disegna');
+  if (!(await p.locator('.intro-filo').count())) errori.push('APERTURA: il filo d\'oro non si apre');
   const parole = (await p.locator('.intro-parola.show').allTextContents()).join(' ').trim();
-  if (parole) errori.push(`APERTURA: mentre si disegna l'arco c'è già da leggere: «${parole}»`);
+  if (parole) errori.push(`APERTURA: mentre si apre il filo c'è già da leggere: «${parole}»`);
 }
-await scatto('0-arco');
+await scatto('0-filo');
 await p.waitForSelector('.intro-parola.show', { timeout: 3000 });
 if (!(await p.locator('.intro-parola.show').first().innerText()).includes('Marhaba')) {
   errori.push('APERTURA: la prima parola non è «Marhaba.»');
 }
 await scatto('0-marhaba');
 await p.waitForTimeout(1600);
+{
+  const fronte = (await p.locator('.intro-marchio').innerText()).replace(/\s+/g, ' ');
+  for (const riga of ['BAZAR', 'MARRAKECH', 'SHOWROOM ARREDAMENTO · LUGO']) {
+    if (!fronte.includes(riga)) errori.push(`APERTURA: il fronte del biglietto non ha «${riga}»`);
+  }
+}
 await scatto('0-benvenuto');
 await p.waitForSelector('.intro', { state: 'detached', timeout: 6000 });
 
-// I font: Bodoni per i titoli, Inter per il resto, tutti e due caricati.
+// Il font: Poppins, quello del biglietto, caricato da noi.
 {
   const f = await p.evaluate(async () => {
     await document.fonts.ready;
     const h1 = getComputedStyle(document.querySelector('.h1')).fontFamily;
-    return { h1, bodoni: document.fonts.check('500 40px "Bodoni Moda"'), inter: document.fonts.check('16px Inter') };
+    return { h1, poppins: document.fonts.check('500 40px Poppins') };
   });
-  if (!f.h1.includes('Bodoni Moda')) errori.push(`FONT: il titolo è in ${f.h1}`);
-  if (!f.bodoni) errori.push('FONT: Bodoni Moda non si carica');
-  if (!f.inter) errori.push('FONT: Inter non si carica');
+  if (!f.h1.includes('Poppins')) errori.push(`FONT: il titolo è in ${f.h1}`);
+  if (!f.poppins) errori.push('FONT: Poppins non si carica');
 }
 
 // 1 — ingresso
@@ -144,6 +151,12 @@ await p.getByRole('button', { name: /pezzi/ }).click();
 // 6 — i pezzi: sempre tre
 await p.waitForSelector('.rec');
 if ((await p.locator('.rec').count()) !== 3) errori.push('PEZZI: non sono tre');
+{
+  const REPARTI = ['Salotti e poltrone', 'Tappeti', 'Lampadari', 'Profumi e casalinghi'];
+  for (const r of await p.locator('.rec-reparto').allInnerTexts()) {
+    if (!REPARTI.some((x) => x.toUpperCase() === r.toUpperCase())) errori.push(`PEZZI: reparto «${r}» non è sul biglietto`);
+  }
+}
 await scatto('6-pezzi');
 await overflow('pezzi');
 await p.getByRole('button', { name: /Salva il tuo credito/ }).click();
@@ -166,6 +179,14 @@ await p.waitForSelector('.tessera', { timeout: 4000 });
   if (!/^BAZAR-[A-HJ-NP-Z2-9]{4}$/.test(codice)) errori.push(`FINE: codice malformato «${codice}»`);
   const cifra = Number((await p.locator('.tessera-cifra').innerText()).replace(/\D/g, ''));
   if (cifra !== credito) errori.push(`FINE: la tessera dice ${cifra}€ ma la ruota ${credito}€`);
+}
+{
+  // I contatti del retro del biglietto, tutti.
+  const t = await testo();
+  for (const c of ['Fatima Zahra', '328 785 3098', 'Salah', '389 012 7054',
+    'Via Fratelli Zucchini 5', '48022 Lugo (RA)', '@bazar.marrakech9']) {
+    if (!t.includes(c)) errori.push(`FINE: manca «${c}»`);
+  }
 }
 await scatto('8-fine');
 await overflow('fine');

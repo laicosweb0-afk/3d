@@ -19,9 +19,11 @@ export function Step({
   className?: string;
 }) {
   return (
-    <div className={`step ${className ?? ''}`} data-bg={scuro ? 'dark' : undefined}>
+    // Il fondo è sempre scuro, come il biglietto da visita. `scuro` resta per
+    // le schermate che devono pesare di più: lì la luce d'oro sale di più.
+    <div className={`step ${className ?? ''}`} data-bg="dark" data-forte={scuro ? 'true' : undefined}>
       <div className="step-top">
-        <BazarLogo size={15} variante={scuro ? 'chiaro' : 'scuro'} title="Bazar Marrakech" />
+        <BazarLogo size={11} title="Bazar Marrakech" />
       </div>
       <div className="step-main">{children}</div>
       <div className="step-bottom">{bottom}</div>

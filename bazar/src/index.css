@@ -8,76 +8,68 @@
  * IL TUO STILE — Bazar Marrakech, il sistema.
  *
  * L'impianto è quello della card Woman, già approvato e provato sul
- * telefono: una schermata per volta, la curva del movimento, le misure. Cambia
- * la pelle: il crema e l'oro delle locandine del negozio, i titoli in Didone
- * come «PRESTO ONLINE», la terracotta di Marrakech solo nella luce di fondo.
+ * telefono: una schermata per volta, alta quanto lo schermo, con il marchio
+ * in alto, il contenuto al centro e l'azione in fondo.
  *
- * L'impianto è editoriale: una schermata per volta, alta quanto lo schermo,
- * con il marchio in alto, il contenuto al centro e l'azione in fondo. Niente
- * barre, niente contatori di passi, niente cornici: l'aria fa il lavoro che
- * altrove fanno i bordi.
+ * La pelle è il biglietto da visita del negozio, e i colori sono campionati
+ * dai suoi pixel, non scelti a occhio: il nero caldo che sfuma verso il
+ * basso, il crema di BAZAR, l'oro di MARRAKECH e di Instagram, i due grigi
+ * di SHOWROOM e dell'email. Il carattere è il suo: Poppins.
+ *
+ * Il biglietto è tutto scuro, e così la card: nessuna schermata chiara.
  */
 @layer base {
   :root {
-    /* Campionati dai pixel delle locandine del negozio, non scelti a occhio
-       (vedi tools/bazar_layout.py sul branch della fotografia prodotto). */
-    --ink: #2a231d;
-    --base: #F0EDE3;          /* il crema delle locandine: 240,237,227 */
-    --base-dark: #171310;
-    --light: #F0EDE3;
-    --light-soft: rgba(240, 237, 227, 0.6);
-    --eyebrow: #8a7550;
-    --sub: #53514B;           /* «IL NOSTRO ARREDO»: 83,81,75 */
-    --oro: #C9AE6E;
-    --oro-chiaro: #E9D49C;
-    --oro-scuro: #9B7C3C;
-    --terracotta: #a8432c;
-    --hairline: rgba(42, 35, 29, 0.10);
+    --nero: #16120F;          /* il fondo del biglietto, in alto */
+    --nero-fondo: #0D0A08;    /* lo stesso fondo, in basso */
+    --crema: #EDE7DD;         /* BAZAR */
+    --oro: #D8BC86;           /* MARRAKECH, @bazar.marrakech9 */
+    --oro-scuro: #8E7751;     /* i capi del filo, dove sfuma */
+    --grigio: #AAA59E;        /* SHOWROOM ARREDAMENTO · LUGO */
+    --grigio-tenue: #98948D;  /* l'email */
+    --crema-tenue: rgba(237, 231, 221, 0.62);
+    --linea: rgba(237, 231, 221, 0.12);
 
-    /* L'oro metallico del titolo: gli estremi sono quelli della rampa
-       campionata sulle locandine, con il colpo di luce a un terzo. */
-    --oro-rampa: linear-gradient(180deg, #A38544 0%, #C9AE6E 17%, #E9D49C 36%,
-      #CFB372 52%, #B59554 74%, #9B7C3C 100%);
+    /* Il filo d'oro del biglietto: scuro ai capi, pieno al centro. */
+    --filo: linear-gradient(90deg, rgba(142, 119, 81, 0.15) 0%, #8E7751 18%,
+      #D8BC86 50%, #8E7751 82%, rgba(142, 119, 81, 0.15) 100%);
 
     /*
-     * Lo sfondo non è un colore: è la luce di una bottega. Un alone d'oro e
-     * uno di terracotta che salgono dal basso, come il riflesso di una
-     * lanterna sul pavimento, e il crema al centro che tiene il testo.
+     * Lo sfondo: il nero del biglietto, che scende di un tono verso il basso,
+     * e un alone d'oro appena accennato che sale dal fondo — la luce di un
+     * lampadario sul pavimento dello showroom. Sulle schermate che pesano
+     * (ruota, credito, tessera) l'alone sale di più.
      */
-    --mesh-light:
-      radial-gradient(80% 55% at 18% 95%, rgba(201, 174, 110, 0.32) 0%, rgba(201, 174, 110, 0) 62%),
-      radial-gradient(70% 45% at 85% 92%, rgba(168, 67, 44, 0.14) 0%, rgba(168, 67, 44, 0) 60%),
-      radial-gradient(70% 40% at 50% 30%, rgba(247, 244, 236, 0.95) 0%, rgba(247, 244, 236, 0) 70%),
-      #F0EDE3;
-    --mesh-dark:
-      radial-gradient(85% 55% at 20% 98%, rgba(201, 174, 110, 0.24) 0%, rgba(201, 174, 110, 0) 62%),
-      radial-gradient(70% 45% at 85% 95%, rgba(168, 67, 44, 0.22) 0%, rgba(168, 67, 44, 0) 60%),
-      #171310;
+    --mesh:
+      radial-gradient(90% 45% at 50% 108%, rgba(216, 188, 134, 0.10) 0%, rgba(216, 188, 134, 0) 70%),
+      linear-gradient(180deg, #16120F 0%, #0D0A08 100%);
+    --mesh-forte:
+      radial-gradient(95% 55% at 50% 108%, rgba(216, 188, 134, 0.20) 0%, rgba(216, 188, 134, 0) 70%),
+      radial-gradient(60% 35% at 50% 40%, rgba(216, 188, 134, 0.05) 0%, rgba(216, 188, 134, 0) 70%),
+      linear-gradient(180deg, #16120F 0%, #0D0A08 100%);
 
-    --serif: 'Bodoni Moda', Didot, 'Bodoni 72', 'Times New Roman', serif;
     --ease: cubic-bezier(0.32, 0.72, 0, 1);
     --dur: 520ms;
     --dur-fast: 220ms;
-    color-scheme: light;
+    color-scheme: dark;
   }
 
-  html, body { background: var(--base); }
+  html, body { background: var(--nero-fondo); }
   body {
     margin: 0;
-    color: var(--ink);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    color: var(--crema);
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
     -webkit-text-size-adjust: 100%;
     display: flex;
     justify-content: center;
   }
-  /* La colonna-telefono: su desktop l'esperienza resta centrata e stretta. */
   #root { width: 100%; max-width: 620px; }
 
   /* 16px minimo: sotto questa soglia iOS ingrandisce la pagina al focus. */
   input, select, textarea, button { font-size: 16px; font-family: inherit; }
   :focus-visible { outline: 2px solid var(--oro); outline-offset: 3px; }
-  ::selection { background: rgba(201, 174, 110, 0.35); }
+  ::selection { background: rgba(216, 188, 134, 0.35); }
 }
 
 @layer components {
@@ -87,11 +79,12 @@
     min-height: 100dvh;
     display: flex; flex-direction: column; align-items: center;
     padding: 1.75rem 1.75rem calc(2.5rem + env(safe-area-inset-bottom, 0px));
-    background: var(--mesh-light);
+    background: var(--mesh);
+    color: var(--crema);
     animation: step-up var(--dur) var(--ease) both;
     text-align: center;
   }
-  .step[data-bg='dark'] { background: var(--mesh-dark); color: var(--light); }
+  .step[data-forte='true'] { background: var(--mesh-forte); }
   @keyframes step-up {
     from { opacity: 0; transform: translateY(16px); }
     to { opacity: 1; transform: translateY(0); }
@@ -112,257 +105,225 @@
     display: flex; flex-direction: column; align-items: center; gap: 0.875rem;
   }
 
-  /* ---- tipografia ---- */
-  .eyebrow {
-    font-size: 0.6875rem; font-weight: 500; text-transform: uppercase;
-    letter-spacing: 0.22em; color: var(--eyebrow); margin: 0 0 1.25rem;
-  }
-  .step[data-bg='dark'] .eyebrow { color: var(--light-soft); }
-
-  /* I titoli vanno sempre spezzati a mano su due righe, nel testo, con \A.
-     Una riga sola che va a capo da sé non ha lo stesso ritmo. */
-  .h1 {
-    font-family: var(--serif);
-    font-size: clamp(2.6rem, 10vw, 3.1rem); font-weight: 500;
-    line-height: 1.04; letter-spacing: -0.01em; color: var(--ink);
-    margin: 0; white-space: pre-line;
-  }
-  /* Il titolo d'oro, come sulle locandine: il riempimento è la rampa
-     metallica, non un colore piatto. Solo dove il nome conta. */
-  .h1-oro, .step[data-bg='dark'] .h1-oro, .oro-testo {
-    background: var(--oro-rampa);
-    -webkit-background-clip: text; background-clip: text;
-    color: transparent; -webkit-text-fill-color: transparent;
-  }
-  .h1-oro { padding-bottom: 0.08em; }
-  .step[data-bg='dark'] .h1 { color: var(--light); }
-  .lede {
-    font-size: 1.0625rem; font-weight: 400; line-height: 1.5; color: var(--sub);
-    margin: 1.5rem auto 0; white-space: pre-line; max-width: 300px;
-  }
-  .step[data-bg='dark'] .lede { color: var(--light-soft); }
-  .lede-stretta { margin-top: 1rem; font-size: 0.9375rem; }
-  .nota {
-    font-size: 0.8125rem; letter-spacing: 0.08em; line-height: 1.6;
-    color: var(--sub); margin: 0;
-  }
-  .step[data-bg='dark'] .nota { color: var(--light-soft); }
-  .terms { font-size: 0.75rem; line-height: 1.5; color: var(--eyebrow); margin: 0.875rem 0 0; }
-
-  /* ---- azioni ---- */
-  .cta {
-    appearance: none; display: inline-flex; align-items: center; justify-content: center;
-    gap: 0.75rem; min-height: 52px; padding: 0 2rem; width: auto;
-    border: 1px solid var(--ink); border-radius: 980px; background: transparent;
-    color: var(--ink); font-family: inherit; font-size: 0.8125rem; font-weight: 500;
-    text-transform: uppercase; letter-spacing: 0.12em; cursor: pointer;
-    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
-      border-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
-  }
-  .cta:hover, .cta:active { background: var(--ink); border-color: var(--ink); color: #fff; }
-  .cta:disabled { opacity: 0.35; cursor: default; background: transparent; color: var(--ink); }
-  .step[data-bg='dark'] .cta { border-color: rgba(247, 243, 238, 0.4); color: var(--light); }
-  .step[data-bg='dark'] .cta:hover, .step[data-bg='dark'] .cta:active {
-    background: var(--light); border-color: var(--light); color: var(--ink);
-  }
-  .step[data-bg='dark'] .cta:disabled { background: transparent; color: var(--light); }
-  /* L'unica pill piena di tutto il percorso: la conferma finale. */
-  a.cta { text-decoration: none; }
-  .cta-fill { background: var(--oro); border-color: var(--oro); color: var(--ink); }
-  .cta-fill:hover, .cta-fill:active {
-    background: var(--oro); border-color: var(--oro); color: var(--ink); filter: brightness(0.96);
-  }
-  .cta-fill:disabled { background: var(--oro); border-color: var(--oro); color: var(--ink); }
-
-  .ghost {
-    appearance: none; border: none; background: none; padding: 0.625rem;
-    font-family: inherit; font-size: 0.8125rem; letter-spacing: 0.08em;
-    color: var(--sub); cursor: pointer; transition: color var(--dur-fast) var(--ease);
-  }
-  .ghost:hover { color: var(--ink); }
-  .step[data-bg='dark'] .ghost { color: var(--light-soft); }
-
-  /* ---- le risposte: vetro leggero ---- */
-  .opts { width: 100%; margin-top: 2.25rem; display: flex; flex-direction: column; gap: 0.625rem; }
-  .opt {
-    appearance: none; display: block; width: 100%; min-height: 60px; padding: 1rem 1.25rem;
-    border: 1px solid var(--hairline); border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.55);
-    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-    color: var(--ink); font-family: inherit; font-size: 1.0625rem; font-weight: 400;
-    cursor: pointer; text-align: center;
-    transition: border-color var(--dur-fast) var(--ease),
-      background-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
-  }
-  .opt:hover { background: rgba(255, 255, 255, 0.75); }
-  .opt:active { transform: scale(0.985); }
-  .opt[data-active='true'] { border-color: var(--oro-scuro); background: rgba(255, 255, 255, 0.85); }
-  .opt-nota { display: block; font-size: 0.8125rem; letter-spacing: 0.06em; color: var(--sub); margin-top: 0.2rem; }
-
-  /* ---- i blocchi di vetro ---- */
-  .vetro {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.6);
-    -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 1.5rem;
-    box-shadow: 0 12px 48px rgba(15, 14, 18, 0.07);
-  }
-  .step[data-bg='dark'] .vetro {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(247, 243, 238, 0.14);
-    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
-  }
-
-  .premio-cifra {
-    font-family: var(--serif);
-    font-size: 4.5rem; font-weight: 500; line-height: 1; letter-spacing: -0.01em;
-    color: var(--ink); margin: 0; font-variant-numeric: tabular-nums;
-  }
-  .step[data-bg='dark'] .premio-cifra {
-    background: var(--oro-rampa);
-    -webkit-background-clip: text; background-clip: text;
-    color: transparent; -webkit-text-fill-color: transparent;
-  }
-  .premio-label {
-    font-size: 0.6875rem; font-weight: 500; text-transform: uppercase;
-    letter-spacing: 0.22em; color: var(--eyebrow); margin: 0.875rem 0 0;
-  }
-  .step[data-bg='dark'] .premio-label { color: var(--light-soft); }
-  .premio-sub { font-size: 0.8125rem; letter-spacing: 0.08em; color: var(--sub); margin: 0.875rem 0 0; }
-  .step[data-bg='dark'] .premio-sub { color: var(--light-soft); }
-
-  /* ---- i consigli ---- */
-  .recs { margin: 2.5rem 0 0; padding: 0; list-style: none; text-align: left; overflow: hidden; }
-  .rec { padding: 1.25rem 1.5rem; }
-  .rec + .rec { border-top: 1px solid var(--hairline); }
-  .rec-nome { font-family: var(--serif); font-size: 1.3125rem; font-weight: 500; margin: 0; }
-  .rec-maison {
-    font-size: 0.6875rem; font-weight: 500; text-transform: uppercase;
-    letter-spacing: 0.22em; color: var(--eyebrow); margin: 0.375rem 0 0;
-  }
-  .rec-note { font-size: 0.8125rem; letter-spacing: 0.08em; color: var(--sub); margin: 0.375rem 0 0; }
-  .rec[data-fuori='true'] { opacity: 0.45; }
-
-  /* ---- i campi ---- */
-  .campo {
-    width: 100%; height: 54px; border: 1px solid var(--hairline); border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.7);
-    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-    color: var(--ink); font-family: inherit; font-size: 1.0625rem;
-    text-align: center; padding: 0 1.25rem;
-    transition: border-color var(--dur-fast) var(--ease);
-  }
-  .campo::placeholder { color: var(--sub); }
-  .campo:focus { outline: none; border-color: var(--ink); }
-  .campo[aria-invalid='true'] { border-color: var(--terracotta); }
-  .consenso {
-    display: flex; gap: 0.625rem; align-items: flex-start; text-align: left;
-    margin-top: 0.875rem; font-size: 0.8125rem; letter-spacing: 0.02em;
-    line-height: 1.55; color: var(--sub);
-  }
-  .consenso input { margin-top: 3px; accent-color: var(--ink); }
-  .consenso a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-
   /* ---- il marchio ----
-   * BAZAR in Didone oro, MARRAKECH sotto in bastoni spaziati: il blocco
-   * marchio delle locandine, finché non arriva il file vero. */
+   * Le proporzioni vengono dal fronte del biglietto: MARRAKECH è alto un
+   * quarto di BAZAR, la spaziatura di BAZAR è circa un terzo della lettera,
+   * il filo è largo quanto MARRAKECH. Tutto in `em`, così scala intero. */
   .marchio {
     display: inline-flex; flex-direction: column; align-items: center;
     line-height: 1; user-select: none;
   }
   .marchio-bazar {
-    font-family: var(--serif); font-weight: 600; font-size: 1.55em;
-    letter-spacing: 0.14em; padding-left: 0.14em;
+    font-size: 2.6em; font-weight: 500; color: var(--crema);
+    letter-spacing: 0.3em; margin-right: -0.3em;
+  }
+  .filo {
+    display: block; width: 8.2em; height: 1px; margin: 0.9em 0 0.85em;
+    background: var(--filo);
   }
   .marchio-sotto {
-    font-size: 0.5em; font-weight: 500; letter-spacing: 0.42em; padding-left: 0.42em;
-    margin-top: 0.45em; color: var(--sub);
+    font-size: 0.82em; font-weight: 500; color: var(--oro);
+    letter-spacing: 0.42em; margin-right: -0.42em;
   }
-  .marchio-chiaro .marchio-sotto { color: var(--light-soft); }
+  .marchio-riga {
+    font-size: 0.56em; font-weight: 400; color: var(--grigio);
+    letter-spacing: 0.24em; margin-right: -0.24em; margin-top: 2.6em; white-space: nowrap;
+  }
 
-  /* ---- l'arco ---- */
-  .arco-piccolo { width: 44px; height: auto; margin: 0 auto 1.75rem; display: block; }
+  /* ---- tipografia ---- */
+  .eyebrow {
+    font-size: 0.6875rem; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.26em; color: var(--oro); margin: 0 0 1.25rem;
+  }
+  /* I titoli vanno sempre spezzati a mano su due righe, nel testo. */
+  .h1 {
+    font-size: clamp(2.3rem, 9vw, 2.75rem); font-weight: 500;
+    line-height: 1.12; letter-spacing: -0.015em; color: var(--crema);
+    margin: 0; white-space: pre-line;
+  }
+  /* Il nome dello stile, in oro come MARRAKECH: è l'unico titolo che lo è. */
+  .h1-oro { color: var(--oro); }
+  .lede {
+    font-size: 1rem; font-weight: 300; line-height: 1.6; color: var(--crema-tenue);
+    margin: 1.5rem auto 0; white-space: pre-line; max-width: 310px;
+  }
+  .lede-stretta { margin-top: 1rem; font-size: 0.875rem; }
+  .nota {
+    font-size: 0.8125rem; font-weight: 300; letter-spacing: 0.04em; line-height: 1.6;
+    color: var(--grigio); margin: 0;
+  }
+  .terms { font-size: 0.75rem; font-weight: 300; line-height: 1.5; color: var(--grigio-tenue); margin: 0.875rem 0 0; }
 
-  /* ---- la tessera finale: quella da mostrare al banco ---- */
+  /* ---- azioni ---- */
+  .cta {
+    appearance: none; display: inline-flex; align-items: center; justify-content: center;
+    gap: 0.75rem; min-height: 52px; padding: 0 2rem; width: auto;
+    border: 1px solid rgba(216, 188, 134, 0.55); border-radius: 980px; background: transparent;
+    color: var(--crema); font-family: inherit; font-size: 0.8125rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.16em; cursor: pointer; text-decoration: none;
+    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
+  }
+  .cta:hover, .cta:active { background: var(--oro); border-color: var(--oro); color: var(--nero); }
+  .cta:disabled { opacity: 0.35; cursor: default; background: transparent; color: var(--crema); }
+  /* L'unica pill piena di tutto il percorso: la conferma finale. */
+  .cta-fill { background: var(--oro); border-color: var(--oro); color: var(--nero); }
+  .cta-fill:hover, .cta-fill:active { background: var(--oro); color: var(--nero); filter: brightness(1.05); }
+  .cta-fill:disabled { background: var(--oro); border-color: var(--oro); color: var(--nero); }
+
+  .ghost {
+    appearance: none; border: none; background: none; padding: 0.625rem;
+    font-family: inherit; font-size: 0.8125rem; font-weight: 300; letter-spacing: 0.06em;
+    color: var(--grigio); cursor: pointer; transition: color var(--dur-fast) var(--ease);
+  }
+  .ghost:hover { color: var(--crema); }
+
+  /* ---- le risposte ---- */
+  .opts { width: 100%; margin-top: 2.25rem; display: flex; flex-direction: column; gap: 0.625rem; }
+  .opt {
+    appearance: none; display: block; width: 100%; min-height: 60px; padding: 1rem 1.25rem;
+    border: 1px solid var(--linea); border-radius: 1rem;
+    background: rgba(237, 231, 221, 0.04);
+    color: var(--crema); font-family: inherit; font-size: 1.0625rem; font-weight: 400;
+    cursor: pointer; text-align: center;
+    transition: border-color var(--dur-fast) var(--ease),
+      background-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  }
+  .opt:hover { background: rgba(237, 231, 221, 0.08); }
+  .opt:active { transform: scale(0.985); }
+  .opt[data-active='true'] { border-color: var(--oro); background: rgba(216, 188, 134, 0.12); }
+  .opt-nota {
+    display: block; font-size: 0.8125rem; font-weight: 300; letter-spacing: 0.04em;
+    color: var(--grigio); margin-top: 0.2rem;
+  }
+
+  /* ---- i blocchi ---- */
+  .vetro {
+    width: 100%;
+    background: rgba(237, 231, 221, 0.04);
+    border: 1px solid var(--linea); border-radius: 1.5rem;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.35);
+  }
+
+  .premio-cifra {
+    font-size: 4.5rem; font-weight: 300; line-height: 1; letter-spacing: -0.02em;
+    color: var(--oro); margin: 0; font-variant-numeric: tabular-nums;
+  }
+  .premio-label {
+    font-size: 0.6875rem; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.26em; color: var(--grigio); margin: 0.875rem 0 0;
+  }
+  .premio-sub { font-size: 0.875rem; font-weight: 300; color: var(--crema-tenue); margin: 0.875rem 0 0; }
+
+  /* ---- i pezzi ---- */
+  .recs { margin: 2.25rem 0 0; padding: 0; list-style: none; text-align: left; overflow: hidden; }
+  .rec { padding: 1.125rem 1.5rem; }
+  .rec + .rec { border-top: 1px solid var(--linea); }
+  .rec-reparto {
+    font-size: 0.625rem; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.24em; color: var(--oro); margin: 0;
+  }
+  .rec-nome { font-size: 1.0625rem; font-weight: 500; color: var(--crema); margin: 0.375rem 0 0; }
+  .rec-note { font-size: 0.8125rem; font-weight: 300; color: var(--grigio); margin: 0.25rem 0 0; }
+
+  /* ---- i campi ---- */
+  .campo {
+    width: 100%; height: 54px; border: 1px solid var(--linea); border-radius: 1rem;
+    background: rgba(237, 231, 221, 0.05);
+    color: var(--crema); font-family: inherit; font-size: 1rem; font-weight: 400;
+    text-align: center; padding: 0 1.25rem;
+    transition: border-color var(--dur-fast) var(--ease);
+  }
+  .campo::placeholder { color: var(--grigio-tenue); }
+  .campo:focus { outline: none; border-color: var(--oro); }
+  .campo[aria-invalid='true'] { border-color: #c96a4f; }
+  .consenso {
+    display: flex; gap: 0.625rem; align-items: flex-start; text-align: left;
+    margin-top: 0.875rem; font-size: 0.8125rem; font-weight: 300;
+    line-height: 1.55; color: var(--grigio);
+  }
+  .consenso input { margin-top: 3px; accent-color: var(--oro); }
+  .consenso a { color: var(--crema); text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ---- la tessera finale: quella da mostrare al banco ----
+   * È un piccolo biglietto: stesso nero, stesso filo d'oro. */
   .tessera {
     position: relative; width: 100%; max-width: 330px; margin-top: 2.25rem;
     padding: 1.75rem 1.5rem 1.5rem; border-radius: 1.25rem;
-    background:
-      radial-gradient(120% 80% at 0% 0%, rgba(233, 212, 156, 0.18) 0%, rgba(233, 212, 156, 0) 60%),
-      rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(201, 174, 110, 0.45);
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+    background: linear-gradient(180deg, #1c1713 0%, #110d0b 100%);
+    border: 1px solid rgba(216, 188, 134, 0.35);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
   }
   .tessera-cifra {
-    font-family: var(--serif); font-size: 3.5rem; font-weight: 500; line-height: 1; margin: 0;
-    background: var(--oro-rampa);
-    -webkit-background-clip: text; background-clip: text;
-    color: transparent; -webkit-text-fill-color: transparent;
+    font-size: 3.5rem; font-weight: 300; line-height: 1; margin: 0; color: var(--oro);
   }
+  .tessera .filo { margin: 1.1rem auto; width: 70%; }
   .tessera-stile {
     font-size: 0.6875rem; font-weight: 500; text-transform: uppercase;
-    letter-spacing: 0.22em; color: var(--light-soft); margin: 0.75rem 0 0;
-  }
-  .tessera-scade { font-size: 0.75rem; line-height: 1.5; color: var(--light-soft); margin: 0.75rem 0 0; }
-  .indirizzo {
-    font-size: 0.8125rem; letter-spacing: 0.06em; line-height: 1.9;
-    color: var(--light-soft); margin: 1.75rem 0 0;
-  }
-  .indirizzo a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(201, 174, 110, 0.45); }
-
-  .livello {
-    font-size: 0.6875rem; font-weight: 500; text-transform: uppercase;
-    letter-spacing: 0.22em; color: var(--light-soft); margin: 1.5rem 0 0;
+    letter-spacing: 0.24em; color: var(--grigio); margin: 0;
   }
   .codice {
-    font-size: 1.0625rem; font-weight: 500; letter-spacing: 0.22em; color: var(--light);
+    font-size: 1.0625rem; font-weight: 500; letter-spacing: 0.22em; color: var(--crema);
     font-variant-numeric: tabular-nums; margin: 0.75rem 0 0;
   }
+  .tessera-scade { font-size: 0.75rem; font-weight: 300; line-height: 1.5; color: var(--grigio-tenue); margin: 0.75rem 0 0; }
+
+  /* ---- i contatti, come sul retro del biglietto ---- */
+  .contatti { list-style: none; margin: 1.75rem 0 0; padding: 0; font-size: 0.9375rem; line-height: 2; }
+  .contatti a { color: var(--crema); text-decoration: none; font-variant-numeric: tabular-nums; }
+  .contatto-nome { font-weight: 500; }
+  .indirizzo {
+    font-size: 0.8125rem; font-weight: 300; line-height: 1.6;
+    color: var(--grigio); margin: 0.875rem 0 0;
+  }
+  .indirizzo a { color: inherit; text-decoration: none; }
+  .instagram { margin: 0.75rem 0 0; font-size: 0.875rem; }
+  .instagram a { color: var(--oro); text-decoration: none; }
 }
 
 @layer components {
   /* ---- l'apertura ---- */
   .intro {
     position: fixed; inset: 0; z-index: 100;
-    background: var(--mesh-dark);
+    background: linear-gradient(180deg, #16120F 0%, #0D0A08 100%);
     display: flex; align-items: center; justify-content: center;
     transition: opacity .55s ease, transform .6s cubic-bezier(.4, 0, .2, 1);
   }
   .intro.leaving { opacity: 0; transform: translateY(-28px); pointer-events: none; }
   .intro-parola {
-    position: absolute; font-family: var(--serif); font-weight: 500; letter-spacing: -.01em;
-    color: var(--light); font-size: 60px; opacity: 0; transform: scale(.88);
+    position: absolute; font-weight: 400; letter-spacing: -.01em; color: var(--crema);
+    font-size: 52px; opacity: 0; transform: scale(.9);
     transition: opacity .5s cubic-bezier(.2, 1, .3, 1), transform .5s cubic-bezier(.2, 1, .3, 1);
   }
   .intro-parola.show { opacity: 1; transform: scale(1); }
   .intro-parola.hide { opacity: 0; transform: scale(1.06); transition-duration: .4s; }
-  /* «Marhaba.» in corsivo: l'occhiello delle locandine («con un click»). */
-  .intro-parola:not(.intro-domanda) { font-style: italic; }
-  .intro-domanda { font-size: 38px; text-align: center; padding: 0 40px; line-height: 1.1; }
-  /* L'arco d'oro che si disegna da sé: il filo parte dalla base sinistra,
-     sale, chiude la punta e ridiscende. */
-  .intro-arco {
-    position: absolute; width: 132px; height: auto;
-    opacity: 1; transition: opacity .35s ease, transform .35s ease;
+  /* «Marhaba.» in oro, sottile: è un saluto, non un titolo. */
+  .intro-parola:not(.intro-domanda) { font-weight: 300; color: var(--oro); }
+  .intro-domanda {
+    font-size: 30px; font-weight: 400; text-align: center; padding: 0 40px; line-height: 1.25;
+    top: calc(50% + 70px);
   }
-  .intro-arco.via { opacity: 0; transform: scale(1.04); }
-  .arco-traccia {
-    stroke-dasharray: 1; stroke-dashoffset: 1;
-    animation: traccia 1.3s cubic-bezier(.5, 0, .2, 1) forwards;
-  }
-  .arco-traccia-2 { animation-delay: .18s; animation-duration: 1.1s; }
-  @keyframes traccia { to { stroke-dashoffset: 0; } }
   .intro-marchio {
-    position: absolute; top: calc(50% - 120px);
-    opacity: 0; transition: opacity .5s ease;
+    position: absolute; top: calc(50% - 175px);
+    opacity: 0; transition: opacity .6s ease;
   }
   .intro-marchio.show { opacity: 1; }
+  /* Il filo d'oro che si apre dal centro verso i due capi. */
+  .intro-filo {
+    position: absolute; width: 62vw; max-width: 300px; height: 1px;
+    background: var(--filo);
+    transform: scaleX(0); transform-origin: center;
+    animation: apri 1.1s cubic-bezier(.5, 0, .2, 1) forwards;
+    transition: opacity .3s ease;
+  }
+  .intro-filo.via { opacity: 0; }
+  @keyframes apri { to { transform: scaleX(1); } }
 }
 
 @layer utilities {
   .tabular { font-variant-numeric: tabular-nums; }
 
-  /* Entrata scaglionata: ogni riga arriva 80ms dopo la precedente. */
+  /* Entrata scaglionata: ogni riga arriva poco dopo la precedente. */
   .ra { animation: ra 450ms cubic-bezier(0.16, 1, 0.3, 1) both; }
   @keyframes ra { from { opacity: 0; transform: translateY(16px); } }
 
