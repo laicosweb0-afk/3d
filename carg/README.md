@@ -16,7 +16,7 @@ cambiare sono la tavolozza, il marchio e tutto quello che si legge.
 
 | # | Schermata | Cosa fa |
 |---|---|---|
-| 0 | Apertura | Il reveal del marchio (5 s) e, sopra, «Un minuto per la tua auto.» |
+| 0 | Apertura | «Un minuto / **per la tua auto.**» e la firma. Tipografica, 2,8 s. |
 | 1 | Ingresso | Il marchio e l'invito. Scuro. |
 | 2 | Domanda | Una sola: da quanto non fa il tagliando. Quattro risposte, si tocca e si va. |
 | 3 | Risposta | Cosa vuol dire quella risposta. **Senza il credito.** |
@@ -65,7 +65,7 @@ Tutto in **`src/config/gioco.ts`**. Nessun altro file va aperto.
 | Giorni di validità | `VALIDITA_GIORNI` |
 | Chiedere o no l'auto | `CHIEDI_AUTO` |
 | Numero WhatsApp | `WHATSAPP` |
-| La frase dell'apertura | `APERTURA.frase` |
+| Le due righe dell'apertura | `APERTURA.riga1` / `.riga2` |
 
 ## La ruota
 
@@ -115,36 +115,35 @@ l'inchiostro fa 3,5:1 e non si legge, il bianco fa 5,4:1.
 
 ## L'apertura
 
-Il reveal del marchio fornito dal cliente, tagliato a **5,0 secondi** — il
-punto in cui il tondo è frontale e acceso; dopo si inclina e non serve più.
+**Solo tipografia, zero byte, 2,8 secondi.**
 
-La frase entra a **3,9 s**, cioè *mentre il marchio è ancora a schermo*, non
-dopo. Metterla in coda allungherebbe l'attesa di un secondo e mezzo: chi
-avvicina il telefono al bancone non sta guardando un film, e ogni secondo
-prima della prima schermata è un secondo in cui può rimettere il telefono in
-tasca. Tutta l'apertura dura 6,8 s.
+Prima c'era il reveal del marchio in video. Era bello e non funzionava come
+apertura di una card NFC: cinque secondi di film prima di poter toccare
+qualcosa, mezzo megabyte da scaricare, e il sospetto — in chi ha appena
+avvicinato il telefono al bancone — di essere finito dentro una pubblicità
+invece che in uno strumento.
 
-Due formati, e **l'MP4 per primo**: il browser prende il primo che sa
-leggere e ne scarica uno solo. L'MP4 (H.264, 253 KB) serve a iOS, che è la
-metà abbondante di chi userà la card; il WebM (VP9, 285 KB) copre i Chromium
-compilati senza H.264 — fra cui quello del collaudo, che altrimenti non
-riuscirebbe a verificare l'apertura.
+Al suo posto l'impianto della creative di riferimento: titolo enorme e nero
+al centro, la seconda riga nel blu del marchio, la firma in basso in
+maiuscoletto spaziato. Le due righe entrano sfalsate di 140 ms — sfalsate si
+leggono nell'ordine giusto, insieme si leggono come un blocco e la seconda,
+che è quella colorata e quella che deve restare, si perde.
 
-Il video è **muto e `playsInline`**: su iOS un video con audio non parte da
-solo, e senza `playsInline` Safari lo aprirebbe a tutto schermo nel suo
-player mangiandosi la pagina. Se non parte — rete lenta, autoplay negato,
-formato rifiutato — la frase entra lo stesso ai suoi 3,9 s: meglio
-un'apertura senza filmato che una card che non si apre.
+Il testo si cambia in `APERTURA.riga1` e `APERTURA.riga2`.
 
-Per rifare il taglio da una nuova versione del filmato:
+## La tipografia
 
-```bash
-FF=node_modules/@ffmpeg-installer/linux-x64/ffmpeg
-$FF -i sorgente.mp4 -t 5.0 -an -c:v libx264 -profile:v main -pix_fmt yuv420p \
-   -crf 29 -preset slow -movflags +faststart -r 24 carg/public/apertura.mp4
-$FF -i sorgente.mp4 -t 5.0 -an -c:v libvpx-vp9 -crf 36 -b:v 0 -row-mt 1 \
-   -deadline good -cpu-used 2 -pix_fmt yuv420p -r 24 carg/public/apertura.webm
-```
+L'impianto è quello delle creative social: **peso 800, crenatura -0.04em,
+interlinea 1.0**. A colpo d'occhio si legge come un titolo e non come testo.
+
+Il **corpo non si tocca**: i titoli più lunghi («Quando l'hai fatto») stanno
+già al limite dei 342 px utili su un telefono da 390, e il peso 800 allarga
+di suo — la crenatura più stretta ricompra esattamente quello che il
+grassetto si prende. Chi alza il `font-size` deve rifare il giro completo
+degli screenshot, perché il collaudo vede l'overflow della pagina ma non un
+titolo che va a capo male.
+
+I titoli si spezzano **sempre a mano** con `\n`, anche quelli degli esiti.
 
 ## Le dipendenze
 
@@ -181,8 +180,9 @@ node tools/carg-qa.mjs /tmp/scatti
 ```
 
 Controlla: ogni importo una volta sola, i vincibili presenti, i pesi a 100,
-il filmato dell'apertura (presente, muto, inline, e che scorra davvero) con
-la frase che entra sopra e non dopo, Inter caricato e usato, quattro
+l'apertura (due righe che entrano, la seconda colorata, la firma, e nessun
+video rimasto), il font di sistema in testa alla pila con Inter come
+ripiego, quattro
 risposte, nessun credito sulla schermata della risposta, nessun rimprovero,
 nessuna diagnosi, nessuna percentuale inventata, gli importi a schermo uguali
 a `SPICCHI`, il credito vinto fra i vincibili, tre lavori consigliati, il

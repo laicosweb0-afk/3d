@@ -75,7 +75,10 @@ export const WHATSAPP = '';
  * Il «\n» è una riga spezzata a mano, non un a capo automatico.
  */
 export const APERTURA = {
-  frase: 'Un minuto\nper la tua auto.',
+  /** La prima riga, in chiaro. */
+  riga1: 'Un minuto',
+  /** La seconda, nel blu del marchio: è il colpo d'occhio. */
+  riga2: 'per la tua auto.',
 };
 
 /* ------------------------------------------------------------------ */
@@ -125,17 +128,17 @@ export const ESITI: Record<string, Esito> = {
       + "se ne hai macinati parecchi, l’olio è più vecchio di quanto dica il calendario.",
   },
   anno: {
-    titolo: 'Sei nella finestra giusta.',
+    titolo: 'Sei nella\nfinestra giusta.',
     riga: 'Dodici mesi o quindicimila chilometri, vale quello che arriva prima. '
       + 'È il momento in cui conviene prenotare con calma, non quello in cui si corre.',
   },
   tanto: {
-    titolo: 'Ci sta, succede.',
+    titolo: 'Ci sta,\nsuccede.',
     riga: "L’olio invecchia anche da fermo: perde additivi con il tempo, non solo "
       + 'con i chilometri. Non è un dramma, è una cosa da rimettere in pari.',
   },
   boh: {
-    titolo: 'Siamo in tantissimi.',
+    titolo: 'Siamo in\ntantissimi.',
     riga: "Di solito è scritto sul libretto o sull’adesivo nel parabrezza. Se non "
       + 'c’è più, lo leggiamo noi dalla centralina in pochi minuti.',
   },
