@@ -75,6 +75,12 @@ export const WHATSAPP = '';
  * Il «\n» è una riga spezzata a mano, non un a capo automatico.
  */
 export const APERTURA = {
+  /**
+   * Il saluto che apre, come su Woman e su Club Rama. Serve a dare un primo
+   * battito allo schermo: senza, le righe entrano sul nero e la card sembra
+   * ancora da caricare.
+   */
+  saluto: 'Hey.',
   /** La prima riga, in chiaro. */
   riga1: 'Un minuto',
   /** La seconda, nel blu del marchio: è il colpo d'occhio. */

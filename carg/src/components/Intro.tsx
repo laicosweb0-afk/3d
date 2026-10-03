@@ -4,24 +4,26 @@ import { CargLogo } from './CargLogo';
 import { pronto, sblocca, spruzzo } from '../lib/suono';
 
 /**
- * L'apertura: solo tipografia.
+ * L'apertura, in due tempi — la cadenza di Woman e di Club Rama.
  *
- * Prima c'era il filmato del marchio. Era bello e non funzionava come
- * apertura di una card NFC: cinque secondi di film prima di poter toccare
- * qualcosa, mezzo megabyte da scaricare, e il sospetto — in chi ha appena
- * avvicinato il telefono al bancone — di essere finito dentro una pubblicità
- * invece che in uno strumento.
+ *   1. «Hey.» — grande, al centro, da solo.
+ *   2. «Un minuto / per la tua auto.», con la firma sotto.
  *
- * Al suo posto l'impianto della creative di riferimento: titolo enorme e
- * nero al centro, la seconda riga nel colore del marchio, e la firma in
- * basso in maiuscoletto spaziato. Pesa zero byte, parte nell'istante in cui
- * la pagina si apre e dura **2,8 secondi** invece di 6,8.
+ * Il saluto non è un vezzo: senza, le due righe entrano su uno schermo nero
+ * e vuoto, e nel mezzo secondo prima che arrivino la card sembra ancora da
+ * caricare. «Hey.» riempie quel vuoto con una cosa che si legge in un
+ * istante, e soprattutto dà il tempo di guardare lo schermo prima che ci
+ * sia scritto qualcosa che conta.
  *
- * Le due righe entrano sfalsate di 140ms. Non è un vezzo: sfalsate si
- * leggono nell'ordine giusto, insieme si leggono come un blocco e la
- * seconda — che è quella colorata, quella che deve restare — si perde.
+ * Il saluto esce **prima** che entri la frase, non insieme: due testi che si
+ * dissolvono uno nell'altro al centro dello schermo si leggono male tutti e
+ * due.
+ *
+ * Niente filmato: è tutto testo, quindi zero byte da scaricare e la
+ * sequenza parte nell'istante in cui la pagina si apre.
  */
 export function Intro({ onFine }: { onFine: () => void }) {
+  const [saluto, setSaluto] = useState<'' | 'show' | 'hide' | 'via'>('');
   const [fase, setFase] = useState(0);
   const [uscita, setUscita] = useState(false);
 
@@ -31,11 +33,18 @@ export function Intro({ onFine }: { onFine: () => void }) {
       return;
     }
     const t = [
-      setTimeout(() => setFase(1), 120),
-      setTimeout(() => setFase(2), 260),
-      setTimeout(() => { setFase(3); if (pronto()) spruzzo(); }, 520),
-      setTimeout(() => setUscita(true), 2300),
-      setTimeout(onFine, 2800),
+      setTimeout(() => setSaluto('show'), 200),
+      setTimeout(() => setSaluto('hide'), 1400),
+      setTimeout(() => { setSaluto('via'); setFase(1); }, 1750),
+      setTimeout(() => setFase(2), 1890),
+      setTimeout(() => {
+        setFase(3);
+        // Suona solo se qualcuno ha già toccato lo schermo: prima di un
+        // gesto iOS non lascia svegliare l'audio.
+        if (pronto()) spruzzo();
+      }, 2150),
+      setTimeout(() => setUscita(true), 3900),
+      setTimeout(onFine, 4400),
     ];
     return () => t.forEach(clearTimeout);
   }, [onFine]);
@@ -46,14 +55,20 @@ export function Intro({ onFine }: { onFine: () => void }) {
       aria-hidden
       onPointerDown={() => { const gia = pronto(); sblocca(); if (!gia) spruzzo(); }}
     >
-      <p className="apertura-titolo">
-        <span className={`apertura-riga${fase >= 1 ? ' dentro' : ''}`}>
-          {APERTURA.riga1}
-        </span>
-        <span className={`apertura-riga apertura-riga-blu${fase >= 2 ? ' dentro' : ''}`}>
-          {APERTURA.riga2}
-        </span>
-      </p>
+      {saluto !== 'via' && (
+        <span className={`intro-parola ${saluto}`}>{APERTURA.saluto}</span>
+      )}
+
+      {saluto === 'via' && (
+        <p className="apertura-titolo">
+          <span className={`apertura-riga${fase >= 1 ? ' dentro' : ''}`}>
+            {APERTURA.riga1}
+          </span>
+          <span className={`apertura-riga apertura-riga-blu${fase >= 2 ? ' dentro' : ''}`}>
+            {APERTURA.riga2}
+          </span>
+        </p>
+      )}
 
       {/* La firma in basso, come nella creative: marchio e nome in
           maiuscoletto spaziato, piccoli, fuori dal campo del titolo. */}

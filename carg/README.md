@@ -16,7 +16,7 @@ cambiare sono la tavolozza, il marchio e tutto quello che si legge.
 
 | # | Schermata | Cosa fa |
 |---|---|---|
-| 0 | Apertura | «Un minuto / **per la tua auto.**» e la firma. Tipografica, 2,8 s. |
+| 0 | Apertura | «Hey.» · «Un minuto / **per la tua auto.**» e la firma. Tipografica, 4,4 s. |
 | 1 | Ingresso | Il marchio e l'invito. Scuro. |
 | 2 | Domanda | Una sola: da quanto non fa il tagliando. Quattro risposte, si tocca e si va. |
 | 3 | Risposta | Cosa vuol dire quella risposta. **Senza il credito.** |
@@ -65,7 +65,7 @@ Tutto in **`src/config/gioco.ts`**. Nessun altro file va aperto.
 | Giorni di validità | `VALIDITA_GIORNI` |
 | Chiedere o no l'auto | `CHIEDI_AUTO` |
 | Numero WhatsApp | `WHATSAPP` |
-| Le due righe dell'apertura | `APERTURA.riga1` / `.riga2` |
+| Il saluto e le due righe | `APERTURA.saluto` / `.riga1` / `.riga2` |
 
 ## La ruota
 
@@ -115,7 +115,16 @@ l'inchiostro fa 3,5:1 e non si legge, il bianco fa 5,4:1.
 
 ## L'apertura
 
-**Solo tipografia, zero byte, 2,8 secondi.**
+**Solo tipografia, zero byte, 4,4 secondi, in due tempi:**
+
+1. **«Hey.»** — grande, al centro, da solo.
+2. **«Un minuto / per la tua auto.»**, con la firma sotto.
+
+Il saluto è la cadenza di Woman e di Club Rama, e non è un vezzo: senza, le
+due righe entrano su uno schermo nero e vuoto, e nel mezzo secondo prima che
+arrivino la card sembra ancora da caricare. Esce **prima** che entri la
+frase, non insieme: due testi che si dissolvono uno nell'altro al centro
+dello schermo si leggono male tutti e due.
 
 Prima c'era il reveal del marchio in video. Era bello e non funzionava come
 apertura di una card NFC: cinque secondi di film prima di poter toccare
@@ -180,8 +189,8 @@ node tools/carg-qa.mjs /tmp/scatti
 ```
 
 Controlla: ogni importo una volta sola, i vincibili presenti, i pesi a 100,
-l'apertura (due righe che entrano, la seconda colorata, la firma, e nessun
-video rimasto), il font di sistema in testa alla pila con Inter come
+l'apertura (il saluto per primo e da solo, poi le due righe con la seconda
+colorata e la firma, e nessun video rimasto), il font di sistema in testa alla pila con Inter come
 ripiego, quattro
 risposte, nessun credito sulla schermata della risposta, nessun rimprovero,
 nessuna diagnosi, nessuna percentuale inventata, gli importi a schermo uguali

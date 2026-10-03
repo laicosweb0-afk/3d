@@ -68,23 +68,40 @@ const scatto = (n) => p.screenshot({ path: `${out}/${n}.png` });
 /* ---- 2. il percorso ------------------------------------------------- */
 await p.goto(url, { waitUntil: 'networkidle' });
 
-// L'apertura è solo tipografia: due righe che entrano sfalsate, e la firma.
+// L'apertura ha due tempi, come su Woman e Rama: prima «Hey.», poi la frase.
 {
-  await p.waitForSelector('.apertura-riga.dentro', { timeout: 6000 }).catch(() => {
-    errori.push("APERTURA: il titolo non entra");
+  await p.waitForSelector('.intro-parola.show', { timeout: 6000 }).catch(() => {
+    errori.push('APERTURA: il saluto non compare');
   });
-  // Nessun filmato: era mezzo megabyte e cinque secondi di attesa.
+  const primo = (await p.locator('.intro-parola.show').first().innerText().catch(() => '')).trim();
+  if (!/^Hey/i.test(primo)) {
+    errori.push(`APERTURA: la prima cosa a schermo è «${primo}», non il saluto`);
+  }
+  // Il saluto deve stare da solo: due testi al centro si leggono male.
+  if (await p.locator('.apertura-riga.dentro').count()) {
+    errori.push('APERTURA: la frase è già a schermo insieme al saluto');
+  }
+  await scatto('0-hey');
+
+  // Nessun filmato: erano mezzo megabyte e cinque secondi di attesa.
   if (await p.locator('video').count()) {
     errori.push("APERTURA: c'è ancora un video, doveva restare solo il testo");
   }
-  await p.waitForTimeout(700);
-  await scatto('0-apertura');
+
+  await p.waitForSelector('.apertura-riga.dentro', { timeout: 6000 }).catch(() => {
+    errori.push('APERTURA: la frase non entra dopo il saluto');
+  });
+  await p.waitForTimeout(600);
+  await scatto('0b-frase');
   const righe = await p.locator('.apertura-riga.dentro').allTextContents();
   if (righe.length !== 2) errori.push(`APERTURA: ${righe.length} righe invece di 2`);
   if (/da quanto non/i.test(righe.join(' '))) {
     errori.push(`APERTURA: è tornata la frase vecchia — «${righe.join(' ')}»`);
   }
-  // La seconda riga è quella colorata: è il colpo d'occhio della creative.
+  // Il saluto se ne deve essere andato, non restare sotto.
+  if (await p.locator('.intro-parola.show').count()) {
+    errori.push('APERTURA: il saluto è ancora a schermo con la frase');
+  }
   const blu = await p.locator('.apertura-riga-blu').evaluate((el) => getComputedStyle(el).color).catch(() => '');
   if (!/rgb/.test(blu)) errori.push('APERTURA: la seconda riga non ha il colore del marchio');
   if (!(await p.locator('.apertura-firma').count())) {
