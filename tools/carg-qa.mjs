@@ -112,7 +112,17 @@ await scatto('1-ingresso');
     const h1 = document.querySelector('.h1');
     return h1 ? getComputedStyle(h1).fontFamily : '';
   });
-  if (!/Inter/.test(font)) errori.push(`FONT: il titolo usa ${font}`);
+  // Il font di sistema deve venire PRIMO: su iPhone e Mac è il San Francisco
+  // vero, ed è la regola di casa (stessa pila di Club Rama). Inter resta
+  // nella pila, ma come ripiego per Android e Windows.
+  if (!/^\s*-apple-system/.test(font)) {
+    errori.push(`FONT: la pila non parte dal font di sistema — «${font}»`);
+  }
+  if (!/Inter/.test(font)) {
+    errori.push(`FONT: manca Inter come ripiego per Android e Windows — «${font}»`);
+  }
+  // Su questa macchina -apple-system non esiste, quindi tocca a Inter: se
+  // non fosse caricato, il ripiego non esisterebbe davvero.
   const caricato = await p.evaluate(() => document.fonts.check('600 32px Inter'));
   if (!caricato) errori.push('FONT: Inter non risulta caricato — controlla public/fonts/');
 }
