@@ -120,6 +120,17 @@ export type Esito = {
   titolo: string;
   /** La cosa utile. È il motivo per cui questa schermata esiste. */
   riga: string;
+  /**
+   * Il titolo della schermata dei lavori, per questa risposta.
+   */
+  titoloLavori: string;
+  /**
+   * La riga che instrada: dice **perché proprio quei tre lavori**, e lo dice
+   * con parole diverse per ognuna delle quattro risposte. È la differenza
+   * fra una consulenza e un listino: se tutti leggessero la stessa frase,
+   * si capirebbe in mezzo secondo che la domanda non serviva a niente.
+   */
+  rotta: string;
 };
 
 /**
@@ -132,21 +143,33 @@ export const ESITI: Record<string, Esito> = {
     titolo: 'Sei in pari.',
     riga: 'Il tagliando però si misura anche in chilometri, non solo in mesi: '
       + "se ne hai macinati parecchi, l’olio è più vecchio di quanto dica il calendario.",
+    titoloLavori: 'Il tagliando\nnon è tutto.',
+    rotta: 'Quello che si consuma a chilometri non guarda il calendario. '
+      + 'Queste tre cose non aspettano il prossimo tagliando.',
   },
   anno: {
     titolo: 'Sei nella\nfinestra giusta.',
     riga: 'Dodici mesi o quindicimila chilometri, vale quello che arriva prima. '
       + 'È il momento in cui conviene prenotare con calma, non quello in cui si corre.',
+    titoloLavori: 'Il momento\ngiusto è adesso.',
+    rotta: 'Sei nella finestra in cui si prenota con calma, e in una mattina '
+      + 'si chiude tutto. Partirei da qui.',
   },
   tanto: {
     titolo: 'Ci sta,\nsuccede.',
     riga: "L’olio invecchia anche da fermo: perde additivi con il tempo, non solo "
       + 'con i chilometri. Non è un dramma, è una cosa da rimettere in pari.',
+    titoloLavori: 'Si riparte\ndalle basi.',
+    rotta: 'Niente fretta e niente drammi: prima si rimette in pari il cuore '
+      + 'della manutenzione, il resto si guarda dopo.',
   },
   boh: {
     titolo: 'Siamo in\ntantissimi.',
     riga: "Di solito è scritto sul libretto o sull’adesivo nel parabrezza. Se non "
       + 'c’è più, lo leggiamo noi dalla centralina in pochi minuti.',
+    titoloLavori: 'Prima\nscopriamolo.',
+    rotta: 'L’auto lo sa già: basta chiederglielo. Dalla centralina esce anche '
+      + 'quello che il libretto non dice più.',
   },
 };
 
@@ -166,24 +189,83 @@ export const PERCENTUALI: Record<string, number> | null = null;
 export type Servizio = {
   id: string;
   nome: string;
-  riga: string;
+  /** Cosa fa, detto come lo direbbe un meccanico a un cliente. */
+  claim: string;
+  /** Quando serve: è la riga che fa dire «ah, allora è il mio caso». */
+  quando: string;
+  /**
+   * La foto del lavoro, un file in `public/servizi/`. Quando manca, la card
+   * mostra il disegno di quel servizio e non si rompe niente.
+   */
+  foto?: string;
 };
 
 /**
- * Il listino dei lavori, come ce li ha dettati l’officina. Nessun prezzo:
- * non ce li hanno dati, e inventarli sarebbe scrivere un preventivo a nome
- * loro. Quando arriva il listino si aggiunge un campo `prezzo` qui e la
- * schermata dei consigli lo mostra senza altre modifiche.
+ * I lavori dell'officina, con le parole scelte una per una.
+ *
+ * Due regole di scrittura, e si vedono:
+ *
+ *  1. **Ogni claim ha un ritmo diverso.** Due frasi corte, un elenco di tre,
+ *     un contrasto: se fossero costruiti tutti uguali — «facciamo questo,
+ *     facciamo quello» — a leggerli in fila diventerebbero un listino, e un
+ *     listino non lo legge nessuno.
+ *  2. **`quando` non descrive il lavoro, descrive il cliente.** «Parte a
+ *     fatica la mattina» è la frase in cui qualcuno si riconosce; «prova e
+ *     sostituzione batterie» no. È quella riga che decide se chiama o chiude.
+ *
+ * Nessun prezzo: non ce li hanno dati, e inventarli sarebbe scrivere un
+ * preventivo a nome loro. Quando arriva il listino si aggiunge un campo
+ * `prezzo` qui e la card lo mostra senza altre modifiche.
  */
 export const SERVIZI: Servizio[] = [
-  { id: 'tagliando', nome: 'Tagliando completo', riga: 'Olio, filtri e controlli. Su tutte le auto.' },
-  { id: 'olio', nome: 'Cambio olio', riga: 'Anche cambio automatico. Il lavaggio è in omaggio.' },
-  { id: 'gomme', nome: 'Gomme', riga: 'Riparazione e cambio, estive e invernali.' },
-  { id: 'diagnosi', nome: 'Diagnosi completa', riga: 'Centralina letta su qualsiasi marca, spie comprese.' },
-  { id: 'fap', nome: 'Pulizia FAP', riga: 'Si pulisce, senza sostituirlo.' },
-  { id: 'fari', nome: 'Lucidatura fari', riga: 'Tornano trasparenti. Di notte si vede la differenza.' },
-  { id: 'batteria', nome: 'Batterie', riga: 'Prova, ricarica e sostituzione.' },
-  { id: 'mobile', nome: 'Officina mobile', riga: 'Veniamo noi, sul posto. Anche di notte.' },
+  {
+    id: 'tagliando',
+    nome: 'Tagliando completo',
+    claim: 'Olio, filtri e una lista di controlli che non salta niente.',
+    quando: 'Ogni 12 mesi o 15.000 km, vale quello che arriva prima',
+  },
+  {
+    id: 'olio',
+    nome: 'Cambio olio',
+    claim: 'Esci con l’olio nuovo e l’auto lavata: il lavaggio è in omaggio.',
+    quando: 'Anche sul cambio automatico',
+  },
+  {
+    id: 'gomme',
+    nome: 'Gomme',
+    claim: 'Si ripara quando si può riparare. Si cambia quando serve davvero.',
+    quando: 'Una foratura, una vibrazione, il battistrada basso',
+  },
+  {
+    id: 'diagnosi',
+    nome: 'Diagnosi completa',
+    claim: 'Colleghiamo la centralina e leggiamo quello che l’auto ha già scritto da sola.',
+    quando: 'Una spia accesa, un rumore nuovo, un consumo che non torna',
+  },
+  {
+    id: 'fap',
+    nome: 'Pulizia FAP',
+    claim: 'Si pulisce. Sostituirlo è l’ultima strada, non la prima.',
+    quando: 'Spia del FAP, rigenerazioni continue, spinta che cala',
+  },
+  {
+    id: 'fari',
+    nome: 'Lucidatura fari',
+    claim: 'Tornano trasparenti, e di notte la differenza si vede. Letteralmente.',
+    quando: 'Fari opachi o ingialliti, revisione vicina',
+  },
+  {
+    id: 'batteria',
+    nome: 'Batterie',
+    claim: 'Prova, ricarica, e se è andata la sostituiamo sul momento.',
+    quando: 'Parte a fatica la mattina, o dopo qualche giorno ferma',
+  },
+  {
+    id: 'mobile',
+    nome: 'Officina mobile',
+    claim: 'Non muovi l’auto: ci muoviamo noi. Anche di notte.',
+    quando: 'Sei fermo da qualche parte e non riparti',
+  },
 ];
 
 /**
