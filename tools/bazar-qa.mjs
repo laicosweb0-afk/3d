@@ -69,28 +69,30 @@ const overflow = async (dove) => {
 
 await p.goto(url, { waitUntil: 'networkidle' });
 
-// L'apertura: prima il filo d'oro, da solo; poi «Marhaba.»; poi il fronte
-// del biglietto, con tutte e tre le righe.
+// L'apertura: prima il saluto, «Marhaba.» con «Benvenuto» sotto; poi il
+// marchio da solo, al centro dello schermo, con tutte e tre le righe.
+await p.waitForSelector('.intro-saluto.show', { timeout: 3000 });
 await p.waitForTimeout(900);
 {
-  if (!(await p.locator('.intro-filo').count())) errori.push('APERTURA: il filo d\'oro non si apre');
-  const parole = (await p.locator('.intro-parola.show').allTextContents()).join(' ').trim();
-  if (parole) errori.push(`APERTURA: mentre si apre il filo c'è già da leggere: «${parole}»`);
-}
-await scatto('0-filo');
-await p.waitForSelector('.intro-parola.show', { timeout: 3000 });
-if (!(await p.locator('.intro-parola.show').first().innerText()).includes('Marhaba')) {
-  errori.push('APERTURA: la prima parola non è «Marhaba.»');
+  const saluto = (await p.locator('.intro-saluto').innerText()).replace(/\s+/g, ' ').trim();
+  if (!/^Marhaba\. Benvenuto$/i.test(saluto)) errori.push(`APERTURA: il saluto è «${saluto}», non «Marhaba.» con «Benvenuto» sotto`);
+  if (await p.locator('.intro-marchio').count()) errori.push('APERTURA: il marchio compare insieme al saluto');
 }
 await scatto('0-marhaba');
-await p.waitForTimeout(1600);
+await p.waitForSelector('.intro-marchio', { timeout: 3000 });
+await p.waitForTimeout(2000);
 {
+  if (await p.locator('.intro-saluto').count()) errori.push('APERTURA: il saluto resta a schermo col marchio');
   const fronte = (await p.locator('.intro-marchio').innerText()).replace(/\s+/g, ' ');
   for (const riga of ['BAZAR', 'MARRAKECH', 'SHOWROOM ARREDAMENTO · LUGO']) {
-    if (!fronte.includes(riga)) errori.push(`APERTURA: il fronte del biglietto non ha «${riga}»`);
+    if (!fronte.includes(riga)) errori.push(`APERTURA: il marchio non ha «${riga}»`);
   }
+  // Al centro: il centro del marchio a pochi pixel dal centro dello schermo.
+  const r = await p.locator('.intro-marchio .marchio').boundingBox();
+  const dy = Math.abs(r.y + r.height / 2 - 844 / 2), dx = Math.abs(r.x + r.width / 2 - 390 / 2);
+  if (dy > 12 || dx > 12) errori.push(`APERTURA: il marchio non è al centro (scarto ${dx.toFixed(0)}, ${dy.toFixed(0)} px)`);
 }
-await scatto('0-benvenuto');
+await scatto('0-marchio');
 await p.waitForSelector('.intro', { state: 'detached', timeout: 6000 });
 
 // Il font: Poppins, quello del biglietto, caricato da noi.

@@ -25,7 +25,7 @@ scritte in cima a `bazar/src/config/gioco.ts`.
 
 | | Schermata | Cosa succede |
 |---|---|---|
-| — | Apertura | il filo d'oro che si apre, «Marhaba.», poi il fronte del biglietto e «Benvenuto nel Bazar.» |
+| — | Apertura | «Marhaba.» in oro con «Benvenuto» sotto; poi il marchio da solo, al centro, che si compone come sul biglietto: BAZAR, il filo d'oro, MARRAKECH, SHOWROOM ARREDAMENTO · LUGO |
 | 0 | **La vetrina** | «Sfoglia il Bazar.»: i riquadri *Divani* e *Poltrone*, con il carosello 3D; ogni articolo si apre con le sue foto, e col cuore va fra i preferiti |
 | 1 | Ingresso | «Che casa sei?» — una domanda, poi la ruota |
 | 2 | La domanda | Curve morbide · Classico elegante · Scuro e deciso · Bazar e colore. Il tocco sceglie e avanza |
@@ -169,7 +169,7 @@ scheda non ha foto da scorrere o il contatore non le segue, se il cuore non
 resta acceso o il preferito non arriva sulla tessera, se le
 percentuali della ruota non sono quelle attese, se compare uno spicchio non
 previsto o un sorteggio pesato, se due spicchi uguali stanno vicini, se
-l'apertura non mostra il fronte del biglietto, se gli stili non sono quattro, se il credito compare già nello stile, se c'è un modo
+il saluto non è «Marhaba.» con «Benvenuto» sotto, se il marchio compare insieme al saluto o non è al centro dello schermo, se gli stili non sono quattro, se il credito compare già nello stile, se c'è un modo
 per rispondere di nuovo, se la foto dello stile o una miniatura non si
 carica, se i pezzi non sono tre o vengono da un reparto
 che non è sul biglietto, se sulla tessera manca un contatto del biglietto, se il modulo si invia
