@@ -34,10 +34,20 @@ export function Ingresso({ onAvanti }: { onAvanti: () => void }) {
   return (
     <Step scuro bottom={<Cta onClick={onAvanti}>Inizia</Cta>}>
       <p className="eyebrow">{OFFICINA.nome}</p>
-      {/* Le righe si spezzano a mano: «Facciamo due conti» su una riga sola
-          sfonda i 390px e lascia «conti» orfano in mezzo. */}
-      <h1 className="h1">{'Due conti\nsulla tua auto.'}</h1>
-      <p className="lede">{'Una domanda sola.\nPoi il tuo credito.'}</p>
+      {/*
+        Questa schermata non racconta il meccanismo: lo raccontano le due
+        dopo, e prima qui ripeteva le loro parole. «Due conti sulla tua
+        auto» rimandava «la tua auto» dell'apertura, e «Una domanda sola»
+        era identico all'occhiello della schermata successiva.
+
+        Adesso dice l'unica cosa che nessun'altra schermata dice, ed è
+        quella che il titolare voleva in primo piano: cosa sanno fare. I
+        quattro lavori messi in fila valgono più di qualunque frase, e
+        «tutto in un posto solo» è il motivo per cui uno si ferma qui invece
+        di girare fra tre officine.
+      */}
+      <h1 className="h1">{'Tagliandi, gomme,\nFAP e fari.'}</h1>
+      <p className="lede">{'Tutto in un posto solo,\na Lavezzola.'}</p>
     </Step>
   );
 }
@@ -133,8 +143,10 @@ export function Giro({ onVinto }: { onVinto: (valore: number) => void }) {
         </Cta>
       }
     >
-      <p className="eyebrow">Il tuo credito</p>
-      <h1 className="h1">{'Ora\nvincilo.'}</h1>
+      {/* Non «Il tuo credito»: quelle tre parole aprono già il titolo del
+          modulo, due schermate più in là. */}
+      <p className="eyebrow">Un giro solo</p>
+      <h1 className="h1">{'Tocca\na te.'}</h1>
       <div className="mt-8 w-full max-w-[320px]">
         <Ruota
           ref={ruota}
@@ -387,7 +399,7 @@ export function Fine({ codice, onRicomincia }: { codice: string; onRicomincia: (
       }
     >
       <span className="marchio-fine"><CargLogo size={88} grande title={OFFICINA.nome} /></span>
-      <h1 className="h1">{'Il tuo credito\nè al sicuro.'}</h1>
+      <h1 className="h1">{'Fatto.\nTi aspettiamo.'}</h1>
       <p className="codice">{codice}</p>
       <p className="nota">Dillo in officina: lo troviamo noi.</p>
       <p className="notturno">{OFFICINA.notturno}</p>
