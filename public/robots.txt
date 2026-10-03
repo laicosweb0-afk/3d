@@ -3,5 +3,6 @@ Allow: /
 Disallow: /mediapro
 Disallow: /club
 Disallow: /club-rama
+Disallow: /bazar
 
 Sitemap: https://www.mondialservicesrl.it/sitemap.xml

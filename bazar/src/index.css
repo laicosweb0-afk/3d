@@ -1,0 +1,578 @@
+@import './font.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * IL TUO STILE — Bazar Marrakech, il sistema.
+ *
+ * L'impianto è quello della card Woman, già approvato e provato sul
+ * telefono: una schermata per volta, alta quanto lo schermo, con il marchio
+ * in alto, il contenuto al centro e l'azione in fondo.
+ *
+ * La pelle è il biglietto da visita del negozio, e i colori sono campionati
+ * dai suoi pixel, non scelti a occhio: il nero caldo che sfuma verso il
+ * basso, il crema di BAZAR, l'oro di MARRAKECH e di Instagram, i due grigi
+ * di SHOWROOM e dell'email. Il carattere è il suo: Poppins.
+ *
+ * Il biglietto è tutto scuro, e così la card: nessuna schermata chiara.
+ */
+@layer base {
+  :root {
+    --nero: #16120F;          /* il fondo del biglietto, in alto */
+    --nero-fondo: #0D0A08;    /* lo stesso fondo, in basso */
+    --crema: #EDE7DD;         /* BAZAR */
+    --oro: #D8BC86;           /* MARRAKECH, @bazar.marrakech9 */
+    --oro-scuro: #8E7751;     /* i capi del filo, dove sfuma */
+    --grigio: #AAA59E;        /* SHOWROOM ARREDAMENTO · LUGO */
+    --grigio-tenue: #98948D;  /* l'email */
+    --crema-tenue: rgba(237, 231, 221, 0.62);
+    --linea: rgba(237, 231, 221, 0.12);
+
+    /* Il filo d'oro del biglietto: scuro ai capi, pieno al centro. */
+    --filo: linear-gradient(90deg, rgba(142, 119, 81, 0.15) 0%, #8E7751 18%,
+      #D8BC86 50%, #8E7751 82%, rgba(142, 119, 81, 0.15) 100%);
+
+    /*
+     * Lo sfondo: il nero del biglietto, che scende di un tono verso il basso,
+     * e un alone d'oro appena accennato che sale dal fondo — la luce di un
+     * lampadario sul pavimento dello showroom. Sulle schermate che pesano
+     * (ruota, credito, tessera) l'alone sale di più.
+     */
+    --mesh:
+      radial-gradient(90% 45% at 50% 108%, rgba(216, 188, 134, 0.10) 0%, rgba(216, 188, 134, 0) 70%),
+      linear-gradient(180deg, #16120F 0%, #0D0A08 100%);
+    --mesh-forte:
+      radial-gradient(95% 55% at 50% 108%, rgba(216, 188, 134, 0.20) 0%, rgba(216, 188, 134, 0) 70%),
+      radial-gradient(60% 35% at 50% 40%, rgba(216, 188, 134, 0.05) 0%, rgba(216, 188, 134, 0) 70%),
+      linear-gradient(180deg, #16120F 0%, #0D0A08 100%);
+
+    --ease: cubic-bezier(0.32, 0.72, 0, 1);
+    --dur: 520ms;
+    --dur-fast: 220ms;
+    color-scheme: dark;
+  }
+
+  html, body { background: var(--nero-fondo); }
+  body {
+    margin: 0;
+    color: var(--crema);
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  #root { width: 100%; max-width: 620px; }
+
+  /* 16px minimo: sotto questa soglia iOS ingrandisce la pagina al focus. */
+  input, select, textarea, button { font-size: 16px; font-family: inherit; }
+  :focus-visible { outline: 2px solid var(--oro); outline-offset: 3px; }
+  ::selection { background: rgba(216, 188, 134, 0.35); }
+}
+
+@layer components {
+  /* ---- la schermata ---- */
+  .step {
+    position: relative;
+    min-height: 100dvh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 1.75rem 1.75rem calc(2.5rem + env(safe-area-inset-bottom, 0px));
+    background: var(--mesh);
+    color: var(--crema);
+    animation: step-up var(--dur) var(--ease) both;
+    text-align: center;
+  }
+  .step[data-forte='true'] { background: var(--mesh-forte); }
+  /* La foto di sfondo: sotto a tutto, velata dal nero che sale dal basso,
+     così il testo resta leggibile e la foto si vede dove non c'è niente. */
+  .step-sfondo {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    z-index: 0; opacity: 0.55; pointer-events: none;
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0,0,0,.65) 40%, rgba(0,0,0,0) 85%);
+    mask-image: linear-gradient(180deg, #000 0%, rgba(0,0,0,.65) 40%, rgba(0,0,0,0) 85%);
+  }
+  .step > :not(.step-sfondo) { position: relative; z-index: 1; }
+  @keyframes step-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-top {
+    width: 100%; max-width: 620px; min-height: 56px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding-top: 0.5rem;
+  }
+  .step-main {
+    flex: 1; width: 100%; max-width: 620px;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding-block: 1.5rem;
+  }
+  .step-bottom {
+    width: 100%; max-width: 620px;
+    display: flex; flex-direction: column; align-items: center; gap: 0.875rem;
+  }
+
+  /* ---- il marchio ----
+   * Le proporzioni vengono dal fronte del biglietto: MARRAKECH è alto un
+   * quarto di BAZAR, la spaziatura di BAZAR è circa un terzo della lettera,
+   * il filo è largo quanto MARRAKECH. Tutto in `em`, così scala intero. */
+  .marchio {
+    display: inline-flex; flex-direction: column; align-items: center;
+    line-height: 1; user-select: none;
+  }
+  .marchio-bazar {
+    font-size: 2.6em; font-weight: 500; color: var(--crema);
+    letter-spacing: 0.3em; margin-right: -0.3em;
+  }
+  .filo {
+    display: block; width: 8.2em; height: 1px; margin: 0.9em 0 0.85em;
+    background: var(--filo);
+  }
+  .marchio-sotto {
+    font-size: 0.82em; font-weight: 500; color: var(--oro);
+    letter-spacing: 0.42em; margin-right: -0.42em;
+  }
+  .marchio-riga {
+    font-size: 0.56em; font-weight: 400; color: var(--grigio);
+    letter-spacing: 0.24em; margin-right: -0.24em; margin-top: 2.6em; white-space: nowrap;
+  }
+
+  /* ---- tipografia ---- */
+  .eyebrow {
+    font-size: 0.6875rem; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.26em; color: var(--oro); margin: 0 0 1.25rem;
+  }
+  /* I titoli vanno sempre spezzati a mano su due righe, nel testo. */
+  .h1 {
+    font-size: clamp(2.3rem, 9vw, 2.75rem); font-weight: 500;
+    line-height: 1.12; letter-spacing: -0.015em; color: var(--crema);
+    margin: 0; white-space: pre-line;
+  }
+  /* Il nome dello stile, in oro come MARRAKECH: è l'unico titolo che lo è. */
+  .h1-oro { color: var(--oro); }
+  .lede {
+    font-size: 1rem; font-weight: 300; line-height: 1.6; color: var(--crema-tenue);
+    margin: 1.5rem auto 0; white-space: pre-line; max-width: 310px;
+  }
+  .lede-stretta { margin-top: 1rem; font-size: 0.875rem; }
+  .nota {
+    font-size: 0.8125rem; font-weight: 300; letter-spacing: 0.04em; line-height: 1.6;
+    color: var(--grigio); margin: 0;
+  }
+  .terms { font-size: 0.75rem; font-weight: 300; line-height: 1.5; color: var(--grigio-tenue); margin: 0.875rem 0 0; }
+
+  /* ---- azioni ---- */
+  .cta {
+    appearance: none; display: inline-flex; align-items: center; justify-content: center;
+    gap: 0.75rem; min-height: 52px; padding: 0 2rem; width: auto;
+    border: 1px solid rgba(216, 188, 134, 0.55); border-radius: 980px; background: transparent;
+    color: var(--crema); font-family: inherit; font-size: 0.8125rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.16em; cursor: pointer; text-decoration: none;
+    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
+  }
+  .cta:hover, .cta:active { background: var(--oro); border-color: var(--oro); color: var(--nero); }
+  .cta:disabled { opacity: 0.35; cursor: default; background: transparent; color: var(--crema); }
+  /* L'unica pill piena di tutto il percorso: la conferma finale. */
+  .cta-fill { background: var(--oro); border-color: var(--oro); color: var(--nero); }
+  .cta-fill:hover, .cta-fill:active { background: var(--oro); color: var(--nero); filter: brightness(1.05); }
+  .cta-fill:disabled { background: var(--oro); border-color: var(--oro); color: var(--nero); }
+
+  .ghost {
+    appearance: none; border: none; background: none; padding: 0.625rem;
+    font-family: inherit; font-size: 0.8125rem; font-weight: 300; letter-spacing: 0.06em;
+    color: var(--grigio); cursor: pointer; transition: color var(--dur-fast) var(--ease);
+  }
+  .ghost:hover { color: var(--crema); }
+
+  /* ---- le risposte ---- */
+  .opts { width: 100%; margin-top: 2.25rem; display: flex; flex-direction: column; gap: 0.625rem; }
+  .opt {
+    appearance: none; display: block; width: 100%; min-height: 60px; padding: 1rem 1.25rem;
+    border: 1px solid var(--linea); border-radius: 1rem;
+    background: rgba(237, 231, 221, 0.04);
+    color: var(--crema); font-family: inherit; font-size: 1.0625rem; font-weight: 400;
+    cursor: pointer; text-align: center;
+    transition: border-color var(--dur-fast) var(--ease),
+      background-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  }
+  .opt:hover { background: rgba(237, 231, 221, 0.08); }
+  .opt:active { transform: scale(0.985); }
+  .opt[data-active='true'] { border-color: var(--oro); background: rgba(216, 188, 134, 0.12); }
+  .opt-nota {
+    display: block; font-size: 0.8125rem; font-weight: 300; letter-spacing: 0.04em;
+    color: var(--grigio); margin-top: 0.2rem;
+  }
+
+  /* ---- i blocchi ---- */
+  .vetro {
+    width: 100%;
+    background: rgba(237, 231, 221, 0.04);
+    border: 1px solid var(--linea); border-radius: 1.5rem;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.35);
+  }
+
+  .premio-cifra {
+    font-size: 4.5rem; font-weight: 300; line-height: 1; letter-spacing: -0.02em;
+    color: var(--oro); margin: 0; font-variant-numeric: tabular-nums;
+  }
+  .premio-label {
+    font-size: 0.6875rem; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.26em; color: var(--grigio); margin: 0.875rem 0 0;
+  }
+  .premio-sub { font-size: 0.875rem; font-weight: 300; color: var(--crema-tenue); margin: 0.875rem 0 0; }
+
+  /* ---- i pezzi ---- */
+  .recs { margin: 2.25rem 0 0; padding: 0; list-style: none; text-align: left; overflow: hidden; }
+  .rec { padding: 1rem 1.25rem; display: flex; gap: 1rem; align-items: center; }
+  /* La miniatura: il pezzo sul suo fondo crema da studio. Dove la foto non
+     c'è ancora, l'iniziale del reparto in oro tiene la colonna allineata. */
+  .rec-foto {
+    flex: none; width: 64px; height: 64px; border-radius: 0.75rem; object-fit: cover;
+    background: #E9E1D3;
+  }
+  .novita {
+    display: inline-block; margin-left: 0.5rem; padding: 0.15rem 0.45rem; border-radius: 99px;
+    background: var(--oro); color: var(--nero); font-size: 0.5625rem; letter-spacing: 0.16em;
+    vertical-align: 1px;
+  }
+  .rec-foto-vuota {
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(216, 188, 134, 0.08); border: 1px solid rgba(216, 188, 134, 0.25);
+    color: var(--oro); font-size: 1.25rem; font-weight: 300;
+  }
+  /* La foto dello stile nella rivelazione: il fondo crema dello studio,
+     arrotondato, con il filo d'oro come cornice e l'ombra che la stacca dal
+     nero. Sopra i 220px ruba la scena al nome. */
+  .foto-stile {
+    width: min(56vw, 220px); height: auto; aspect-ratio: 4 / 5; object-fit: cover;
+    border-radius: 1.25rem; margin: 0 auto 1.75rem; display: block;
+    border: 1px solid rgba(216, 188, 134, 0.35);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    background: #E9E1D3;
+  }
+  /* Un salotto intero o un divano lungo: orizzontale, più largo. */
+  .foto-stile-larga { width: min(84vw, 340px); aspect-ratio: auto; }
+  .rec + .rec { border-top: 1px solid var(--linea); }
+  .rec-reparto {
+    font-size: 0.625rem; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.24em; color: var(--oro); margin: 0;
+  }
+  .rec-nome { font-size: 1.0625rem; font-weight: 500; color: var(--crema); margin: 0.375rem 0 0; }
+  .rec-note { font-size: 0.8125rem; font-weight: 300; color: var(--grigio); margin: 0.25rem 0 0; }
+
+  /* ---- i campi ---- */
+  .campo {
+    width: 100%; height: 54px; border: 1px solid var(--linea); border-radius: 1rem;
+    background: rgba(237, 231, 221, 0.05);
+    color: var(--crema); font-family: inherit; font-size: 1rem; font-weight: 400;
+    text-align: center; padding: 0 1.25rem;
+    transition: border-color var(--dur-fast) var(--ease);
+  }
+  .campo::placeholder { color: var(--grigio-tenue); }
+  .campo:focus { outline: none; border-color: var(--oro); }
+  .campo[aria-invalid='true'] { border-color: #c96a4f; }
+  .consenso {
+    display: flex; gap: 0.625rem; align-items: flex-start; text-align: left;
+    margin-top: 0.875rem; font-size: 0.8125rem; font-weight: 300;
+    line-height: 1.55; color: var(--grigio);
+  }
+  .consenso input { margin-top: 3px; accent-color: var(--oro); }
+  .consenso a { color: var(--crema); text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ---- la tessera finale: quella da mostrare al banco ----
+   * È un piccolo biglietto: stesso nero, stesso filo d'oro. */
+  .tessera {
+    position: relative; width: 100%; max-width: 330px; margin-top: 2.25rem;
+    padding: 1.75rem 1.5rem 1.5rem; border-radius: 1.25rem;
+    background: linear-gradient(180deg, #1c1713 0%, #110d0b 100%);
+    border: 1px solid rgba(216, 188, 134, 0.35);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+  }
+  .tessera-cifra {
+    font-size: 3.5rem; font-weight: 300; line-height: 1; margin: 0; color: var(--oro);
+  }
+  .tessera .filo { margin: 1.1rem auto; width: 70%; }
+  .tessera-stile {
+    font-size: 0.6875rem; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.24em; color: var(--grigio); margin: 0;
+  }
+  .codice {
+    font-size: 1.0625rem; font-weight: 500; letter-spacing: 0.22em; color: var(--crema);
+    font-variant-numeric: tabular-nums; margin: 0.75rem 0 0;
+  }
+  .tessera-scade { font-size: 0.75rem; font-weight: 300; line-height: 1.5; color: var(--grigio-tenue); margin: 0.75rem 0 0; }
+
+  /* ---- i contatti, come sul retro del biglietto ---- */
+  .contatti { list-style: none; margin: 1.75rem 0 0; padding: 0; font-size: 0.9375rem; line-height: 2; }
+  .contatti a { color: var(--crema); text-decoration: none; font-variant-numeric: tabular-nums; }
+  .contatto-nome { font-weight: 500; }
+  .indirizzo {
+    font-size: 0.8125rem; font-weight: 300; line-height: 1.6;
+    color: var(--grigio); margin: 0.875rem 0 0;
+  }
+  .indirizzo a { color: inherit; text-decoration: none; }
+  .instagram { margin: 0.75rem 0 0; font-size: 0.875rem; }
+  .instagram a { color: var(--oro); text-decoration: none; }
+  .instagram .sep { color: var(--grigio-tenue); }
+}
+
+@layer components {
+  /* ---- l'apertura ---- */
+  .intro {
+    position: fixed; inset: 0; z-index: 100;
+    background: linear-gradient(180deg, #16120F 0%, #0D0A08 100%);
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity .55s ease, transform .6s cubic-bezier(.4, 0, .2, 1);
+  }
+  .intro.leaving { opacity: 0; transform: translateY(-28px); pointer-events: none; }
+  .intro-parola {
+    position: absolute; font-weight: 400; letter-spacing: -.01em; color: var(--crema);
+    font-size: 52px; opacity: 0; transform: scale(.9);
+    transition: opacity .5s cubic-bezier(.2, 1, .3, 1), transform .5s cubic-bezier(.2, 1, .3, 1);
+  }
+  .intro-parola.show { opacity: 1; transform: scale(1); }
+  .intro-parola.hide { opacity: 0; transform: scale(1.06); transition-duration: .4s; }
+  /* «Marhaba.» in oro, sottile: è un saluto, non un titolo. */
+  .intro-parola:not(.intro-domanda) { font-weight: 300; color: var(--oro); }
+  .intro-domanda {
+    font-size: 30px; font-weight: 400; text-align: center; padding: 0 40px; line-height: 1.25;
+    top: calc(50% + 70px);
+  }
+  .intro-marchio {
+    position: absolute; top: calc(50% - 175px);
+    opacity: 0; transition: opacity .6s ease;
+  }
+  .intro-marchio.show { opacity: 1; }
+  /* Il filo d'oro che si apre dal centro verso i due capi. */
+  .intro-filo {
+    position: absolute; width: 62vw; max-width: 300px; height: 1px;
+    background: var(--filo);
+    transform: scaleX(0); transform-origin: center;
+    animation: apri 1.1s cubic-bezier(.5, 0, .2, 1) forwards;
+    transition: opacity .3s ease;
+  }
+  .intro-filo.via { opacity: 0; }
+  @keyframes apri { to { transform: scaleX(1); } }
+}
+
+@layer components {
+  /* ================================================================ */
+  /* La vetrina                                                        */
+  /* ================================================================ */
+  .vetrina { width: 100%; margin-top: 1.75rem; display: grid; gap: 14px; }
+
+  /* Il riquadro alla maniera di Apple: angoli larghi, un nero appena più
+     chiaro del fondo, un filo di luce sul bordo. Dentro, il testo sta a
+     sinistra come nelle schede di Apple; il carosello esce fino ai bordi. */
+  .riquadro {
+    width: 100%; text-align: left; overflow: hidden;
+    padding: 1.375rem 0 1.125rem;
+    border-radius: 28px;
+    background: linear-gradient(180deg, #1F1915 0%, #15110E 100%);
+    border: 1px solid rgba(237, 231, 221, 0.08);
+    box-shadow: 0 1px 0 rgba(237, 231, 221, 0.05) inset, 0 24px 60px rgba(0, 0, 0, 0.45);
+  }
+  .riquadro-testa { padding: 0 1.375rem; }
+  .riquadro-titolo {
+    margin: 0; font-size: 1.625rem; font-weight: 600; letter-spacing: -0.02em; color: var(--crema);
+  }
+  .riquadro-sotto { margin: 0.25rem 0 0; font-size: 0.875rem; font-weight: 300; color: var(--grigio); }
+
+  /* Il binario: uno scorrimento vero, agganciato al centro. Il rientro è
+     mezzo binario meno mezza carta, così la prima e l'ultima arrivano al
+     centro anche loro. */
+  .binario {
+    /* Le copertine si sovrappongono: il margine negativo le infila una
+       dietro l'altra, e il 3D le fa vedere girate ai lati di quella in
+       centro. Le vicine escono a metà dal bordo: si capisce che si scorre. */
+    --w: 204px;
+    display: flex; gap: 0; overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+    padding: 1.375rem calc(50% - var(--w) / 2) 2.25rem;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  }
+  .binario::-webkit-scrollbar { display: none; }
+  .binario-alta { --w: 156px; }
+  .binario-posto { position: relative; flex: none; width: var(--w); scroll-snap-align: center; }
+  .binario-posto + .binario-posto { margin-left: -34px; }
+  .binario-alta .binario-posto + .binario-posto { margin-left: -26px; }
+
+  /* La copertina in 3D. La trasformazione la scrive il codice a ogni
+     fotogramma; qui c'è quello che non cambia: la forma, l'ombra, e il
+     riflesso sul pavimento lucido dello showroom. */
+  .carta3d {
+    position: relative; display: block; width: 100%; padding: 0; border: 0; cursor: pointer;
+    aspect-ratio: 4 / 3; border-radius: 18px; overflow: hidden;
+    background: #E9E1D3;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+    filter: brightness(var(--luce, 1));
+    will-change: transform;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-box-reflect: below 6px linear-gradient(transparent 70%, rgba(255, 255, 255, 0.16));
+  }
+  .binario-alta .carta3d { aspect-ratio: 4 / 5; }
+  .carta3d img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transform: scale(1.14); pointer-events: none; user-select: none;
+  }
+  .carta3d:focus-visible { outline-offset: 4px; }
+  .carta3d-novita {
+    position: absolute; top: 10px; left: 10px; padding: 0.2rem 0.55rem; border-radius: 99px;
+    background: var(--oro); color: var(--nero);
+    font-size: 0.5625rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .carta3d-cuore {
+    position: absolute; top: 8px; right: 10px; color: #b4452f; font-size: 1.125rem;
+    text-shadow: 0 1px 4px rgba(255, 255, 255, 0.6);
+  }
+  .carta3d-conta {
+    position: absolute; bottom: 9px; right: 9px; padding: 0.2rem 0.5rem; border-radius: 99px;
+    background: rgba(22, 18, 15, 0.55); color: var(--crema);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    font-size: 0.625rem; font-weight: 500; letter-spacing: 0.04em;
+  }
+
+  /* Il nome dell'articolo in centro. */
+  .riquadro-nome { min-height: 3.1rem; padding: 0 1.375rem; text-align: center; }
+  .riquadro-nome-in { margin: 0; animation: nome-in 320ms var(--ease) both; }
+  .riquadro-nome .nome { display: block; font-size: 1.0625rem; font-weight: 500; color: var(--crema); }
+  .riquadro-nome .riga { display: block; margin-top: 0.15rem; font-size: 0.8125rem; font-weight: 300; color: var(--grigio); }
+  @keyframes nome-in { from { opacity: 0; transform: translateY(6px); } }
+
+  /* La guida della Bufala: la frase, e la pista che è già l'indicatore. */
+  .guida { margin-top: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+  .guida-testo {
+    margin: 0; display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.75rem; font-weight: 300; color: var(--grigio);
+    transition: opacity 400ms var(--ease);
+  }
+  .guida[data-usato='si'] .guida-testo { opacity: 0.4; }
+  .guida-icona {
+    position: relative; width: 18px; height: 1px; background: rgba(216, 188, 134, 0.45);
+  }
+  .guida-icona::after {
+    content: ''; position: absolute; top: -2px; left: 0; width: 5px; height: 5px; border-radius: 50%;
+    background: var(--oro); animation: scivola 1.8s var(--ease) infinite;
+  }
+  .guida[data-usato='si'] .guida-icona::after { animation: none; left: 13px; }
+  @keyframes scivola { 0%, 15% { left: 0; } 60%, 100% { left: 13px; } }
+  .guida-pista { position: relative; width: 72px; height: 2px; border-radius: 2px; background: var(--linea); }
+  .guida-cursore {
+    position: absolute; top: 0; left: 0; width: 20px; height: 2px; border-radius: 2px; background: var(--oro);
+    transform: translateX(calc(var(--pos, 0) * 52px));
+  }
+
+  /* ================================================================ */
+  /* La scheda: il foglio che sale dal basso                           */
+  /* ================================================================ */
+  .scheda-velo {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; align-items: flex-end; justify-content: center;
+    background: rgba(0, 0, 0, 0.55);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    animation: velo-in 260ms ease both;
+  }
+  .scheda-velo.via { animation: velo-out 260ms ease both; }
+  @keyframes velo-in { from { opacity: 0; } }
+  @keyframes velo-out { to { opacity: 0; } }
+  .scheda {
+    position: relative; width: 100%; max-width: 620px; max-height: 94dvh; overflow-y: auto;
+    background: var(--nero); color: var(--crema);
+    border-radius: 28px 28px 0 0; border-top: 1px solid rgba(237, 231, 221, 0.1);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    animation: foglio-in 460ms cubic-bezier(0.32, 0.72, 0, 1) both;
+    overscroll-behavior: contain;
+  }
+  .scheda-velo.via .scheda { animation: foglio-out 260ms cubic-bezier(0.4, 0, 1, 1) both; }
+  @keyframes foglio-in { from { transform: translateY(100%); } }
+  @keyframes foglio-out { to { transform: translateY(100%); } }
+  .scheda-maniglia {
+    position: absolute; top: 7px; left: 50%; z-index: 2; width: 36px; height: 5px; margin-left: -18px;
+    border-radius: 3px; background: rgba(22, 18, 15, 0.35);
+  }
+  .scheda-chiudi {
+    position: absolute; top: 14px; right: 14px; z-index: 2;
+    width: 32px; height: 32px; border-radius: 50%; border: 0; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(22, 18, 15, 0.55); color: var(--crema);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  }
+
+  .galleria {
+    display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+    scrollbar-width: none; overscroll-behavior-x: contain;
+  }
+  .galleria::-webkit-scrollbar { display: none; }
+  .galleria-foto {
+    flex: none; width: 100%; margin: 0; scroll-snap-align: center; scroll-snap-stop: always;
+    aspect-ratio: 4 / 3; background: #E9E1D3;
+  }
+  .galleria-alta .galleria-foto { aspect-ratio: 4 / 5; max-height: 62dvh; }
+  .galleria-foto img { width: 100%; height: 100%; object-fit: contain; display: block; user-select: none; }
+
+  .galleria-punti {
+    display: flex; align-items: center; justify-content: center; gap: 7px; padding: 0.875rem 0 0.25rem;
+  }
+  .punto {
+    width: 7px; height: 7px; padding: 0; border: 0; border-radius: 4px; cursor: pointer;
+    background: rgba(237, 231, 221, 0.25);
+    transition: width 220ms var(--ease), background-color 220ms var(--ease);
+  }
+  .punto[aria-current='true'] { width: 18px; background: var(--oro); }
+  .galleria-conta { margin-left: 0.5rem; font-size: 0.6875rem; color: var(--grigio-tenue); font-variant-numeric: tabular-nums; }
+
+  .scheda-testo { padding: 1rem 1.5rem 1.75rem; text-align: left; }
+  .scheda-testo .eyebrow { margin-bottom: 0.5rem; }
+  .scheda-nome { margin: 0; font-size: 1.75rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; }
+  .scheda-riga { margin: 0.5rem 0 0; font-size: 0.9375rem; font-weight: 300; line-height: 1.55; color: var(--crema-tenue); }
+  .scheda-dettagli { list-style: none; margin: 1.125rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .scheda-dettagli li {
+    padding: 0.35rem 0.75rem; border-radius: 99px; border: 1px solid var(--linea);
+    font-size: 0.8125rem; font-weight: 300; color: var(--crema-tenue);
+  }
+  .cuore {
+    margin-top: 1.5rem; width: 100%; min-height: 52px; border-radius: 99px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+    border: 1px solid rgba(216, 188, 134, 0.55); background: transparent; color: var(--crema);
+    font-family: inherit; font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  }
+  .cuore span { font-size: 1.125rem; letter-spacing: 0; }
+  .cuore.pieno { background: var(--oro); border-color: var(--oro); color: var(--nero); }
+  .scheda-nota { margin: 1rem 0 0; font-size: 0.8125rem; font-weight: 300; line-height: 1.6; color: var(--grigio); text-align: center; }
+
+  /* I preferiti sulla tessera. */
+  .tessera-preferiti { margin-top: 1rem; padding-top: 0.875rem; border-top: 1px solid var(--linea); }
+  .tessera-lista { margin: 0.4rem 0 0; font-size: 0.875rem; color: var(--crema); line-height: 1.5; }
+}
+
+@layer utilities {
+  .tabular { font-variant-numeric: tabular-nums; }
+
+  /* Entrata scaglionata: ogni riga arriva poco dopo la precedente. */
+  .ra { animation: ra 450ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  @keyframes ra { from { opacity: 0; transform: translateY(16px); } }
+
+  /* Le particelle che salgono dal credito: tre, piccole, d'oro. */
+  .particella {
+    position: absolute; top: 34%; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--oro); opacity: 0; pointer-events: none;
+    animation: sale 1.2s ease-out both;
+  }
+  @keyframes sale {
+    0% { opacity: 0.5; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-60px); }
+  }
+}
+
+/* Chi ha chiesto meno movimento non vede né giri né entrate né particelle. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}

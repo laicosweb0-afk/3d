@@ -91,3 +91,13 @@ altro cliente, un altro dominio, stessa meccanica del portfolio — HTML puro in
 ma l'indirizzo definitivo è un sottodominio suo, servito da Vercel davanti al
 sito di Rama Ceramiche senza toccarlo. Il procedimento completo — progetto
 Vercel, record DNS, controllo da telefono — sta in `CLUB-RAMA.md`.
+
+## Bazar Marrakech (`/bazar/`)
+
+Dentro `public/bazar/` c'è la build della card NFC di Bazar Marrakech, stessa
+meccanica di Woman: il sorgente sta in `bazar/`, la build si ricopia in
+`public/` e l'export la serve così com'è. Dopo un push su `main` è online a
+
+    https://laicosweb0-afk.github.io/3d/bazar/
+
+Dominio, controllo da telefono e decisioni aperte: `BAZAR.md`.
