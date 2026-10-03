@@ -128,8 +128,8 @@
   /* I titoli vanno sempre spezzati a mano su due righe, nel testo, con \A.
      Una riga sola che va a capo da sé non ha lo stesso ritmo. */
   .h1 {
-    font-size: clamp(2.5rem, 9vw, 2.875rem); font-weight: 600;
-    line-height: 1.08; letter-spacing: -0.025em; color: var(--ink);
+    font-size: clamp(2.5rem, 9vw, 2.875rem); font-weight: 800;
+    line-height: 1.0; letter-spacing: -0.04em; color: var(--ink);
     margin: 0; white-space: pre-line;
   }
   .step[data-bg='dark'] .h1 { color: var(--light); }
@@ -308,7 +308,7 @@
   }
   .intro.leaving { opacity: 0; transform: translateY(-28px); pointer-events: none; }
   .intro-parola {
-    position: absolute; font-weight: 600; letter-spacing: -.03em; color: var(--light);
+    position: absolute; font-weight: 800; letter-spacing: -.04em; color: var(--light);
     font-size: 64px; opacity: 0; transform: scale(.88);
     transition: opacity .5s cubic-bezier(.2, 1, .3, 1), transform .5s cubic-bezier(.2, 1, .3, 1);
   }

@@ -68,40 +68,29 @@ const scatto = (n) => p.screenshot({ path: `${out}/${n}.png` });
 /* ---- 2. il percorso ------------------------------------------------- */
 await p.goto(url, { waitUntil: 'networkidle' });
 
-// L'apertura è il filmato del marchio, e la frase entra sopra, non dopo.
+// L'apertura è solo tipografia: due righe che entrano sfalsate, e la firma.
 {
-  const clip = p.locator('.apertura-clip');
-  if (!(await clip.count())) errori.push('APERTURA: manca il filmato del marchio');
-  // Muto e inline, o su iOS non parte da solo e Safari se lo apre a pieno
-  // schermo nel suo player.
-  const v = await clip.evaluate((el) => ({
-    muted: el.muted, inline: el.hasAttribute('playsinline'), auto: el.autoplay,
-  })).catch(() => null);
-  if (v && !(v.muted && v.inline && v.auto)) {
-    errori.push(`APERTURA: il video è muted=${v.muted} playsinline=${v.inline} autoplay=${v.auto}`);
+  await p.waitForSelector('.apertura-riga.dentro', { timeout: 6000 }).catch(() => {
+    errori.push("APERTURA: il titolo non entra");
+  });
+  // Nessun filmato: era mezzo megabyte e cinque secondi di attesa.
+  if (await p.locator('video').count()) {
+    errori.push("APERTURA: c'è ancora un video, doveva restare solo il testo");
   }
-  // E deve davvero scorrere: un video fermo al primo fotogramma è un nero.
-  await p.waitForTimeout(2500);
-  const t = await clip.evaluate((el) => el.currentTime).catch(() => 0);
-  if (t < 0.5) errori.push(`APERTURA: il filmato è fermo a ${t}s, non sta partendo`);
-  await scatto('0-marchio');
-  const prima = (await p.locator('.intro-parola.show').allTextContents()).join(' ').trim();
-  if (prima) errori.push(`APERTURA: «${prima}» è a schermo prima che il marchio si componga`);
-}
-await p.waitForSelector('.intro-parola.show', { timeout: 8000 });
-{
-  const frase = await p.locator('.intro-parola.show').first().innerText().catch(() => '');
-  if (!frase.trim()) errori.push('APERTURA: la frase non compare');
-  if (/da quanto non/i.test(frase)) {
-    errori.push(`APERTURA: è tornata la frase vecchia — «${frase.trim()}»`);
+  await p.waitForTimeout(700);
+  await scatto('0-apertura');
+  const righe = await p.locator('.apertura-riga.dentro').allTextContents();
+  if (righe.length !== 2) errori.push(`APERTURA: ${righe.length} righe invece di 2`);
+  if (/da quanto non/i.test(righe.join(' '))) {
+    errori.push(`APERTURA: è tornata la frase vecchia — «${righe.join(' ')}»`);
   }
-  // Il filmato deve essere ancora a schermo quando la frase entra: messa in
-  // coda allungherebbe l'attesa prima della prima schermata.
-  if (!(await p.locator('.apertura-clip').count())) {
-    errori.push('APERTURA: la frase arriva a filmato finito, non sopra');
+  // La seconda riga è quella colorata: è il colpo d'occhio della creative.
+  const blu = await p.locator('.apertura-riga-blu').evaluate((el) => getComputedStyle(el).color).catch(() => '');
+  if (!/rgb/.test(blu)) errori.push('APERTURA: la seconda riga non ha il colore del marchio');
+  if (!(await p.locator('.apertura-firma').count())) {
+    errori.push('APERTURA: manca la firma in basso');
   }
 }
-await scatto('0b-frase');
 await p.waitForSelector('.intro', { state: 'detached', timeout: 12000 });
 await p.waitForTimeout(700);
 await scatto('1-ingresso');

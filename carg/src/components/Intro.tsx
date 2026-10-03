@@ -1,41 +1,28 @@
-import { useEffect, useRef, useState } from 'react';
-import { APERTURA } from '../config/gioco';
+import { useEffect, useState } from 'react';
+import { APERTURA, OFFICINA } from '../config/gioco';
+import { CargLogo } from './CargLogo';
 import { pronto, sblocca, spruzzo } from '../lib/suono';
 
 /**
- * Due formati, e l'MP4 per primo.
+ * L'apertura: solo tipografia.
  *
- * Il browser prende il primo che dice di saper leggere, e ne scarica uno
- * solo. L'MP4 (H.264) sta davanti perché è quello che serve a iOS, che è la
- * metà abbondante di chi avvicinerà il telefono; il WebM (VP9) copre i
- * Chromium compilati senza H.264 — fra cui quello con cui giriamo il
- * collaudo, che altrimenti non riuscirebbe a verificare l'apertura.
- */
-const CLIP_MP4 = import.meta.env.BASE_URL + 'apertura.mp4';
-const CLIP_WEBM = import.meta.env.BASE_URL + 'apertura.webm';
-
-/**
- * L'apertura: il reveal del marchio, e sopra la frase.
+ * Prima c'era il filmato del marchio. Era bello e non funzionava come
+ * apertura di una card NFC: cinque secondi di film prima di poter toccare
+ * qualcosa, mezzo megabyte da scaricare, e il sospetto — in chi ha appena
+ * avvicinato il telefono al bancone — di essere finito dentro una pubblicità
+ * invece che in uno strumento.
  *
- * Il filmato dura cinque secondi — scintille nel buio, il neon che disegna
- * l'auto, gli attrezzi, il tondo che si compone e si accende — e la frase
- * entra a 3,9 s, cioè **mentre il marchio è già a schermo**, non dopo. Messa
- * in coda allungherebbe l'attesa di un secondo e mezzo buono: chi avvicina
- * il telefono al bancone non sta guardando un film, e ogni secondo prima
- * della prima schermata è un secondo in cui può rimettere il telefono in
- * tasca.
+ * Al suo posto l'impianto della creative di riferimento: titolo enorme e
+ * nero al centro, la seconda riga nel colore del marchio, e la firma in
+ * basso in maiuscoletto spaziato. Pesa zero byte, parte nell'istante in cui
+ * la pagina si apre e dura **2,8 secondi** invece di 6,8.
  *
- * Il filmato è muto e con `playsInline`: su iOS un video con audio non parte
- * da solo, e senza `playsInline` Safari lo aprirebbe a tutto schermo nel suo
- * player, mangiandosi la pagina.
- *
- * Se non parte — rete lenta, autoplay negato, formato rifiutato — non si
- * resta sul nero: dopo un secondo e mezzo la frase entra lo stesso. Meglio
- * un'apertura senza filmato che una card che non si apre.
+ * Le due righe entrano sfalsate di 140ms. Non è un vezzo: sfalsate si
+ * leggono nell'ordine giusto, insieme si leggono come un blocco e la
+ * seconda — che è quella colorata, quella che deve restare — si perde.
  */
 export function Intro({ onFine }: { onFine: () => void }) {
-  const video = useRef<HTMLVideoElement>(null);
-  const [frase, setFrase] = useState<'' | 'show' | 'hide'>('');
+  const [fase, setFase] = useState(0);
   const [uscita, setUscita] = useState(false);
 
   useEffect(() => {
@@ -43,17 +30,12 @@ export function Intro({ onFine }: { onFine: () => void }) {
       onFine();
       return;
     }
-
-    const v = video.current;
-    // `play()` può essere rifiutata: non è un errore da propagare, è il
-    // browser che dice di no. Il resto della sequenza va avanti comunque.
-    v?.play().catch(() => {});
-
     const t = [
-      setTimeout(() => { setFrase('show'); if (pronto()) spruzzo(); }, 3900),
-      setTimeout(() => setFrase('hide'), 5900),
-      setTimeout(() => setUscita(true), 6200),
-      setTimeout(onFine, 6800),
+      setTimeout(() => setFase(1), 120),
+      setTimeout(() => setFase(2), 260),
+      setTimeout(() => { setFase(3); if (pronto()) spruzzo(); }, 520),
+      setTimeout(() => setUscita(true), 2300),
+      setTimeout(onFine, 2800),
     ];
     return () => t.forEach(clearTimeout);
   }, [onFine]);
@@ -64,18 +46,20 @@ export function Intro({ onFine }: { onFine: () => void }) {
       aria-hidden
       onPointerDown={() => { const gia = pronto(); sblocca(); if (!gia) spruzzo(); }}
     >
-      <video
-        ref={video} className="apertura-clip"
-        muted playsInline autoPlay preload="auto"
-      >
-        <source src={CLIP_MP4} type="video/mp4" />
-        <source src={CLIP_WEBM} type="video/webm" />
-      </video>
-      {/* Una velatura sotto: la frase cade sul riflesso, che è la zona più
-          chiara del fotogramma, e senza questa perderebbe contrasto. */}
-      <span className="apertura-velo" />
-      <span className={`intro-parola apertura-frase ${frase}`}>
-        {APERTURA.frase}
+      <p className="apertura-titolo">
+        <span className={`apertura-riga${fase >= 1 ? ' dentro' : ''}`}>
+          {APERTURA.riga1}
+        </span>
+        <span className={`apertura-riga apertura-riga-blu${fase >= 2 ? ' dentro' : ''}`}>
+          {APERTURA.riga2}
+        </span>
+      </p>
+
+      {/* La firma in basso, come nella creative: marchio e nome in
+          maiuscoletto spaziato, piccoli, fuori dal campo del titolo. */}
+      <span className={`apertura-firma${fase >= 3 ? ' dentro' : ''}`}>
+        <CargLogo size={24} />
+        {OFFICINA.nome}
       </span>
     </div>
   );

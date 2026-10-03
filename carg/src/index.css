@@ -130,11 +130,23 @@
   .step[data-bg='dark'] .eyebrow { color: var(--light-soft); }
   .eyebrow-magenta { color: var(--magenta); }
 
-  /* I titoli vanno sempre spezzati a mano su due righe, nel testo, con \A.
-     Una riga sola che va a capo da sé non ha lo stesso ritmo. */
+  /*
+   * I titoli vanno sempre spezzati a mano su due righe, nel testo, con \n.
+   * Una riga sola che va a capo da sé non ha lo stesso ritmo.
+   *
+   * Peso 800 e crenatura -0.04em: è il nero stretto delle creative social,
+   * quello che a colpo d'occhio si legge come un titolo e non come testo.
+   * Il **corpo non si tocca**: i titoli più lunghi («Quando l'hai fatto»)
+   * stanno già al limite dei 342px utili su un telefono da 390, e il peso
+   * 800 allarga di suo — la crenatura più stretta serve a ricomprare
+   * esattamente quello che il grassetto si prende.
+   *
+   * Interlinea a 1.0: le due righe si toccano quasi, ed è quello che fa
+   * sembrare il titolo un blocco solo invece che due frasi impilate.
+   */
   .h1 {
-    font-size: clamp(2.5rem, 9vw, 2.875rem); font-weight: 600;
-    line-height: 1.08; letter-spacing: -0.025em; color: var(--ink);
+    font-size: clamp(2.5rem, 9vw, 2.875rem); font-weight: 800;
+    line-height: 1.0; letter-spacing: -0.04em; color: var(--ink);
     margin: 0; white-space: pre-line;
   }
   .step[data-bg='dark'] .h1 { color: var(--light); }
@@ -225,8 +237,10 @@
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
   }
 
+  /* La cifra: su Woman era sottile, da profumeria. Qui il riferimento e'
+     nero, e un numero leggero in mezzo a titoli a 800 stonerebbe. */
   .premio-cifra {
-    font-size: 3.75rem; font-weight: 300; line-height: 1; letter-spacing: -0.03em;
+    font-size: 4rem; font-weight: 800; line-height: 1; letter-spacing: -0.045em;
     color: var(--ink); margin: 0; font-variant-numeric: tabular-nums;
   }
   .step[data-bg='dark'] .premio-cifra { color: var(--light); }
@@ -242,7 +256,7 @@
   .recs { margin: 2.5rem 0 0; padding: 0; list-style: none; text-align: left; overflow: hidden; }
   .rec { padding: 1.25rem 1.5rem; }
   .rec + .rec { border-top: 1px solid var(--hairline); }
-  .rec-nome { font-size: 1.1875rem; font-weight: 500; letter-spacing: -0.01em; margin: 0; }
+  .rec-nome { font-size: 1.1875rem; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
   .rec-maison {
     font-size: 0.6875rem; font-weight: 500; text-transform: uppercase;
     letter-spacing: 0.22em; color: var(--eyebrow); margin: 0.375rem 0 0;
@@ -274,9 +288,11 @@
     font-size: 0.6875rem; font-weight: 500; text-transform: uppercase;
     letter-spacing: 0.22em; color: var(--light-soft); margin: 1.5rem 0 0;
   }
+  /* Il titolo adesso e' a 800 con interlinea 1.0: mezzo rem sotto non bastava
+     piu', il codice sembrava attaccato all'ultima riga. */
   .codice {
     font-size: 0.8125rem; letter-spacing: 0.22em; color: var(--light-soft);
-    font-variant-numeric: tabular-nums; margin: 0.5rem 0 0;
+    font-variant-numeric: tabular-nums; margin: 1.5rem 0 0;
   }
 
   /* Il tondo del marchio sopra la chiusura: è l'unica volta in tutto il
@@ -305,46 +321,47 @@
   }
   .intro.leaving { opacity: 0; transform: translateY(-28px); pointer-events: none; }
   .intro-parola {
-    position: absolute; font-weight: 600; letter-spacing: -.03em; color: var(--light);
+    position: absolute; font-weight: 800; letter-spacing: -.04em; color: var(--light);
     font-size: 64px; opacity: 0; transform: scale(.88);
     transition: opacity .5s cubic-bezier(.2, 1, .3, 1), transform .5s cubic-bezier(.2, 1, .3, 1);
   }
   .intro-parola.show { opacity: 1; transform: scale(1); }
   .intro-parola.hide { opacity: 0; transform: scale(1.06); transition-duration: .4s; }
 
-  /* ---- l'apertura: il filmato del marchio ----
+  /* ---- l'apertura: solo tipografia ----
    *
-   * Il clip riempie lo schermo con `cover`: è girato 9:16, ma su un telefono
-   * largo o su un desktop il rapporto non torna, e `contain` lascerebbe due
-   * bande nere ai lati che fanno sembrare la card un video incorporato
-   * invece che un'app. Con `cover` si perde qualche pixel di bordo, dove non
-   * c'è niente.
+   * L'impianto della creative di riferimento: titolo enorme e nero al
+   * centro, la seconda riga nel colore del marchio, la firma in basso in
+   * maiuscoletto spaziato. Niente filmato: zero byte e nessuna attesa.
    */
-  .apertura-clip {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: cover; object-position: center;
-    pointer-events: none; z-index: 1;
+  .apertura-titolo {
+    position: relative; z-index: 2; margin: 0; padding: 0 1.5rem;
+    display: flex; flex-direction: column; text-align: center;
+    font-weight: 800; letter-spacing: -0.045em; line-height: 0.98;
+    font-size: clamp(2.75rem, 12vw, 3.75rem);
   }
+  .apertura-riga {
+    display: block; color: var(--light);
+    opacity: 0; transform: translateY(18px);
+    transition: opacity .55s var(--ease), transform .55s var(--ease);
+  }
+  .apertura-riga.dentro { opacity: 1; transform: none; }
+  /*
+   * La seconda riga nel blu. Su fondo quasi nero il #2b5cf0 pieno fa 4,4:1
+   * e a corpo 44px passa (il minimo per il testo grande è 3:1), ma schiarito
+   * respira meglio e tiene anche se qualcuno guarda lo schermo al sole.
+   */
+  .apertura-riga-blu { color: #6f9bff; }
 
-  /* La velatura sotto: la frase cade sul riflesso, che è la zona più chiara
-     del fotogramma. Senza, il bianco su bianco si perde. */
-  .apertura-velo {
-    position: absolute; left: 0; right: 0; bottom: 0; height: 52%;
-    background: linear-gradient(180deg,
-      rgba(6, 8, 12, 0) 0%, rgba(6, 8, 12, 0.55) 55%, rgba(6, 8, 12, 0.88) 100%);
-    pointer-events: none; z-index: 2;
+  .apertura-firma {
+    position: absolute; z-index: 2; left: 0; right: 0;
+    bottom: clamp(40px, 7vh, 72px);
+    display: flex; align-items: center; justify-content: center; gap: 0.625rem;
+    font-size: 0.6875rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.22em; color: var(--light-soft);
+    opacity: 0; transition: opacity .6s var(--ease);
   }
-
-  /* La frase sta nel terzo basso, non al centro: al centro coprirebbe il
-     tondo proprio nel momento in cui si accende. */
-  .apertura-frase {
-    position: absolute; z-index: 3;
-    top: auto; bottom: clamp(44px, 8vh, 92px);
-    left: 1.5rem; right: 1.5rem; text-align: center;
-    font-size: clamp(1.625rem, 6.8vw, 2rem); line-height: 1.15;
-    white-space: pre-line;
-    text-shadow: 0 2px 24px rgba(6, 8, 12, 0.7);
-  }
+  .apertura-firma.dentro { opacity: 1; }
 }
 
 @layer utilities {
