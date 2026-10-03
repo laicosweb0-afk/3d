@@ -1,8 +1,17 @@
 /**
- * Inter, servito da noi.
+ * Inter — il ripiego, non il font principale.
  *
- * Il prototipo lo prendeva da Google Fonts. Qui il file sta in
- * `public/fonts/`, per tre motivi che contano tutti e tre:
+ * La card usa il font di sistema: su iPhone e Mac `-apple-system` dà il San
+ * Francisco vero, che è quello per cui sono disegnate le interfacce che la
+ * gente ha in mano tutto il giorno. Inter sta subito dopo nella pila e serve
+ * ad Android e Windows, dove il San Francisco non c'è: è il suo parente più
+ * stretto, quindi la card ha la stessa faccia su tutti i telefoni.
+ *
+ * Il browser scarica un webfont solo se lo usa davvero: su un iPhone questo
+ * file non parte nemmeno.
+ *
+ * Perché servirlo da noi invece che da Google Fonts — tre motivi che contano
+ * tutti e tre:
  *
  *  - **Velocità.** La pagina si apre in negozio, spesso con una riga di rete
  *    sola. Un font che arriva da un dominio terzo vuol dire un'altra

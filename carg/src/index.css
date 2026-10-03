@@ -60,7 +60,22 @@
   body {
     margin: 0;
     color: var(--ink);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    /*
+     * Il font di sistema per primo, come su Club Rama.
+     *
+     * Su iPhone e Mac `-apple-system` è il San Francisco vero: è il font per
+     * cui sono disegnate le interfacce che il cliente ha in mano tutto il
+     * giorno, non si scarica (zero byte, zero attesa) e non si può servire
+     * da un sito, perché la licenza Apple non lo permette — questa è
+     * l'unica strada legale per averlo.
+     *
+     * Inter viene dopo, e copre Android e Windows: è il parente più stretto
+     * del San Francisco, così la card ha la stessa faccia su tutti i
+     * telefoni. Il browser scarica un webfont solo se lo usa davvero,
+     * quindi su iPhone i 47 KB di Inter non partono nemmeno.
+     */
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+      'Inter', system-ui, 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
     -webkit-text-size-adjust: 100%;
     display: flex;
