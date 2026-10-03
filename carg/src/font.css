@@ -1,0 +1,34 @@
+/**
+ * Inter, servito da noi.
+ *
+ * Il prototipo lo prendeva da Google Fonts. Qui il file sta in
+ * `public/fonts/`, per tre motivi che contano tutti e tre:
+ *
+ *  - **Velocità.** La pagina si apre in negozio, spesso con una riga di rete
+ *    sola. Un font che arriva da un dominio terzo vuol dire un'altra
+ *    connessione, un altro handshake TLS, un altro DNS: qualche centinaio di
+ *    millisecondi in cui il titolo balla.
+ *  - **Privacy.** Chiamare fonts.gstatic.com manda a Google l'indirizzo IP di
+ *    chi apre la pagina, senza che nessuno glielo abbia chiesto. In Germania
+ *    è già costato una condanna a un sito, e qui dentro passano dati di
+ *    clienti veri.
+ *  - **Controllo.** Se Google cambia i file o l'indirizzo, la card cambia
+ *    faccia da sola. Questo non si muove.
+ *
+ * È **un solo file da 47 KB**: Inter è un font variabile, e Google serve lo
+ * stesso woff2 per tutti i pesi — scaricarne quattro voleva dire scaricare
+ * quattro volte la stessa cosa. Solo il sottoinsieme latino, che è tutto
+ * quello che serve all'italiano.
+ *
+ * Il percorso è **relativo**: la build gira anche da una sottocartella, e un
+ * `/fonts/` con la barra davanti cercherebbe il file alla radice del dominio.
+ */
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300 600;
+  font-display: swap;
+  src: url('../fonts/inter.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
