@@ -68,26 +68,40 @@ const scatto = (n) => p.screenshot({ path: `${out}/${n}.png` });
 /* ---- 2. il percorso ------------------------------------------------- */
 await p.goto(url, { waitUntil: 'networkidle' });
 
-// L'apertura ha tre tempi, nell'ordine: prima il buio, poi il passaggio
-// dell'auto, e solo dopo «Hey».
-await p.waitForSelector('.faro', { timeout: 6000 }).catch(() => {
-  errori.push("APERTURA: i fari non attraversano lo schermo");
-});
-await scatto('0-fari');
+// L'apertura è il filmato del marchio, e la frase entra sopra, non dopo.
 {
-  const parole = (await p.locator('.intro-parola.show').allTextContents()).join(' ').trim();
-  if (parole) errori.push(`APERTURA: «${parole}» è già a schermo mentre passa l'auto`);
+  const clip = p.locator('.apertura-clip');
+  if (!(await clip.count())) errori.push('APERTURA: manca il filmato del marchio');
+  // Muto e inline, o su iOS non parte da solo e Safari se lo apre a pieno
+  // schermo nel suo player.
+  const v = await clip.evaluate((el) => ({
+    muted: el.muted, inline: el.hasAttribute('playsinline'), auto: el.autoplay,
+  })).catch(() => null);
+  if (v && !(v.muted && v.inline && v.auto)) {
+    errori.push(`APERTURA: il video è muted=${v.muted} playsinline=${v.inline} autoplay=${v.auto}`);
+  }
+  // E deve davvero scorrere: un video fermo al primo fotogramma è un nero.
+  await p.waitForTimeout(2500);
+  const t = await clip.evaluate((el) => el.currentTime).catch(() => 0);
+  if (t < 0.5) errori.push(`APERTURA: il filmato è fermo a ${t}s, non sta partendo`);
+  await scatto('0-marchio');
+  const prima = (await p.locator('.intro-parola.show').allTextContents()).join(' ').trim();
+  if (prima) errori.push(`APERTURA: «${prima}» è a schermo prima che il marchio si componga`);
 }
 await p.waitForSelector('.intro-parola.show', { timeout: 8000 });
 {
-  const hey = await p.locator('.intro-parola.show').first().innerText().catch(() => '');
-  if (!/^Hey/i.test(hey.trim())) {
-    errori.push(`APERTURA: dopo i fari si legge «${hey.trim()}» invece di «Hey.»`);
+  const frase = await p.locator('.intro-parola.show').first().innerText().catch(() => '');
+  if (!frase.trim()) errori.push('APERTURA: la frase non compare');
+  if (/da quanto non/i.test(frase)) {
+    errori.push(`APERTURA: è tornata la frase vecchia — «${frase.trim()}»`);
+  }
+  // Il filmato deve essere ancora a schermo quando la frase entra: messa in
+  // coda allungherebbe l'attesa prima della prima schermata.
+  if (!(await p.locator('.apertura-clip').count())) {
+    errori.push('APERTURA: la frase arriva a filmato finito, non sopra');
   }
 }
-await scatto('0b-hey');
-await p.waitForTimeout(1600);
-await scatto('0c-domanda');
+await scatto('0b-frase');
 await p.waitForSelector('.intro', { state: 'detached', timeout: 12000 });
 await p.waitForTimeout(700);
 await scatto('1-ingresso');

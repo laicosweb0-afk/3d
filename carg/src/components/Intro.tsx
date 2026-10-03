@@ -1,29 +1,41 @@
-import { useEffect, useState } from 'react';
-import { CargLogo } from './CargLogo';
+import { useEffect, useRef, useState } from 'react';
+import { APERTURA } from '../config/gioco';
 import { pronto, sblocca, spruzzo } from '../lib/suono';
 
 /**
- * L'apertura, in tre tempi.
+ * Due formati, e l'MP4 per primo.
  *
- *   1. Il buio.
- *   2. **Un'auto che passa**: due fasci di luce che tagliano lo schermo da
- *      sinistra a destra, con la scia dietro.
- *   3. «Hey.» — e poi «Da quanto non fai il tagliando?».
+ * Il browser prende il primo che dice di saper leggere, e ne scarica uno
+ * solo. L'MP4 (H.264) sta davanti perché è quello che serve a iOS, che è la
+ * metà abbondante di chi avvicinerà il telefono; il WebM (VP9) copre i
+ * Chromium compilati senza H.264 — fra cui quello con cui giriamo il
+ * collaudo, che altrimenti non riuscirebbe a verificare l'apertura.
+ */
+const CLIP_MP4 = import.meta.env.BASE_URL + 'apertura.mp4';
+const CLIP_WEBM = import.meta.env.BASE_URL + 'apertura.webm';
+
+/**
+ * L'apertura: il reveal del marchio, e sopra la frase.
  *
- * Su Woman qui correva il Bianconiglio, che era uno sprite da 351 KB. Il
- * passaggio dei fari è disegnato in CSS e pesa zero: non c'è un file da
- * aspettare, quindi la sequenza parte subito e non serve la rete.
+ * Il filmato dura cinque secondi — scintille nel buio, il neon che disegna
+ * l'auto, gli attrezzi, il tondo che si compone e si accende — e la frase
+ * entra a 3,9 s, cioè **mentre il marchio è già a schermo**, non dopo. Messa
+ * in coda allungherebbe l'attesa di un secondo e mezzo buono: chi avvicina
+ * il telefono al bancone non sta guardando un film, e ogni secondo prima
+ * della prima schermata è un secondo in cui può rimettere il telefono in
+ * tasca.
  *
- * I fari e non la sagoma di un'auto, per due motivi. Di notte di un'auto che
- * passa si vedono quelli, non la carrozzeria — e un'auto disegnata male si
- * riconosce subito, mentre una luce fatta bene no. E poi il notturno è
- * esattamente quello che Car.G vende e gli altri in zona non hanno.
+ * Il filmato è muto e con `playsInline`: su iOS un video con audio non parte
+ * da solo, e senza `playsInline` Safari lo aprirebbe a tutto schermo nel suo
+ * player, mangiandosi la pagina.
+ *
+ * Se non parte — rete lenta, autoplay negato, formato rifiutato — non si
+ * resta sul nero: dopo un secondo e mezzo la frase entra lo stesso. Meglio
+ * un'apertura senza filmato che una card che non si apre.
  */
 export function Intro({ onFine }: { onFine: () => void }) {
-  const [corsa, setCorsa] = useState(false);
-  const [hey, setHey] = useState<'' | 'show' | 'hide' | 'via'>('');
-  const [marchio, setMarchio] = useState(false);
-  const [domanda, setDomanda] = useState<'' | 'show' | 'hide'>('');
+  const video = useRef<HTMLVideoElement>(null);
+  const [frase, setFrase] = useState<'' | 'show' | 'hide'>('');
   const [uscita, setUscita] = useState(false);
 
   useEffect(() => {
@@ -31,20 +43,17 @@ export function Intro({ onFine }: { onFine: () => void }) {
       onFine();
       return;
     }
+
+    const v = video.current;
+    // `play()` può essere rifiutata: non è un errore da propagare, è il
+    // browser che dice di no. Il resto della sequenza va avanti comunque.
+    v?.play().catch(() => {});
+
     const t = [
-      setTimeout(() => setCorsa(true), 150),
-      // il passaggio dura 1100ms: il «Hey» aspetta che sia uscito di scena
-      setTimeout(() => setHey('show'), 1450),
-      setTimeout(() => setHey('hide'), 2600),
-      setTimeout(() => {
-        setHey('via'); setMarchio(true); setDomanda('show');
-        // Suona solo se qualcuno ha già toccato lo schermo: prima di un
-        // gesto iOS non lascia svegliare l'audio.
-        if (pronto()) spruzzo();
-      }, 2900),
-      setTimeout(() => setDomanda('hide'), 4650),
-      setTimeout(() => setUscita(true), 4950),
-      setTimeout(onFine, 5550),
+      setTimeout(() => { setFrase('show'); if (pronto()) spruzzo(); }, 3900),
+      setTimeout(() => setFrase('hide'), 5900),
+      setTimeout(() => setUscita(true), 6200),
+      setTimeout(onFine, 6800),
     ];
     return () => t.forEach(clearTimeout);
   }, [onFine]);
@@ -53,22 +62,20 @@ export function Intro({ onFine }: { onFine: () => void }) {
     <div
       className={`intro${uscita ? ' leaving' : ''}`}
       aria-hidden
-      onPointerDown={() => { const gia = pronto(); sblocca(); if (!gia && marchio) spruzzo(); }}
+      onPointerDown={() => { const gia = pronto(); sblocca(); if (!gia) spruzzo(); }}
     >
-      {corsa && !marchio && (
-        <div className="passaggio" aria-hidden>
-          <span className="faro faro-alto" />
-          <span className="faro faro-basso" />
-        </div>
-      )}
-      {marchio && (
-        <span className="intro-marchio show">
-          <CargLogo size={46} />
-        </span>
-      )}
-      {hey !== 'via' && <span className={`intro-parola ${hey}`}>Hey.</span>}
-      <span className={`intro-parola intro-domanda ${domanda}`}>
-        Da quanto non<br />fai il tagliando?
+      <video
+        ref={video} className="apertura-clip"
+        muted playsInline autoPlay preload="auto"
+      >
+        <source src={CLIP_MP4} type="video/mp4" />
+        <source src={CLIP_WEBM} type="video/webm" />
+      </video>
+      {/* Una velatura sotto: la frase cade sul riflesso, che è la zona più
+          chiara del fotogramma, e senza questa perderebbe contrasto. */}
+      <span className="apertura-velo" />
+      <span className={`intro-parola apertura-frase ${frase}`}>
+        {APERTURA.frase}
       </span>
     </div>
   );
