@@ -58,8 +58,18 @@ export function Vetrina({
         </button>
       </div>, document.body)
     }>
-      <p className="eyebrow">Showroom arredamento · Lugo</p>
-      <h1 className="h1">{'Sfoglia\nil Bazar.'}</h1>
+      {/* La testata della vetrina, alla maniera delle app: titolo grande a
+          sinistra, e sotto una riga che dice qualcosa di nuovo. Il nome del
+          negozio sta già nella barra in alto: qui non si ripete. Il titolo
+          è la frase delle locandine del negozio. */}
+      <header className="vetrina-testa">
+        <h1 className="h1">{'Il tuo salotto\nti aspetta.'}</h1>
+        <p className="vetrina-info">
+          <span>Showroom a Lugo</span>
+          <span className="vetrina-punto" aria-hidden />
+          <span>{NEGOZIO.consegne}</span>
+        </p>
+      </header>
       <div className="vetrina">
         {CATALOGO.map((c) => (
           <RiquadroCollezione

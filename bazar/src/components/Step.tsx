@@ -25,8 +25,12 @@ export function Step({
     // le schermate che devono pesare di più: lì la luce d'oro sale di più.
     <div className={`step ${className ?? ''}`} data-bg="dark" data-forte={scuro ? 'true' : undefined}>
       {sfondo && <img className="step-sfondo" src={sfondo} alt="" aria-hidden />}
+      {/* La barra in alto, come in un'app: il marchio su una riga sola, al
+          centro, e il silenziatore sulla stessa linea a destra. Il marchio
+          intero, a tre righe, è già passato nell'apertura: qui serve solo a
+          dire dove sei, non a ripresentarsi. */}
       <div className="step-top">
-        <BazarLogo size={11} title="Bazar Marrakech" />
+        <BazarLogo size={11} inLinea title="Bazar Marrakech" />
       </div>
       <div className="step-main">{children}</div>
       <div className="step-bottom">{bottom}</div>

@@ -22,7 +22,8 @@ export function MuteButton() {
       // angolo si pestano i piedi.
       style={{
         position: 'fixed', right: 16,
-        top: 'calc(18px + env(safe-area-inset-top, 0px))',
+        // Sulla stessa linea del marchio nella barra in alto.
+        top: 'calc(24px + env(safe-area-inset-top, 0px))',
         width: 32, height: 32, borderRadius: '50%',
         border: '1px solid rgba(242,235,221,.08)',
         background: 'rgba(33,27,23,.72)',

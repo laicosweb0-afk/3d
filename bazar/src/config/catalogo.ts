@@ -52,7 +52,7 @@ export const CATALOGO: Collezione[] = [
   {
     id: 'divani',
     titolo: 'Divani',
-    sottotitolo: 'Velluto e oro, in showroom a Lugo.',
+    sottotitolo: 'Velluto, capitonné e dettagli in oro.',
     forma: 'larga',
     articoli: [
       {
