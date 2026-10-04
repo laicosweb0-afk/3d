@@ -28,6 +28,15 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap">
 <link rel="preload" as="image" href="img/forno.jpg">
 
+<!-- Gaglio (Marvadesign, licenza commerciale): i file vanno messi in fonts/.
+     Finché non ci sono, il testo resta in Inter senza rompere niente. -->
+<style>
+  @font-face { font-family: 'Gaglio'; font-weight: 400; font-style: normal; font-display: swap; src: url('fonts/gaglio-regular.woff2') format('woff2'); }
+  @font-face { font-family: 'Gaglio'; font-weight: 500; font-style: normal; font-display: swap; src: url('fonts/gaglio-medium.woff2') format('woff2'); }
+  @font-face { font-family: 'Gaglio'; font-weight: 600; font-style: normal; font-display: swap; src: url('fonts/gaglio-semibold.woff2') format('woff2'); }
+  @font-face { font-family: 'Gaglio'; font-weight: 700; font-style: normal; font-display: swap; src: url('fonts/gaglio-bold.woff2') format('woff2'); }
+</style>
+
 <script>
   // Foto che non c'è (ancora): al posto dell'icona rotta resta il fondo
   // caldo con il nome del file, ben visibile. Ascoltato subito, in testa,
@@ -67,7 +76,7 @@
   --ios: cubic-bezier(.32, .72, 0, 1);
   --morbido: cubic-bezier(.22, 1, .36, 1);
   --serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --sans: 'Gaglio', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --gutter: 24px;
   --st: env(safe-area-inset-top, 0px);
   --sb: env(safe-area-inset-bottom, 0px);

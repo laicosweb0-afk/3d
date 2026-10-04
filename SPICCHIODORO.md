@@ -6,8 +6,9 @@ Intro «Hey.» → «Benvenuto da Spicchio d'Oro», poi la home con menù, serat
 dove siamo e la prenotazione su WhatsApp con il messaggio già scritto.
 
 - **File**: `public/spicchiodoro/index.html` (HTML + CSS + JS in un file solo)
-  e `public/spicchiodoro/img/`. Nessuna build, nessuna libreria: solo Google
-  Fonts (Playfair Display, Inter).
+  e `public/spicchiodoro/img/`. Nessuna build, nessuna libreria: Google
+  Fonts (Playfair Display per i titoli, Inter come riserva) e **Gaglio** per
+  i testi, servito da `public/spicchiodoro/fonts/` (vedi `fonts/LEGGIMI.txt`).
 - **Online** dopo un push su `main`:
 
       https://laicosweb0-afk.github.io/3d/spicchiodoro/
@@ -61,6 +62,8 @@ convert originale.jpg -auto-orient -strip -interlace Plane -quality 70 -resize '
 | cocktail.jpg | cocktail in coppa | da avere |
 
 ## Da completare
+
+- I file del font Gaglio (licenza web, WOFF2) in `fonts/`: finché mancano si vede Inter.
 
 - Nomi e prezzi delle pizze: per ora la scheda Pizze rimanda al sito.
 - I link «Tutte le pizze» e «Il menù completo sul sito» vanno a https://www.spicchiodoro.it/#menu.
