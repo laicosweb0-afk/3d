@@ -43,10 +43,12 @@ aggiorna qui.
 
 ## Le foto
 
-In `img/`, larghe al massimo 1200 px, JPG qualità 70. Se una foto manca la
-pagina non si rompe: al suo posto resta un fondo caldo con la scritta
-«Foto in arrivo · nome.jpg». Per aggiungerne una basta copiarla in `img/` con
-il nome giusto:
+In `img/`, larghe al massimo 1200 px, JPG qualità 70. Basta copiarla in `img/` con
+il nome giusto. Finché una foto manca la pagina non mostra segnaposti: la
+box del menù e le copertine delle schede usano una foto vera del locale di
+riserva (forno, fuoco, sala, bancone), le gallerie nascondono le foto
+assenti. Con `?foto` in fondo all'indirizzo si vede quale file manca.
+Per aggiungerne una:
 
 ```bash
 convert originale.jpg -auto-orient -strip -interlace Plane -quality 70 -resize '1200x>' img/nome.jpg

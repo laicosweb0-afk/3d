@@ -8,6 +8,14 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Spicchio d'Oro</title>
 <meta name="description" content="Pizza dal forno a legna, cucina e pub a San Savino di Fusignano. Menù, serate e prenotazioni su WhatsApp.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Spicchio d'Oro — Pizza · Pub · Cucina">
+<meta property="og:description" content="Pizza dal forno a legna, cucina e pub a San Savino di Fusignano. Menù, serate e prenotazioni su WhatsApp.">
+<meta property="og:image" content="https://laicosweb0-afk.github.io/3d/spicchiodoro/img/forno.jpg">
+<meta property="og:url" content="https://laicosweb0-afk.github.io/3d/spicchiodoro/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="apple-mobile-web-app-title" content="Spicchio d'Oro">
+<meta name="format-detection" content="telephone=no">
 
 <!-- Stili critici dell'intro: inline e per primi, così al tocco della card
      si vede subito il nero caldo e mai la pagina sotto. -->
@@ -29,7 +37,7 @@
 <link rel="preload" as="image" href="img/forno.jpg">
 
 <!-- Gaglio (Marvadesign, licenza commerciale): i file vanno messi in fonts/.
-     Finché non ci sono, il testo resta in Inter senza rompere niente. -->
+     Finché non ci sono si usa il carattere di sistema (SF Pro su iPhone), poi Inter. -->
 <style>
   @font-face { font-family: 'Gaglio'; font-weight: 400; font-style: normal; font-display: swap; src: url('fonts/gaglio-regular.woff2') format('woff2'); }
   @font-face { font-family: 'Gaglio'; font-weight: 500; font-style: normal; font-display: swap; src: url('fonts/gaglio-medium.woff2') format('woff2'); }
@@ -41,13 +49,23 @@
   // Foto che non c'è (ancora): al posto dell'icona rotta resta il fondo
   // caldo con il nome del file, ben visibile. Ascoltato subito, in testa,
   // perché un'immagine può fallire prima che arrivi lo script in fondo.
+  // In ordine: una foto di riserva vera del locale (data-riserva), oppure
+  // sparisce dalla galleria (data-via-se-manca), oppure resta il fondo
+  // caldo. Con ?foto nell'indirizzo si vede quale file manca.
   document.addEventListener('error', function (e) {
     var t = e.target;
-    if (t && t.tagName === 'IMG') {
-      t.style.opacity = '0';
-      var ph = t.closest('.ph');
-      if (ph) ph.setAttribute('data-missing', t.getAttribute('src').split('/').pop());
+    if (!t || t.tagName !== 'IMG') return;
+    var riserva = t.getAttribute('data-riserva');
+    if (riserva) { t.removeAttribute('data-riserva'); t.src = riserva; if (t.dataset.pos) t.style.objectPosition = t.dataset.pos; return; }
+    var ph = t.closest('.ph');
+    if (ph && ph.hasAttribute('data-via-se-manca')) {
+      var box = ph.parentElement.closest('.galleria, .dolci') || ph.parentElement;
+      (ph.closest('figure') || ph).remove();
+      if (box && !box.querySelector('img')) box.remove();
+      return;
     }
+    t.style.opacity = '0';
+    if (ph && /[?&]foto/.test(location.search)) ph.setAttribute('data-missing', t.getAttribute('src').split('/').pop());
   }, true);
 </script>
 
@@ -76,7 +94,7 @@
   --ios: cubic-bezier(.32, .72, 0, 1);
   --morbido: cubic-bezier(.22, 1, .36, 1);
   --serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --sans: 'Gaglio', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --sans: 'Gaglio', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', Roboto, sans-serif;
   --gutter: 24px;
   --st: env(safe-area-inset-top, 0px);
   --sb: env(safe-area-inset-bottom, 0px);
@@ -364,6 +382,7 @@ html.sheet-on .scrim { opacity: 1; pointer-events: auto; }
   scroll-padding: 0 var(--gutter); scrollbar-width: none;
 }
 .galleria::-webkit-scrollbar { display: none; }
+.galleria .ph:only-child { width: 100%; aspect-ratio: 4 / 3; }
 .galleria .ph { flex: none; width: 74%; aspect-ratio: 4 / 5; border-radius: 24px; scroll-snap-align: start; }
 .dolci { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
 .dolci figure { margin: 0; }
@@ -463,7 +482,7 @@ html.sheet-on .scrim { opacity: 1; pointer-events: auto; }
 
   <section class="tiles" aria-label="Scopri">
     <button class="tile grande press rivela" data-apri="menu">
-      <div class="ph"><img src="img/burrata.jpg" alt="" loading="lazy"></div>
+      <div class="ph"><img src="img/burrata.jpg" alt="" loading="lazy" data-riserva="img/forno.jpg" data-pos="50% 78%"></div>
       <span class="freccia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
       <span class="testo">
         <h2>Il menù</h2>
@@ -649,7 +668,7 @@ const MOSTRA_PREZZI = true;
    [nome, descrizione, prezzo, { q: quantità, c: true se ha il cuore
    del locale (♥), t: [[formato, prezzo], …] per le bevande a formati }]. */
 const MENU = [
-  { id: 'pizze', nome: 'Pizze', foto: 'burrata.jpg',
+  { id: 'pizze', nome: 'Pizze', riserva: 'forno.jpg', foto: 'burrata.jpg',
     lead: 'Cotte nel forno a legna. Lenta maturazione, passione artigianale e ingredienti selezionati: una pizza leggera, profumata e fragrante ad ogni morso.',
     galleria: ['forno.jpg', 'burrata.jpg', 'crudo.jpg'],
     impasti: [
@@ -696,20 +715,20 @@ const MENU = [
       ['Calorosa', 'Fior di latte, patate al forno, scamorza, porchetta artigianale', '14'],
       ['Focosa', 'Fior di latte, porchetta artigianale, datterini, in uscita: burrata 125 g, gocce di pesto di basilico', '16'],
       ['Crudo tartufata', 'Fior di latte, in uscita: crudo di Parma, stracciatella di burrata, crema al tartufo, olio extra vergine d’oliva', '16'] ] }] },
-  { id: 'antipasti', nome: 'Per cominciare', foto: 'tagliere.jpg', sezioni: [{ piatti: [
+  { id: 'antipasti', nome: 'Per cominciare', riserva: 'fuoco.jpg', foto: 'tagliere.jpg', sezioni: [{ piatti: [
     ['Tagliere rustico', 'Crudo di Parma, porchetta artigianale, salame Felino, mortadella Favola, gnocco fritto fatto in casa', '16'],
     ['Crostini misti', 'Spinaci, melanzane, funghi, salsiccia, tuorlo e pancetta', '10', { q: '5 pz' }],
     ['Degustazione di formaggi', 'Con squacquerone, miele e gnocco fritto', '16'] ] }] },
-  { id: 'primi', nome: 'Primi', foto: 'spatzle.jpg', sezioni: [{ piatti: [
+  { id: 'primi', nome: 'Primi', riserva: 'fuoco.jpg', foto: 'spatzle.jpg', sezioni: [{ piatti: [
     ['Cappelletti', 'Al ragù oppure panna e prosciutto', '12'],
     ['Garganelli alla zingara', 'Peperoni, funghi e pancetta', '12'],
     ['Tagliatelle', 'Funghi porcini', '12'],
     ['Spätzle', 'Crema di parmigiano, funghi e speck', '12', { c: true }] ] }] },
-  { id: 'secondi', nome: 'Secondi', foto: 'arrosticini.jpg', sezioni: [{ piatti: [
+  { id: 'secondi', nome: 'Secondi', riserva: 'fuoco.jpg', foto: 'arrosticini.jpg', sezioni: [{ piatti: [
     ['Arrosticini casarecci', 'Salsa di pomodoro alle erbe aromatiche e patate al forno', '16'],
     ['Stinco', 'Arrosto con patate al forno', '16'],
     ['Cotoletta', 'Maxi cotoletta di maiale da 300 g con patate al forno', '18'] ] }] },
-  { id: 'burger', nome: 'Burger', foto: 'burger.jpg',
+  { id: 'burger', nome: 'Burger', riserva: 'fuoco.jpg', foto: 'burger.jpg',
     lead: 'Hamburger di manzo 100% italiano e di chianina, pollo selezionato, sempre preparati al momento. Ogni hamburger è servito con le patate Extra Wonders.',
     sezioni: [
       { piatti: [
@@ -720,7 +739,7 @@ const MENU = [
         ['Patatine fritte, patate al forno o gnocco fritto', '', '5'],
         ['Jalapeños', '', '7'],
         ['Anelli di cipolla', '', '7'] ] }] },
-  { id: 'dolci', nome: 'Dolci', foto: 'nutella.jpg',
+  { id: 'dolci', nome: 'Dolci', riserva: 'sala.jpg', foto: 'nutella.jpg',
     dolci: [
       ['nutella.jpg', 'Pizza dolce alla Nutella'],
       ['crema.jpg', 'Pizza dolce con crema e Nutella'],
@@ -737,7 +756,7 @@ const MENU = [
         ['Crema catalana', '', '6'],
         ['Mascarpone', 'Con cioccolato', '6'],
         ['Sorbetto al limone artigianale', '', '5'] ] }] },
-  { id: 'bar', nome: 'Bar', foto: 'cocktail.jpg',
+  { id: 'bar', nome: 'Bar', riserva: 'bancone.jpg', foto: 'cocktail.jpg',
     lead: 'Cocktail e birre, al tavolo o al bancone.',
     sezioni: [
       { titolo: 'Cocktail', piatti: [
@@ -789,7 +808,7 @@ const giornoDa = (iso) => { const [y, m, d] = iso.split('-').map(Number); return
 const oggi0 = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
 const stessoGiorno = (a, b) => a.toDateString() === b.toDateString();
 const esteso = (d) => `${GIORNI[d.getDay()]} ${d.getDate()} ${MESI[d.getMonth()]}`;
-const foto = (file, alt = '', attr = '') => `<div class="ph" ${attr}><img src="img/${file}" alt="${esc(alt)}" loading="lazy"></div>`;
+const foto = (file, alt = '', attr = '', img = '') => `<div class="ph" ${attr}><img src="img/${file}" alt="${esc(alt)}" loading="lazy" ${img}></div>`;
 
 /* ---------- orari: "Aperto ora" dall'ora del telefono ---------- */
 function stato(now = new Date()) {
@@ -852,7 +871,7 @@ function renderMenu() {
   const pannelli = $('[data-pannelli]');
   const testata = $('[data-copertine]');
   testata.insertAdjacentHTML('afterbegin', MENU.map((s, i) =>
-    foto(s.foto, '', `data-cop="${s.id}" class="ph${i ? ' spento' : ''}"`).replace('class="ph" ', '')).join(''));
+    foto(s.foto, '', `data-cop="${s.id}" class="ph${i ? ' spento' : ''}"`, s.riserva ? `data-riserva="img/${s.riserva}"` : '').replace('class="ph" ', '')).join(''));
   fila.innerHTML = MENU.map((s, i) =>
     `<button class="pill press" role="tab" aria-selected="${i === 0}" data-tab="${s.id}">${s.nome}</button>`).join('');
   const cuore = '<svg class="cuore" viewBox="0 0 24 24" aria-label="Consigliato dal locale"><path fill="currentColor" d="M12 21s-7.5-4.6-10-9.3C.4 8.4 2.2 4.5 6 4.5c2.2 0 3.6 1.2 4.5 2.6l1.5 2 1.5-2c.9-1.4 2.3-2.6 4.5-2.6 3.8 0 5.6 3.9 4 7.2C19.5 16.4 12 21 12 21z"/></svg>';
@@ -865,9 +884,9 @@ function renderMenu() {
   pannelli.innerHTML = MENU.map((s, i) => {
     let h = '';
     if (s.lead) h += `<p class="lead">${s.lead}</p>`;
-    if (s.galleria) h += `<div class="galleria">${s.galleria.map((f) => foto(f)).join('')}</div>`;
+    if (s.galleria) h += `<div class="galleria">${s.galleria.map((f) => foto(f, '', 'data-via-se-manca')).join('')}</div>`;
     if (s.dolci) h += `<div class="dolci">${s.dolci.map(([f, c]) =>
-      `<figure>${foto(f, c)}<figcaption>${esc(c)}</figcaption></figure>`).join('')}</div>`;
+      `<figure>${foto(f, c, 'data-via-se-manca')}<figcaption>${esc(c)}</figcaption></figure>`).join('')}</div>`;
     if (s.impasti) h += `<div class="sez-titolo">Gli impasti</div><div class="impasti">${s.impasti.map(([n, p, d]) =>
       `<div class="impasto"><div class="n">${esc(n)}${MOSTRA_PREZZI ? ` <span class="p">${p}</span>` : ''}</div>${d ? `<div class="d">${esc(d)}</div>` : ''}</div>`).join('')}</div>`;
     (s.sezioni || []).forEach((z) => {
