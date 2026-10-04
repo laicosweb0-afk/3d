@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Azione, ContattoInElenco, Fonte, Priorita } from '@/lib/dominio/tipi';
-import { coloreFonte, nomeFonte } from '@/lib/dominio/fonti';
+import { nomeFonte } from '@/lib/dominio/fonti';
+import { LogoFonte } from './loghi';
 import { nomeFase } from '@/lib/dominio/fasi';
 import { ETICHETTA_AZIONE, ETICHETTA_PRIORITA, euro } from '@/lib/dominio/etichette';
 import { inRitardo, quando } from '@/lib/formato';
@@ -17,7 +18,7 @@ export function Priorita({ valore }: { valore: Priorita }) {
 export function Fonte({ id, dettaglio }: { id: Fonte; dettaglio?: string | null }) {
   return (
     <span className="fonte" title={dettaglio ?? undefined}>
-      <span className="punto" style={{ background: coloreFonte(id) }} aria-hidden="true" />
+      <LogoFonte id={id} />
       {nomeFonte(id)}
     </span>
   );

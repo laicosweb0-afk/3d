@@ -4,7 +4,8 @@ import {
   ETICHETTA_PERIODO, analisi as calcolaAnalisi, attenzioni as calcolaAttenzioni,
   contattiInAttenzione, conversazioniDaRispondere, daFare, elenco, type Periodo,
 } from '@/lib/dati/istantanea';
-import { COLORE_CANALE, ETICHETTA_CANALE } from '@/lib/dominio/campagne';
+import { ETICHETTA_CANALE } from '@/lib/dominio/campagne';
+import { LogoCanale } from './loghi';
 import { ETICHETTA_AZIONE, euro } from '@/lib/dominio/etichette';
 import { dataOra, inRitardo, quando } from '@/lib/formato';
 import { segnaConversazione } from './azioni';
@@ -129,7 +130,7 @@ export default async function Oggi({
               <div key={f.id} className="riga">
                 <span className="cresce">
                   <Link href={`/contatti/${contatto.id}`} className="titolo">
-                    <span className="punto" style={{ background: COLORE_CANALE[f.canale], display: 'inline-block', marginRight: 6 }} aria-hidden="true" />
+                    <LogoCanale id={f.canale} />
                     {`${contatto.nome} ${contatto.cognome}`.trim()}
                   </Link>
                   <span className="sotto">

@@ -7,13 +7,13 @@ import {
 } from '@/lib/dati/istantanea';
 import {
   ETICHETTA_CANALE, ETICHETTA_IDENTITA, ETICHETTA_STATO_CONVERSAZIONE,
-  ETICHETTA_PIATTAFORMA, COLORE_CANALE,
+  ETICHETTA_PIATTAFORMA,
 } from '@/lib/dominio/campagne';
 import {
   FASI, INTERESSI, MOTIVI_PERSO, PRIORITA, STATI_PREVENTIVO, TIPI_AZIONE, TIPI_EVENTO,
 } from '@/lib/dominio/tipi';
 import { FASI_DESCRITTE, fase as descriviFase, nomeFase } from '@/lib/dominio/fasi';
-import { FONTI_DESCRITTE, coloreFonte } from '@/lib/dominio/fonti';
+import { FONTI_DESCRITTE } from '@/lib/dominio/fonti';
 import {
   ETICHETTA_AZIONE, ETICHETTA_EVENTO, ETICHETTA_INTERESSE, ETICHETTA_MOTIVO,
   ETICHETTA_PRIORITA, ETICHETTA_STATO_OPPORTUNITA, euro,
@@ -25,6 +25,7 @@ import {
   registraEvento, salvaPreventivo, segnaConversazione, unisciContatti,
 } from '../../azioni';
 import { Fonte, Priorita, TastiTondi } from '../../pezzi';
+import { LogoCanale, LogoFonte } from '../../loghi';
 
 // La scheda. Si apre e si sa: cosa devo fare, cosa è successo, quanto vale,
 // dove siamo arrivati. In quest'ordine.
@@ -295,7 +296,7 @@ export default async function Scheda({
               <div key={f.id} className="riga">
                 <span className="cresce">
                   <span className="titolo">
-                    <span className="punto" style={{ background: COLORE_CANALE[f.canale], display: 'inline-block', marginRight: 6 }} aria-hidden="true" />
+                    <LogoCanale id={f.canale} />
                     {ETICHETTA_CANALE[f.canale]}
                   </span>
                   <span className="sotto">
@@ -710,7 +711,7 @@ export default async function Scheda({
       <p className="nota-piede">
         <Link href={`/attivita?contatto=${c.id}&periodo=tutto`}>Tutte le attività di {c.nome} →</Link>
         {' · '}
-        Colore della fonte: <span className="punto" style={{ background: coloreFonte(c.fonte), display: 'inline-block' }} />{' '}
+        Da dove è arrivato: <LogoFonte id={c.fonte} />{' '}
         {opportunitaAperta ? `lavoro aperto: ${opportunitaAperta.titolo}` : 'nessun lavoro aperto'}
         {' · '}
         {FASI.length} fasi possibili, questa è la {FASI.indexOf(c.fase) + 1}ª.

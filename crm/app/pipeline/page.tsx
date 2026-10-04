@@ -28,7 +28,7 @@ export default async function Pipeline() {
       id: c.id,
       nome: c.nomeCompleto,
       fonte: nomeFonte(c.fonte),
-      coloreFonte: coloreFonte(c.fonte),
+      fonteId: c.fonte,
       interesse: c.interesse ? ETICHETTA_INTERESSE[c.interesse] : null,
       valore: c.valore ? euro(c.valore) : '—',
       ultimoTocco: daQuanto(c.giorniDiSilenzio),

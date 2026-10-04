@@ -225,6 +225,12 @@ p { margin: 0 0 10px; }
 .fonte { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-2); white-space: nowrap; }
 .punto { width: 8px; height: 8px; border-radius: 2px; flex: none; }
 
+/* I loghi delle provenienze: un marchio si riconosce prima di leggerlo, ma
+   la parola resta sempre accanto — un'icona da sola è un indovinello. */
+.logo-fonte { width: 16px; height: 16px; flex: none; display: block; }
+.fonte .logo-fonte { margin-right: -1px; }
+.riga1 .logo-fonte, .titolo .logo-fonte { display: inline-block; vertical-align: -3px; margin-right: 6px; }
+
 .euro { font-family: var(--font-mono), monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .mono { font-family: var(--font-mono), monospace; font-variant-numeric: tabular-nums; }
 
@@ -681,6 +687,9 @@ body[data-scorso="si"] .testata-grande .riepilogo { opacity: .55; }
 }
 /* Il puntino fra una cosa e l'altra: nome · importo · quando. */
 .carta-azione .chi > * + *::before { content: '·'; color: var(--ink-3); margin-right: 7px; }
+/* Davanti a «Scaduto» no: ha già il suo pallino rosso, e se la riga va a
+   capo resterebbe un puntino orfano all'inizio. */
+.carta-azione .chi > .scaduto::before { content: none; }
 .carta-azione .scaduto { color: var(--urgente); font-weight: 550; display: inline-flex; align-items: center; gap: 6px; }
 .carta-azione .scaduto .pallino-rosso { width: 7px; height: 7px; border-radius: 50%; background: var(--urgente); flex: none; }
 .carta-azione .fondo { display: flex; align-items: center; gap: 10px; margin-top: 14px; }

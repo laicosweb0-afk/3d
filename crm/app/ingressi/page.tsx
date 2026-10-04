@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { deposito, modoDati } from '@/lib/dati';
 import { ETICHETTA_PERIODO, ingressi as calcolaIngressi, type Periodo } from '@/lib/dati/istantanea';
 import { coloreFonte } from '@/lib/dominio/fonti';
+import { LogoFonte } from '../loghi';
 import { euro } from '@/lib/dominio/etichette';
 
 // Da dove arrivano le persone, e — la domanda vera — quali fonti portano
@@ -80,7 +81,7 @@ export default async function Ingressi({
                   <tr key={r.fonte}>
                     <td>
                       <Link href={`/contatti?fonte=${r.fonte}`} className="fonte">
-                        <span className="punto" style={{ background: coloreFonte(r.fonte) }} aria-hidden="true" />
+                        <LogoFonte id={r.fonte} />
                         {r.nome}
                       </Link>
                     </td>

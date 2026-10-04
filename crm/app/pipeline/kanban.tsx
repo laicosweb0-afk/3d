@@ -1,5 +1,8 @@
 'use client';
 
+import type { Fonte as FonteId } from '@/lib/dominio/tipi';
+import { LogoFonte } from '../loghi';
+
 import Link from 'next/link';
 import { useOptimistic, useState, useTransition } from 'react';
 import type { Fase } from '@/lib/dominio/tipi';
@@ -14,7 +17,7 @@ export type Carta = {
   id: string;
   nome: string;
   fonte: string;
-  coloreFonte: string;
+  fonteId: FonteId;
   interesse: string | null;
   valore: string;
   ultimoTocco: string;
@@ -100,7 +103,7 @@ export function Kanban({ colonne }: { colonne: Colonna[] }) {
               <Link href={`/contatti/${carta.id}`} className="nome">{carta.nome}</Link>
               <div className="meta">
                 <span className="fonte">
-                  <span className="punto" style={{ background: carta.coloreFonte }} aria-hidden="true" />
+                  <LogoFonte id={carta.fonteId} />
                   {carta.fonte}
                 </span>
                 {carta.interesse && <span>{carta.interesse}</span>}
