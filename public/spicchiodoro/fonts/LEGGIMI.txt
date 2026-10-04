@@ -1,0 +1,9 @@
+Qui vanno i file del font Gaglio (Marvadesign), in formato WOFF2, con questi nomi:
+
+  gaglio-regular.woff2   (400)
+  gaglio-medium.woff2    (500)
+  gaglio-semibold.woff2  (600)
+  gaglio-bold.woff2      (700)
+
+Gaglio ha una licenza commerciale: serve la licenza "web" a nome del cliente
+(MyFonts o Creative Market). Finché i file non ci sono, la pagina usa Inter.
