@@ -21,6 +21,9 @@ scritte in cima a `bazar/src/config/gioco.ts`.
   le card**: è un indirizzo in prestito. Dopo ogni modifica in `bazar/`:
   `npm run build` e ricopiare `dist/` sopra `public/bazar/`.
 
+Le regole del marchio per i video e i contenuti — tono, colori, tipografia,
+movimento, cosa è vietato — stanno in `bazar/DESIGN.md`.
+
 ## Il percorso
 
 | | Schermata | Cosa succede |
