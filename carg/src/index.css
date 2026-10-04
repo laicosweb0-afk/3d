@@ -252,6 +252,64 @@
   .premio-sub { font-size: 0.8125rem; letter-spacing: 0.08em; color: var(--sub); margin: 0.875rem 0 0; }
   .step[data-bg='dark'] .premio-sub { color: var(--light-soft); }
 
+  /* ---- il bivio: le due porte ----
+   *
+   * Stesse card dei lavori, ma una delle due è **invertita**: fondo chiaro
+   * pieno su schermata scura. Non è decorazione — è il modo più rapido che
+   * esista per far capire che le due scelte non sono dello stesso tipo. Chi
+   * è fermo sul ciglio della strada, di sera, con poca batteria, deve
+   * trovare la sua in un colpo d'occhio, senza leggere.
+   *
+   * Contrasto invertito e non un rosso d'allarme: un rosso su fondo scuro
+   * che passi il contrasto diventa rosa, e uno che resti rosso non si legge.
+   * Il pieno chiaro funziona sempre.
+   */
+  .bivio {
+    width: 100%; margin: 2.5rem 0 0;
+    display: flex; flex-direction: column; gap: 0.75rem;
+  }
+  .scelta {
+    appearance: none; width: 100%; text-align: left; cursor: pointer;
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1.125rem 1.25rem; border-radius: 26px;
+    border: 1px solid rgba(238, 242, 247, 0.16);
+    background: rgba(238, 242, 247, 0.06);
+    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+    font-family: inherit; color: var(--light);
+    transition: transform var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+  }
+  .scelta:active { transform: scale(0.985); }
+  .scelta-urgente {
+    background: var(--light); border-color: var(--light); color: var(--ink);
+    box-shadow: 0 10px 34px rgba(238, 242, 247, 0.12);
+  }
+  .scelta-tondo {
+    flex: 0 0 auto; width: 52px; height: 52px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: rgba(43, 92, 240, 0.18); color: #8fb4ff;
+  }
+  .scelta-urgente .scelta-tondo { background: rgba(43, 92, 240, 0.12); color: var(--magenta); }
+  .scelta-testo { display: flex; flex-direction: column; gap: 0.1875rem; min-width: 0; }
+  .scelta-nome { font-size: 1.0625rem; font-weight: 700; letter-spacing: -0.02em; }
+  .scelta-riga { font-size: 0.8125rem; line-height: 1.4; opacity: 0.68; }
+
+  /* ---- il soccorso: cosa riescono a fare dove sei ----
+     Spunte e non pallini: ogni riga è una cosa che sanno già fare, e la
+     spunta lo dice prima che si legga. */
+  .faccio {
+    width: 100%; margin: 2rem 0 0; padding: 0; list-style: none;
+    display: flex; flex-direction: column; gap: 0.625rem; text-align: left;
+  }
+  .faccio li {
+    position: relative; padding-left: 1.75rem;
+    font-size: 0.9375rem; line-height: 1.45; color: var(--light);
+  }
+  .faccio li::before {
+    content: ''; position: absolute; left: 0; top: 0.42em;
+    width: 11px; height: 6px; border-left: 2px solid #8fb4ff;
+    border-bottom: 2px solid #8fb4ff; transform: rotate(-45deg);
+  }
+
   /* ---- i lavori: card tonde ----
    *
    * L'impianto è quello delle schede di Apple: raggio grande, vetro,

@@ -80,6 +80,21 @@ const DISEGNI: Record<string, JSX.Element> = {
       <path d="M27 25.5h6" />
     </g>
   ),
+  /* Il triangolo: chi è fermo lo ha appena messo in strada. */
+  soccorso: (
+    <g {...TRATTO}>
+      <path d="M24 8L42 38H6L24 8z" />
+      <path d="M24 20v8" />
+      <path d="M24 33h.02" />
+    </g>
+  ),
+  /* La chiave: la manutenzione, quella con calma. */
+  manutenzione: (
+    <g {...TRATTO}>
+      <path d="M31 9a9 9 0 0 0-8.3 12.5L9 35.2a3.5 3.5 0 0 0 0 5 3.5 3.5 0 0 0 5 0l13.7-13.7A9 9 0 1 0 31 9z" />
+      <circle cx="31.5" cy="17.5" r="3" />
+    </g>
+  ),
   /* Il furgone dell'officina mobile. */
   mobile: (
     <g {...TRATTO}>

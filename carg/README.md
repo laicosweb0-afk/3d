@@ -17,7 +17,8 @@ cambiare sono la tavolozza, il marchio e tutto quello che si legge.
 | # | Schermata | Cosa fa |
 |---|---|---|
 | 0 | Apertura | «Hey.» · «Un minuto / **per la tua auto.**» e la firma. Tipografica, 4,4 s. |
-| 1 | Ingresso | Il marchio e l'invito. Scuro. |
+| 1 | **Bivio** | Due porte: «sono rimasto a piedi» oppure la manutenzione. Scuro. |
+| 1b | **Soccorso** | Vicolo cieco voluto: cosa fanno sul posto e un bottone che chiama. Scuro. |
 | 2 | Domanda | Una sola: da quanto non fa il tagliando. Quattro risposte, si tocca e si va. |
 | 3 | Risposta | Cosa vuol dire quella risposta. **Senza il credito.** |
 | 4 | Ruota | Otto spicchi, si gira una volta. Scuro. |
@@ -60,6 +61,8 @@ Tutto in **`src/config/gioco.ts`**. Nessun altro file va aperto.
 | Cosa si legge dopo ogni risposta | `ESITI` |
 | I lavori e il loro testo | `SERVIZI` |
 | Le foto dei lavori | `public/servizi/` — vedi il LEGGIMI lì dentro |
+| Le due porte d'ingresso | `BIVIO` |
+| La schermata del soccorso | `SOCCORSO` |
 | Quali tre lavori per quale risposta | `CONSIGLI` |
 | Gli importi sulla ruota | `SPICCHI` |
 | Quanto si vince e quanto spesso | `PESI` |
@@ -140,6 +143,43 @@ leggono nell'ordine giusto, insieme si leggono come un blocco e la seconda,
 che è quella colorata e quella che deve restare, si perde.
 
 Il testo si cambia in `APERTURA.riga1` e `APERTURA.riga2`.
+
+## Le due porte
+
+Chi avvicina il telefono sta in due situazioni opposte, e non esiste una
+schermata che vada bene a tutte e due. Al bancone c'è chi guarda con calma:
+a quello si fa la domanda, si dà il credito, si parla di tagliandi. Sul
+ciglio della strada, di sera, c'è chi è fermo — e a quello un quiz è un
+insulto: gli serve un numero, grosso, e basta.
+
+Per questo la card si apre su un bivio.
+
+**L'urgenza sta sopra**, anche se è il caso più raro: il costo di sbagliare
+non è simmetrico. Chi sta curiosando perde un secondo a saltarla; chi è
+fermo al buio con l'auto che non parte non ha un secondo da perdere.
+
+La porta urgente è **invertita** — fondo chiaro pieno su schermata scura.
+Non è decorazione: è il modo più rapido che esista per far capire che le due
+scelte non sono dello stesso tipo, e si trova in un colpo d'occhio senza
+leggere. Contrasto invertito e non un rosso d'allarme, perché un rosso su
+fondo scuro che passi il contrasto diventa rosa, e uno che resti rosso non
+si legge.
+
+### Il soccorso
+
+Una schermata sola, e un **vicolo cieco voluto**: niente quiz, niente ruota,
+niente modulo. Ogni cosa in più fra chi è fermo e il telefono è una cosa che
+gli fa chiudere la pagina e cercare un altro numero su Google. Il bottone
+che chiama è l'unica cosa piena della schermata, ha il numero scritto
+dentro, ed è sotto il pollice.
+
+I testi vengono dalla **locandina dell'officina** — «niente panico»,
+«rimasto a piedi? chiamaci», «anche di notte, quando hai bisogno noi ci
+siamo» — e così le quattro cose che dicono di saper fare sul posto. Sono
+parole loro: le promesse su cosa riescono a fare in strada le hanno già
+messe per iscritto, e non è il caso che gliene inventiamo altre.
+
+Si cambia tutto in `SOCCORSO` e `BIVIO`, dentro `src/config/gioco.ts`.
 
 ## I lavori
 
