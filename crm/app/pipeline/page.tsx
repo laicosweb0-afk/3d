@@ -42,7 +42,7 @@ export default async function Pipeline() {
   return (
     <main>
       <header className="testata-grande">
-        <h1>Pipeline</h1>
+        <h1>A che punto siamo</h1>
         <p className="riepilogo">
           <span className="adesso">{euro(totale)} in gioco</span>
           {` · ${attive.reduce((n, f) => n + f.conteggio, 0)} persone nel percorso`}
@@ -50,11 +50,11 @@ export default async function Pipeline() {
       </header>
 
       {/* Qui si vede dove sono le persone adesso. Le percentuali di passaggio
-          — quante ne arrivano da una fase all'altra — stanno in Analisi, e il
+          — quante ne arrivano da una fase all'altra — stanno in Numeri, e il
           modo più corto per arrivarci è un pulsante, non una frase. */}
       <section className="sezione" style={{ marginTop: 4, marginBottom: 16 }}>
         <Link href="/analisi" className="bottone bottone-fantasma bottone-grande">
-          Vedi le conversioni in Analisi →
+          Vedi i Numeri →
         </Link>
       </section>
 
@@ -64,7 +64,7 @@ export default async function Pipeline() {
           <TastoInfo titolo="Dove sono adesso le persone">
             Questa è una fotografia di adesso, non una conversione: la barra misura quante persone sono ferme in
             quella fase, la cifra a destra quanto valgono. Le percentuali di passaggio stanno in{' '}
-            <Link href="/analisi">Analisi</Link>. Tocca una fase per vedere chi c&apos;è dentro. Fuori dal percorso:{' '}
+            <Link href="/analisi">Numeri</Link>. Tocca una fase per vedere chi c&apos;è dentro. Fuori dal percorso:{' '}
             {fasi.find((f) => f.fase === 'cliente')?.conteggio ?? 0} clienti e{' '}
             {fasi.find((f) => f.fase === 'perso')?.conteggio ?? 0} persi.
           </TastoInfo>

@@ -47,7 +47,7 @@ export default async function SchedaCampagna({ params }: { params: Promise<{ id:
     <main>
       <header className="testata-pagina">
         <div>
-          <p className="nota-piede" style={{ marginBottom: 4 }}><Link href="/campagne">← Campagne</Link></p>
+          <p className="nota-piede" style={{ marginBottom: 4 }}><Link href="/campagne">← Pubblicità</Link></p>
           <h1>{c.nome}</h1>
           <p className="lede">
             <span className="fonte">

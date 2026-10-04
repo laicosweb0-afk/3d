@@ -84,7 +84,7 @@ export default async function Flusso({
     <main>
       <header className="testata-pagina">
         <div>
-          <h1>Flusso</h1>
+          <h1>Da dove arrivano</h1>
           <p className="lede">
             Da dove arriva la gente, dove si ferma, cosa ne esce. Ogni riquadro si apre.
           </p>

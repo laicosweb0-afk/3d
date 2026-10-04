@@ -942,7 +942,10 @@ body[data-scorso="si"] .piu { transform: scale(.76); opacity: .82; }
 /* --------------------------------------------------------------------------
    Tab bar: cinque voci, icona più parola, quella accesa in oro
    -------------------------------------------------------------------------- */
-.voce-bassa { font-size: 11px; font-weight: 500; }
+/* «A che punto» è il nome più lungo della barra: non deve spezzarsi in due
+   righe, si stringe la scritta e basta. */
+.voce-bassa { font-size: 11px; font-weight: 500; white-space: nowrap; }
+@media (max-width: 400px) { .voce-bassa { font-size: 10px; } }
 .voce-bassa .conta-bassa {
   position: absolute; top: 4px; left: 50%; margin-left: 5px;
   min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;

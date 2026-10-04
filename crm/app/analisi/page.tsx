@@ -93,7 +93,7 @@ export default async function Analisi({
     <main>
       <header className="testata-pagina">
         <div>
-          <h1>Analisi</h1>
+          <h1>Numeri</h1>
           <p className="lede">Come si muove il lavoro, non solo quanto ce n&apos;è.</p>
         </div>
         <nav className="azioni-riga" aria-label="Periodo">
@@ -107,7 +107,7 @@ export default async function Analisi({
 
       <section className="sezione" style={{ marginTop: 0 }}>
         <div className="numeri">
-          <Numero etichetta="Valore in pipeline" valore={euro(a.valorePipeline)} sotto="trattative aperte, oggi" href="/pipeline" />
+          <Numero etichetta="Valore in gioco" valore={euro(a.valorePipeline)} sotto="trattative aperte, oggi" href="/pipeline" />
           <Numero
             etichetta="Ordini chiusi nel periodo"
             valore={a.ordiniChiusi}

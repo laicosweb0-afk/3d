@@ -78,7 +78,7 @@ export default async function Oggi({
               <svg viewBox="0 0 24 24"><path d="M12 4.5 3.6 19h16.8L12 4.5Z" /><path d="M12 10v4M12 16.6v.4" /></svg>
             </span>
             <span className="testo">
-              <span className="forte">Da controllare ({avvisi.length})</span>
+              <span className="forte">Avvisi ({avvisi.length})</span>
               <span className="fiacco">
                 {avvisi[0].titolo}
                 {avvisi.length > 1 && ` · e altri ${avvisi.length - 1}`}
@@ -200,7 +200,7 @@ export default async function Oggi({
         </nav>
         <div className="numeri">
           <Numero etichetta="Persone entrate" valore={numeri.ingressi} sotto={`${numeri.qualificati} qualificate`} href="/ingressi" />
-          <Numero etichetta="Valore in pipeline" valore={euro(numeri.valorePipeline)} sotto={`${numeri.preventivi} preventivi`} href="/pipeline" />
+          <Numero etichetta="Valore in gioco" valore={euro(numeri.valorePipeline)} sotto={`${numeri.preventivi} preventivi`} href="/pipeline" />
           <Numero
             etichetta="Ordini chiusi"
             valore={numeri.ordiniChiusi}
@@ -208,7 +208,7 @@ export default async function Oggi({
             href="/analisi"
           />
           <Numero
-            etichetta="Da controllare"
+            etichetta="Avvisi"
             valore={quantiAvvisi}
             sotto={senzaAzione ? `${senzaAzione} senza prossima azione` : 'nessuno lasciato indietro'}
             allarme={senzaAzione > 0}

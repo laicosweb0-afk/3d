@@ -38,7 +38,7 @@ export default async function Ingressi({
     <main>
       <header className="testata-pagina">
         <div>
-          <h1>Ingressi</h1>
+          <h1>Fonti</h1>
           <p className="lede">
             {totali.lead} persone entrate, {totali.ordini} arrivate all&apos;ordine.
           </p>

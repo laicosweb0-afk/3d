@@ -22,7 +22,7 @@ export default async function NuovaCampagna({
     <main>
       <header className="testata-pagina">
         <div>
-          <p className="nota-piede" style={{ marginBottom: 4 }}><Link href="/campagne">← Campagne</Link></p>
+          <p className="nota-piede" style={{ marginBottom: 4 }}><Link href="/campagne">← Pubblicità</Link></p>
           <h1>Nuova campagna</h1>
           <p className="lede">Quello che sai adesso. La spesa si può lasciare vuota.</p>
         </div>

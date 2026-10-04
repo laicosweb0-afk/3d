@@ -51,7 +51,7 @@ export default async function Campagne({
     <main>
       <header className="testata-pagina">
         <div>
-          <h1>Campagne</h1>
+          <h1>Pubblicità</h1>
           <p className="lede">
             {righe.length} {righe.length === 1 ? 'campagna' : 'campagne'} · {totali.contatti} persone portate ·{' '}
             {totali.ordini} {totali.ordini === 1 ? 'ordine' : 'ordini'}

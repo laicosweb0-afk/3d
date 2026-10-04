@@ -10,15 +10,15 @@ import { Foglio, FrecciaDestra } from './interattivi';
 
 const VOCI = [
   { href: '/', testo: 'Oggi', segno: 'oggi' },
-  { href: '/flusso', testo: 'Flusso', segno: 'flusso' },
-  { href: '/pipeline', testo: 'Pipeline', segno: 'pipeline' },
+  { href: '/flusso', testo: 'Da dove arrivano', segno: 'flusso' },
+  { href: '/pipeline', testo: 'A che punto', segno: 'pipeline' },
   { href: '/contatti', testo: 'Contatti', segno: 'contatti' },
   { href: '/preventivi', testo: 'Preventivi', segno: 'preventivi' },
-  { href: '/campagne', testo: 'Campagne', segno: 'campagne' },
-  { href: '/attivita', testo: 'Attività', segno: 'attivita' },
-  { href: '/attenzioni', testo: 'Attenzioni', segno: 'attenzioni' },
-  { href: '/analisi', testo: 'Analisi', segno: 'analisi' },
-  { href: '/ingressi', testo: 'Ingressi', segno: 'ingressi' },
+  { href: '/campagne', testo: 'Pubblicità', segno: 'campagne' },
+  { href: '/attivita', testo: 'Diario', segno: 'attivita' },
+  { href: '/attenzioni', testo: 'Avvisi', segno: 'attenzioni' },
+  { href: '/analisi', testo: 'Numeri', segno: 'analisi' },
+  { href: '/ingressi', testo: 'Fonti', segno: 'ingressi' },
 ] as const;
 
 // In fondo allo schermo ci stanno cinque voci, non sette: si tengono quelle

@@ -436,7 +436,7 @@ export default async function Scheda({
             <Apribile titolo="Opportunità" sotto={s.opportunita.length === 0 ? 'nessun lavoro aperto' : `${s.opportunita.length} ${s.opportunita.length === 1 ? 'lavoro' : 'lavori'} · ${euro(s.valore)}`}>
             <div className="scheda scheda-fitta">
               {s.opportunita.length === 0 && (
-                <p className="elenco-vuoto">Nessun lavoro aperto: senza, questo contatto non pesa in pipeline.</p>
+                <p className="elenco-vuoto">Nessun lavoro aperto: senza, questo contatto non conta nel valore in gioco.</p>
               )}
               {s.opportunita.map((o) => (
                 <div key={o.id} className="riga" style={{ display: 'block' }}>

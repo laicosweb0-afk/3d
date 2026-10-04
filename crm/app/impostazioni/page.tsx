@@ -102,9 +102,9 @@ export default async function Impostazioni({
               <div><dt>Opportunità</dt><dd>{dati.opportunita.length}</dd></div>
               <div><dt>Azioni aperte</dt><dd>{dati.azioni.filter((a) => !a.fattaIl).length}</dd></div>
               <div><dt>Eventi in timeline</dt><dd>{dati.eventi.length}</dd></div>
-              <div><dt>Campagne</dt><dd>{dati.campagne.length}</dd></div>
+              <div><dt>Pubblicità</dt><dd>{dati.campagne.length}</dd></div>
               <div><dt>Card NFC</dt><dd>{dati.card.length}</dd></div>
-              <div><dt>Valore in pipeline</dt><dd>{euro(valorePipeline(dati))}</dd></div>
+              <div><dt>Valore in gioco</dt><dd>{euro(valorePipeline(dati))}</dd></div>
               <div><dt>Modalità</dt><dd>{demo ? 'dimostrativa' : 'dati reali (Supabase)'}</dd></div>
             </dl>
             <p style={{ marginTop: 14, marginBottom: 6 }}>
@@ -156,7 +156,7 @@ export default async function Impostazioni({
           <div className="scheda">
             <h3>Quando una cosa diventa urgente</h3>
             <p className="nota-piede" style={{ marginTop: -2 }}>
-              Questi numeri decidono i colori in Oggi, in Pipeline e in Attenzioni. Alzarli vuol dire farsi avvisare
+              Questi numeri decidono i colori in Oggi, in «A che punto siamo» e negli Avvisi. Alzarli vuol dire farsi avvisare
               più tardi; abbassarli, farsi avvisare prima. Se tutto è urgente, niente lo è.
             </p>
             <div className="campi-2">

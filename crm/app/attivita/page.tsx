@@ -64,7 +64,7 @@ export default async function Attivita({
     <main>
       <header className="testata-pagina">
         <div>
-          <h1>Attività</h1>
+          <h1>Diario</h1>
           <p className="lede">
             {persona
               ? <>Tutto quello che è successo con <strong>{`${persona.nome} ${persona.cognome}`.trim()}</strong>.</>

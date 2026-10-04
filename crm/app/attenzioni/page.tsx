@@ -53,7 +53,7 @@ export default async function Attenzioni() {
   return (
     <main>
       <header className="testata-grande">
-        <h1>Attenzioni</h1>
+        <h1>Avvisi</h1>
         <p className="riepilogo">
           {avvisi.length === 0
             ? 'Niente fuori posto. Raro, godiamocelo.'
