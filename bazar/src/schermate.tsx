@@ -224,7 +224,7 @@ export function Giro({ onVinto }: { onVinto: (valore: number) => void }) {
           }}
         />
       </div>
-      <p className="nota mt-7">Ogni spicchio è un premio vero. Si vince sempre.</p>
+      <p className="nota mt-7">Si vince sempre.</p>
     </Step>
   );
 }
