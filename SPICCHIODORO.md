@@ -2,7 +2,7 @@
 
 La pagina che si apre avvicinando il telefono alla card del locale
 **Spicchio d'Oro — Pizza · Pub · Cucina**, Via San Savino 50, Fusignano (RA).
-Intro «CIAO!» → «Benvenuto da Spicchio d'Oro» su fondo oro e nero, poi la home con menù, serate,
+Intro «CIAO!» → «Benvenuto da» → il logo del locale su fondo oro e nero, poi la home con menù, serate,
 dove siamo e la prenotazione su WhatsApp con il messaggio già scritto.
 
 - **File**: `public/spicchiodoro/index.html` (HTML + CSS + JS in un file solo)
@@ -71,6 +71,8 @@ convert originale.jpg -auto-orient -strip -interlace Plane -quality 70 -resize '
 | gnocchi.jpg | gnocchi panna e noci | da avere (non ancora usata: il piatto non è nel menù fornito) |
 | nutella.jpg · crema.jpg · tiramisu.jpg · bigne.jpg · bigne-sera.jpg | dolci | da avere |
 | cocktail.jpg | cocktail in coppa | da avere |
+| logo.jpg · icona.jpg | il logo circolare (intro, testata, chiusura) e l'icona della pagina | ✅ |
+| intro.jpg | lo sfondo a onde oro dell'intro | ✅ |
 | serate/*.jpg | i cinque riquadri della locandina «Eventi da non perdere» | ✅ |
 
 ## Da completare
