@@ -152,7 +152,37 @@ await raccogli('ingresso');
   if (!caricato) errori.push('FONT: Inter non risulta caricato — controlla public/fonts/');
 }
 
-await p.getByRole('button', { name: /^Inizia/i }).click();
+// Il bivio: due porte, e l'urgenza sopra.
+{
+  const scelte = await p.locator('.scelta').count();
+  if (scelte !== 2) errori.push(`BIVIO: ${scelte} porte invece di 2`);
+  const prima = (await p.locator('.scelta').first().innerText().catch(() => '')).toLowerCase();
+  if (!/piedi|fermo/.test(prima)) {
+    errori.push(`BIVIO: la prima porta e' «${prima.split('\n')[0]}», non l'urgenza`);
+  }
+
+  // Il soccorso: ci si arriva, si chiama, e si torna indietro.
+  await p.locator('.scelta-urgente').click();
+  await p.waitForTimeout(700);
+  await scatto('1b-soccorso');
+  await raccogli('soccorso');
+  const tel = await p.locator('a[href^="tel:"]').getAttribute('href').catch(() => null);
+  if (tel !== `tel:${TELEFONO}`) {
+    errori.push(`SOCCORSO: il bottone chiama ${tel ?? 'nessuno'}, non ${TELEFONO}`);
+  }
+  // Chi e' fermo non fa il quiz e non lascia la mail: la schermata deve
+  // essere un vicolo cieco, con dentro solo la chiamata.
+  if (await p.locator('input, .opt, svg circle[r="15"]').count()) {
+    errori.push('SOCCORSO: ci sono campi o la ruota, doveva esserci solo il numero');
+  }
+  if (!(await p.locator('.faccio li').count())) {
+    errori.push('SOCCORSO: manca cosa riescono a fare sul posto');
+  }
+  await p.getByRole('button', { name: /torna indietro/i }).click();
+  await p.waitForTimeout(600);
+}
+
+await p.locator('.scelta').last().click();
 await p.waitForTimeout(800);
 await scatto('2-domanda');
 await raccogli('domanda');

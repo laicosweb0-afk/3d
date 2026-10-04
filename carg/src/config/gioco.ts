@@ -88,6 +88,63 @@ export const APERTURA = {
 };
 
 /* ------------------------------------------------------------------ */
+/* Le due porte                                                        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * La card si apre su un bivio, perché chi la usa sta in due situazioni
+ * opposte e non c’è una schermata che vada bene a tutti e due.
+ *
+ * Al bancone c’è chi guarda con calma: a quello si fa la domanda, si dà il
+ * credito, si parla di tagliandi. Sul ciglio della strada, di sera, c’è chi
+ * è fermo: a quello un quiz è un insulto. Gli serve un numero, grosso, e
+ * basta.
+ *
+ * L’urgenza sta **sopra**, anche se è il caso più raro. Il costo di
+ * sbagliare non è simmetrico: chi sta curiosando perde un secondo a saltarla,
+ * chi è fermo al buio con l’auto che non parte non ha un secondo da perdere.
+ */
+export const BIVIO = {
+  titolo: 'Come possiamo\naiutarti?',
+  urgente: {
+    etichetta: 'Sono rimasto a piedi',
+    riga: 'Veniamo noi sul posto. Anche di notte.',
+  },
+  calmo: {
+    etichetta: 'Tagliandi, gomme, FAP, fari',
+    riga: 'Guarda cosa serve, e prenditi il tuo credito.',
+  },
+};
+
+/**
+ * Il soccorso: una schermata sola, e un bottone che chiama.
+ *
+ * Niente quiz, niente ruota, niente modulo. Chi arriva qui ha un problema
+ * adesso, e ogni cosa in più fra lui e il telefono è una cosa che gli fa
+ * chiudere la pagina e cercare un altro numero su Google.
+ *
+ * I testi vengono dalla locandina dell’officina: «niente panico»,
+ * «rimasto a piedi? chiamaci», «anche di notte, quando hai bisogno noi ci
+ * siamo». Sono parole loro, non nostre — e le promesse su cosa riescono a
+ * fare sul posto le hanno già messe per iscritto.
+ */
+export const SOCCORSO = {
+  kicker: 'Servizio notturno · Officina mobile',
+  titolo: 'Niente panico.\nArriviamo noi.',
+  riga: 'Officina mobile: ripariamo sul posto, con l’attrezzatura a bordo.',
+  /** Cosa riescono a fare dove sei: dalla loro locandina, non inventate. */
+  faccio: [
+    'Assistenza e riparazioni sul posto',
+    'Gomme forate e sostituzioni',
+    'Batterie: prova, ricarica, cambio',
+    'Diagnosi e interventi urgenti',
+  ],
+  chiama: 'Chiama ora',
+  /** La rassicurazione, dalla locandina. */
+  coda: 'Anche di notte, quando hai bisogno.',
+};
+
+/* ------------------------------------------------------------------ */
 /* L’unica domanda: da quanto non fa il tagliando                      */
 /* ------------------------------------------------------------------ */
 

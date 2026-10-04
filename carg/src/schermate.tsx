@@ -4,8 +4,8 @@ import { CargLogo } from './components/CargLogo';
 import { IconaServizio } from './components/IconaServizio';
 import { Ruota, type RuotaHandle } from './components/Ruota';
 import {
-  CHIEDI_AUTO, CONSIGLI, CONTATTO_RICHIESTO, DOMANDA, ESITI, FASCE, OFFICINA,
-  PERCENTUALI, VALIDITA_GIORNI, servizioDi,
+  BIVIO, CHIEDI_AUTO, CONSIGLI, CONTATTO_RICHIESTO, DOMANDA, ESITI, FASCE,
+  OFFICINA, PERCENTUALI, SOCCORSO, VALIDITA_GIORNI, servizioDi,
 } from './config/gioco';
 import { tocco as toccoAptico, vittoria as vittoriaAptica } from './lib/haptics';
 import { arresto, conteggio, pop, vittoria as suonoVittoria } from './lib/suono';
@@ -25,29 +25,78 @@ export function indirizzo(file: string): string {
 /* ------------------------------------------------------------------ */
 
 /**
- * La prima schermata, scura.
+ * La prima schermata: il bivio.
  *
- * I fari passano nell’apertura (`Intro`), non qui: quando si arriva a questa
- * schermata l’auto è già passata.
+ * Chi avvicina il telefono sta in due situazioni opposte, e non esiste una
+ * schermata che vada bene a tutte e due. Al bancone c'è chi guarda con
+ * calma; sul ciglio della strada, di sera, c'è chi è fermo — e a quello un
+ * quiz è un insulto.
+ *
+ * L'urgenza sta sopra anche se è il caso più raro: chi sta curiosando perde
+ * un secondo a saltarla, chi è fermo al buio non ha un secondo da perdere.
  */
-export function Ingresso({ onAvanti }: { onAvanti: () => void }) {
+export function Ingresso({
+  onQuiz, onSoccorso,
+}: { onQuiz: () => void; onSoccorso: () => void }) {
   return (
-    <Step scuro bottom={<Cta onClick={onAvanti}>Inizia</Cta>}>
+    <Step scuro bottom={<p className="nota">{OFFICINA.via} · {OFFICINA.citta}</p>}>
       <p className="eyebrow">{OFFICINA.nome}</p>
-      {/*
-        Questa schermata non racconta il meccanismo: lo raccontano le due
-        dopo, e prima qui ripeteva le loro parole. «Due conti sulla tua
-        auto» rimandava «la tua auto» dell'apertura, e «Una domanda sola»
-        era identico all'occhiello della schermata successiva.
+      <h1 className="h1">{BIVIO.titolo}</h1>
 
-        Adesso dice l'unica cosa che nessun'altra schermata dice, ed è
-        quella che il titolare voleva in primo piano: cosa sanno fare. I
-        quattro lavori messi in fila valgono più di qualunque frase, e
-        «tutto in un posto solo» è il motivo per cui uno si ferma qui invece
-        di girare fra tre officine.
-      */}
-      <h1 className="h1">{'Tagliandi, gomme,\nFAP e fari.'}</h1>
-      <p className="lede">{'Tutto in un posto solo,\na Lavezzola.'}</p>
+      <div className="bivio">
+        <button type="button" className="scelta scelta-urgente" onClick={() => { toccoAptico(); pop(); onSoccorso(); }}>
+          <span className="scelta-tondo"><IconaServizio id="soccorso" /></span>
+          <span className="scelta-testo">
+            <span className="scelta-nome">{BIVIO.urgente.etichetta}</span>
+            <span className="scelta-riga">{BIVIO.urgente.riga}</span>
+          </span>
+        </button>
+
+        <button type="button" className="scelta" onClick={() => { toccoAptico(); pop(); onQuiz(); }}>
+          <span className="scelta-tondo"><IconaServizio id="manutenzione" /></span>
+          <span className="scelta-testo">
+            <span className="scelta-nome">{BIVIO.calmo.etichetta}</span>
+            <span className="scelta-riga">{BIVIO.calmo.riga}</span>
+          </span>
+        </button>
+      </div>
+    </Step>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* 1b — Il soccorso: una schermata sola, e un numero                   */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Chi arriva qui ha un problema adesso. Niente quiz, niente ruota, niente
+ * modulo: ogni cosa in più fra lui e il telefono è una cosa che gli fa
+ * chiudere la pagina e cercare un altro numero su Google.
+ *
+ * Il bottone che chiama è l'unica cosa piena della schermata, ed è sotto il
+ * pollice. Tutto il resto serve solo a fargli capire, in due secondi, che ha
+ * trovato la gente giusta.
+ */
+export function Soccorso({ onIndietro }: { onIndietro: () => void }) {
+  return (
+    <Step
+      scuro
+      bottom={(
+        <>
+          <a className="cta cta-fill" href={`tel:${OFFICINA.telefonoLink}`}>
+            {SOCCORSO.chiama} · {OFFICINA.telefono}
+          </a>
+          <p className="notturno">{SOCCORSO.coda}</p>
+          <button className="ghost" onClick={onIndietro}>Non sono fermo, torna indietro</button>
+        </>
+      )}
+    >
+      <p className="eyebrow">{SOCCORSO.kicker}</p>
+      <h1 className="h1">{SOCCORSO.titolo}</h1>
+      <p className="lede">{SOCCORSO.riga}</p>
+      <ul className="faccio">
+        {SOCCORSO.faccio.map((f) => <li key={f}>{f}</li>)}
+      </ul>
     </Step>
   );
 }

@@ -2,12 +2,13 @@ import { useCallback, useMemo, useState } from 'react';
 import { Intro } from './components/Intro';
 import { MuteButton } from './components/MuteButton';
 import {
-  Consigli, Credito, Dati, Domanda, Fine, Giro, Ingresso, Rivelazione, type DatiModulo,
+  Consigli, Credito, Dati, Domanda, Fine, Giro, Ingresso, Rivelazione, Soccorso,
+  type DatiModulo,
 } from './schermate';
 import { fasciaDi, generaCodice, scadenza } from './config/gioco';
 import { submitLead, type Lead } from './lib/lead';
 
-type Fase = 'ingresso' | 'domanda' | 'rivelazione' | 'ruota' | 'credito' | 'consigli' | 'dati' | 'fine';
+type Fase = 'ingresso' | 'soccorso' | 'domanda' | 'rivelazione' | 'ruota' | 'credito' | 'consigli' | 'dati' | 'fine';
 
 export default function App() {
   const [apertura, setApertura] = useState(true);
@@ -63,7 +64,19 @@ export default function App() {
   const schermata = useMemo(() => {
     switch (fase) {
       case 'ingresso':
-        return <Ingresso onAvanti={() => setFase('domanda')} />;
+        return (
+          <Ingresso
+            onQuiz={() => setFase('domanda')}
+            onSoccorso={() => setFase('soccorso')}
+          />
+        );
+      /*
+        Il soccorso è un vicolo cieco voluto: da qui si chiama e basta. Non
+        porta al quiz e non raccoglie contatti — chi è fermo sul ciglio della
+        strada non lascia la mail.
+      */
+      case 'soccorso':
+        return <Soccorso onIndietro={() => setFase('ingresso')} />;
       case 'domanda':
         return <Domanda onRisposto={(f) => { setScelta(f); setFase('rivelazione'); }} />;
       case 'rivelazione':
