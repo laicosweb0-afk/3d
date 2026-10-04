@@ -2,7 +2,7 @@
 
 La pagina che si apre avvicinando il telefono alla card del locale
 **Spicchio d'Oro — Pizza · Pub · Cucina**, Via San Savino 50, Fusignano (RA).
-Intro «Hey.» → «Benvenuto da Spicchio d'Oro», poi la home con menù, serate,
+Intro «CIAO!» → «Benvenuto da Spicchio d'Oro» su fondo oro e nero, poi la home con menù, serate,
 dove siamo e la prenotazione su WhatsApp con il messaggio già scritto.
 
 - **File**: `public/spicchiodoro/index.html` (HTML + CSS + JS in un file solo)
