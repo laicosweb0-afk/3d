@@ -21,7 +21,7 @@
  *      divano comprerà quella persona. Se si potesse cambiare, non direbbe più
  *      niente.
  *   3. IL PREMIO NON DIPENDE MAI DALLA RISPOSTA. Ogni stile porta alla stessa
- *      ruota con le stesse probabilità. Si vince sempre.
+ *      ruota con le stesse probabilità. Si vince sempre: 15 € o 30 €.
  *   4. NON C'È UNA RISPOSTA SBAGLIATA. Qui non si indovina niente: si sceglie
  *      cosa piace, e il negozio risponde con tre pezzi veri da venire a
  *      vedere. È una consulenza, non un esame.
@@ -169,39 +169,55 @@ export const PEZZI: Record<string, Pezzo[]> = {
 /* ------------------------------------------------------------------ */
 
 /**
- * Gli spicchi della ruota, uno per premio. **Le probabilità stanno qui, nella
- * geometria**: ogni spicchio è grande uguale e l'estrazione sceglie uno
- * spicchio a caso, senza pesi nascosti. Il 30 esce più spesso perché occupa
- * più ruota, e si vede guardandola.
- *
- * Dieci spicchi: cinque da 30 €, tre da 50 €, due da 70 € — cioè 50% · 30%
- * · 20%, e un credito medio di 44 €.
- *
- * Nessuno spicchio mostra un premio che non può uscire: sarebbe una pratica
- * commerciale ingannevole (Codice del Consumo, artt. 20-23).
- *
- * ⚠️ **Da sapere, e va detto a chi decide**: un premio di importo variabile
- * estratto a sorte è un concorso a premi (DPR 430/2001) — regolamento,
- * cauzione, comunicazione al Ministero. Un credito uguale per tutti no: è una
- * semplice operazione a sconto. Per tornare lì basta mettere lo stesso
- * importo in tutti gli spicchi: la ruota gira uguale e non c'è niente da
- * dichiarare.
+ * Gli spicchi della ruota: **ogni importo compare una volta sola**, alternando
+ * le cifre piccole e quelle grosse, come su una ruota da premi vera.
  */
-export const SPICCHI: number[] = [30, 50, 30, 70, 30, 50, 30, 70, 30, 50];
+export const SPICCHI: number[] = [15, 50, 30, 100, 20, 70, 25, 80];
 
-/** Quante volte esce ogni importo, in percentuale: dalla geometria, non da un peso. */
-export function probabilita(): Record<number, number> {
-  const conti: Record<number, number> = {};
-  for (const v of SPICCHI) conti[v] = (conti[v] ?? 0) + 1;
-  for (const v of Object.keys(conti)) conti[Number(v)] = (conti[Number(v)] / SPICCHI.length) * 100;
-  return conti;
+/**
+ * Quanto si vince davvero, e quanto spesso.
+ *
+ * Il negozio ha deciso così: si vince sempre, e sempre 15 € o 30 €. Gli
+ * altri spicchi restano a schermo ma la ruota non ci si ferma mai. Prima si
+ * estrae il credito secondo questi pesi, poi la ruota va a fermarsi sullo
+ * spicchio che lo porta.
+ *
+ * Le percentuali sono una proposta, non un dato del negozio: si cambiano
+ * qui, e devono fare 100.
+ *
+ * ⚠️ **Da sapere, perché è stato detto e va lasciato scritto.** Mostrare
+ * premi che nessuno può vincere è una pratica commerciale ingannevole ai
+ * sensi degli artt. 20-23 del Codice del Consumo, e un premio estratto a
+ * sorte di importo variabile è un concorso a premi (DPR 430/2001), con
+ * regolamento, cauzione e comunicazione al Ministero. La versione senza
+ * nessuno dei due problemi costa una riga: in `SPICCHI` solo 15 e 30, nelle
+ * proporzioni volute, e niente pesi — oppure lo stesso importo per tutti,
+ * che è una semplice operazione a sconto.
+ */
+export const PESI: { valore: number; peso: number }[] = [
+  { valore: 15, peso: 70 },
+  { valore: 30, peso: 30 },
+];
+
+/** Il credito più alto fra quelli che si possono vincere davvero. */
+export const PREMIO_MASSIMO = Math.max(...PESI.map((p) => p.valore));
+
+/** Estrae il credito secondo i pesi. Restituisce il valore, non lo spicchio. */
+export function estrai(): number {
+  const totale = PESI.reduce((s, p) => s + p.peso, 0);
+  let n = Math.random() * totale;
+  for (const p of PESI) {
+    n -= p.peso;
+    if (n <= 0) return p.valore;
+  }
+  return PESI[PESI.length - 1].valore;
 }
 
 /** Il credito medio per cliente: serve a chi fa i conti, non all'app. */
-export const creditoMedio = () => SPICCHI.reduce((s, v) => s + v, 0) / SPICCHI.length;
-
-/** L'indice dello spicchio estratto. Una riga: la ruota non bara. */
-export const estraiSpicchio = () => Math.floor(Math.random() * SPICCHI.length);
+export function creditoMedio(): number {
+  const totale = PESI.reduce((s, p) => s + p.peso, 0);
+  return PESI.reduce((s, p) => s + p.valore * p.peso, 0) / totale;
+}
 
 /**
  * Da quale spesa vale il credito. Su un divano 30 € non spostano niente e

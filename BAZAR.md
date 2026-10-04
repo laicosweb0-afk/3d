@@ -21,6 +21,9 @@ scritte in cima a `bazar/src/config/gioco.ts`.
   le card**: è un indirizzo in prestito. Dopo ogni modifica in `bazar/`:
   `npm run build` e ricopiare `dist/` sopra `public/bazar/`.
 
+Le regole del marchio per i video e i contenuti — tono, colori, tipografia,
+movimento, cosa è vietato — stanno in `bazar/DESIGN.md`.
+
 ## Il percorso
 
 | | Schermata | Cosa succede |
@@ -152,16 +155,19 @@ Tutto sta in `NEGOZIO`, `REPARTI`, `STILI` e `PEZZI` dentro
    lampadari e profumi sono descritti per genere, e le loro foto mancano. Vanno confermati con il negozio: un
    pezzo consigliato che in showroom non c'è è la delusione più facile da
    evitare.
-2. **Gli importi della ruota** (`SPICCHI`): proposti 30/50/70 € — cinque
-   spicchi da 30, tre da 50, due da 70, cioè 50% · 30% · 20%, credito medio
-   44 € — su una spesa minima di 300 € (`SPESA_MINIMA`). Sono una proposta,
-   da decidere con il negozio.
-3. **La ruota è onesta**: le probabilità stanno nella geometria, l'estrazione
-   sceglie uno spicchio a caso senza pesi, e nessuno spicchio mostra un premio
-   che non può uscire. Ma un premio variabile estratto a sorte **è un concorso
-   a premi** (DPR 430/2001): regolamento, cauzione, comunicazione al
-   Ministero. Con lo stesso importo in tutti gli spicchi diventa una semplice
-   operazione a sconto, e non c'è niente da dichiarare.
+2. **La ruota: si vince 15 € o 30 €.** È la scelta del negozio. A schermo
+   ci sono otto importi tutti diversi (15 · 50 · 30 · 100 · 20 · 70 · 25 ·
+   80), ma la ruota si ferma solo sul 15 o sul 30: prima si estrae il credito
+   secondo i pesi di `PESI` in `gioco.ts`, poi la ruota va sullo spicchio che
+   lo porta. **Le percentuali sono una proposta**: 15 € al 70%, 30 € al 30%,
+   credito medio 19,50 €. Restano da confermare anche la spesa minima di
+   300 € (`SPESA_MINIMA`) e la validità di 90 giorni.
+3. **Da sapere, ed è scritto anche in `gioco.ts`.** Mostrare importi che
+   nessuno può vincere è una pratica commerciale ingannevole (Codice del
+   Consumo, artt. 20-23), e un premio variabile estratto a sorte è un
+   concorso a premi (DPR 430/2001): regolamento, cauzione, comunicazione al
+   Ministero. La versione senza nessuno dei due problemi costa una riga: in
+   `SPICCHI` solo 15 e 30, oppure lo stesso importo per tutti.
 4. **La privacy**: il link nel modulo è un segnaposto. Va messo quello vero.
 5. **I contatti**: senza `VITE_LEAD_WEBHOOK_URL` l'invio è simulato e non
    salva niente. Si collega come quelli di Club Rama.
@@ -196,13 +202,14 @@ node tools/bazar-qa.mjs <cartella-screenshot>
 RISPOSTA="Curve morbide" node tools/bazar-qa.mjs <cartella>
 ```
 
-Fotografa ogni schermata su un viewport da iPhone e fallisce se la vetrina
+Fotografa ogni schermata su un viewport da iPhone e fallisce se si vince
+qualcosa di diverso da 15 € o 30 €, se i pesi non fanno 100, se un importo
+compare due volte sulla ruota, se la ruota si ferma su uno spicchio diverso
+dal credito vinto, se la vetrina
 non ha il riquadro *Divani*, se le copertine ai lati non sono girate in 3D o
 quella in centro sì, se scorrendo non cambia l'articolo in centro, se la
 scheda non ha foto da scorrere o il contatore non le segue, se il cuore non
-resta acceso o il preferito non arriva sulla tessera, se le
-percentuali della ruota non sono quelle attese, se compare uno spicchio non
-previsto o un sorteggio pesato, se due spicchi uguali stanno vicini, se
+resta acceso o il preferito non arriva sulla tessera, se
 il saluto non è «Marhaba.» con «Benvenuto» sotto, se il marchio compare insieme al saluto o non è al centro dello schermo, se gli stili non sono quattro, se il credito compare già nello stile, se c'è un modo
 per rispondere di nuovo, se la foto dello stile o una miniatura non si
 carica, se i pezzi non sono tre o vengono da un reparto

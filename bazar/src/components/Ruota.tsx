@@ -1,23 +1,18 @@
 import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
-import { GIRO, SPICCHI, estraiSpicchio } from '../config/gioco';
+import { GIRO, SPICCHI, estrai } from '../config/gioco';
 import { tick as tickAptico } from '../lib/haptics';
 import { tick as tickSuono, fruscioRuota, sblocca } from '../lib/suono';
 
 const N = SPICCHI.length;
 const PASSO = 360 / N;
 
-/**
- * Il colore dice l'importo, non la posizione: oro il 70, inchiostro il 50,
- * crema il 30. Si capisce a colpo d'occhio dove sta il premio grosso e
- * quanta ruota occupa — cioè quanto spesso esce.
- */
-const TINTE: Record<number, { fondo: string; testo: string }> = {
-  70: { fondo: 'url(#r-oro)', testo: '#16120F' },
-  50: { fondo: '#2a231d', testo: '#D8BC86' },
-  30: { fondo: '#EDE7DD', testo: '#16120F' },
-};
-const ALTRO = { fondo: '#8a6a3c', testo: '#EDE7DD' };
-const tintaDi = (i: number) => TINTE[SPICCHI[i]] ?? ALTRO;
+/** Le tre tinte si alternano lungo la ruota: oro, inchiostro, panna. */
+const TINTE = [
+  { fondo: 'url(#r-oro)', testo: '#16120F' },
+  { fondo: '#2a231d', testo: '#D8BC86' },
+  { fondo: '#EDE7DD', testo: '#16120F' },
+];
+const tintaDi = (i: number) => TINTE[i % TINTE.length];
 
 /** Nella metà bassa della ruota la scritta arriverebbe a testa in giù. */
 const capovolto = (i: number) => {
@@ -51,9 +46,8 @@ export type RuotaHandle = { gira: () => void };
 /**
  * La ruota.
  *
- * Ogni spicchio è un premio vero, e tutti gli spicchi sono grandi uguale:
- * l'estrazione sceglie uno spicchio a caso, e le probabilità sono quelle che
- * si vedono. Si vince sempre.
+ * Gli importi a schermo sono otto e tutti diversi; quelli che escono davvero
+ * sono due, con le percentuali di `PESI` in `gioco.ts`. Si vince sempre.
  */
 export const Ruota = forwardRef<RuotaHandle, {
   onFermata: (valore: number) => void;
@@ -63,7 +57,7 @@ export const Ruota = forwardRef<RuotaHandle, {
   const lancettaRef = useRef<SVGGElement>(null);
   const [girando, setGirando] = useState(false);
   const [vinto, setVinto] = useState<number | null>(null);
-  /** Lo spicchio fermo: gli importi si ripetono, si accende solo quello. */
+  /** Lo spicchio fermo: si accende solo quello. */
   const [fermo, setFermo] = useState<number | null>(null);
   const giroFatto = useRef(false);
 
@@ -76,12 +70,14 @@ export const Ruota = forwardRef<RuotaHandle, {
     sblocca();
 
     /*
-     * Si estrae uno spicchio, a caso e senza pesi: la ruota si ferma lì, e il
-     * premio è quello scritto sopra. Nessun bersaglio imposto, nessun
-     * importo che compare ma non può uscire.
+     * Prima si estrae il credito secondo i pesi, poi si cerca lo spicchio che
+     * lo porta: la ruota si ferma lì. È il contrario di una ruota vera, dove
+     * il premio lo decide dove si ferma — e sta scritto in gioco.ts cosa
+     * comporta.
      */
-    const bersaglio = estraiSpicchio();
-    const valore = SPICCHI[bersaglio];
+    const valore = estrai();
+    const candidati = SPICCHI.map((v, i) => (v === valore ? i : -1)).filter((i) => i >= 0);
+    const bersaglio = candidati[Math.floor(Math.random() * candidati.length)];
     const giri = GIRO.giriMin + Math.floor(Math.random() * (GIRO.giriMax - GIRO.giriMin + 1));
     const dentro = (Math.random() - 0.5) * PASSO * 0.7;
     const finale = giri * 360 + (360 - bersaglio * PASSO) + dentro;

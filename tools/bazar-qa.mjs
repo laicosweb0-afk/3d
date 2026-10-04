@@ -4,8 +4,8 @@
 //   node tools/bazar-qa.mjs <cartella-screenshot>
 //
 // Ripercorre la card su un viewport da iPhone, fotografa ogni schermata e
-// fallisce se una delle regole è stata rotta: la ruota deve essere onesta
-// (nessun peso nascosto, nessuno spicchio che non può uscire), la domanda una
+// fallisce se una delle regole è stata rotta: la ruota fa vincere solo 15 € o
+// 30 € e si ferma sullo spicchio giusto, la domanda una
 // sola, il credito fuori dalla rivelazione, i pezzi tre e dai reparti del
 // biglietto, i contatti del biglietto tutti sulla tessera, il font servito da
 // noi, e nessuna chiamata fuori dal server locale.
@@ -20,31 +20,28 @@ const NOME_STILE = { 'Curve morbide': 'Velluto', 'Classico elegante': 'Classico'
 /* ---- quello che il codice promette, letto dal codice ---- */
 const gioco = readFileSync(new URL('../bazar/src/config/gioco.ts', import.meta.url), 'utf8');
 const SPICCHI = JSON.parse(gioco.match(/export const SPICCHI: number\[\] = (\[[^\]]+\])/)[1]);
-const ATTESE = { 30: 50, 50: 30, 70: 20 };
+// I due importi che si vincono davvero, con le loro percentuali.
+const PESI = [...gioco.matchAll(/\{ valore: (\d+), peso: (\d+) \}/g)]
+  .map(([, v, w]) => ({ valore: Number(v), peso: Number(w) }));
+const VINCIBILI = PESI.map((p) => p.valore);
 
 const errori = [];
 
 /* ---- 1. la ruota, sulla carta ---- */
 {
-  const conti = {};
-  for (const v of SPICCHI) conti[v] = (conti[v] ?? 0) + 1;
-  for (const [v, pct] of Object.entries(ATTESE)) {
-    const reale = ((conti[v] ?? 0) / SPICCHI.length) * 100;
-    if (Math.abs(reale - pct) > 0.01) errori.push(`RUOTA: il ${v}€ esce il ${reale}% invece del ${pct}%`);
+  // Si vincono 15 € o 30 €: è la scelta del negozio.
+  if (VINCIBILI.join(',') !== '15,30') errori.push(`RUOTA: si vince ${VINCIBILI.join('/')} invece di 15/30`);
+  const somma = PESI.reduce((s, p) => s + p.peso, 0);
+  if (somma !== 100) errori.push(`PESI: fanno ${somma} invece di 100`);
+  // Ogni importo compare una volta sola, e i vincibili ci sono tutti.
+  const doppi = SPICCHI.filter((v, i) => SPICCHI.indexOf(v) !== i);
+  if (doppi.length) errori.push(`RUOTA: ${doppi.join(', ')} compaiono più di una volta`);
+  for (const v of VINCIBILI) {
+    if (!SPICCHI.includes(v)) errori.push(`RUOTA: manca lo spicchio da ${v}€, ma è fra i vincibili`);
   }
-  for (const v of Object.keys(conti)) {
-    if (!(v in ATTESE)) errori.push(`RUOTA: spicchio da ${v}€ non previsto`);
-  }
-  if (/peso|PESI/.test(gioco.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, ''))) {
-    errori.push('RUOTA: compare un sorteggio pesato nel codice; le probabilità stanno negli spicchi');
-  }
-  for (let i = 0; i < SPICCHI.length; i++) {
-    if (SPICCHI[i] === SPICCHI[(i + 1) % SPICCHI.length]) {
-      errori.push(`RUOTA: due spicchi da ${SPICCHI[i]}€ vicini (posizioni ${i} e ${(i + 1) % SPICCHI.length})`);
-    }
-  }
-  const medio = SPICCHI.reduce((s, v) => s + v, 0) / SPICCHI.length;
-  console.log('spicchi:', SPICCHI.join(' · '), '· credito medio', medio.toFixed(2) + ' €');
+  const medio = PESI.reduce((s, p) => s + p.valore * p.peso, 0) / somma;
+  console.log('spicchi:', SPICCHI.join(' · '), '→ si vince', VINCIBILI.join('/'),
+    '· credito medio', medio.toFixed(2) + ' €');
 }
 
 /* ---- 2. il percorso ---- */
@@ -220,7 +217,19 @@ await p.waitForSelector('svg[aria-label*="Ruota"]');
 await scatto('4-ruota');
 await p.getByRole('button', { name: /Gira la ruota/ }).click();
 await p.waitForTimeout(2400);
+let sotto = null;
 await scatto('4-ruota-gira');
+await p.waitForSelector('svg[aria-label^="Ruota ferma"]', { timeout: 9000 });
+  // Sotto la lancetta c'è proprio quella cifra: si legge l'angolo a cui la
+  // ruota si è fermata e si guarda quale spicchio ci sta sotto.
+  sotto = await p.evaluate((spicchi) => {
+    const g = document.querySelector('svg[aria-label*="Ruota"] g[style*="rotate"]');
+    if (!g) return null;
+    const deg = parseFloat(g.style.transform.match(/rotate\((-?[\d.]+)deg\)/)[1]);
+    const passo = 360 / spicchi.length;
+    return spicchi[Math.round(((((-deg) % 360) + 360) % 360) / passo) % spicchi.length];
+  }, SPICCHI).catch(() => null);
+await scatto('4-ruota-ferma');
 await p.waitForSelector('.premio-cifra', { timeout: 9000 });
 await p.waitForTimeout(1800);
 
@@ -228,7 +237,8 @@ await p.waitForTimeout(1800);
 let credito;
 {
   credito = Number((await p.locator('.premio-cifra').innerText()).replace(/\D/g, ''));
-  if (!(credito in ATTESE)) errori.push(`CREDITO: ${credito}€ non è fra gli spicchi`);
+  if (!VINCIBILI.includes(credito)) errori.push(`CREDITO: ${credito}€ non è fra quelli che si vincono`);
+  if (sotto !== credito) errori.push(`RUOTA: si ferma sul ${sotto}€ ma il credito è ${credito}€`);
   console.log('credito vinto:', credito + ' €');
 }
 await scatto('5-credito');
