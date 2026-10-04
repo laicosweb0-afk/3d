@@ -6,6 +6,7 @@ import { coloreFonte, nomeFonte } from '@/lib/dominio/fonti';
 import { fase as descriviFase } from '@/lib/dominio/fasi';
 import { daQuanto, inRitardo, quando } from '@/lib/formato';
 import { Kanban, type Colonna } from './kanban';
+import { TastoInfo } from '../interattivi';
 
 // Due modi di guardare la stessa cosa: l'imbuto dice dove si perde volume, il
 // kanban serve a lavorarci dentro.
@@ -40,17 +41,34 @@ export default async function Pipeline() {
 
   return (
     <main>
-      <header className="testata-pagina">
-        <div>
-          <h1>Pipeline</h1>
-          <p className="lede">
-            {euro(totale)} in gioco fra chi è stato contattato e chi ha già ordinato.
-          </p>
-        </div>
+      <header className="testata-grande">
+        <h1>Pipeline</h1>
+        <p className="riepilogo">
+          <span className="adesso">{euro(totale)} in gioco</span>
+          {` · ${attive.reduce((n, f) => n + f.conteggio, 0)} persone nel percorso`}
+        </p>
       </header>
 
+      {/* Qui si vede dove sono le persone adesso. Le percentuali di passaggio
+          — quante ne arrivano da una fase all'altra — stanno in Analisi, e il
+          modo più corto per arrivarci è un pulsante, non una frase. */}
+      <section className="sezione" style={{ marginTop: 4, marginBottom: 16 }}>
+        <Link href="/analisi" className="bottone bottone-fantasma bottone-grande">
+          Vedi le conversioni in Analisi →
+        </Link>
+      </section>
+
       <section className="sezione">
-        <h2>Dove sono adesso le persone</h2>
+        <div className="azioni-riga" style={{ marginBottom: 12 }}>
+          <h2 style={{ margin: 0 }}>Dove sono adesso le persone</h2>
+          <TastoInfo titolo="Dove sono adesso le persone">
+            Questa è una fotografia di adesso, non una conversione: la barra misura quante persone sono ferme in
+            quella fase, la cifra a destra quanto valgono. Le percentuali di passaggio stanno in{' '}
+            <Link href="/analisi">Analisi</Link>. Tocca una fase per vedere chi c&apos;è dentro. Fuori dal percorso:{' '}
+            {fasi.find((f) => f.fase === 'cliente')?.conteggio ?? 0} clienti e{' '}
+            {fasi.find((f) => f.fase === 'perso')?.conteggio ?? 0} persi.
+          </TastoInfo>
+        </div>
         <div className="scheda">
           <div className="imbuto">
             {attive.map((f) => (
@@ -61,25 +79,23 @@ export default async function Pipeline() {
                 </span>
                 <span className="conta">{f.conteggio}</span>
                 <span className="valore">{f.valore ? euro(f.valore) : '—'}</span>
+                <span className="freccia-dx" aria-hidden="true">
+                  <svg viewBox="0 0 8 13"><path d="m1 1 5.5 5.5L1 12" /></svg>
+                </span>
               </Link>
             ))}
           </div>
-          <p className="nota-piede" style={{ marginTop: 12, marginBottom: 0 }}>
-            Questa è una fotografia di adesso, non una conversione: la barra misura quante persone sono ferme in
-            quella fase, la cifra a destra quanto valgono. Le percentuali di passaggio stanno in{' '}
-            <Link href="/analisi">Analisi</Link>. Clicca una fase per vedere chi c&apos;è dentro. Fuori dal percorso:{' '}
-            {fasi.find((f) => f.fase === 'cliente')?.conteggio ?? 0} clienti e{' '}
-            {fasi.find((f) => f.fase === 'perso')?.conteggio ?? 0} persi.
-          </p>
         </div>
       </section>
 
       <section className="sezione">
-        <h2>Il tabellone</h2>
-        <p className="nota-piede" style={{ marginTop: -6 }}>
-          Trascina una card per cambiare fase, o usa il menu «Sposta in» dal telefono. Il CRM registra il passaggio
-          nella storia del contatto e, se resta senza prossima azione, gliene propone una.
-        </p>
+        <div className="azioni-riga" style={{ marginBottom: 12 }}>
+          <h2 style={{ margin: 0 }}>Il tabellone</h2>
+          <TastoInfo titolo="Il tabellone">
+            Trascina una card per cambiare fase, o usa il menu «Sposta in» dal telefono. Il CRM registra il passaggio
+            nella storia del contatto e, se resta senza prossima azione, gliene propone una.
+          </TastoInfo>
+        </div>
         <Kanban colonne={colonne} />
       </section>
     </main>

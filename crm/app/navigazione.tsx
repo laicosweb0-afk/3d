@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Foglio, FrecciaDestra } from './interattivi';
 
 // Due navigazioni per due modi di lavorare: in alto quando il CRM è aperto
 // sul computer del negozio, in fondo quando il titolare lo apre col pollice.
@@ -48,9 +49,17 @@ function Icona({ segno }: { segno: string }) {
   }
 }
 
-export function Navigazione({ urgenti, attenzioni }: { urgenti: number; attenzioni: number }) {
+export function Navigazione({
+  urgenti, attenzioni, demo = false, demoOnline = false,
+}: {
+  urgenti: number;
+  attenzioni: number;
+  demo?: boolean;
+  demoOnline?: boolean;
+}) {
   const percorso = usePathname();
   const [menuAperto, setMenuAperto] = useState(false);
+  const [demoAperta, setDemoAperta] = useState(false);
 
   // Cambiando pagina il menu si chiude da sé: nessuno vuole chiuderlo a mano.
   useEffect(() => { setMenuAperto(false); }, [percorso]);
@@ -58,7 +67,11 @@ export function Navigazione({ urgenti, attenzioni }: { urgenti: number; attenzio
   if (percorso.startsWith('/login')) return null;
 
   const attiva = (href: string) => (href === '/' ? percorso === '/' : percorso.startsWith(href));
+  // In alto, sul computer, i numeri stanno su entrambe le voci: c'è spazio.
   const conta = (segno: string) => (segno === 'oggi' ? urgenti : segno === 'attenzioni' ? attenzioni : 0);
+  // In fondo, sul telefono, il pallino rosso sta su una tab sola — Attenzioni
+  // — e dice quante cose ci sono. Un rosso su tre tab non segnala niente.
+  const contaBassa = (segno: string) => (segno === 'attenzioni' ? attenzioni : 0);
 
   return (
     <>
@@ -68,6 +81,14 @@ export function Navigazione({ urgenti, attenzioni }: { urgenti: number; attenzio
             <span className="tessere" aria-hidden="true"><i /><i /><i /><i /></span>
             <span>Rama<small>CRM</small></span>
           </Link>
+          {/* La modalità dimostrativa non ruba più una fascia in cima alla
+              pagina: è una pillola, e il messaggio completo — lo stesso di
+              prima, parola per parola — sta dentro, a un tocco. */}
+          {demo && (
+            <button type="button" className="tasto-demo" onClick={() => setDemoAperta(true)}>
+              <span className="pillola-demo">Demo</span>
+            </button>
+          )}
           <nav className="voci">
             {VOCI.map((v) => (
               <Link key={v.href} href={v.href} className={attiva(v.href) ? 'voce attiva' : 'voce'}>
@@ -84,30 +105,57 @@ export function Navigazione({ urgenti, attenzioni }: { urgenti: number; attenzio
           <Link key={v.href} href={v.href} className={attiva(v.href) ? 'voce-bassa attiva' : 'voce-bassa'}>
             <Icona segno={v.segno} />
             {v.testo}
-            {conta(v.segno) > 0 && <span className="pallino" aria-hidden="true" />}
+            {contaBassa(v.segno) > 0 && (
+              <span className="conta-bassa" aria-label={`${contaBassa(v.segno)} da controllare`}>
+                {contaBassa(v.segno)}
+              </span>
+            )}
           </Link>
         ))}
       </nav>
 
-      {/* Il "+": da qui nasce tutto quello che si crea a mano. */}
+      {/* Il "+": da qui nasce tutto quello che si crea a mano. Si rimpicciolisce
+          quando si scorre (lo fa il CSS) e le liste hanno lo spazio sotto, così
+          non copre mai l'ultima riga. */}
       <button
         type="button"
         className="piu"
         aria-expanded={menuAperto}
-        aria-label={menuAperto ? 'Chiudi le scorciatoie' : 'Aggiungi'}
-        onClick={() => setMenuAperto((v) => !v)}
+        aria-label="Aggiungi"
+        onClick={() => setMenuAperto(true)}
       >
-        {menuAperto ? '×' : '+'}
+        +
       </button>
 
-      {menuAperto && (
-        <div className="menu-piu" role="menu">
-          <Link className="voce" href="/contatti/nuovo" role="menuitem">Nuovo contatto</Link>
-          <Link className="voce" href="/campagne/nuova" role="menuitem">Nuova campagna</Link>
-          <Link className="voce" href="/contatti?scegli=attivita" role="menuitem">Nuova attività</Link>
-          <Link className="voce" href="/preventivi" role="menuitem">Preventivi</Link>
+      {/* Le stesse quattro voci di prima, in un foglio che sale da sotto. */}
+      <Foglio aperto={menuAperto} chiudi={() => setMenuAperto(false)} titolo="Cosa vuoi aggiungere?">
+        <div className="lista-ios">
+          <Link className="voce-ios" href="/contatti/nuovo" onClick={() => setMenuAperto(false)}>
+            Nuovo contatto<span style={{ marginLeft: 'auto' }}><FrecciaDestra /></span>
+          </Link>
+          <Link className="voce-ios" href="/contatti?scegli=attivita" onClick={() => setMenuAperto(false)}>
+            Nuova attività<span style={{ marginLeft: 'auto' }}><FrecciaDestra /></span>
+          </Link>
+          <Link className="voce-ios" href="/campagne/nuova" onClick={() => setMenuAperto(false)}>
+            Nuova campagna<span style={{ marginLeft: 'auto' }}><FrecciaDestra /></span>
+          </Link>
+          <Link className="voce-ios" href="/preventivi" onClick={() => setMenuAperto(false)}>
+            Preventivi<span style={{ marginLeft: 'auto' }}><FrecciaDestra /></span>
+          </Link>
         </div>
-      )}
+      </Foglio>
+
+      {/* Il testo della demo: identico a quello che stava nella fascia. */}
+      <Foglio aperto={demoAperta} chiudi={() => setDemoAperta(false)} titolo="Modalità dimostrativa">
+        <p className="testo-demo">
+          <strong>Modalità dimostrativa</strong> — dati di esempio, tutto funziona davvero ma niente è reale.
+          Con le chiavi di Supabase il CRM passa ai dati veri da solo.
+          {demoOnline && (
+            <> <strong>Qui online</strong> le modifiche restano finché il server è sveglio: dopo qualche
+              minuto di inattività i dati di esempio tornano come erano. Con Supabase collegato non succede.</>
+          )}
+        </p>
+      </Foglio>
     </>
   );
 }

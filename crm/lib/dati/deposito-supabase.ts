@@ -366,6 +366,23 @@ export class DepositoSupabase implements Deposito {
     await this.db.from('contatti').update({ ultimo_contatto_il: adesso() }).eq('id', data.contatto_id);
   }
 
+  async riapriAzione(id: string): Promise<void> {
+    const { data } = await this.db.from('azioni')
+      .select('contatto_id, fatta_il').eq('id', id).maybeSingle();
+    if (!data || !data.fatta_il) return;
+
+    // Lo stesso ragionamento della demo: l'evento che il completamento aveva
+    // scritto se ne va, con due secondi di tolleranza sul timbro.
+    const dalMomento = new Date(new Date(String(data.fatta_il)).getTime() - 2000).toISOString();
+    const { data: scritto } = await this.db.from('eventi')
+      .select('id').eq('contatto_id', data.contatto_id).eq('tipo', 'follow_up')
+      .eq('automatico', false).gte('quando', dalMomento)
+      .order('quando', { ascending: false }).limit(1).maybeSingle();
+    if (scritto) await this.db.from('eventi').delete().eq('id', scritto.id);
+
+    await this.db.from('azioni').update({ fatta_il: null, esito: null }).eq('id', id);
+  }
+
   async posticipaAzione(id: string, giorni: number): Promise<void> {
     const { data } = await this.db.from('azioni').select('scadenza').eq('id', id).maybeSingle();
     if (!data) return;

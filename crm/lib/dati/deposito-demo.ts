@@ -217,6 +217,25 @@ export class DepositoDemo implements Deposito {
     if (c) { c.ultimoContattoIl = adesso(); c.aggiornatoIl = adesso(); }
   }
 
+  async riapriAzione(id: string): Promise<void> {
+    const { dati } = magazzino();
+    const a = dati.azioni.find((x) => x.id === id);
+    if (!a || !a.fattaIl) return;
+
+    // L'evento scritto dal completamento se ne va con lui: due secondi di
+    // tolleranza perché l'azione e l'evento vengono timbrati da due chiamate
+    // diverse a adesso(), e possono cadere su millisecondi diversi.
+    const dalMomento = new Date(new Date(a.fattaIl).getTime() - 2000).toISOString();
+    const scritto = dati.eventi
+      .map((e, posto) => ({ e, posto }))
+      .filter(({ e }) => e.contattoId === a.contattoId && e.tipo === 'follow_up'
+        && !e.automatico && e.quando >= dalMomento)
+      .sort((x, y) => y.e.quando.localeCompare(x.e.quando))[0];
+    if (scritto) dati.eventi.splice(scritto.posto, 1);
+
+    a.fattaIl = null;
+  }
+
   async posticipaAzione(id: string, giorni: number): Promise<void> {
     const { dati } = magazzino();
     const a = dati.azioni.find((x) => x.id === id);

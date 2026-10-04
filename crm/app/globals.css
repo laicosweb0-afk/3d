@@ -48,8 +48,19 @@
   --bene-velo: rgba(111, 191, 146, .14);
 
   --r: 12px;
-  --r-g: 18px;
+  --r-g: 16px;
   --barra-mobile: 62px;
+
+  /* Il font è quello del telefono di chi lo usa. Su iPhone è SF Pro, su
+     Android Roboto: il CRM si legge come si legge il resto del sistema, e
+     non c'è niente da scaricare prima di vedere la prima riga.
+     I due nomi --font-ui e --font-mono restano perché il resto del foglio li
+     chiama: ora puntano entrambi al font di sistema, e i numeri si allineano
+     con tabular-nums invece che col monospaziato. */
+  --font-sistema: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
+    system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-ui: var(--font-sistema);
+  --font-mono: var(--font-sistema);
 
   color-scheme: dark;
 }
@@ -61,9 +72,10 @@ html, body { margin: 0; padding: 0; }
 body {
   background: var(--fondo);
   color: var(--ink);
-  font-family: var(--font-ui), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sistema);
   font-size: 15px;
   line-height: 1.45;
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   min-height: 100dvh;
 }
@@ -88,7 +100,9 @@ a { color: inherit; text-decoration: none; }
   max-width: 1180px;
   margin: 0 auto;
   padding-inline: 16px;
-  padding-block: 0 calc(var(--barra-mobile) + 40px);
+  /* Sotto l'ultima riga ci sta il "+" e la barra: lo spazio glielo si dà
+     qui, così il pulsante non copre mai niente da leggere. */
+  padding-block: 0 calc(var(--barra-mobile) + 96px);
 }
 
 .testata-pagina {
@@ -96,9 +110,12 @@ a { color: inherit; text-decoration: none; }
   gap: 16px; flex-wrap: wrap; padding-block: 20px 16px;
 }
 .testata-pagina h1 {
-  font-size: 25px; font-weight: 600; letter-spacing: -.02em; margin: 0;
-  text-wrap: balance;
+  font-size: 28px; font-weight: 700; letter-spacing: -.028em; margin: 0;
+  text-wrap: balance; transition: font-size .24s ease-out;
 }
+/* Anche le pagine che non hanno ancora la testata grande si comportano come
+   iOS: il titolo si fa piccolo appena si scorre. */
+body[data-scorso="si"] .testata-pagina h1 { font-size: 21px; }
 .testata-pagina .lede { color: var(--ink-2); margin: 4px 0 0; font-size: 14px; }
 
 h2 {
@@ -184,15 +201,23 @@ p { margin: 0 0 10px; }
 /* --------------------------------------------------------------------------
    Elementi di stato
    -------------------------------------------------------------------------- */
+/* Una pastiglia sola per tutto: fase, stato, priorità. Morbida, scritta come
+   si parla — non maiuscola e non monospaziata, perché un'etichetta non è un
+   codice. Il colore vuol dire qualcosa: rosso solo per quello che è scaduto,
+   oro per il gesto principale, grigio per tutto il resto. */
 .pastiglia {
   display: inline-flex; align-items: center; gap: 6px;
-  font-family: var(--font-mono), monospace; font-size: 10.5px; letter-spacing: .04em;
-  text-transform: uppercase; padding: 3px 8px; border-radius: 6px;
-  border: 1px solid var(--linea-forte); color: var(--ink-2); white-space: nowrap;
+  font-size: 12.5px; font-weight: 500; letter-spacing: 0;
+  padding: 3px 10px; border-radius: 999px;
+  background: var(--carta-2); border: 1px solid transparent;
+  color: var(--ink-2); white-space: nowrap;
 }
-.pastiglia.urgente { background: var(--urgente-velo); border-color: transparent; color: var(--urgente); }
-.pastiglia.da_fare { background: var(--da-fare-velo); border-color: transparent; color: var(--da-fare); }
-.pastiglia.normale { background: transparent; }
+/* Il rosso è di una cosa sola: quello che è scaduto. Una priorità alta non
+   è una scadenza mancata — è ambra. Tutto il resto è grigio. */
+.pastiglia.scaduto { background: var(--urgente-velo); color: var(--urgente); }
+.pastiglia.urgente { background: var(--da-fare-velo); color: var(--da-fare); }
+.pastiglia.da_fare { background: var(--carta-2); color: var(--ink-2); }
+.pastiglia.normale { background: var(--carta-2); color: var(--ink-3); }
 .pastiglia.bene { background: var(--bene-velo); border-color: transparent; color: var(--bene); }
 .pastiglia.oro { background: var(--oro-velo); border-color: transparent; color: var(--oro-chiaro); }
 
@@ -583,4 +608,380 @@ tbody tr:hover { background: var(--carta-2); }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
+}
+
+/* ===========================================================================
+   Stile Apple: una cosa per volta, e sempre reversibile
+
+   Da qui in giù c'è l'impianto nuovo dell'interfaccia. La regola è una sola:
+   chi apre il CRM deve capire in tre secondi cosa fare adesso, e farlo con un
+   tocco. Tutto il resto esiste ancora, ma sta un tocco più in là — dentro uno
+   swipe, dentro un menu, dentro un foglio che sale da sotto.
+
+   Tre colori con un significato fisso: rosso solo per quello che è scaduto,
+   oro per il gesto principale, grigio per tutto il resto.
+   =========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Titolo grande che si fa piccolo quando si scorre (come in iOS)
+   -------------------------------------------------------------------------- */
+.testata-grande { padding-block: 18px 12px; }
+.testata-grande h1 {
+  font-size: 32px; font-weight: 700; letter-spacing: -.032em; margin: 0;
+  transition: font-size .24s ease-out;
+}
+.testata-grande .riepilogo {
+  color: var(--ink-2); font-size: 15px; margin: 3px 0 0;
+  transition: opacity .24s ease-out;
+}
+.testata-grande .riepilogo .adesso { color: var(--ink); font-weight: 600; }
+body[data-scorso="si"] .testata-grande h1 { font-size: 22px; }
+body[data-scorso="si"] .testata-grande .riepilogo { opacity: .55; }
+
+/* --------------------------------------------------------------------------
+   Selettore a segmenti: le quattro scelte sono tutte lì, una sola è accesa
+   -------------------------------------------------------------------------- */
+.segmentato {
+  display: flex; gap: 2px; padding: 3px; width: 100%;
+  background: var(--carta-2); border-radius: 12px;
+}
+.segmentato a {
+  flex: 1; min-height: 38px; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 13.5px; font-weight: 500; color: var(--ink-2); border-radius: 9px;
+  white-space: nowrap; padding-inline: 6px;
+  transition: background .2s ease-out, color .2s ease-out, transform .18s ease-out;
+}
+/* Su uno schermo stretto «Questo mese» non deve andare a capo in due righe:
+   si rimpicciolisce la scritta, non si taglia la scelta. */
+@media (max-width: 430px) { .segmentato a { font-size: 12px; padding-inline: 3px; } }
+.segmentato a.attiva {
+  background: var(--carta-piena); color: var(--ink); font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .4), 0 1px 0 var(--vetro-luce) inset;
+}
+
+/* --------------------------------------------------------------------------
+   La card di un'azione: titolo grande, una riga di dettagli, UN pulsante
+   -------------------------------------------------------------------------- */
+.carta-azione {
+  display: block; background: var(--carta); border: 1px solid var(--linea);
+  border-radius: var(--r-g); padding: 15px 16px;
+  backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 1px 0 var(--vetro-luce) inset;
+}
+.carta-azione + .carta-azione { margin-top: 10px; }
+.carta-azione .cosa {
+  font-size: 19px; font-weight: 600; letter-spacing: -.018em; line-height: 1.25;
+  margin: 0; text-wrap: balance; color: var(--ink);
+}
+/* Una riga sola di dettagli: nome · importo · quando. Se non ci sta, si
+   accorcia con i puntini — non va a capo parola per parola. */
+.carta-azione .chi {
+  font-size: 14px; color: var(--ink-2); margin: 4px 0 0;
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+}
+/* Il puntino fra una cosa e l'altra: nome · importo · quando. */
+.carta-azione .chi > * + *::before { content: '·'; color: var(--ink-3); margin-right: 7px; }
+.carta-azione .scaduto { color: var(--urgente); font-weight: 550; display: inline-flex; align-items: center; gap: 6px; }
+.carta-azione .scaduto .pallino-rosso { width: 7px; height: 7px; border-radius: 50%; background: var(--urgente); flex: none; }
+.carta-azione .fondo { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.carta-azione .fondo form { flex: 1; display: flex; }
+.carta-azione.compatta { padding: 13px 16px; }
+.carta-azione.compatta .cosa { font-size: 17px; }
+
+/* Il pulsante tondo del "•••": tutto quello che non sta nel gesto principale */
+.piu-azioni {
+  width: 44px; height: 44px; flex: none; border-radius: 12px; padding: 0;
+  background: var(--carta-2); color: var(--ink-2); font-size: 17px; letter-spacing: .06em;
+}
+
+/* --------------------------------------------------------------------------
+   Swipe: destra = Fatto, sinistra = Rimanda. Sotto la riga c'è già scritto
+   cosa succede, così il gesto non è un indovinello.
+   -------------------------------------------------------------------------- */
+.scorri { position: relative; overflow: hidden; border-radius: var(--r-g); }
+.scorri + .scorri { margin-top: 10px; }
+/* Le due scritte sotto la card si vedono solo mentre il dito trascina: a
+   riposo non devono trasparire attraverso il vetro. */
+.scorri-sotto { position: absolute; inset: 0; display: flex; opacity: 0; transition: opacity .18s ease-out; }
+.scorri.trascina .scorri-sotto { opacity: 1; }
+/* E mentre si trascina la card diventa piena, così la scritta di sotto
+   resta leggibile e non si impasta con quella di sopra. */
+.scorri.trascina .carta-azione, .scorri.trascina .carta-contatto {
+  background: var(--carta-piena); backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.scorri-sotto .lato {
+  flex: 1; display: flex; align-items: center; gap: 8px; padding: 0 20px;
+  font-size: 15px; font-weight: 600;
+}
+.scorri-sotto .fatto { background: var(--bene-velo); color: var(--bene); }
+.scorri-sotto .rimanda { background: var(--da-fare-velo); color: var(--da-fare); justify-content: flex-end; }
+.scorri-sopra { position: relative; touch-action: pan-y; transition: transform .26s ease-out; }
+.scorri.trascina .scorri-sopra { transition: none; }
+
+/* --------------------------------------------------------------------------
+   "Fatto ✓ — Annulla": cinque secondi per cambiare idea
+   -------------------------------------------------------------------------- */
+.annulla-barra {
+  position: fixed; left: 50%; z-index: 40;
+  bottom: calc(var(--barra-mobile) + 18px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 8px; max-width: calc(100vw - 32px);
+  padding: 8px 8px 8px 16px; border-radius: 14px;
+  background: rgba(16, 22, 39, .95); border: 1px solid var(--linea-forte);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, .6);
+  backdrop-filter: blur(22px) saturate(160%); -webkit-backdrop-filter: blur(22px) saturate(160%);
+  animation: sale-da-sotto .24s ease-out;
+}
+.annulla-barra .detto { font-size: 14.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.annulla-barra form { display: flex; }
+.annulla-barra button { background: transparent; color: var(--oro-chiaro); border: 0; padding: 8px 12px; min-height: 40px; font-weight: 600; }
+@keyframes sale-da-sotto {
+  from { opacity: 0; transform: translate(-50%, 16px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+.annulla-barra { transform: translateX(-50%); }
+
+/* --------------------------------------------------------------------------
+   Il foglio che sale da sotto: ci sta dentro tutto quello che prima stava
+   sparso in pagina. Niente è stato tolto — è lì, dietro un tocco.
+   -------------------------------------------------------------------------- */
+.foglio-fondale {
+  position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(0, 0, 0, .52); animation: appari .2s ease-out;
+}
+@keyframes appari { from { opacity: 0 } to { opacity: 1 } }
+.foglio {
+  width: 100%; max-width: 580px; max-height: 88dvh; overflow-y: auto;
+  background: var(--carta-piena); border: 1px solid var(--linea-forte); border-bottom: 0;
+  border-radius: 22px 22px 0 0; padding: 6px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  animation: entra-foglio .28s ease-out;
+}
+@keyframes entra-foglio { from { transform: translateY(100%) } to { transform: translateY(0) } }
+.foglio .maniglia { width: 38px; height: 5px; border-radius: 999px; background: var(--linea-forte); margin: 7px auto 14px; }
+.foglio .titolo-foglio {
+  font-size: 17px; font-weight: 600; letter-spacing: -.01em; color: var(--ink);
+  text-transform: none; margin: 0 0 14px;
+}
+.foglio .coda-foglio {
+  position: sticky; bottom: 0; display: flex; gap: 10px; margin-top: 18px;
+  padding: 12px 0 2px; background: var(--carta-piena);
+  box-shadow: 0 -12px 18px -12px rgba(0, 0, 0, .7);
+}
+.foglio .coda-foglio > * { flex: 1; }
+.foglio .campo label { font-size: 13px; color: var(--ink-2); }
+.foglio select, .foglio input { min-height: 44px; }
+
+/* --------------------------------------------------------------------------
+   I pulsanti rotondi della scheda contatto, come in Contatti su iPhone
+   -------------------------------------------------------------------------- */
+.tondi { display: flex; gap: 10px; flex-wrap: wrap; }
+.tondo {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: none; border: 0; padding: 0; min-width: 58px;
+  font-size: 12px; font-weight: 500; color: var(--ink-2);
+}
+.tondo .cerchio {
+  width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--oro-velo); color: var(--oro-chiaro);
+  transition: transform .18s ease-out, opacity .18s ease-out;
+}
+.tondo svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+/* Se il dato non c'è il pulsante non sparisce: diventa grigio e dice "Aggiungi". */
+.tondo.vuoto .cerchio { background: var(--carta-2); color: var(--ink-3); }
+.tondo.vuoto { color: var(--ink-3); }
+
+/* --------------------------------------------------------------------------
+   Liste stile Impostazioni: una riga per cosa, la freccia dice "si apre"
+   -------------------------------------------------------------------------- */
+.lista-ios {
+  background: var(--carta); border: 1px solid var(--linea); border-radius: var(--r-g); overflow: hidden;
+  backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+.lista-ios > .voce-ios {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  min-height: 52px; padding: 13px 16px; border: 0; border-radius: 0;
+  border-bottom: 1px solid var(--linea); background: transparent; color: var(--ink);
+  font-size: 16px; font-weight: 450; text-align: left; justify-content: flex-start;
+}
+.lista-ios > .voce-ios:last-child { border-bottom: 0; }
+.lista-ios > .voce-ios:hover { background: var(--carta-2); }
+.lista-ios .conto-ios { margin-left: auto; color: var(--ink-3); font-size: 15px; }
+.lista-ios .freccia { color: var(--ink-3); flex: none; }
+.lista-ios .freccia svg { width: 8px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* --------------------------------------------------------------------------
+   Fisarmonica: la casa unica degli avvisi. Titolo, numero, valore; dentro
+   le persone. Nessun avviso è stato eliminato: sono tutti qui.
+   -------------------------------------------------------------------------- */
+.fisarmonica {
+  background: var(--carta); border: 1px solid var(--linea); border-radius: var(--r-g);
+  overflow: hidden;
+  backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+.fisarmonica + .fisarmonica { margin-top: 10px; }
+.fisarmonica > summary {
+  list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px;
+  min-height: 60px; padding: 13px 16px;
+}
+.fisarmonica > summary::-webkit-details-marker { display: none; }
+.fisarmonica .testo-avviso { flex: 1; min-width: 0; }
+.fisarmonica .titolo-avviso { font-size: 16px; font-weight: 600; letter-spacing: -.01em; display: block; }
+.fisarmonica .conto-avviso { font-size: 13.5px; color: var(--ink-2); display: block; margin-top: 2px; }
+.fisarmonica .segno-avviso { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--ink-3); }
+.fisarmonica .segno-avviso.alta { background: var(--urgente); }
+.fisarmonica .segno-avviso.media { background: var(--da-fare); }
+.fisarmonica .giu { flex: none; color: var(--ink-3); transition: transform .2s ease-out; }
+.fisarmonica .giu svg { width: 13px; height: 8px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: block; }
+.fisarmonica[open] .giu { transform: rotate(180deg); }
+.fisarmonica .dentro { border-top: 1px solid var(--linea); padding: 4px 16px 14px; }
+/* Dentro una sezione apribile il vetro è già quello della fisarmonica: una
+   seconda cornice sarebbe una scatola dentro una scatola. */
+.fisarmonica .dentro > .scheda {
+  background: transparent; border: 0; box-shadow: none; padding: 0;
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+
+/* --------------------------------------------------------------------------
+   Contatti: ricerca, filtri, card a tutta larghezza
+   -------------------------------------------------------------------------- */
+.ricerca { position: relative; flex: 1; min-width: 0; }
+.ricerca .lente {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--ink-3); pointer-events: none; display: block;
+}
+.ricerca .lente svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; display: block; }
+.ricerca input[type="search"] {
+  min-height: 44px; padding-left: 36px; border-radius: 12px;
+  background: var(--carta-2); border-color: transparent;
+}
+.riga-ricerca { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
+.tasto-filtri { min-height: 44px; border-radius: 12px; background: var(--carta-2); color: var(--ink); flex: none; }
+.tasto-filtri .quanti {
+  min-width: 20px; height: 20px; border-radius: 999px; background: var(--oro); color: #1a1408;
+  font-size: 12px; font-weight: 700; display: grid; place-items: center; padding: 0 5px;
+}
+
+.carta-contatto {
+  display: block; background: var(--carta); border: 1px solid var(--linea);
+  border-radius: var(--r-g); padding: 13px 15px;
+  backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+.carta-contatto + .carta-contatto { margin-top: 8px; }
+.carta-contatto .riga1 { display: flex; align-items: baseline; gap: 10px; }
+.carta-contatto .nome {
+  font-size: 17px; font-weight: 600; letter-spacing: -.012em; flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* display:block o i puntini non compaiono: su uno span inline
+   text-overflow non si applica, e la frase si taglia netta sul bordo. */
+.carta-contatto .riga2 {
+  display: block; font-size: 14px; color: var(--ink-2); margin-top: 2px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.carta-contatto .riga3 { display: flex; align-items: center; gap: 10px; margin-top: 9px; flex-wrap: wrap; }
+
+/* --------------------------------------------------------------------------
+   Una card sola al posto dei banner impilati
+   -------------------------------------------------------------------------- */
+.da-controllare {
+  display: flex; align-items: center; gap: 13px; width: 100%;
+  min-height: 60px; padding: 14px 16px; border-radius: var(--r-g);
+  background: var(--carta); border: 1px solid var(--linea); color: var(--ink);
+}
+.da-controllare .tondino {
+  width: 34px; height: 34px; border-radius: 50%; flex: none; display: grid; place-items: center;
+  background: var(--urgente-velo); color: var(--urgente);
+}
+.da-controllare .tondino svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.da-controllare .testo { flex: 1; min-width: 0; text-align: left; }
+.da-controllare .forte { font-size: 16px; font-weight: 600; display: block; }
+.da-controllare .fiacco { font-size: 13.5px; color: var(--ink-2); display: block; margin-top: 1px; }
+
+/* --------------------------------------------------------------------------
+   Vuoto, ma amichevole
+   -------------------------------------------------------------------------- */
+.tutto-fatto {
+  text-align: center; padding: 34px 16px; color: var(--ink-2);
+  background: var(--carta); border: 1px solid var(--linea); border-radius: var(--r-g);
+}
+.tutto-fatto .faccia { font-size: 30px; display: block; margin-bottom: 8px; }
+.tutto-fatto .frase { font-size: 17px; font-weight: 600; color: var(--ink); display: block; }
+.tutto-fatto .sotto-frase { font-size: 14px; display: block; margin-top: 4px; }
+
+/* --------------------------------------------------------------------------
+   La pillola "Demo": il messaggio completo è dentro, identico, a un tocco
+   -------------------------------------------------------------------------- */
+.tasto-demo { background: none; border: 0; padding: 0 8px; min-height: 44px; flex: none; }
+.pillola-demo {
+  font-size: 11.5px; font-weight: 600; letter-spacing: .02em;
+  padding: 4px 11px; border-radius: 999px;
+  background: var(--oro-velo); color: var(--oro-chiaro);
+}
+.testo-demo { font-size: 14.5px; color: var(--ink-2); line-height: 1.5; }
+.testo-demo strong { color: var(--oro-chiaro); }
+
+/* --------------------------------------------------------------------------
+   Feedback al tocco: tutto quello che si tocca si muove un po'
+   -------------------------------------------------------------------------- */
+button, .bottone, .carta-azione, .carta-contatto, .gradino, .scorciatoia,
+.segmentato a, .da-controllare, .lista-ios > .voce-ios, .tondo, .scia-passo, .numero {
+  transition: transform .18s ease-out, opacity .18s ease-out, background .2s ease-out, border-color .2s ease-out;
+  -webkit-tap-highlight-color: transparent;
+}
+button:active, .bottone:active, .carta-azione:active, .carta-contatto:active,
+.gradino:active, .scorciatoia:active, .segmentato a:active, .da-controllare:active,
+.lista-ios > .voce-ios:active, .scia-passo:active, .numero:active { transform: scale(.985); opacity: .9; }
+.tondo:active .cerchio { transform: scale(.92); opacity: .85; }
+.piu:active { opacity: .86; }
+
+/* --------------------------------------------------------------------------
+   Il "+" si fa piccolo quando si scorre, così non sta davanti al contenuto
+   -------------------------------------------------------------------------- */
+.piu { transition: transform .26s ease-out, opacity .26s ease-out; }
+body[data-scorso="si"] .piu { transform: scale(.76); opacity: .82; }
+
+/* --------------------------------------------------------------------------
+   Tab bar: cinque voci, icona più parola, quella accesa in oro
+   -------------------------------------------------------------------------- */
+.voce-bassa { font-size: 11px; font-weight: 500; }
+.voce-bassa .conta-bassa {
+  position: absolute; top: 4px; left: 50%; margin-left: 5px;
+  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+  background: var(--urgente); color: #fff; font-size: 11px; font-weight: 700;
+  display: grid; place-items: center; font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   Le chip rapide: una riga sola che scorre di lato, non un muro di pulsanti
+   -------------------------------------------------------------------------- */
+.scorciatoie {
+  flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+  margin-inline: -16px; padding: 2px 16px 8px; scroll-snap-type: x proximity;
+}
+.scorciatoie::-webkit-scrollbar { display: none; }
+.scorciatoia {
+  white-space: nowrap; flex: none; scroll-snap-align: start;
+  min-height: 38px; display: inline-flex; align-items: center; font-size: 13.5px;
+  border-radius: 999px;
+}
+
+/* --------------------------------------------------------------------------
+   Pipeline: ogni riga si apre, e si vede che si apre
+   -------------------------------------------------------------------------- */
+.gradino { min-height: 48px; border-radius: 12px; }
+.gradino .freccia-dx { flex: none; color: var(--ink-3); }
+.gradino .freccia-dx svg { width: 8px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: block; }
+.tasto-info {
+  width: 30px; height: 30px; min-height: 30px; padding: 0; border-radius: 50%;
+  background: var(--carta-2); color: var(--ink-2); font-size: 14px; font-weight: 700;
+  font-style: italic; flex: none;
+}
+
+/* --------------------------------------------------------------------------
+   Schermi stretti: qui il CRM vive davvero
+   -------------------------------------------------------------------------- */
+@media (max-width: 520px) {
+  .testata-grande h1 { font-size: 28px; }
+  .tondi { gap: 8px; }
+  .tondo { min-width: 54px; }
+  .tondo .cerchio { width: 48px; height: 48px; }
 }

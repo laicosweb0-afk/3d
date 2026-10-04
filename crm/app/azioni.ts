@@ -241,6 +241,33 @@ export async function posticipaAzione(dati: FormData) {
   aggiornaTutto(testo(dati, 'contatto_id', 60) || undefined);
 }
 
+// L'«Annulla» che resta in basso per cinque secondi dopo un «Fatto». Non è
+// un vezzo: è la ragione per cui si può toccare «Fatto» senza pensarci su, e
+// quindi la ragione per cui lo si tocca davvero.
+export async function annullaCompletamento(dati: FormData) {
+  const { dep } = await contesto();
+  const id = testo(dati, 'id', 60);
+  if (!id) return;
+
+  await dep.riapriAzione(id);
+  aggiornaTutto(testo(dati, 'contatto_id', 60) || undefined);
+}
+
+// L'«Annulla» del «Rimanda»: rimette la scadenza che c'era prima. Non si
+// può fare con posticipaAzione e un numero negativo — quella tiene il minimo
+// a un giorno, ed è giusto così — quindi si riscrive la data di prima.
+export async function ripristinaScadenza(dati: FormData) {
+  const { dep } = await contesto();
+  const id = testo(dati, 'id', 60);
+  const scadenza = testo(dati, 'scadenza', 40);
+  if (!id || !scadenza) return;
+
+  const quando = new Date(scadenza);
+  if (Number.isNaN(quando.getTime())) return;
+  await dep.aggiornaAzione(id, { scadenza: quando.toISOString() });
+  aggiornaTutto(testo(dati, 'contatto_id', 60) || undefined);
+}
+
 // ---------------------------------------------------------------------------
 // Eventi (cosa è successo)
 // ---------------------------------------------------------------------------

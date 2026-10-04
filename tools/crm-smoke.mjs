@@ -33,8 +33,21 @@ const vai = async (percorso) => {
   const destinazione = percorso.startsWith('http') ? percorso : `${url}${percorso}`;
   const risposta = await p.goto(destinazione, { waitUntil: 'networkidle' });
   if (risposta && risposta.status() >= 400) segna(`${risposta.status()} aprendo ${percorso}`);
+  // Le sezioni secondarie ora stanno piegate dentro <details>: chiuse, per
+  // chi guarda la pagina, sono un tocco di distanza; per il collaudo sono
+  // invisibili. Si aprono tutte, così si verifica il contenuto e non il
+  // fatto che sia piegato. Che si aprano davvero è il punto 20.
+  await apriPieghe();
   return risposta;
 };
+
+// Si usa anche dopo gli arrivi che non passano da vai(): dopo un invio di
+// modulo, per esempio, la pagina nuova ha le pieghe chiuse.
+async function apriPieghe() {
+  await p.evaluate(() => {
+    document.querySelectorAll('details').forEach((d) => { d.open = true; });
+  });
+}
 
 // Dopo un'azione del server la pagina si aggiorna da sé, ma non all'istante:
 // "networkidle" arriva prima che il nuovo contenuto sia a schermo. Invece di
@@ -65,19 +78,19 @@ try {
   }
 
   console.log('\n1. La home mette in fila il lavoro');
-  const daFarePrima = await p.locator('button:has-text("Completato")').count();
+  const daFarePrima = await p.locator('.carta-azione button:has-text("Fatto")').count();
   if (daFarePrima === 0) segna('nessuna azione da fare in home: la coda operativa è vuota');
-  else ok(`${daFarePrima} azioni con i bottoni operativi`);
+  else ok(`${daFarePrima} azioni con il pulsante «Fatto»`);
   await p.screenshot({ path: `${out}/crm-01-oggi.png`, fullPage: true });
 
   console.log('\n2. Completare un\'azione la toglie dalla coda e la lascia nella storia');
-  const primaVoce = p.locator('.riga:has(button:has-text("Completato"))').first();
-  const testoVoce = (await primaVoce.locator('.titolo').innerText()).trim();
+  const primaVoce = p.locator('.carta-azione:has(button:has-text("Fatto"))').first();
+  const testoVoce = (await primaVoce.locator('.cosa').innerText()).trim();
   const schedaHref = await primaVoce.locator('a[href^="/contatti/"]').first().getAttribute('href');
-  await primaVoce.locator('button:has-text("Completato")').click();
+  await primaVoce.locator('button:has-text("Fatto")').click();
   const sparita = await attendi(
     `«${testoVoce}» è ancora nella coda dopo averla completata`,
-    async () => (await p.locator(`.riga:has-text(${JSON.stringify(testoVoce)}) button:has-text("Completato")`).count()) === 0,
+    async () => (await p.locator(`.carta-azione:has-text(${JSON.stringify(testoVoce)}) button:has-text("Fatto")`).count()) === 0,
   );
   if (sparita) ok('sparita dalla coda');
 
@@ -135,6 +148,7 @@ try {
   const schedaNuovo = p.url();
 
   console.log('\n5. Registrare un preventivo apre da sé il follow-up');
+  await apriPieghe();
   await p.locator('#ev-tipo').selectOption('preventivo_inviato');
   await p.fill('#ev-valore', '4200');
   await p.fill('#ev-descrizione', 'Preventivo di collaudo inviato');
@@ -169,7 +183,8 @@ try {
 
   console.log('\n8. Il contatto di collaudo si elimina davvero');
   await vai(schedaNuovo);
-  await p.getByText('Elimina questo contatto').click();
+  // vai() ha già aperto tutte le pieghe, «Elimina questo contatto» compresa:
+  // toccarla adesso la richiuderebbe.
   await p.locator('button:has-text("Sì, elimina tutto")').click();
   await p.waitForURL(/\/contatti(\?|$)/, { timeout: 15000 });
   const risposta = await p.goto(schedaNuovo, { waitUntil: 'networkidle' });
@@ -356,7 +371,7 @@ try {
   await vai(conLavoro);
   const apriPreventivo = p.locator('summary:has-text("preventivo")').first();
   if (await apriPreventivo.count()) {
-    await apriPreventivo.click();
+    // Già aperta da vai(): toccarla la richiuderebbe.
     const modulo = p.locator('form:has(select[name="stato_preventivo"])').first();
     await modulo.locator('select[name="stato_preventivo"]').selectOption('inviato');
     await modulo.locator('input[name="valore_preventivo"]').fill('7250');
@@ -476,7 +491,52 @@ try {
     await p.waitForTimeout(600);
   }
 
-  console.log('\n19. Su telefono non deve esserci scorrimento orizzontale');
+  console.log('\n19. Un «Fatto» si può annullare entro cinque secondi');
+  await vai('/');
+  const daAnnullare = p.locator('.carta-azione:has(button:has-text("Fatto"))').first();
+  if (await daAnnullare.count() === 0) segna('niente in coda: non si può provare l\u2019annulla');
+  else {
+    const testoAnnulla = (await daAnnullare.locator('.cosa').innerText()).trim();
+    await daAnnullare.locator('button:has-text("Fatto")').click();
+    const comparsa = await attendi(
+      'dopo il «Fatto» non compare la barra con l\u2019«Annulla»',
+      async () => (await p.locator('.annulla-barra button:has-text("Annulla")').count()) > 0,
+    );
+    if (comparsa) {
+      await p.locator('.annulla-barra button:has-text("Annulla")').click();
+      const tornata = await attendi(
+        `«${testoAnnulla}» non è tornata in coda dopo l\u2019annulla`,
+        async () => (await p.locator(`.carta-azione:has-text(${JSON.stringify(testoAnnulla)})`).count()) > 0,
+      );
+      if (tornata) ok('annullata: l\u2019azione è tornata in coda');
+
+      // E la storia del contatto non deve restare con un «Fatto» mai
+      // successo: annullare vuol dire tornare come prima anche lì.
+      const dentro = await p.locator(`.carta-azione:has-text(${JSON.stringify(testoAnnulla)}) a[href^="/contatti/"]`).first().getAttribute('href');
+      if (dentro) {
+        await vai(dentro);
+        const storiaDopo = await p.locator('.tempo').innerText();
+        if (storiaDopo.includes(`Fatto: ${testoAnnulla}`)) {
+          segna('annullando resta nella storia un «Fatto» che non è mai successo');
+        } else ok('la storia del contatto è tornata com\u2019era');
+      }
+    }
+  }
+
+  console.log('\n20. Le sezioni piegate si aprono con un tocco');
+  await vai('/attenzioni');
+  const piegate = p.locator('details.fisarmonica');
+  if (await piegate.count() === 0) segna('nessuna sezione apribile in Attenzioni');
+  else {
+    // vai() le ha aperte tutte: si richiude la prima e la si riapre col dito.
+    const una = piegate.first();
+    await una.evaluate((d) => { d.open = false; });
+    await una.locator('summary').click();
+    if (await una.evaluate((d) => d.open)) ok('si apre e si chiude con un tocco');
+    else segna('la sezione non si apre toccandola');
+  }
+
+  console.log('\n21. Su telefono non deve esserci scorrimento orizzontale');
   const tel = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   for (const percorso of ['/', '/flusso', '/pipeline', '/contatti', '/preventivi', '/attivita', '/campagne', '/card', '/impostazioni', '/attenzioni', '/analisi']) {
     await tel.goto(`${url}${percorso}`, { waitUntil: 'networkidle' });

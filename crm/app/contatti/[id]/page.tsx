@@ -24,7 +24,7 @@ import {
   creaAzione, creaOpportunita, eliminaContatto, modificaAzione, posticipaAzione,
   registraEvento, salvaPreventivo, segnaConversazione, unisciContatti,
 } from '../../azioni';
-import { Fonte, Priorita } from '../../pezzi';
+import { Fonte, Priorita, TastiTondi } from '../../pezzi';
 
 // La scheda. Si apre e si sa: cosa devo fare, cosa è successo, quanto vale,
 // dove siamo arrivati. In quest'ordine.
@@ -59,34 +59,31 @@ export default async function Scheda({
   const altreAperte = s.azioni.filter((a) => !a.fattaIl && a.id !== prossima?.id);
   const doppioni = possibiliDuplicati(dati, c.id);
   const prossimoNumero = prossimoNumeroPreventivo(dati);
+  // Se la prossima cosa da fare è una telefonata, il pulsante grande diventa
+  // «Chiama ora»: è quello che si vuole fare davvero, aprendo la scheda.
+  const daTelefonare = prossima?.tipo === 'telefonare' || prossima?.tipo === 'richiamare';
   const campagneOrdinate = [...dati.campagne].sort((a, b) => b.creataIl.localeCompare(a.creataIl));
 
   return (
     <main>
-      <header className="testata-pagina">
-        <div>
-          <p className="nota-piede" style={{ marginBottom: 4 }}>
-            <Link href="/contatti">← Contatti</Link>
-          </p>
-          <h1>{nomeIntero}</h1>
-          <p className="lede">
-            {c.citta ? `${c.citta}${c.provincia ? ` (${c.provincia})` : ''}` : 'città non indicata'}
-            {' · '}
-            in rubrica dal {soloData(c.creatoIl)}
-            {' · '}
-            {s.giorniDiSilenzio === 0 ? 'sentito oggi' : `sentito ${daQuanto(s.giorniDiSilenzio)}`}
-          </p>
-        </div>
-        <div className="azioni-riga">
-          {c.telefono && <a className="bottone bottone-fantasma" href={`tel:${c.telefono}`}>Chiama</a>}
-          {c.telefono && (
-            <a className="bottone bottone-fantasma" href={`https://wa.me/${c.telefono.replace(/[^\d]/g, '')}`} target="_blank" rel="noopener">
-              WhatsApp
-            </a>
-          )}
-          {c.email && <a className="bottone bottone-fantasma" href={`mailto:${c.email}`}>Email</a>}
-        </div>
+      <header className="testata-grande">
+        <p className="nota-piede" style={{ marginBottom: 4 }}>
+          <Link href="/contatti">← Contatti</Link>
+        </p>
+        <h1>{nomeIntero}</h1>
+        <p className="riepilogo">
+          {c.citta ? `${c.citta}${c.provincia ? ` (${c.provincia})` : ''}` : 'città non indicata'}
+          {' · '}
+          {s.giorniDiSilenzio === 0 ? 'sentito oggi' : `sentito ${daQuanto(s.giorniDiSilenzio)}`}
+        </p>
       </header>
+
+      {/* I quattro modi di raggiungerlo, uno accanto all'altro. Quelli che
+          non si possono usare perché manca il dato restano lì, grigi, e
+          portano a scriverlo. */}
+      <section className="sezione" style={{ marginTop: 4, marginBottom: 18 }}>
+        <TastiTondi telefono={c.telefono} email={c.email} />
+      </section>
 
       {avviso === 'unito' && (
         <p className="avviso verde">
@@ -98,7 +95,11 @@ export default async function Scheda({
       <div className="azioni-riga" style={{ marginBottom: 18 }}>
         <Fonte id={c.fonte} dettaglio={c.fonteDettaglio} />
         <span className="pastiglia oro">{nomeFase(c.fase)}</span>
-        <Priorita valore={s.priorita} />
+        {/* Rosso solo se è scaduto davvero. La priorità alta è un'altra cosa:
+            dice quanto pesa, non che si è in ritardo. */}
+        {prossima && inRitardo(prossima.scadenza)
+          ? <span className="pastiglia scaduto">Scaduto</span>
+          : <Priorita valore={s.priorita} />}
         <span className="euro" style={{ fontSize: 17, marginLeft: 'auto' }}>{euro(s.valore)}</span>
       </div>
 
@@ -116,18 +117,38 @@ export default async function Scheda({
                 {prossima.haOra ? dataOra(prossima.scadenza) : quando(prossima.scadenza)}
                 {inRitardo(prossima.scadenza) && <strong style={{ color: 'var(--urgente)' }}> — in ritardo</strong>}
               </p>
-              <div className="azioni-riga" style={{ marginTop: 12 }}>
-                <form action={completaAzione}>
-                  <input type="hidden" name="id" value={prossima.id} />
-                  <input type="hidden" name="contatto_id" value={c.id} />
-                  <button type="submit" className="bottone-oro">Completa</button>
-                </form>
+              {/* Se la cosa da fare è una telefonata, il gesto principale è
+                  chiamare. Il «Fatto» resta qui sotto: una chiamata che non
+                  risponde non è una cosa fatta, e non si segna da sé. */}
+              {daTelefonare && c.telefono && (
+                <a
+                  href={`tel:${c.telefono.replace(/[^\d+]/g, '')}`}
+                  className="bottone bottone-oro bottone-grande"
+                  style={{ marginTop: 14 }}
+                >
+                  Chiama ora
+                </a>
+              )}
+
+              <form action={completaAzione} style={{ marginTop: daTelefonare && c.telefono ? 8 : 14 }}>
+                <input type="hidden" name="id" value={prossima.id} />
+                <input type="hidden" name="contatto_id" value={c.id} />
+                <button
+                  type="submit"
+                  className={daTelefonare && c.telefono ? 'bottone-fantasma bottone-grande' : 'bottone-oro bottone-grande'}
+                >
+                  ✓ Fatto
+                </button>
+              </form>
+
+              <p style={{ margin: '16px 0 8px', fontSize: 13, color: 'var(--ink-2)' }}>Rimanda</p>
+              <div className="azioni-riga">
                 {[1, 3, 7].map((g) => (
                   <form key={g} action={posticipaAzione}>
                     <input type="hidden" name="id" value={prossima.id} />
                     <input type="hidden" name="contatto_id" value={c.id} />
                     <input type="hidden" name="giorni" value={g} />
-                    <button type="submit" className="bottone-fantasma bottone-piccolo">
+                    <button type="submit" className="bottone-fantasma" style={{ minHeight: 44, borderRadius: 999 }}>
                       +{g} {g === 1 ? 'giorno' : 'giorni'}
                     </button>
                   </form>
@@ -188,7 +209,7 @@ export default async function Scheda({
                 <form action={completaAzione}>
                   <input type="hidden" name="id" value={a.id} />
                   <input type="hidden" name="contatto_id" value={c.id} />
-                  <button type="submit" className="bottone-fantasma bottone-piccolo">Completa</button>
+                  <button type="submit" className="bottone-fantasma bottone-piccolo">Fatto</button>
                 </form>
               </div>
             ))}
@@ -202,17 +223,19 @@ export default async function Scheda({
       <section className="sezione">
         <h2>A che punto siamo</h2>
         <div className="scheda">
-          <form action={cambiaFase} className="azioni-riga">
+          {/* Una riga sola: dove siamo, e dove si sposta. La spiegazione di
+              cosa vuol dire stare in questa fase sta sotto, in piccolo. */}
+          <form action={cambiaFase}>
             <input type="hidden" name="id" value={c.id} />
-            <div style={{ flex: 1, minWidth: 190 }}>
-              <label htmlFor="fase">Fase</label>
-              <select id="fase" name="fase" defaultValue={c.fase}>
+            <div className="campo" style={{ marginBottom: 10 }}>
+              <label htmlFor="fase">Adesso è in «{nomeFase(c.fase)}». Spostalo a:</label>
+              <select id="fase" name="fase" defaultValue={c.fase} style={{ minHeight: 46 }}>
                 {FASI_DESCRITTE.map((f) => <option key={f.id} value={f.id}>{f.nome}</option>)}
               </select>
             </div>
-            <button type="submit" style={{ marginTop: 17 }}>Sposta</button>
+            <button type="submit" className="bottone-fantasma bottone-grande">Sposta</button>
           </form>
-          <p className="nota-piede" style={{ marginTop: 10, marginBottom: 0 }}>
+          <p className="nota-piede" style={{ marginTop: 12, marginBottom: 0 }}>
             <strong>{nomeFase(c.fase)}</strong> — {descriviFase(c.fase).entra}. Si esce quando: {descriviFase(c.fase).esce.toLowerCase()}.
           </p>
         </div>
@@ -223,7 +246,7 @@ export default async function Scheda({
           ------------------------------------------------------------------ */}
       <div className="colonne">
         <section className="sezione">
-          <h2>Da quale campagna</h2>
+          <Apribile titolo="Da quale campagna" sotto={s.campagna ? s.campagna.nome : 'nessuna campagna attribuita'}>
           <div className="scheda">
             {s.campagna ? (
               <p style={{ marginTop: 0 }}>
@@ -255,10 +278,11 @@ export default async function Scheda({
               </p>
             )}
           </div>
+          </Apribile>
         </section>
 
         <section className="sezione">
-          <h2>Conversazioni</h2>
+          <Apribile titolo="Conversazioni" sotto={s.conversazioni.length === 0 ? 'nessun filo di messaggi' : `${s.conversazioni.length} ${s.conversazioni.length === 1 ? 'filo' : 'fili'}`}>
           <div className="scheda scheda-fitta">
             {s.conversazioni.length === 0 && (
               <p className="elenco-vuoto">
@@ -311,6 +335,7 @@ export default async function Scheda({
               </p>
             </div>
           )}
+          </Apribile>
         </section>
       </div>
 
@@ -354,7 +379,7 @@ export default async function Scheda({
             3. PERCORSO
             ---------------------------------------------------------------- */}
         <section className="sezione" style={{ marginTop: 26 }}>
-          <h2>Il percorso</h2>
+          <Apribile titolo="Il percorso" sotto={`${s.eventi.length} ${s.eventi.length === 1 ? 'cosa successa' : 'cose successe'}`}>
           <div className="scheda">
             <ul className="tempo">
               {s.eventi.length === 0 && <li className="elenco-vuoto">Ancora niente da raccontare.</li>}
@@ -400,6 +425,7 @@ export default async function Scheda({
               se non ce n&apos;è già uno aperto.
             </p>
           </div>
+          </Apribile>
         </section>
 
         <div>
@@ -407,7 +433,7 @@ export default async function Scheda({
               4. OPPORTUNITÀ
               -------------------------------------------------------------- */}
           <section className="sezione" style={{ marginTop: 26 }}>
-            <h2>Opportunità</h2>
+            <Apribile titolo="Opportunità" sotto={s.opportunita.length === 0 ? 'nessun lavoro aperto' : `${s.opportunita.length} ${s.opportunita.length === 1 ? 'lavoro' : 'lavori'} · ${euro(s.valore)}`}>
             <div className="scheda scheda-fitta">
               {s.opportunita.length === 0 && (
                 <p className="elenco-vuoto">Nessun lavoro aperto: senza, questo contatto non pesa in pipeline.</p>
@@ -545,13 +571,14 @@ export default async function Scheda({
                 <button type="submit" className="bottone-fantasma">Aggiungi</button>
               </form>
             </details>
+            </Apribile>
           </section>
 
           {/* --------------------------------------------------------------
               5. PROMEMORIA
               -------------------------------------------------------------- */}
           <section className="sezione">
-            <h2>Aggiungi un promemoria</h2>
+            <Apribile titolo="Aggiungi un promemoria" sotto={'Fissa una cosa da fare, con la sua data'}>
             <div className="scheda">
               <form action={creaAzione}>
                 <input type="hidden" name="contatto_id" value={c.id} />
@@ -583,6 +610,7 @@ export default async function Scheda({
                 <button type="submit" className="bottone-fantasma">Aggiungi</button>
               </form>
             </div>
+          </Apribile>
           </section>
         </div>
       </div>
@@ -591,7 +619,7 @@ export default async function Scheda({
           6. ANAGRAFICA
           ------------------------------------------------------------------ */}
       <section className="sezione">
-        <h2>Dati</h2>
+        <Apribile titolo="Dati" sotto={'Nome, telefono, email, note, consenso'} ancora="dati">
         <div className="scheda">
           <form action={aggiornaContatto}>
             <input type="hidden" name="id" value={c.id} />
@@ -676,6 +704,7 @@ export default async function Scheda({
             </form>
           </details>
         </div>
+        </Apribile>
       </section>
 
       <p className="nota-piede">
@@ -687,5 +716,32 @@ export default async function Scheda({
         {FASI.length} fasi possibili, questa è la {FASI.indexOf(c.fase) + 1}ª.
       </p>
     </main>
+  );
+}
+
+// Una sezione secondaria: chiusa è una riga stile Impostazioni, aperta è
+// quello che c'era prima, per intero. Niente è stato tolto — è piegato.
+function Apribile({
+  titolo, sotto, ancora, children,
+}: {
+  titolo: string;
+  sotto?: React.ReactNode;
+  /** L'ancora sta dentro, così il browser apre la sezione quando ci si salta. */
+  ancora?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <details className="fisarmonica">
+      <summary>
+        <span className="testo-avviso">
+          <span className="titolo-avviso">{titolo}</span>
+          {sotto && <span className="conto-avviso">{sotto}</span>}
+        </span>
+        <span className="giu" aria-hidden="true">
+          <svg viewBox="0 0 13 8"><path d="m1 1 5.5 5.5L12 1" /></svg>
+        </span>
+      </summary>
+      <div className="dentro" id={ancora}>{children}</div>
+    </details>
   );
 }

@@ -7,6 +7,7 @@ import { FONTI_DESCRITTE, coloreFonte, nomeFonte } from '@/lib/dominio/fonti';
 import { ETICHETTA_INTERESSE, euro } from '@/lib/dominio/etichette';
 import { daQuanto, quando, soloData } from '@/lib/formato';
 import { Fonte as PezzoFonte, RigaContatto, Valore } from '../pezzi';
+import { TastoFiltri } from '../interattivi';
 
 // La rubrica vera: si cerca, si filtra, si ordina. Le scorciatoie in cima
 // sono le domande che ci si fa davvero — "chi non risponde?", "chi è fermo?" —
@@ -65,17 +66,89 @@ export default async function Contatti({
     Object.entries(p).filter(([k, v]) => v && k !== 'scegli' && k !== 'avviso') as [string, string][],
   ).toString();
 
+  // Quanti filtri sono accesi: è il numero che sta sul pulsante «Filtri», e
+  // serve a non dover aprire il foglio per sapere se è rimasto qualcosa su.
+  // La ricerca scritta non si conta: quella si vede già nella barra.
+  const accesi = [
+    filtri.fase, filtri.fonte, filtri.interesse, filtri.valoreMin,
+    filtri.silenzioDa, filtri.entratiDa, filtri.attenzione,
+    filtri.ordine !== 'priorita' ? filtri.ordine : null,
+  ].filter(Boolean).length;
+
+  // Il foglio dei filtri è un modulo GET come prima: cambia solo dove sta.
+  // Gli altri parametri viaggiano nascosti, così aprire i filtri non
+  // cancella la ricerca che si stava facendo.
+  const filtriDelFoglio = (
+    <form method="get">
+      {p.scegli && <input type="hidden" name="scegli" value={p.scegli} />}
+      {filtri.cerca && <input type="hidden" name="q" value={filtri.cerca} />}
+      {filtri.attenzione && <input type="hidden" name="attenzione" value={filtri.attenzione} />}
+      {filtri.entratiDa && <input type="hidden" name="entratiDa" value={String(filtri.entratiDa)} />}
+
+      <div className="campo">
+        <label htmlFor="f-fase">Fase</label>
+        <select id="f-fase" name="fase" defaultValue={filtri.fase ?? ''}>
+          <option value="">Tutte le fasi</option>
+          {FASI_DESCRITTE.map((f) => <option key={f.id} value={f.id}>{f.nome}</option>)}
+        </select>
+      </div>
+      <div className="campo">
+        <label htmlFor="f-fonte">Da dove arriva</label>
+        <select id="f-fonte" name="fonte" defaultValue={filtri.fonte ?? ''}>
+          <option value="">Tutte le fonti</option>
+          {FONTI_DESCRITTE.map((f) => <option key={f.id} value={f.id}>{f.nome}</option>)}
+        </select>
+      </div>
+      <div className="campo">
+        <label htmlFor="f-interesse">Che lavoro</label>
+        <select id="f-interesse" name="interesse" defaultValue={filtri.interesse ?? ''}>
+          <option value="">Tutti i lavori</option>
+          {INTERESSI.map((i) => <option key={i} value={i}>{ETICHETTA_INTERESSE[i]}</option>)}
+        </select>
+      </div>
+      <div className="campo">
+        <label htmlFor="f-valore">Valore minimo</label>
+        <select id="f-valore" name="valoreMin" defaultValue={p.valoreMin ?? ''}>
+          <option value="">Qualsiasi valore</option>
+          <option value="1000">da 1.000 €</option>
+          <option value="3000">da 3.000 €</option>
+          <option value="5000">da 5.000 €</option>
+          <option value="10000">da 10.000 €</option>
+        </select>
+      </div>
+      <div className="campo">
+        <label htmlFor="f-silenzio">Da quanto non si sentono</label>
+        <select id="f-silenzio" name="silenzioDa" defaultValue={p.silenzioDa ?? ''}>
+          <option value="">Sentiti quando sia</option>
+          <option value="5">Zitti da 5 giorni</option>
+          <option value="10">Zitti da 10 giorni</option>
+          <option value="20">Zitti da 20 giorni</option>
+        </select>
+      </div>
+      <div className="campo">
+        <label htmlFor="f-ordine">Ordina per</label>
+        <select id="f-ordine" name="ordine" defaultValue={filtri.ordine}>
+          {ORDINI.map((o) => <option key={o.id} value={o.id}>{o.testo}</option>)}
+        </select>
+      </div>
+
+      <div className="coda-foglio">
+        <Link href={p.scegli ? `/contatti?scegli=${p.scegli}` : '/contatti'} className="bottone bottone-fantasma bottone-grande">
+          Azzera
+        </Link>
+        <button type="submit" className="bottone-oro bottone-grande">Mostra risultati</button>
+      </div>
+    </form>
+  );
+
   return (
     <main>
-      <header className="testata-pagina">
-        <div>
-          <h1>Contatti</h1>
-          <p className="lede">
-            {righe.length} {righe.length === 1 ? 'persona' : 'persone'}
-            {valoreTotale > 0 && <> · {euro(valoreTotale)} di valore</>}
-          </p>
-        </div>
-        <Link href="/contatti/nuovo" className="bottone bottone-oro">+ Nuovo contatto</Link>
+      <header className="testata-grande">
+        <h1>Contatti</h1>
+        <p className="riepilogo">
+          <span className="adesso">{righe.length} {righe.length === 1 ? 'persona' : 'persone'}</span>
+          {valoreTotale > 0 && <> · <span className="euro">{euro(valoreTotale)}</span></>}
+        </p>
       </header>
 
       {p.avviso === 'eliminato' && (
@@ -97,42 +170,34 @@ export default async function Contatti({
         ))}
       </nav>
 
-      <form className="filtri" method="get">
-        {p.scegli && <input type="hidden" name="scegli" value={p.scegli} />}
-        <input type="search" name="q" defaultValue={filtri.cerca} placeholder="Nome, email, telefono, città" aria-label="Cerca" />
-        <select name="fase" defaultValue={filtri.fase ?? ''} aria-label="Fase">
-          <option value="">Tutte le fasi</option>
-          {FASI_DESCRITTE.map((f) => <option key={f.id} value={f.id}>{f.nome}</option>)}
-        </select>
-        <select name="fonte" defaultValue={filtri.fonte ?? ''} aria-label="Fonte">
-          <option value="">Tutte le fonti</option>
-          {FONTI_DESCRITTE.map((f) => <option key={f.id} value={f.id}>{f.nome}</option>)}
-        </select>
-        <select name="interesse" defaultValue={filtri.interesse ?? ''} aria-label="Interesse">
-          <option value="">Tutti i lavori</option>
-          {INTERESSI.map((i) => <option key={i} value={i}>{ETICHETTA_INTERESSE[i]}</option>)}
-        </select>
-        <select name="valoreMin" defaultValue={p.valoreMin ?? ''} aria-label="Valore minimo">
-          <option value="">Qualsiasi valore</option>
-          <option value="1000">da 1.000 €</option>
-          <option value="3000">da 3.000 €</option>
-          <option value="5000">da 5.000 €</option>
-          <option value="10000">da 10.000 €</option>
-        </select>
-        <select name="silenzioDa" defaultValue={p.silenzioDa ?? ''} aria-label="Silenzio">
-          <option value="">Sentiti quando sia</option>
-          <option value="5">Zitti da 5 giorni</option>
-          <option value="10">Zitti da 10 giorni</option>
-          <option value="20">Zitti da 20 giorni</option>
-        </select>
-        <select name="ordine" defaultValue={filtri.ordine} aria-label="Ordine">
-          {ORDINI.map((o) => <option key={o.id} value={o.id}>Ordina per {o.testo.toLowerCase()}</option>)}
-        </select>
-        <button type="submit" className="bottone-fantasma">Filtra</button>
-      </form>
+      {/* La ricerca sta sempre in vista; i menu a tendina stanno nel foglio.
+          Niente è sparito: aprendo «Filtri» ci sono tutti e sei, con lo
+          stesso nome e le stesse scelte di prima. */}
+      <div className="riga-ricerca">
+        <form method="get" className="ricerca">
+          {p.scegli && <input type="hidden" name="scegli" value={p.scegli} />}
+          {filtri.fase && <input type="hidden" name="fase" value={filtri.fase} />}
+          {filtri.fonte && <input type="hidden" name="fonte" value={filtri.fonte} />}
+          {filtri.interesse && <input type="hidden" name="interesse" value={filtri.interesse} />}
+          {filtri.valoreMin && <input type="hidden" name="valoreMin" value={String(filtri.valoreMin)} />}
+          {filtri.silenzioDa && <input type="hidden" name="silenzioDa" value={String(filtri.silenzioDa)} />}
+          {filtri.entratiDa && <input type="hidden" name="entratiDa" value={String(filtri.entratiDa)} />}
+          {filtri.attenzione && <input type="hidden" name="attenzione" value={filtri.attenzione} />}
+          {filtri.ordine !== 'priorita' && <input type="hidden" name="ordine" value={filtri.ordine} />}
+          <span className="lente" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
+          </span>
+          <input type="search" name="q" defaultValue={filtri.cerca} placeholder="Nome, email, telefono, città" aria-label="Cerca" />
+        </form>
+        <TastoFiltri quanti={accesi}>{filtriDelFoglio}</TastoFiltri>
+      </div>
 
       {righe.length === 0 && (
-        <div className="scheda"><p className="elenco-vuoto">Nessuno con questi filtri.</p></div>
+        <div className="tutto-fatto">
+          <span className="faccia" aria-hidden="true">🔍</span>
+          <span className="frase">Nessuno con questi filtri</span>
+          <span className="sotto-frase">Tocca «Filtri» e poi «Azzera» per rivedere tutti.</span>
+        </div>
       )}
 
       {righe.length > 0 && (
@@ -179,7 +244,7 @@ export default async function Contatti({
             </div>
           </div>
 
-          <div className="scheda scheda-fitta solo-stretto">
+          <div className="solo-stretto">
             {righe.map((c) => <RigaContatto key={c.id} contatto={c} />)}
           </div>
         </>

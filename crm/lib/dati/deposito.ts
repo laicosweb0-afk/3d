@@ -184,6 +184,12 @@ export interface Deposito {
   creaAzione(input: NuovaAzione): Promise<void>;
   aggiornaAzione(id: string, patch: PatchAzione): Promise<void>;
   completaAzione(id: string, esito?: string | null, operatore?: string | null): Promise<void>;
+  // L'inverso di completaAzione. Serve all'«Annulla» che compare per cinque
+  // secondi dopo un «Fatto»: senza questo, un tocco sbagliato non si
+  // disfaceva più. Riapre l'azione e porta via l'evento che il
+  // completamento aveva scritto nella storia del contatto — annullare vuol
+  // dire tornare come prima anche lì.
+  riapriAzione(id: string): Promise<void>;
   posticipaAzione(id: string, giorni: number): Promise<void>;
 
   registraEvento(input: NuovoEvento): Promise<void>;
