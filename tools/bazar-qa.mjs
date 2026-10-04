@@ -119,6 +119,17 @@ await p.waitForTimeout(600);
 await scatto('0v-vetrina');
 await overflow('vetrina');
 {
+  // La testata non si ripete: il nome sta nella barra, il titolo dice altro.
+  const titolo = await p.locator('.vetrina-testa .h1').innerText();
+  if (/bazar/i.test(titolo)) errori.push(`VETRINA: il titolo ripete il nome («${titolo}»)`);
+  if (await p.getByText('SHOWROOM ARREDAMENTO', { exact: false }).count()) errori.push('VETRINA: torna la riga SHOWROOM ARREDAMENTO');
+  // Il marchio della barra su una riga sola, allineato al silenziatore.
+  const m = await p.locator('.step-top .marchio').boundingBox();
+  const s = await p.getByRole('button', { name: /suoni/ }).boundingBox();
+  if (m.height > 24) errori.push(`BARRA: il marchio va a capo (${m.height.toFixed(0)}px)`);
+  if (Math.abs((m.y + m.height / 2) - (s.y + s.height / 2)) > 3) errori.push('BARRA: marchio e silenziatore non sono sulla stessa linea');
+}
+{
   // Il contatore a due cifre, e la barra che galleggia in fondo allo schermo.
   const conta = (await p.locator('.prodotto-conta').first().innerText()).replace(/\s+/g, ' ');
   if (!/^01 \/ 0\d$/.test(conta)) errori.push(`VETRINA: il contatore dice «${conta}», non «01 / 0N»`);

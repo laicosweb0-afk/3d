@@ -26,7 +26,7 @@ scritte in cima a `bazar/src/config/gioco.ts`.
 | | Schermata | Cosa succede |
 |---|---|---|
 | — | Apertura | «Marhaba.» in oro con «Benvenuto» sotto; poi il marchio da solo, al centro, che si compone come sul biglietto: BAZAR, il filo d'oro, MARRAKECH, SHOWROOM ARREDAMENTO · LUGO |
-| 0 | **La vetrina** | «Sfoglia il Bazar.»: i riquadri *Divani* e *Poltrone*, con il carosello 3D; ogni articolo si apre con le sue foto, e col cuore va fra i preferiti |
+| 0 | **La vetrina** | «Il tuo salotto ti aspetta.»: i riquadri *Divani* e *Poltrone*, con il carosello 3D; ogni articolo si apre con le sue foto, e col cuore va fra i preferiti |
 | 1 | Ingresso | «Che casa sei?» — una domanda, poi la ruota |
 | 2 | La domanda | Curve morbide · Classico elegante · Scuro e deciso · Bazar e colore. Il tocco sceglie e avanza |
 | 3 | Lo stile | Velluto & Oro · Classico Senza Tempo · Notte a Marrakech · Spirito del Bazar. **Senza credito** |
@@ -59,6 +59,12 @@ champagne, marrone, sabbia), il calore e le fotografie.
 - **Movimento** fra 200 e 400ms, in uscita morbida: ogni schermata entra con
   dissolvenza, un velo di sfocatura e dieci pixel di salita; il prodotto in
   centro rientra allo stesso modo quando cambia.
+- **Niente ripetizioni**: il marchio intero, a tre righe, si vede una volta
+  sola, nell'apertura. Dopo, in alto c'è una barra sottile con il marchio
+  su una riga (BAZAR · filo · MARRAKECH) e il silenziatore sulla stessa
+  linea. La vetrina apre con un titolo grande a sinistra, «Il tuo salotto
+  ti aspetta.» — la frase delle locandine — e una riga che aggiunge invece
+  di ripetere: showroom a Lugo, consegne in tutta Italia.
 - **Come un'app**: una barra traslucida in fondo alla vetrina con i
   preferiti e l'azione, il foglio della scheda che sale dal basso, le foto
   da scorrere, il feedback al tocco.

@@ -105,7 +105,7 @@
     position: relative;
     min-height: 100dvh;
     display: flex; flex-direction: column; align-items: center;
-    padding: 1.5rem 1.5rem calc(2.5rem + env(safe-area-inset-bottom, 0px));
+    padding: calc(1.5rem + env(safe-area-inset-top, 0px)) 1.5rem calc(2.5rem + env(safe-area-inset-bottom, 0px));
     background: var(--mesh);
     color: var(--crema);
     animation: step-up var(--dur) var(--ease) both;
@@ -130,10 +130,11 @@
     to { opacity: 1; transform: none; filter: none; }
   }
 
+  /* La barra in alto: alta quanto il silenziatore, così il marchio e il
+     bottone stanno sulla stessa linea. */
   .step-top {
-    width: 100%; max-width: 620px; min-height: 56px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding-top: 0.5rem;
+    width: 100%; max-width: 620px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
   }
   .step-main {
     flex: 1; width: 100%; max-width: 620px;
@@ -165,6 +166,15 @@
     font-size: 0.82em; font-weight: 500; color: var(--oro);
     letter-spacing: 0.42em; margin-right: -0.42em;
   }
+  /* Il marchio in linea, per la barra: BAZAR · filo · MARRAKECH. Il filo
+     diventa verticale e corto, lo stesso oro che sfuma ai capi. */
+  .marchio-linea { flex-direction: row; align-items: center; gap: 0.9em; }
+  .marchio-linea .marchio-bazar { font-size: 1.45em; font-weight: 600; letter-spacing: 0.24em; margin-right: -0.24em; }
+  .marchio-linea .filo {
+    width: 1px; height: 1.5em; margin: 0;
+    background: linear-gradient(180deg, rgba(142, 119, 81, 0.15) 0%, #D8BC86 50%, rgba(142, 119, 81, 0.15) 100%);
+  }
+  .marchio-linea .marchio-sotto { font-size: 0.85em; letter-spacing: 0.34em; margin-right: -0.34em; }
   .marchio-riga {
     font-size: 0.56em; font-weight: 400; color: var(--grigio);
     letter-spacing: 0.24em; margin-right: -0.24em; margin-top: 2.6em; white-space: nowrap;
@@ -420,7 +430,14 @@
   /* ================================================================ */
   /* La vetrina                                                        */
   /* ================================================================ */
-  .vetrina { width: 100%; margin-top: 2.25rem; display: grid; gap: 16px; }
+  /* La testata della vetrina: a sinistra, come il titolo grande delle app. */
+  .vetrina-testa { width: 100%; text-align: left; padding: 0 0.25rem; }
+  .vetrina-info {
+    margin: 0.875rem 0 0; display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem;
+    font-size: 0.875rem; font-weight: 400; color: var(--grigio);
+  }
+  .vetrina-punto { width: 3px; height: 3px; border-radius: 50%; background: var(--oro); }
+  .vetrina { width: 100%; margin-top: 2rem; display: grid; gap: 16px; }
 
   /* Il riquadro alla maniera di Apple: angoli larghi, un nero appena più
      chiaro del fondo, un filo di luce sul bordo. Dentro, il testo sta a
