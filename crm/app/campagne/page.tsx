@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
 const PERIODI: Periodo[] = ['7', '30', 'mese', 'tutto'];
 
 // Un valore che non conosciamo si scrive così, sempre allo stesso modo.
-const ND = <span style={{ color: 'var(--ink-3)' }} title="Dato non disponibile">N/D</span>;
+const ND = <span style={{ color: 'var(--ink-3)' }} title="Non lo sappiamo">non lo so</span>;
 
 export default async function Campagne({
   searchParams,
@@ -93,7 +93,7 @@ export default async function Campagne({
                   <th className="num">Spesa</th>
                   <th className="num">Contatti</th>
                   <th className="num">Conversaz.</th>
-                  <th className="num">Lead</th>
+                  <th className="num">Persone</th>
                   <th className="num">Qualificati</th>
                   <th className="num">Preventivi</th>
                   <th className="num">Ordini</th>
@@ -140,8 +140,8 @@ export default async function Campagne({
         </div>
         <p className="nota-piede" style={{ marginTop: 10 }}>
           <strong>Contatti</strong>: persone attribuite alla campagna. <strong>Conversazioni</strong>: fili di messaggi
-          aperti. <strong>Lead</strong>: quelle che qualcuno ha preso in carico (almeno «contattato»).{' '}
-          <strong>N/D</strong>: il dato non ce l&apos;abbiamo — la spesa arriva da Meta solo quando le statistiche
+          aperti. <strong>Persone</strong>: quelle che qualcuno ha preso in carico (almeno «contattato»).{' '}
+          <strong>non lo so</strong>: il dato non ce l&apos;abbiamo — la spesa arriva da Meta solo quando le statistiche
           saranno collegate, oppure si scrive a mano nella scheda della campagna.
         </p>
       </section>

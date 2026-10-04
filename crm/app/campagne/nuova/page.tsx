@@ -69,7 +69,7 @@ export default async function NuovaCampagna({
               </div>
               <div className="campo">
                 <label htmlFor="spesa">Spesa € (se la sai)</label>
-                <input id="spesa" name="spesa" type="text" inputMode="numeric" placeholder="lascia vuoto = N/D" />
+                <input id="spesa" name="spesa" type="text" inputMode="numeric" placeholder="lascia vuoto se non lo sai" />
               </div>
             </div>
           </div>

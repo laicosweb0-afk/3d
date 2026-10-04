@@ -67,7 +67,7 @@ export default async function Ingressi({
               <thead>
                 <tr>
                   <th>Fonte</th>
-                  <th className="num">Lead</th>
+                  <th className="num">Persone</th>
                   <th className="num">Qualificati</th>
                   <th className="num">Preventivi</th>
                   <th className="num">Ordini</th>

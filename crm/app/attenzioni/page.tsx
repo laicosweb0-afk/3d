@@ -25,7 +25,7 @@ const NOME_BREVE: Record<ChiaveAttenzione, string> = {
   azione_scaduta: 'Azioni scadute',
   preventivo_muto: 'Preventivi fermi',
   fermo_da_troppo: 'Fermi da troppo',
-  campione_senza_seguito: 'Campioni senza seguito',
+  campione_senza_seguito: 'Campioni dati e mai risentiti',
   appuntamento_senza_seguito: 'Appuntamenti senza seguito',
   alto_valore_fermo: 'Alto valore fermo',
   possibile_duplicato: 'Possibili doppioni',
@@ -134,7 +134,7 @@ export default async function Attenzioni() {
               <div><dt>Azione scaduta</dt><dd>La prossima azione ha una data già passata.</dd></div>
               <div><dt>Preventivo senza risposta</dt><dd>Preventivo inviato da più di 5 giorni, e da allora niente.</dd></div>
               <div><dt>Fermo da troppo</dt><dd>Nessuna traccia di contatto da {soglie.silenzioGrave} giorni.</dd></div>
-              <div><dt>Campione senza follow-up</dt><dd>Campione consegnato da più di 7 giorni, mai rientrato né richiamato.</dd></div>
+              <div><dt>Campione dato e mai risentito</dt><dd>Campione consegnato da più di 7 giorni, mai rientrato né richiamato.</dd></div>
               <div><dt>Appuntamento senza seguito</dt><dd>L&apos;incontro è passato e dopo non è stato registrato niente.</dd></div>
               <div><dt>Alto valore fermo</dt><dd>Sopra {euro(soglie.valoreAlto)} e zitto da più di {soglie.silenzioLungo} giorni.</dd></div>
               <div><dt>Possibili doppioni</dt><dd>Due schede con lo stesso telefono o la stessa email.</dd></div>

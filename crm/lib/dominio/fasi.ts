@@ -18,7 +18,7 @@ export type DescrizioneFase = {
 
 export const FASI_DESCRITTE: DescrizioneFase[] = [
   {
-    id: 'nuovo', nome: 'Nuovo lead', breve: 'Nuovo',
+    id: 'nuovo', nome: 'Appena arrivato', breve: 'Arrivato',
     entra: 'È arrivato da una delle fonti e nessuno l’ha ancora guardato',
     esce: 'Qualcuno lo prende in carico',
     attiva: true, chiusa: false,
@@ -39,7 +39,7 @@ export const FASI_DESCRITTE: DescrizioneFase[] = [
     azioneSuggerita: { tipo: 'richiamare', descrizione: 'Capire progetto, metratura e tempi', fraGiorni: 2 },
   },
   {
-    id: 'qualificato', nome: 'Qualificato', breve: 'Qualificato',
+    id: 'qualificato', nome: 'So cosa gli serve', breve: 'So cosa serve',
     entra: 'Sappiamo progetto, tempi e ordine di grandezza',
     esce: 'C’è un appuntamento fissato',
     attiva: true, chiusa: false,
@@ -60,7 +60,7 @@ export const FASI_DESCRITTE: DescrizioneFase[] = [
     azioneSuggerita: { tipo: 'follow_up', descrizione: 'Sentire se il preventivo è arrivato e convince', fraGiorni: 4 },
   },
   {
-    id: 'follow_up', nome: 'Follow-up', breve: 'Follow-up',
+    id: 'follow_up', nome: 'Ci sta pensando', breve: 'Ci pensa',
     entra: 'Ci sta pensando: campioni presi, confronti in corso',
     esce: 'Decide, o si perde',
     attiva: true, chiusa: false,

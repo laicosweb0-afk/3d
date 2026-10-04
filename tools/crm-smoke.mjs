@@ -128,7 +128,7 @@ try {
   if (schedaCarta) {
     await vai(schedaCarta);
     const storia = await p.locator('.tempo').first().innerText();
-    if (!storia.includes('Cambio fase')) segna('il cambio di fase non è finito nella storia');
+    if (!storia.includes('Spostato di fase')) segna('il cambio di fase non è finito nella storia');
     else ok('cambio di fase registrato nella storia');
   }
 
@@ -205,7 +205,7 @@ try {
   await p.fill('#nome', nomeCampagna);
   await p.selectOption('#canale_ingresso', 'messenger');
   await p.fill('#budget', '300');
-  // La spesa si lascia vuota di proposito: deve restare N/D, non diventare 0.
+  // La spesa si lascia vuota di proposito: deve restare «non lo so», non diventare 0.
   await p.fill('#parametro_ref', rif);
   await p.fill('#ad_id', `ad-${timbro}`);
   await p.click('button[type="submit"]');
@@ -216,8 +216,8 @@ try {
   const urlCampagna = p.url();
   const testoCampagna = await p.locator('main').innerText();
   if (!testoCampagna.includes(nomeCampagna)) segna('la campagna creata non compare nella sua scheda');
-  else if (!testoCampagna.includes('N/D')) segna('la spesa lasciata vuota non è mostrata come N/D');
-  else ok('campagna creata, spesa sconosciuta = N/D');
+  else if (!testoCampagna.includes('non lo so')) segna('la spesa lasciata vuota non è mostrata come «non lo so»');
+  else ok('campagna creata, spesa sconosciuta = «non lo so»');
 
   console.log('\n10. Un messaggio Messenger da quell\'annuncio entra e si attribuisce da sé');
   const psid = `psid-${timbro}`;

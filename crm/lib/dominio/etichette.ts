@@ -11,13 +11,13 @@ export const ETICHETTA_AZIONE: Record<TipoAzione, string> = {
   inviare_campioni: 'Inviare campioni',
   fissare_appuntamento: 'Fissare appuntamento',
   confermare_misure: 'Confermare misure',
-  follow_up: 'Fare follow-up',
+  follow_up: 'Risentire',
   confermare_ordine: 'Confermare ordine',
   altro: 'Altro',
 };
 
 export const ETICHETTA_EVENTO: Record<TipoEvento, string> = {
-  lead_ricevuto: 'Lead ricevuto',
+  lead_ricevuto: 'Arrivato',
   messaggio: 'Messaggio',
   telefonata: 'Telefonata',
   whatsapp: 'WhatsApp',
@@ -29,10 +29,10 @@ export const ETICHETTA_EVENTO: Record<TipoEvento, string> = {
   preventivo_inviato: 'Preventivo inviato',
   campione_consegnato: 'Campione consegnato',
   campione_reso: 'Campione reso',
-  follow_up: 'Follow-up',
+  follow_up: 'Risentito',
   ordine: 'Ordine',
-  cambio_fase: 'Cambio fase',
-  nota: 'Nota interna',
+  cambio_fase: 'Spostato di fase',
+  nota: 'Nota',
 };
 
 export const ETICHETTA_INTERESSE: Record<Interesse, string> = {

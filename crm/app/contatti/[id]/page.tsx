@@ -421,7 +421,7 @@ export default async function Scheda({
               <button type="submit">Registra</button>
             </form>
             <p className="nota-piede" style={{ marginTop: 10, marginBottom: 0 }}>
-              Registrando un preventivo o una consegna di campioni, il CRM apre da sé il promemoria di follow-up —
+              Registrando un preventivo o una consegna di campioni, il CRM apre da sé il promemoria per risentirlo —
               se non ce n&apos;è già uno aperto.
             </p>
           </div>
@@ -535,7 +535,7 @@ export default async function Scheda({
                       <p className="nota-piede" style={{ marginTop: -2 }}>
                         Se lasci vuota la scadenza e lo segni «inviato», la mette il CRM
                         a {dati.impostazioni.preventivo.validitaGiorni} giorni — si cambia in Impostazioni. Segnarlo inviato scrive
-                        anche l&apos;attività nella storia e apre da sé il promemoria di follow-up.
+                        anche l&apos;attività nella storia e apre da sé il promemoria per risentirlo.
                       </p>
                       <button type="submit" className="bottone-fantasma">Salva il preventivo</button>
                     </form>

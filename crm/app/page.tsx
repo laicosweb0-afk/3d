@@ -178,7 +178,7 @@ export default async function Oggi({
       <section className="sezione">
         <h2>Arrivati e mai sentiti</h2>
         {maiSentiti.length === 0
-          ? <div className="scheda"><p className="elenco-vuoto">Nessun lead in attesa: buon segno.</p></div>
+          ? <div className="scheda"><p className="elenco-vuoto">Nessuno in attesa: buon segno.</p></div>
           : maiSentiti.map((c) => <RigaContatto key={c.id} contatto={c} />)}
       </section>
 

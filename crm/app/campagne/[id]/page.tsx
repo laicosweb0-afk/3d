@@ -16,7 +16,7 @@ import { RigaContatto } from '../../pezzi';
 
 export const dynamic = 'force-dynamic';
 
-const ND = <span style={{ color: 'var(--ink-3)' }} title="Dato non disponibile">N/D</span>;
+const ND = <span style={{ color: 'var(--ink-3)' }} title="Non lo sappiamo">non lo so</span>;
 
 export default async function SchedaCampagna({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -209,7 +209,7 @@ export default async function SchedaCampagna({ params }: { params: Promise<{ id:
               </div>
               <div className="campo">
                 <label htmlFor="spesa">Spesa € — lascia vuoto se non la sai</label>
-                <input id="spesa" name="spesa" type="text" inputMode="numeric" defaultValue={c.spesa ?? ''} placeholder="N/D" />
+                <input id="spesa" name="spesa" type="text" inputMode="numeric" defaultValue={c.spesa ?? ''} placeholder="lascia vuoto se non lo sai" />
               </div>
             </div>
 
