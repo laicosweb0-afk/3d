@@ -4,6 +4,7 @@ import { depositoPubblico, modoDati } from '@/lib/dati';
 import { registraIngresso, type Ingresso } from '@/lib/dati/ingresso';
 import type { TipoIdentita } from '@/lib/dominio/campagne';
 import { normalizzaCodiceCard } from '@/lib/dominio/card';
+import { solaLettura } from '@/lib/ambiente';
 
 // I moduli del sito di Rama.
 //
@@ -59,6 +60,10 @@ function firmaValida(corpoGrezzo: string, firma: string | null): boolean {
 }
 
 export async function POST(richiesta: Request) {
+  // In vetrina il CRM non scrive: è una copia da guardare, e un POST da
+  // fuori la riempirebbe di roba che nessuno ha chiesto.
+  if (solaLettura()) return new NextResponse('vetrina: sola lettura', { status: 503 });
+
   const corpoGrezzo = await richiesta.text();
   const segreto = process.env.INGRESSO_SEGRETO;
   const demo = modoDati() === 'demo';

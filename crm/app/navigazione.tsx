@@ -50,12 +50,14 @@ function Icona({ segno }: { segno: string }) {
 }
 
 export function Navigazione({
-  urgenti, attenzioni, demo = false, demoOnline = false,
+  urgenti, attenzioni, demo = false, demoOnline = false, vetrina = false,
 }: {
   urgenti: number;
   attenzioni: number;
   demo?: boolean;
   demoOnline?: boolean;
+  /** Copia da far vedere: si guarda e basta, non scrive niente. */
+  vetrina?: boolean;
 }) {
   const percorso = usePathname();
   const [menuAperto, setMenuAperto] = useState(false);
@@ -89,6 +91,7 @@ export function Navigazione({
               <span className="pillola-demo">Demo</span>
             </button>
           )}
+          {vetrina && <span className="pillola-vetrina">Solo da guardare</span>}
           <nav className="voci">
             {VOCI.map((v) => (
               <Link key={v.href} href={v.href} className={attiva(v.href) ? 'voce attiva' : 'voce'}>
@@ -114,6 +117,9 @@ export function Navigazione({
         ))}
       </nav>
 
+      {/* In vetrina non si crea niente: il "+" non c'è proprio. */}
+      {!vetrina && (
+      <>
       {/* Il "+": da qui nasce tutto quello che si crea a mano. Si rimpicciolisce
           quando si scorre (lo fa il CSS) e le liste hanno lo spazio sotto, così
           non copre mai l'ultima riga. */}
@@ -144,6 +150,9 @@ export function Navigazione({
           </Link>
         </div>
       </Foglio>
+
+      </>
+      )}
 
       {/* Il testo della demo: identico a quello che stava nella fascia. */}
       <Foglio aperto={demoAperta} chiudi={() => setDemoAperta(false)} titolo="Modalità dimostrativa">

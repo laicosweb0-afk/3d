@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { depositoPubblico } from '@/lib/dati';
 import { registraIngresso, type Ingresso } from '@/lib/dati/ingresso';
 import type { TipoIdentita } from '@/lib/dominio/campagne';
+import { solaLettura } from '@/lib/ambiente';
 
 // I moduli di Meta (Lead Ads): quelli che si compilano dentro Facebook o
 // Instagram senza uscire dall'app.
@@ -74,6 +75,10 @@ function valore(campi: CampoLead[], nomi: string[]): string | null {
 }
 
 export async function POST(richiesta: Request) {
+  // In vetrina il CRM non scrive: è una copia da guardare, e un POST da
+  // fuori la riempirebbe di roba che nessuno ha chiesto.
+  if (solaLettura()) return new NextResponse('vetrina: sola lettura', { status: 503 });
+
   const corpoGrezzo = await richiesta.text();
 
   if (!process.env.META_APP_SECRET) {

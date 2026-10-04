@@ -4,6 +4,7 @@ import { depositoPubblico, modoDati } from '@/lib/dati';
 import { registraIngresso } from '@/lib/dati/ingresso';
 import { traduciMessenger } from '@/lib/canali/messenger';
 import { traduciWhatsApp } from '@/lib/canali/whatsapp';
+import { solaLettura } from '@/lib/ambiente';
 
 // I webhook di Meta: Messenger, Instagram, WhatsApp.
 //
@@ -59,6 +60,10 @@ export async function GET(richiesta: Request, { params }: { params: Promise<{ ca
 }
 
 export async function POST(richiesta: Request, { params }: { params: Promise<{ canale: string }> }) {
+  // In vetrina il CRM non scrive: è una copia da guardare, e un POST da
+  // fuori la riempirebbe di roba che nessuno ha chiesto.
+  if (solaLettura()) return new NextResponse('vetrina: sola lettura', { status: 503 });
+
   const { canale } = await params;
   if (!canaleValido(canale)) return new NextResponse('canale sconosciuto', { status: 404 });
 

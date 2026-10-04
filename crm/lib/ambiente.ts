@@ -12,6 +12,14 @@ export function varObbligatoria(nome: string): string {
   return valore;
 }
 
+// La vetrina: una copia del CRM che si guarda e basta.
+//
+// Serve per farlo vedere a qualcuno senza il rischio che tocchi qualcosa per
+// sbaglio. Non è un bottone nascosto — i bottoni nascosti sono suggerimenti,
+// non porte chiuse: è un controllo sul server, nel punto da cui passa ogni
+// scrittura. Acceso, il CRM non scrive niente, comunque gli si chieda.
+export const solaLettura = () => process.env.CRM_SOLA_LETTURA === '1';
+
 export const urlSupabase = () => varObbligatoria('NEXT_PUBLIC_SUPABASE_URL');
 export const chiaveAnonima = () => varObbligatoria('NEXT_PUBLIC_SUPABASE_ANON_KEY');
 export const chiaveServizio = () => varObbligatoria('SUPABASE_SERVICE_ROLE_KEY');

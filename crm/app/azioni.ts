@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { deposito, modoDati } from '@/lib/dati';
+import { solaLettura } from '@/lib/ambiente';
 import { supabaseServer } from '@/lib/supabase-server';
 import { scadenzaFra } from '@/lib/dominio/automazioni';
 import { normalizzaCodiceCard } from '@/lib/dominio/card';
@@ -46,6 +47,11 @@ function scelta<T extends string>(dati: FormData, campo: string, ammessi: readon
 }
 
 async function contesto() {
+  // La vetrina si ferma qui, prima di qualunque scrittura. Venticinque delle
+  // ventisei azioni passano di qua: bloccare questo punto è bloccarle tutte,
+  // anche quelle che qualcuno provasse a chiamare senza passare dai bottoni.
+  if (solaLettura()) redirect('/?vetrina=bloccato');
+
   const dep = await deposito();
   if (modoDati() === 'demo') {
     return { dep, operatore: null, ruolo: 'titolare' as Ruolo };

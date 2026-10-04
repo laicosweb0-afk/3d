@@ -189,6 +189,12 @@ export function ZonaAnnulla() {
 // ---------------------------------------------------------------------------
 const RIMANDI = [1, 3, 7];
 
+// In vetrina lo swipe non deve nemmeno partire: il server lo fermerebbe
+// comunque, ma una card che si muove e poi non succede niente è peggio di
+// una card che sta ferma.
+const inVetrina = () =>
+  typeof document !== 'undefined' && document.body.dataset.solaLettura === 'si';
+
 export function CartaAzione({
   azioneId, contattoId, cosa, chi, scadenza, scaduto, scadutoDa, compatta = false,
   principale = 'Fatto', apriTelefono,
@@ -236,8 +242,12 @@ export function CartaAzione({
       <div
         className="scorri-sopra"
         style={{ transform: `translateX(${dx}px)` }}
-        onTouchStart={(e) => { partenza.current = e.touches[0].clientX; setTrascina(true); }}
+        onTouchStart={(e) => {
+          if (inVetrina()) return;
+          partenza.current = e.touches[0].clientX; setTrascina(true);
+        }}
         onTouchMove={(e) => {
+          if (inVetrina()) return;
           const d = e.touches[0].clientX - partenza.current;
           setDx(Math.max(-150, Math.min(150, d)));
         }}

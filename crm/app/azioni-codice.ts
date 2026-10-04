@@ -5,11 +5,14 @@ import { redirect } from 'next/navigation';
 import { modoDati } from '@/lib/dati';
 import { supabaseServer } from '@/lib/supabase-server';
 import { normalizzaCodice } from '@/lib/codice';
+import { solaLettura } from '@/lib/ambiente';
 
 // Il riscatto del credito della card sta a parte dalle azioni del CRM: tocca
 // le tabelle del Club Rama (`lead_card`), non il modello commerciale.
 
 export async function riscattaCodice(dati: FormData) {
+  if (solaLettura()) redirect('/?vetrina=bloccato');
+
   if (modoDati() === 'demo') return;
 
   const grezzo = dati.get('codice');

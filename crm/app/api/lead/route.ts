@@ -7,6 +7,7 @@ import { CREDITO_EUR, generaCodice, scadenzaDaOggi } from '@/lib/codice';
 import { inviaCodice } from '@/lib/email';
 import { scadenzaFra } from '@/lib/dominio/automazioni';
 import type { Interesse } from '@/lib/dominio/tipi';
+import { solaLettura } from '@/lib/ambiente';
 
 // L'unica porta aperta del CRM: ci bussa la card NFC di Rama
 // (public/club/index.html) quando il cliente lascia nome ed email. Da qui il
@@ -61,6 +62,10 @@ function impronta(richiesta: Request): string {
 }
 
 export async function POST(richiesta: Request) {
+  // In vetrina il CRM non scrive: è una copia da guardare, e un POST da
+  // fuori la riempirebbe di roba che nessuno ha chiesto.
+  if (solaLettura()) return new NextResponse('vetrina: sola lettura', { status: 503 });
+
   const origine = richiesta.headers.get('origin');
 
   if (origine && !originiConsentite().includes(origine)) {

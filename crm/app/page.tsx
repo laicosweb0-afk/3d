@@ -34,7 +34,7 @@ const cose = (n: number) => (n === 1 ? '1 cosa' : `${n} cose`);
 export default async function Oggi({
   searchParams,
 }: {
-  searchParams: Promise<{ periodo?: string }>;
+  searchParams: Promise<{ periodo?: string; vetrina?: string }>;
 }) {
   const parametri = await searchParams;
   const periodo = (PERIODI.includes(parametri.periodo as Periodo) ? parametri.periodo : '30') as Periodo;
@@ -69,6 +69,16 @@ export default async function Oggi({
           )}
         </p>
       </header>
+
+      {parametri.vetrina === 'bloccato' && (
+        <div className="avviso-vetrina">
+          <span className="faccia" aria-hidden="true">👀</span>
+          <span className="testo">
+            <strong>Questa copia si guarda e basta.</strong> Gira dove vuoi, apri tutto, non c&apos;è
+            niente da rompere: le modifiche qui non vengono salvate.
+          </span>
+        </div>
+      )}
 
       {/* Una card al posto dei banner impilati. Gli avvisi non sono stati
           tolti: sono tutti in Attenzioni, raggruppati, con dentro le persone. */}

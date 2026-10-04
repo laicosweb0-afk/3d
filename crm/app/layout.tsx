@@ -3,6 +3,7 @@ import './globals.css';
 import { Navigazione } from './navigazione';
 import { OsservaScorrimento, ZonaAnnulla } from './interattivi';
 import { deposito, modoDati } from '@/lib/dati';
+import { solaLettura } from '@/lib/ambiente';
 import { attenzioni as calcolaAttenzioni, daFare } from '@/lib/dati/istantanea';
 
 // Il font è quello del telefono di chi lo usa: su iPhone SF Pro, su Android
@@ -38,13 +39,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="it">
-      <body>
+      <body data-sola-lettura={solaLettura() ? 'si' : undefined}>
         <OsservaScorrimento />
         <Navigazione
           urgenti={urgenti}
           attenzioni={quanteAttenzioni}
           demo={modoDati() === 'demo'}
           demoOnline={Boolean(process.env.VERCEL)}
+          vetrina={solaLettura()}
         />
         <div className="guscio">{children}</div>
         {/* «Fatto ✓ — Annulla»: sta qui e non dentro le liste, perché una

@@ -546,6 +546,38 @@ try {
   await tel.screenshot({ path: `${out}/crm-04-telefono.png`, fullPage: true });
   await tel.close();
   ok('nessuno scorrimento laterale');
+
+  // La vetrina gira su un indirizzo suo, con CRM_SOLA_LETTURA=1. Se non c'è
+  // si salta: il collaudo normale non deve dipenderne.
+  if (process.env.CRM_VETRINA_URL) {
+    console.log('\n22. La vetrina si guarda e non si tocca');
+    const v = process.env.CRM_VETRINA_URL.replace(/\/$/, '');
+    const vp = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+    await vp.goto(v, { waitUntil: 'networkidle' });
+
+    if (!(await vp.locator('.pillola-vetrina').count())) segna('la vetrina non si dichiara');
+    else ok('si presenta come «Solo da guardare»');
+
+    const spento = await vp.locator('.carta-azione button:has-text("Fatto")').first()
+      .evaluate((b) => getComputedStyle(b).pointerEvents === 'none').catch(() => null);
+    if (spento === false) segna('in vetrina il pulsante «Fatto» si può ancora premere');
+    else if (spento === true) ok('i comandi che scrivono sono spenti');
+
+    // La prova vera: forzare il clic saltando il CSS. Deve fermarlo il server.
+    const prima = (await vp.locator('.carta-azione .cosa').first().innerText()).trim();
+    await vp.locator('.carta-azione button:has-text("Fatto")').first().dispatchEvent('click');
+    await vp.waitForTimeout(2500);
+    await vp.goto(v, { waitUntil: 'networkidle' });
+    const dopo = (await vp.locator('.carta-azione .cosa').first().innerText()).trim();
+    if (prima !== dopo) segna('la vetrina ha scritto davvero: il blocco sul server non tiene');
+    else ok('clic forzato: il server non ha scritto niente');
+
+    const rispostaWebhook = await vp.request.post(`${v}/api/webhooks/forms`, { data: {} });
+    if (rispostaWebhook.status() !== 503) segna(`il webhook della vetrina risponde ${rispostaWebhook.status()}, doveva essere 503`);
+    else ok('anche i webhook sono chiusi');
+
+    await vp.close();
+  }
 } catch (errore) {
   segna(`ECCEZIONE: ${errore.message}`);
 }

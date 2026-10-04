@@ -997,3 +997,42 @@ body[data-scorso="si"] .piu { transform: scale(.76); opacity: .82; }
   .tondo { min-width: 54px; }
   .tondo .cerchio { width: 48px; height: 48px; }
 }
+
+/* ===========================================================================
+   La vetrina: una copia da guardare e basta
+
+   Quello che scrive si vede ancora — serve a capire com'è fatto il CRM — ma
+   è spento e non si tocca. Il blocco vero sta sul server: questo è solo il
+   modo di dirlo senza spiegazioni.
+   =========================================================================== */
+.pillola-vetrina {
+  font-size: 11.5px; font-weight: 600; letter-spacing: .02em;
+  padding: 4px 11px; border-radius: 999px; flex: none;
+  background: var(--carta-2); color: var(--ink-2);
+}
+
+/* I moduli che scrivono. Quelli di ricerca e di filtro sono method="get":
+   non toccano niente e restano vivi, altrimenti la vetrina non si potrebbe
+   nemmeno sfogliare. */
+body[data-sola-lettura] form:not([method="get"]) button,
+body[data-sola-lettura] form:not([method="get"]) input,
+body[data-sola-lettura] form:not([method="get"]) select,
+body[data-sola-lettura] form:not([method="get"]) textarea,
+body[data-sola-lettura] .piu-azioni,
+body[data-sola-lettura] .carta-kanban .sposta,
+body[data-sola-lettura] .bottone-pericolo {
+  opacity: .38;
+  pointer-events: none;
+  cursor: default;
+}
+/* Le card non si trascinano: in vetrina lo spostamento non ha dove andare. */
+body[data-sola-lettura] .carta-kanban { cursor: default; }
+
+.avviso-vetrina {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--carta); border: 1px solid var(--linea);
+  border-radius: var(--r-g); padding: 14px 16px; margin-bottom: 16px;
+}
+.avviso-vetrina .faccia { font-size: 22px; flex: none; }
+.avviso-vetrina .testo { font-size: 14.5px; color: var(--ink-2); line-height: 1.45; }
+.avviso-vetrina .testo strong { color: var(--ink); font-weight: 600; }

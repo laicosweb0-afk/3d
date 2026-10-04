@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { depositoPubblico, modoDati } from '@/lib/dati';
 import { registraIngresso, type Ingresso } from '@/lib/dati/ingresso';
 import { CANALI, TIPI_IDENTITA, type Canale, type TipoIdentita } from '@/lib/dominio/campagne';
+import { solaLettura } from '@/lib/ambiente';
 
 // Il portone normalizzato del CRM. Ci arriva tutto quello che non è un
 // webhook di Meta: il modulo del sito, la card NFC, un altro programma, o un
@@ -34,6 +35,10 @@ function firmaValida(corpoGrezzo: string, firma: string | null): boolean {
 }
 
 export async function POST(richiesta: Request, { params }: { params: Promise<{ canale: string }> }) {
+  // In vetrina il CRM non scrive: è una copia da guardare, e un POST da
+  // fuori la riempirebbe di roba che nessuno ha chiesto.
+  if (solaLettura()) return new NextResponse('vetrina: sola lettura', { status: 503 });
+
   const { canale: canaleGrezzo } = await params;
   const canale = (CANALI as readonly string[]).includes(canaleGrezzo)
     ? (canaleGrezzo as Canale)
