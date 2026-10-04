@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="it" class="intro-on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#120F0C">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex, nofollow">
+<title>Spicchio d'Oro</title>
+<meta name="description" content="Pizza dal forno a legna, cucina e pub a San Savino di Fusignano. Menù, serate e prenotazioni su WhatsApp.">
+
+<!-- Stili critici dell'intro: inline e per primi, così al tocco della card
+     si vede subito il nero caldo e mai la pagina sotto. -->
+<style>
+  html, body { margin: 0; background: #120F0C; }
+  html.intro-on, html.intro-on body { overflow: hidden; }
+  #intro {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #120F0C; color: #F4EEE3;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+  }
+  #intro .hey, #intro .welcome > * { opacity: 0; }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap">
+<link rel="preload" as="image" href="img/forno.jpg">
+
+<script>
+  // Foto che non c'è (ancora): al posto dell'icona rotta resta il fondo
+  // caldo con il nome del file, ben visibile. Ascoltato subito, in testa,
+  // perché un'immagine può fallire prima che arrivi lo script in fondo.
+  document.addEventListener('error', function (e) {
+    var t = e.target;
+    if (t && t.tagName === 'IMG') {
+      t.style.opacity = '0';
+      var ph = t.closest('.ph');
+      if (ph) ph.setAttribute('data-missing', t.getAttribute('src').split('/').pop());
+    }
+  }, true);
+</script>
+
+<style>
+/* ==========================================================================
+   SPICCHIO D'ORO — la card NFC
+   Stessa famiglia del Bazar: superfici scure appena diverse fra loro, vetro
+   solo su ciò che galleggia, raggi larghi, un solo pieno oro per volta.
+   Le foto vere sono le protagoniste; il resto fa spazio.
+   ========================================================================== */
+:root {
+  --nero: #120F0C;
+  --superficie: #1B1713;
+  --elevata: #241F1A;
+  --linea: rgba(244, 238, 227, .08);
+  --vetro: rgba(27, 23, 19, .68);
+  --vetro-bordo: rgba(244, 238, 227, .10);
+  --oro: #D3AE63;
+  --oro-chiaro: #E9CD8E;
+  --oro-scuro: #9C7E43;
+  --panna: #F4EEE3;
+  --grigio: #B4ABA0;
+  --grigio-tenue: #8C847A;
+  --verde: #6FCF8E;
+  --oro-testo: linear-gradient(180deg, #F1DCA6 0%, #E9CD8E 35%, #D3AE63 100%);
+  --ios: cubic-bezier(.32, .72, 0, 1);
+  --morbido: cubic-bezier(.22, 1, .36, 1);
+  --serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --gutter: 24px;
+  --st: env(safe-area-inset-top, 0px);
+  --sb: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; }
+body {
+  color: var(--panna);
+  font: 400 16px/1.5 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+img { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--oro); outline-offset: 3px; border-radius: 8px; }
+::selection { background: rgba(211, 174, 99, .35); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Il tocco: tutto ciò che si preme si stringe appena sotto il dito. */
+.press { transition: transform .35s var(--ios), opacity .35s var(--ios), background-color .35s var(--ios); }
+.press:active { transform: scale(.97); }
+
+/* Foto: fondo caldo mentre carica, e il segnaposto se manca. */
+.ph { position: relative; overflow: hidden; background:
+  radial-gradient(120% 80% at 30% 20%, #2C241C 0%, #1B1713 60%, #15110E 100%); }
+.ph > img { width: 100%; height: 100%; object-fit: cover; }
+.ph[data-missing]::after {
+  content: 'Foto in arrivo · ' attr(data-missing);
+  position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%);
+  padding: 7px 12px; border: 1px dashed rgba(211, 174, 99, .55); border-radius: 999px;
+  font: 500 11px/1 var(--sans); letter-spacing: .06em; color: var(--oro-chiaro);
+  white-space: nowrap; background: rgba(18, 15, 12, .5);
+}
+
+/* ---------- INTRO ---------- */
+#intro .hey {
+  font: 700 clamp(84px, 27vw, 128px)/1 var(--sans); letter-spacing: -.045em;
+  animation: hey 1.1s var(--morbido) .7s forwards;
+}
+#intro .welcome { margin-top: 26px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+#intro .welcome .da {
+  font: 500 12px/1 var(--sans); letter-spacing: .28em; text-transform: uppercase; color: var(--grigio);
+  animation: sale .9s var(--morbido) 1.65s forwards;
+}
+#intro .welcome .nome {
+  font: 500 clamp(36px, 11vw, 48px)/1.1 var(--serif);
+  background: linear-gradient(100deg, #C29A4E 0%, #D3AE63 38%, #FFF4D6 50%, #D3AE63 62%, #C29A4E 100%);
+  background-size: 260% 100%; background-position: 100% 0;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: sale .9s var(--morbido) 1.9s forwards, riflesso 1.7s ease-in-out 2.25s forwards;
+}
+#intro.out { transform: translateY(-100%); transition: transform .95s var(--ios); }
+@keyframes hey { from { opacity: 0; filter: blur(22px); transform: scale(1.08); } to { opacity: 1; filter: blur(0); transform: none; } }
+@keyframes sale { from { opacity: 0; transform: translateY(10px); filter: blur(4px); } to { opacity: 1; transform: none; filter: blur(0); } }
+@keyframes riflesso { from { background-position: 100% 0; } to { background-position: 0% 0; } }
+
+/* ---------- HOME ---------- */
+#app {
+  max-width: 620px; margin: 0 auto; background: var(--nero);
+  transition: transform .55s var(--ios), border-radius .55s var(--ios);
+}
+html.sheet-on #app { transform: scale(.94); border-radius: 26px; overflow: hidden; }
+
+.hero { position: relative; height: 88vh; height: 88svh; min-height: 560px; max-height: 900px; overflow: hidden; }
+.hero .ph { position: absolute; inset: 0; }
+.hero .ph > img {
+  position: absolute; left: 0; top: -9%; height: 109%;
+  transform: scale(1.14); transform-origin: 50% 60%;
+}
+html.ready .hero .ph > img { transform: scale(1); transition: transform 4.5s var(--morbido); }
+.hero::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(18,15,12,.55) 0%, rgba(18,15,12,0) 18%),
+    linear-gradient(180deg, rgba(18,15,12,0) 46%, rgba(18,15,12,.62) 70%, #120F0C 98%);
+}
+.top {
+  position: absolute; z-index: 2; left: 0; right: 0; top: 0;
+  padding: calc(var(--st) + 18px) var(--gutter) 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.top .marchio { font: 500 17px/1 var(--serif); color: var(--panna); letter-spacing: .01em; }
+.badge {
+  display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 13px;
+  border-radius: 999px; background: var(--vetro); border: 1px solid var(--vetro-bordo);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4); backdrop-filter: blur(20px) saturate(1.4);
+  font: 500 12.5px/1 var(--sans); color: var(--panna); white-space: nowrap;
+}
+.badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--verde); box-shadow: 0 0 0 3px rgba(111,207,142,.18); }
+.badge .dot[hidden] { display: none; }
+
+.hero-text {
+  position: absolute; z-index: 2; left: 0; right: 0; bottom: 0;
+  padding: 0 var(--gutter) 34px;
+}
+.eyebrow { font: 600 11.5px/1 var(--sans); letter-spacing: .24em; text-transform: uppercase; color: var(--oro); }
+.hero h1 {
+  margin: 14px 0 0; font: 600 clamp(50px, 15vw, 76px)/.98 var(--serif); letter-spacing: -.01em;
+  background: var(--oro-testo); -webkit-background-clip: text; background-clip: text; color: transparent;
+  padding-bottom: .06em;
+}
+.hero p { margin: 14px 0 0; max-width: 21em; font-size: 16.5px; line-height: 1.5; color: rgba(244,238,227,.82); }
+.hero-actions { margin-top: 26px; display: flex; align-items: center; gap: 20px; }
+html:not(.ready) .hero-text > * { opacity: 0; transform: translateY(14px); }
+html.ready .hero-text > * { opacity: 1; transform: none; transition: opacity .9s var(--morbido), transform .9s var(--morbido); }
+html.ready .hero-text > :nth-child(2) { transition-delay: .08s; }
+html.ready .hero-text > :nth-child(3) { transition-delay: .16s; }
+html.ready .hero-text > :nth-child(4) { transition-delay: .24s; }
+
+.btn-oro {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  height: 54px; padding: 0 26px; border-radius: 18px;
+  background: linear-gradient(180deg, #E9CD8E 0%, #D3AE63 100%); color: #1A140C;
+  font: 600 16px/1 var(--sans); letter-spacing: .005em;
+  box-shadow: 0 14px 34px -14px rgba(211,174,99,.65), inset 0 1px 0 rgba(255,255,255,.35);
+}
+.btn-oro svg { width: 20px; height: 20px; }
+.btn-oro.full { width: 100%; }
+.link-sec { display: inline-flex; align-items: center; gap: 6px; font: 500 15px/1 var(--sans); color: var(--panna); opacity: .9; }
+.link-sec svg { width: 16px; height: 16px; }
+
+/* le box */
+.tiles { padding: 30px var(--gutter) 0; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.tile {
+  position: relative; display: block; width: 100%; text-align: left;
+  border-radius: 28px; overflow: hidden; isolation: isolate;
+  box-shadow: 0 30px 60px -34px rgba(0,0,0,.8);
+}
+.tile .ph { position: absolute; inset: 0; z-index: -1; }
+.tile .ph > img { transition: transform 1.2s var(--morbido); }
+.tile:active .ph > img { transform: scale(1.03); }
+.tile::before {
+  content: ''; position: absolute; inset: 0; z-index: 0;
+  background: linear-gradient(180deg, rgba(18,15,12,0) 34%, rgba(18,15,12,.62) 66%, rgba(18,15,12,.94) 100%);
+}
+.tile.grande { grid-column: 1 / -1; aspect-ratio: 4 / 4.6; }
+.tile.piccola { aspect-ratio: 3 / 4.1; }
+.tile .testo { position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; padding: 22px; }
+.tile .freccia, .tile .badge { z-index: 1; }
+.tile.piccola .testo { padding: 18px; }
+.tile h2 { margin: 0; font: 500 34px/1.05 var(--serif); color: var(--panna); }
+.tile.piccola h2 { font-size: 25px; }
+.tile .sub { margin-top: 8px; font-size: 14.5px; line-height: 1.4; color: rgba(244,238,227,.78); max-width: 18em; }
+.tile.piccola .sub { font-size: 13.5px; }
+.tile .freccia {
+  position: absolute; right: 18px; top: 18px; width: 40px; height: 40px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--vetro); border: 1px solid var(--vetro-bordo);
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+}
+.tile.piccola .freccia { width: 34px; height: 34px; right: 14px; top: 14px; }
+.tile .freccia svg { width: 16px; height: 16px; }
+.tile .badge { position: absolute; left: 14px; top: 14px; height: 28px; padding: 0 11px; font-size: 11.5px; }
+.tile .badge b { color: var(--oro-chiaro); font-weight: 600; }
+
+/* chiusura */
+.chiusura { padding: 64px var(--gutter) calc(var(--sb) + 124px); }
+.chiusura .ph { border-radius: 28px; aspect-ratio: 3 / 2; }
+.chiusura .nome { margin-top: 36px; font: 500 34px/1.1 var(--serif); background: var(--oro-testo); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.chiusura .tag { margin-top: 10px; }
+.chiusura .indirizzo { margin-top: 18px; color: var(--grigio); font-size: 15px; line-height: 1.6; }
+.chiusura .pulsanti { margin-top: 24px; display: flex; flex-wrap: wrap; gap: 10px; }
+.pill-link {
+  display: inline-flex; align-items: center; gap: 9px; height: 46px; padding: 0 18px;
+  border-radius: 999px; border: 1px solid var(--linea); background: var(--superficie);
+  font: 500 15px/1 var(--sans);
+}
+.pill-link svg { width: 18px; height: 18px; color: var(--oro); }
+
+/* comparsa delle box allo scroll */
+.rivela { opacity: 0; transform: translateY(18px); transition: opacity .9s var(--morbido), transform .9s var(--morbido); }
+.rivela.in { opacity: 1; transform: none; }
+
+/* barra fissa Prenota */
+.barra {
+  position: fixed; z-index: 40; left: 50%; bottom: calc(var(--sb) + 12px);
+  width: calc(100% - 24px); max-width: 596px; height: 68px; padding: 0 8px 0 18px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  border-radius: 24px; background: var(--vetro); border: 1px solid var(--vetro-bordo);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5); backdrop-filter: blur(22px) saturate(1.5);
+  box-shadow: 0 20px 50px -20px rgba(0,0,0,.7);
+  transform: translate(-50%, 150%); transition: transform .6s var(--ios);
+}
+.barra.su { transform: translate(-50%, 0); }
+html.sheet-on .barra { transform: translate(-50%, 150%); }
+.barra .riga1 { font: 600 15px/1.2 var(--sans); }
+.barra .riga2 { margin-top: 3px; font-size: 12.5px; color: var(--grigio); display: flex; align-items: center; gap: 6px; }
+.barra .riga2 .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--verde); }
+.barra .riga2 .dot[hidden] { display: none; }
+.barra .btn-oro { height: 52px; padding: 0 22px; border-radius: 17px; font-size: 15px; }
+
+/* ---------- FOGLI ---------- */
+.scrim {
+  position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.55);
+  opacity: 0; pointer-events: none; transition: opacity .55s var(--ios);
+}
+html.sheet-on .scrim { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: fixed; z-index: 60; left: 50%; bottom: 0;
+  width: 100%; max-width: 620px; top: calc(var(--st) + 12px);
+  background: var(--superficie); border-radius: 28px 28px 0 0; overflow: hidden;
+  transform: translate(-50%, 105%); visibility: hidden;
+  transition: transform .6s var(--ios), visibility 0s linear .6s;
+  box-shadow: 0 -20px 60px -20px rgba(0,0,0,.6);
+}
+.sheet.aperto { transform: translate(-50%, 0); visibility: visible; transition: transform .6s var(--ios), visibility 0s; }
+.sheet.trascina { transition: none; }
+.sheet .scroll {
+  height: 100%; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(var(--sb) + 40px);
+}
+.sheet .maniglia {
+  position: absolute; z-index: 5; left: 50%; top: 8px; width: 38px; height: 5px; margin-left: -19px;
+  border-radius: 3px; background: rgba(244,238,227,.55);
+}
+.sheet .chiudi {
+  position: absolute; z-index: 5; right: 16px; top: 16px; width: 38px; height: 38px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--vetro); border: 1px solid var(--vetro-bordo);
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+}
+.sheet .chiudi svg { width: 16px; height: 16px; }
+.testata { position: relative; height: 46vh; height: 46svh; min-height: 300px; max-height: 440px; }
+.testata.bassa { height: 34vh; height: 34svh; min-height: 230px; max-height: 340px; }
+.testata .ph { position: absolute; inset: 0; transition: opacity .6s var(--morbido); }
+.testata .ph.spento { opacity: 0; }
+.testata::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(27,23,19,.35) 0%, rgba(27,23,19,0) 25%, rgba(27,23,19,0) 45%, rgba(27,23,19,.85) 82%, #1B1713 100%);
+}
+.testata .titolo { position: absolute; z-index: 2; left: var(--gutter); right: var(--gutter); bottom: 22px; }
+.testata h2 { margin: 10px 0 0; font: 500 46px/1 var(--serif); color: var(--panna); }
+.corpo { padding: 8px var(--gutter) 0; }
+.lead { margin: 0; font: 400 18px/1.5 var(--sans); color: rgba(244,238,227,.86); }
+.nota { margin: 14px 0 0; font-size: 14px; line-height: 1.55; color: var(--grigio); }
+
+/* menù: le schede */
+.schede {
+  position: sticky; top: 0; z-index: 4; background: var(--superficie);
+  padding: 12px 0 14px; border-bottom: 1px solid transparent; transition: border-color .3s;
+}
+.schede.staccate { border-bottom-color: var(--linea); }
+/* quando le schede si agganciano in alto, sfumano prima della X */
+.schede.staccate .fila { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 96px), transparent calc(100% - 60px)); mask-image: linear-gradient(90deg, #000 calc(100% - 96px), transparent calc(100% - 60px)); }
+.schede .fila {
+  display: flex; gap: 8px; overflow-x: auto; padding: 0 var(--gutter);
+  scrollbar-width: none; scroll-padding: 0 var(--gutter);
+}
+.schede .fila::-webkit-scrollbar { display: none; }
+.pill {
+  flex: none; height: 40px; padding: 0 16px; border-radius: 999px;
+  border: 1px solid var(--linea); background: var(--elevata);
+  font: 500 14.5px/1 var(--sans); color: rgba(244,238,227,.82); white-space: nowrap;
+}
+.pill[aria-selected="true"], .pill[aria-pressed="true"] {
+  background: var(--panna); color: #17120D; border-color: var(--panna);
+}
+.pill:disabled { opacity: .3; pointer-events: none; }
+.pannello { padding: 18px var(--gutter) 0; animation: sale .45s var(--morbido); }
+.pannello[hidden] { display: none; }
+.piatti { list-style: none; margin: 8px 0 0; padding: 0; }
+.piatti li { padding: 20px 0; border-bottom: 1px solid var(--linea); }
+.piatti li:last-child { border-bottom: 0; }
+.piatti .n { font: 500 21px/1.25 var(--serif); color: var(--panna); }
+.piatti .n small { font: 500 12px/1 var(--sans); color: var(--oro); letter-spacing: .06em; margin-left: 8px; vertical-align: 3px; }
+.piatti .d { margin-top: 6px; font-size: 14.5px; line-height: 1.5; color: var(--grigio); }
+
+.galleria {
+  display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory;
+  margin: 22px calc(var(--gutter) * -1) 0; padding: 0 var(--gutter);
+  scroll-padding: 0 var(--gutter); scrollbar-width: none;
+}
+.galleria::-webkit-scrollbar { display: none; }
+.galleria .ph { flex: none; width: 74%; aspect-ratio: 4 / 5; border-radius: 24px; scroll-snap-align: start; }
+.dolci { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+.dolci figure { margin: 0; }
+.dolci figure:first-child { grid-column: 1 / -1; }
+.dolci .ph { border-radius: 22px; aspect-ratio: 1; }
+.dolci figure:first-child .ph { aspect-ratio: 4 / 3; }
+.dolci figcaption { margin-top: 10px; font: 500 16px/1.3 var(--serif); }
+.link-oro { display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; font: 600 15px/1 var(--sans); color: var(--oro-chiaro); }
+.link-oro svg { width: 16px; height: 16px; }
+.fine-cta { margin: 40px var(--gutter) 0; padding: 22px; border-radius: 24px; background: var(--elevata); }
+.fine-cta p { margin: 0 0 16px; font: 500 20px/1.3 var(--serif); }
+
+/* serate */
+.serate { list-style: none; margin: 26px 0 0; padding: 0; display: grid; gap: 14px; }
+.serata { display: grid; grid-template-columns: 70px 1fr; grid-template-rows: auto 1fr; align-items: start; gap: 6px 18px; padding: 22px; border-radius: 24px; background: var(--elevata); }
+.serata .data { grid-row: 1 / 3; text-align: center; padding-top: 2px; }
+.serata .giorno { font: 600 46px/1 var(--serif); background: var(--oro-testo); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.serata .mese { margin-top: 6px; font: 600 11px/1 var(--sans); letter-spacing: .2em; text-transform: uppercase; color: var(--oro); }
+.serata .sett { margin-top: 5px; font-size: 12px; color: var(--grigio-tenue); }
+.serata h3 { margin: 0; font: 500 23px/1.2 var(--serif); }
+.serata .det { font-size: 14.5px; line-height: 1.5; color: var(--grigio); }
+.serata .btn-oro { grid-column: 1 / -1; margin-top: 16px; height: 48px; font-size: 15px; border-radius: 15px; }
+.vuoto { margin-top: 26px; padding: 28px 22px; border-radius: 24px; background: var(--elevata); text-align: center; color: var(--grigio); }
+
+/* prenota */
+.riepilogo { padding: 22px; border-radius: 24px; background: var(--elevata); }
+.riepilogo .frase { margin-top: 10px; font: 500 24px/1.35 var(--serif); color: var(--panna); }
+.riepilogo .frase b { font-weight: 500; color: var(--oro-chiaro); }
+.gruppo { margin-top: 28px; }
+.gruppo .etichetta { padding: 0 var(--gutter); font: 600 11.5px/1 var(--sans); letter-spacing: .2em; text-transform: uppercase; color: var(--grigio); }
+.gruppo .fila { margin-top: 12px; display: flex; gap: 8px; overflow-x: auto; padding: 0 var(--gutter); scrollbar-width: none; }
+.gruppo .fila::-webkit-scrollbar { display: none; }
+.pill.giorno-p { height: 62px; min-width: 70px; padding: 0 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; border-radius: 18px; }
+.pill.giorno-p .g1 { font: 600 14px/1 var(--sans); }
+.pill.giorno-p .g2 { font: 500 12px/1 var(--sans); opacity: .65; }
+.pill.ora-p, .pill.pers-p { height: 46px; padding: 0 18px; font-size: 15px; }
+.pill.pers-p { min-width: 50px; padding: 0 14px; }
+.invia { padding: 32px var(--gutter) 0; }
+.invia .nota { text-align: center; }
+
+/* dove siamo */
+.righe { list-style: none; margin: 4px 0 0; padding: 0; border-radius: 24px; background: var(--elevata); overflow: hidden; }
+.righe li + li { border-top: 1px solid var(--linea); }
+.riga { display: flex; align-items: center; gap: 16px; padding: 18px 18px; min-height: 76px; }
+.riga .ico { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: rgba(211,174,99,.12); color: var(--oro); }
+.riga .ico svg { width: 19px; height: 19px; }
+.riga .t { flex: 1; min-width: 0; }
+.riga .k { font-size: 12.5px; color: var(--grigio-tenue); }
+.riga .v { margin-top: 3px; font: 500 16px/1.35 var(--sans); }
+.riga .chev { width: 16px; height: 16px; color: var(--grigio-tenue); flex: none; }
+
+@media (min-width: 621px) {
+  body { background: #0C0A08; }
+  .barra { bottom: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
+  .hero .ph > img { transform: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ INTRO ============ -->
+<div id="intro" aria-hidden="true">
+  <div class="hey">Hey.</div>
+  <div class="welcome">
+    <span class="da">Benvenuto da</span>
+    <span class="nome">Spicchio d'Oro</span>
+  </div>
+</div>
+
+<!-- ============ HOME ============ -->
+<main id="app">
+  <section class="hero">
+    <div class="ph"><img src="img/forno.jpg" alt="Una pizza appena sfornata davanti al forno a legna acceso" fetchpriority="high"></div>
+    <header class="top">
+      <span class="marchio">Spicchio d'Oro</span>
+      <span class="badge" data-orari><span class="dot" hidden></span><span class="txt">Mer–Dom · 19–24</span></span>
+    </header>
+    <div class="hero-text">
+      <div class="eyebrow">Pizza · Pub · Cucina</div>
+      <h1>Spicchio d'Oro</h1>
+      <p>Pizza dal forno a legna, cucina e pub a San Savino di Fusignano.</p>
+      <div class="hero-actions">
+        <button class="btn-oro press" data-apri="prenota">Prenota un tavolo</button>
+        <button class="link-sec press" data-apri="menu">Il menù <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="tiles" aria-label="Scopri">
+    <button class="tile grande press rivela" data-apri="menu">
+      <div class="ph"><img src="img/burrata.jpg" alt="" loading="lazy"></div>
+      <span class="freccia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
+      <span class="testo">
+        <h2>Il menù</h2>
+        <div class="sub">Pizze, cucina romagnola, burger, dolci e drink</div>
+      </span>
+    </button>
+    <button class="tile piccola press rivela" data-apri="serate">
+      <div class="ph"><img src="img/sala.jpg" alt="" loading="lazy"></div>
+      <span class="badge" data-prossima hidden></span>
+      <span class="testo">
+        <h2>Serate</h2>
+        <div class="sub">Musica dal vivo e spettacoli</div>
+      </span>
+    </button>
+    <button class="tile piccola press rivela" data-apri="dove">
+      <div class="ph"><img src="img/veranda.jpg" alt="" loading="lazy"></div>
+      <span class="testo">
+        <h2>Dove siamo</h2>
+        <div class="sub">Via San Savino 50</div>
+      </span>
+    </button>
+  </section>
+
+  <footer class="chiusura rivela">
+    <div class="ph"><img src="img/bancone.jpg" alt="La scritta luminosa Spicchio d'Oro sopra il bancone" loading="lazy"></div>
+    <div class="nome">Spicchio d'Oro</div>
+    <div class="eyebrow tag">Pizza · Pub · Cucina</div>
+    <div class="indirizzo">Via San Savino 50, Fusignano (RA)<br>Da mercoledì a domenica, 19–24</div>
+    <div class="pulsanti">
+      <a class="pill-link press" href="tel:+393275554423"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>327 555 4423</a>
+      <a class="pill-link press" href="https://www.instagram.com/spicchiodoro/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="currentColor"/></svg>@spicchiodoro</a>
+    </div>
+  </footer>
+</main>
+
+<!-- barra fissa: compare quando l'hero esce dallo schermo -->
+<div class="barra" aria-hidden="true">
+  <div>
+    <div class="riga1">Prenota un tavolo</div>
+    <div class="riga2"><span class="dot" hidden></span><span class="txt" data-stato>Mer–Dom · 19–24</span></div>
+  </div>
+  <button class="btn-oro press" data-apri="prenota" tabindex="-1">Prenota</button>
+</div>
+
+<div class="scrim" data-chiudi></div>
+
+<!-- ============ FOGLIO: MENÙ ============ -->
+<section class="sheet" id="sheet-menu" role="dialog" aria-modal="true" aria-label="Il menù">
+  <span class="maniglia"></span>
+  <button class="chiudi press" data-chiudi aria-label="Chiudi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  <div class="scroll">
+    <div class="testata" data-copertine>
+      <div class="titolo">
+        <div class="eyebrow" data-scheda-nome>Pizze</div>
+        <h2>Il menù</h2>
+      </div>
+    </div>
+    <div class="schede"><div class="fila" role="tablist" aria-label="Sezioni del menù"></div></div>
+    <div data-pannelli></div>
+    <div class="fine-cta">
+      <p>Ti aspettiamo a tavola.</p>
+      <button class="btn-oro full press" data-apri="prenota">Prenota un tavolo</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOGLIO: SERATE ============ -->
+<section class="sheet" id="sheet-serate" role="dialog" aria-modal="true" aria-label="Serate">
+  <span class="maniglia"></span>
+  <button class="chiudi press" data-chiudi aria-label="Chiudi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  <div class="scroll">
+    <div class="testata">
+      <div class="ph"><img src="img/sala.jpg" alt="La sala con la parete verde e il neon Let your light shine" loading="lazy"></div>
+      <div class="titolo"><div class="eyebrow">Musica dal vivo e spettacoli</div><h2>Serate</h2></div>
+    </div>
+    <div class="corpo">
+      <p class="lead">Scegli la serata e prenota il tavolo su WhatsApp, con la data già scritta.</p>
+      <ul class="serate" data-serate></ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOGLIO: PRENOTA ============ -->
+<section class="sheet" id="sheet-prenota" role="dialog" aria-modal="true" aria-label="Prenota un tavolo">
+  <span class="maniglia"></span>
+  <button class="chiudi press" data-chiudi aria-label="Chiudi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  <div class="scroll">
+    <div class="testata bassa">
+      <div class="ph"><img src="img/fuoco.jpg" alt="Il fuoco acceso sotto la cappa" loading="lazy" style="object-position:50% 62%"></div>
+      <div class="titolo"><div class="eyebrow">Su WhatsApp</div><h2>Prenota</h2></div>
+    </div>
+    <div class="corpo">
+      <div class="riepilogo" aria-live="polite">
+        <div class="eyebrow" data-r-eyebrow>Il tuo tavolo</div>
+        <div class="frase" data-r-frase></div>
+      </div>
+    </div>
+    <div class="gruppo" data-g-giorno>
+      <div class="etichetta">Giorno</div>
+      <div class="fila" data-giorni></div>
+    </div>
+    <div class="gruppo">
+      <div class="etichetta">Ora</div>
+      <div class="fila" data-ore></div>
+    </div>
+    <div class="gruppo">
+      <div class="etichetta">Persone</div>
+      <div class="fila" data-persone></div>
+    </div>
+    <div class="invia">
+      <a class="btn-oro full press" data-wa href="https://wa.me/393275554423">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.3.9 2.5c.1.2 1.6 2.5 4 3.5 1.5.6 2 .7 2.8.6.4-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.4-.2z"/></svg>
+        Invia su WhatsApp
+      </a>
+      <p class="nota">Il messaggio è già pronto, basta premere invia.<br>Ti rispondiamo noi per confermare il tavolo.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOGLIO: DOVE SIAMO ============ -->
+<section class="sheet" id="sheet-dove" role="dialog" aria-modal="true" aria-label="Dove siamo">
+  <span class="maniglia"></span>
+  <button class="chiudi press" data-chiudi aria-label="Chiudi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  <div class="scroll">
+    <div class="testata">
+      <div class="ph"><img src="img/veranda.jpg" alt="La veranda vetrata con il pavimento in marmo nero e oro" loading="lazy"></div>
+      <div class="titolo"><div class="eyebrow">San Savino · Fusignano</div><h2>Dove siamo</h2></div>
+    </div>
+    <div class="corpo">
+      <ul class="righe">
+        <li><a class="riga press" href="https://www.google.com/maps/search/?api=1&amp;query=Spicchio%20d%27Oro%2C%20Via%20San%20Savino%2050%2C%20Fusignano%20RA" target="_blank" rel="noopener">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.1 7-12a7 7 0 0 0-14 0c0 5.9 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+          <span class="t"><div class="k">Indirizzo · apri in Maps</div><div class="v">Via San Savino 50, Fusignano (RA)</div></span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></a></li>
+        <li><div class="riga">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+          <span class="t"><div class="k">Orari</div><div class="v">Da mercoledì a domenica, 19–24</div><div class="k" style="margin-top:3px">Lunedì e martedì chiuso</div></span></div></li>
+        <li><a class="riga press" href="tel:+393275554423">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></span>
+          <span class="t"><div class="k">Telefono e WhatsApp</div><div class="v">327 555 4423</div></span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></a></li>
+        <li><a class="riga press" href="https://www.instagram.com/spicchiodoro/" target="_blank" rel="noopener">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="currentColor"/></svg></span>
+          <span class="t"><div class="k">Instagram</div><div class="v">@spicchiodoro</div></span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></a></li>
+      </ul>
+    </div>
+    <div class="fine-cta">
+      <p>Ci vediamo in Via San Savino.</p>
+      <button class="btn-oro full press" data-apri="prenota">Prenota un tavolo</button>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ==========================================================================
+   SERATE — per aggiornarle basta modificare questa lista.
+   data: 'AAAA-MM-GG' · titolo · dettagli (facoltativo, anche vuoto).
+   Le serate passate spariscono da sole il giorno dopo.
+   ========================================================================== */
+const SERATE = [
+  { data: '2026-10-07', titolo: 'Il Cervellone',         dettagli: '' },
+  { data: '2026-10-16', titolo: 'Spettacolo brasiliano', dettagli: '' },
+  { data: '2026-10-22', titolo: 'Paella e sangria',      dettagli: '23€ a persona, musica dal vivo con Renato Ricci' },
+  { data: '2026-10-31', titolo: 'Halloween',             dettagli: 'Live show di Alessio Creatura' },
+  { data: '2026-11-27', titolo: 'Pier e Martina',        dettagli: 'Live show' },
+];
+
+/* Il locale */
+const WHATSAPP = '393275554423';
+const GIORNI_APERTI = [3, 4, 5, 6, 0];            // mer, gio, ven, sab, dom
+const APRE = 19, CHIUDE = 24;
+const ORARI_PRENOTA = ['19:30', '20:00', '20:30', '21:00', '21:30', '22:00'];
+const PERSONE = ['1', '2', '3', '4', '5', '6', '7+'];
+const SITO = 'https://www.spicchiodoro.it';
+
+/* Il menù. Solo piatti e descrizioni forniti dal locale.
+   DA COMPLETARE: nomi e prezzi delle pizze, il menù del bar. */
+const MENU = [
+  { id: 'pizze', nome: 'Pizze', foto: 'burrata.jpg',
+    lead: 'Cotte nel forno a legna.',
+    galleria: ['forno.jpg', 'burrata.jpg', 'crudo.jpg'],
+    link: { testo: 'Tutte le pizze', href: SITO } },
+  { id: 'antipasti', nome: 'Per cominciare', foto: 'tagliere.jpg', piatti: [
+    ['Tagliere rustico', 'Crudo di Parma, porchetta artigianale, salame Felino, mortadella Favola, gnocco fritto fatto in casa'],
+    ['Crostini misti', 'Spinaci, melanzane, funghi, salsiccia, tuorlo e pancetta', '5 pz'],
+    ['Degustazione di formaggi', 'Con squacquerone, miele e gnocco fritto'] ] },
+  { id: 'primi', nome: 'Primi', foto: 'spatzle.jpg', piatti: [
+    ['Cappelletti', 'Al ragù oppure panna e prosciutto'],
+    ['Garganelli alla zingara', 'Peperoni, funghi e pancetta'],
+    ['Tagliatelle', 'Funghi porcini'],
+    ['Spätzle', 'Crema di parmigiano, funghi e speck'] ] },
+  { id: 'secondi', nome: 'Secondi', foto: 'arrosticini.jpg', piatti: [
+    ['Arrosticini casarecci', 'Salsa di pomodoro alle erbe aromatiche e patate al forno'],
+    ['Stinco', 'Arrosto con patate al forno'],
+    ['Cotoletta', 'Maxi cotoletta di maiale da 300 g con patate al forno'] ] },
+  { id: 'burger', nome: 'Burger', foto: 'burger.jpg', piatti: [
+    ['Maestro junior', 'Burger da 100 g di manzo 100% italiano, bacon, cheddar'],
+    ['Chicken burger', 'Filetto di pollo croccante da 200 g, insalata iceberg, pomodoro, cheddar, maionese, bacon'],
+    ['Chianina burger', 'Chianina 200 g, insalata iceberg, bacon, cheddar, salsa BBQ'],
+    ['Da accompagnare', 'Patatine fritte, patate al forno, gnocco fritto, jalapeños, anelli di cipolla'] ] },
+  { id: 'dolci', nome: 'Dolci', foto: 'nutella.jpg', dolci: [
+    ['nutella.jpg', 'Pizza dolce alla Nutella'],
+    ['crema.jpg', 'Pizza dolce con crema e Nutella'],
+    ['tiramisu.jpg', 'Pizza tiramisù'],
+    ['bigne.jpg', 'Bignè al caramello, cioccolato e pistacchio'],
+    ['bigne-sera.jpg', 'Bignè al cioccolato'] ] },
+  { id: 'bar', nome: 'Bar', foto: 'cocktail.jpg',
+    lead: 'Cocktail e birre, al tavolo o al bancone.',
+    link: { testo: 'Il menù completo sul sito', href: SITO } },
+];
+
+/* ---------- utilità ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const GIORNI = ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato'];
+const GIORNI_BREVI = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
+const MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+const MESI_BREVI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
+const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const giornoDa = (iso) => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+const oggi0 = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+const stessoGiorno = (a, b) => a.toDateString() === b.toDateString();
+const esteso = (d) => `${GIORNI[d.getDay()]} ${d.getDate()} ${MESI[d.getMonth()]}`;
+const foto = (file, alt = '', attr = '') => `<div class="ph" ${attr}><img src="img/${file}" alt="${esc(alt)}" loading="lazy"></div>`;
+
+/* ---------- orari: "Aperto ora" dall'ora del telefono ---------- */
+function stato(now = new Date()) {
+  const g = now.getDay(), h = now.getHours();
+  const apertoOggi = GIORNI_APERTI.includes(g);
+  if (apertoOggi && h >= APRE && h < CHIUDE) return { aperto: true, testo: 'Aperto ora' };
+  if (apertoOggi && h < APRE) return { aperto: false, testo: 'Oggi dalle 19:00' };
+  for (let i = 1; i <= 7; i++) {
+    const n = (g + i) % 7;
+    if (GIORNI_APERTI.includes(n)) return { aperto: false, testo: i === 1 ? 'Domani dalle 19:00' : `Riapriamo ${GIORNI[n]}` };
+  }
+}
+function aggiornaStato() {
+  const s = stato();
+  const badge = $('[data-orari]');
+  badge.querySelector('.dot').hidden = !s.aperto;
+  badge.querySelector('.txt').textContent = s.aperto ? 'Aperto ora' : 'Mer–Dom · 19–24';
+  $('.barra .dot').hidden = !s.aperto;
+  $('[data-stato]').textContent = s.aperto ? 'Aperto ora · fino alle 24' : s.testo;
+}
+
+/* ---------- serate ---------- */
+function serateFuture() {
+  const o = oggi0();
+  return SERATE.map((s) => ({ ...s, giorno: giornoDa(s.data) }))
+    .filter((s) => s.giorno >= o)
+    .sort((a, b) => a.giorno - b.giorno);
+}
+function renderSerate() {
+  const lista = serateFuture();
+  const ul = $('[data-serate]');
+  const badge = $('[data-prossima]');
+  if (!lista.length) {
+    ul.outerHTML = '<div class="vuoto">Nuove serate in arrivo: le date escono su Instagram.</div>';
+    badge.hidden = true;
+    return;
+  }
+  ul.innerHTML = lista.map((s, i) => `
+    <li class="serata">
+      <div class="data">
+        <div class="giorno">${s.giorno.getDate()}</div>
+        <div class="mese">${MESI_BREVI[s.giorno.getMonth()]}</div>
+        <div class="sett">${GIORNI_BREVI[s.giorno.getDay()]}</div>
+      </div>
+      <h3>${esc(s.titolo)}</h3>
+      <div class="det">${s.dettagli ? esc(s.dettagli) : esteso(s.giorno)}</div>
+      <button class="btn-oro press" data-serata="${i}">Prenota per questa serata</button>
+    </li>`).join('');
+  $$('[data-serata]', ul).forEach((b) => b.addEventListener('click', () => {
+    apri('prenota', { serata: lista[Number(b.dataset.serata)] });
+  }));
+  const p = lista[0].giorno;
+  badge.innerHTML = `Prossima · <b>${stessoGiorno(p, oggi0()) ? 'stasera' : `${p.getDate()} ${MESI_BREVI[p.getMonth()]}`}</b>`;
+  badge.hidden = false;
+}
+
+/* ---------- menù ---------- */
+function renderMenu() {
+  const fila = $('#sheet-menu .schede .fila');
+  const pannelli = $('[data-pannelli]');
+  const testata = $('[data-copertine]');
+  testata.insertAdjacentHTML('afterbegin', MENU.map((s, i) =>
+    foto(s.foto, '', `data-cop="${s.id}" class="ph${i ? ' spento' : ''}"`).replace('class="ph" ', '')).join(''));
+  fila.innerHTML = MENU.map((s, i) =>
+    `<button class="pill press" role="tab" aria-selected="${i === 0}" data-tab="${s.id}">${s.nome}</button>`).join('');
+  pannelli.innerHTML = MENU.map((s, i) => {
+    let h = '';
+    if (s.lead) h += `<p class="lead">${s.lead}</p>`;
+    if (s.galleria) h += `<div class="galleria">${s.galleria.map((f) => foto(f)).join('')}</div>`;
+    if (s.piatti) h += `<ul class="piatti">${s.piatti.map(([n, d, q]) =>
+      `<li><div class="n">${esc(n)}${q ? `<small>${q}</small>` : ''}</div><div class="d">${esc(d)}</div></li>`).join('')}</ul>`;
+    if (s.dolci) h += `<div class="dolci">${s.dolci.map(([f, c]) =>
+      `<figure>${foto(f, c)}<figcaption>${esc(c)}</figcaption></figure>`).join('')}</div>`;
+    if (s.link) h += `<a class="link-oro" href="${s.link.href}" target="_blank" rel="noopener">${s.link.testo} ${ARROW}</a>`;
+    return `<div class="pannello" role="tabpanel" data-pan="${s.id}" ${i ? 'hidden' : ''}>${h}</div>`;
+  }).join('');
+
+  const scroll = $('#sheet-menu .scroll');
+  const schede = $('#sheet-menu .schede');
+  fila.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-tab]');
+    if (!b) return;
+    const id = b.dataset.tab;
+    $$('[data-tab]', fila).forEach((t) => t.setAttribute('aria-selected', t === b));
+    $$('[data-pan]', pannelli).forEach((p) => { p.hidden = p.dataset.pan !== id; });
+    $$('[data-cop]', testata).forEach((c) => c.classList.toggle('spento', c.dataset.cop !== id));
+    $('[data-scheda-nome]').textContent = b.textContent;
+    fila.scrollTo({ left: b.offsetLeft - fila.clientWidth / 2 + b.offsetWidth / 2, behavior: 'smooth' });
+    if (scroll.scrollTop > testata.offsetHeight) scroll.scrollTop = testata.offsetHeight;
+  });
+  const aggancio = () => schede.classList.toggle('staccate',
+    schede.getBoundingClientRect().top - scroll.getBoundingClientRect().top <= 64);
+  scroll.addEventListener('scroll', aggancio, { passive: true });
+  fila.addEventListener('click', () => requestAnimationFrame(aggancio));
+}
+
+/* ---------- prenota ---------- */
+const P = { giorno: null, ora: '20:30', persone: '2', serata: null };
+
+function prossimiGiorni(n = 8) {
+  const out = [], now = new Date(), d = oggi0();
+  const ultima = ORARI_PRENOTA[ORARI_PRENOTA.length - 1].split(':').map(Number);
+  const tardi = now.getHours() * 60 + now.getMinutes() >= ultima[0] * 60 + ultima[1];
+  if (!(GIORNI_APERTI.includes(d.getDay()) && !tardi)) d.setDate(d.getDate() + 1);
+  while (out.length < n) {
+    if (GIORNI_APERTI.includes(d.getDay())) out.push(new Date(d));
+    d.setDate(d.getDate() + 1);
+  }
+  return out;
+}
+function oraPassata(ora, giorno) {
+  if (!giorno || !stessoGiorno(giorno, new Date())) return false;
+  const [h, m] = ora.split(':').map(Number), now = new Date();
+  return h * 60 + m <= now.getHours() * 60 + now.getMinutes();
+}
+function personeTesto(p) {
+  return p === '7+' ? '7 o più persone' : p === '1' ? '1 persona' : `${p} persone`;
+}
+function messaggio() {
+  let m = `Ciao Spicchio d'Oro! Vorrei prenotare un tavolo per ${personeTesto(P.persone)}, ${esteso(P.giorno)} alle ${P.ora}`;
+  if (P.serata) m += `, per la serata "${P.serata.titolo}"`;
+  return m + '. Grazie!';
+}
+function renderPrenota() {
+  const giorni = P.serata ? [P.serata.giorno] : prossimiGiorni();
+  if (!P.giorno || !giorni.some((g) => stessoGiorno(g, P.giorno))) P.giorno = giorni[0];
+  $('[data-g-giorno]').hidden = !!P.serata;
+  $('[data-giorni]').innerHTML = giorni.map((g, i) => {
+    const oggi = stessoGiorno(g, new Date());
+    return `<button class="pill giorno-p press" aria-pressed="${stessoGiorno(g, P.giorno)}" data-i="${i}">
+      <span class="g1">${oggi ? 'Oggi' : GIORNI_BREVI[g.getDay()]}</span><span class="g2">${g.getDate()} ${MESI_BREVI[g.getMonth()]}</span></button>`;
+  }).join('');
+  $$('[data-giorni] [data-i]').forEach((b) => b.onclick = () => { P.giorno = giorni[Number(b.dataset.i)]; renderPrenota(); });
+
+  if (oraPassata(P.ora, P.giorno)) P.ora = ORARI_PRENOTA.find((o) => !oraPassata(o, P.giorno)) || P.ora;
+  $('[data-ore]').innerHTML = ORARI_PRENOTA.map((o) =>
+    `<button class="pill ora-p press" aria-pressed="${o === P.ora}" ${oraPassata(o, P.giorno) ? 'disabled' : ''} data-o="${o}">${o}</button>`).join('');
+  $$('[data-ore] [data-o]').forEach((b) => b.onclick = () => { P.ora = b.dataset.o; renderPrenota(); });
+
+  $('[data-persone]').innerHTML = PERSONE.map((p) =>
+    `<button class="pill pers-p press" aria-pressed="${p === P.persone}" data-p="${p}">${p}</button>`).join('');
+  $$('[data-persone] [data-p]').forEach((b) => b.onclick = () => { P.persone = b.dataset.p; renderPrenota(); });
+
+  $('[data-r-eyebrow]').textContent = P.serata ? `Serata · ${P.serata.titolo}` : 'Il tuo tavolo';
+  $('[data-r-frase]').innerHTML =
+    `Tavolo per <b>${personeTesto(P.persone)}</b>, <b>${esteso(P.giorno)}</b> alle <b>${P.ora}</b>`;
+  $('[data-wa]').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(messaggio())}`;
+}
+
+/* ---------- fogli ---------- */
+const FOGLI = ['menu', 'serate', 'prenota', 'dove'];
+let aperto = null, spinto = false;
+
+function mostra(nome, opts = {}) {
+  if (nome === 'prenota') {
+    P.serata = opts.serata || null;
+    if (P.serata) { P.giorno = P.serata.giorno; P.ora = '20:30'; }
+    renderPrenota();
+  }
+  const el = $('#sheet-' + nome);
+  if (aperto && aperto !== nome) $('#sheet-' + aperto).classList.remove('aperto');
+  $('#sheet-' + nome + ' .scroll').scrollTop = 0;
+  const app = $('#app');
+  app.style.transformOrigin = `50% ${window.scrollY + window.innerHeight / 2}px`;
+  document.documentElement.classList.add('sheet-on');
+  el.classList.add('aperto');
+  el.style.transform = '';
+  aperto = nome;
+  setTimeout(() => el.querySelector('.chiudi').focus({ preventScroll: true }), 50);
+}
+function nascondi() {
+  if (!aperto) return;
+  const el = $('#sheet-' + aperto);
+  el.classList.remove('aperto');
+  el.style.transform = '';
+  document.documentElement.classList.remove('sheet-on');
+  aperto = null;
+}
+function apri(nome, opts) {
+  if (!FOGLI.includes(nome)) return;
+  if (aperto) history.replaceState({ foglio: nome }, '', '#' + nome);
+  else { history.pushState({ foglio: nome }, '', '#' + nome); spinto = true; }
+  mostra(nome, opts);
+}
+function chiudi() {
+  if (!aperto) return;
+  if (spinto) { spinto = false; history.back(); }
+  else { history.replaceState(null, '', location.pathname + location.search); nascondi(); }
+}
+window.addEventListener('popstate', () => {
+  const h = location.hash.slice(1);
+  if (FOGLI.includes(h)) mostra(h);
+  else { spinto = false; nascondi(); }
+});
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('[data-apri]');
+  if (a) { apri(a.dataset.apri); return; }
+  if (e.target.closest('[data-chiudi]')) chiudi();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') chiudi(); });
+
+/* trascinare giù col dito per chiudere */
+$$('.sheet').forEach((el) => {
+  const scroll = el.querySelector('.scroll');
+  let y0 = 0, t0 = 0, dy = 0, attivo = false, possibile = false;
+  el.addEventListener('touchstart', (e) => {
+    if (e.target.closest('.fila, .galleria')) { possibile = false; return; }
+    possibile = scroll.scrollTop <= 0;
+    y0 = e.touches[0].clientY; t0 = Date.now(); dy = 0; attivo = false;
+  }, { passive: true });
+  el.addEventListener('touchmove', (e) => {
+    if (!possibile) return;
+    dy = e.touches[0].clientY - y0;
+    if (!attivo && dy > 6 && scroll.scrollTop <= 0) { attivo = true; el.classList.add('trascina'); }
+    if (attivo) {
+      e.preventDefault();
+      el.style.transform = `translate(-50%, ${Math.max(0, dy)}px)`;
+    }
+  }, { passive: false });
+  el.addEventListener('touchend', () => {
+    if (!attivo) return;
+    el.classList.remove('trascina');
+    const v = dy / Math.max(1, Date.now() - t0);
+    if (dy > 140 || v > .6) chiudi();
+    else el.style.transform = '';
+    attivo = false;
+  });
+});
+
+/* ---------- barra fissa e comparse ---------- */
+const io = new IntersectionObserver(([e]) => {
+  $('.barra').classList.toggle('su', !e.isIntersecting);
+  $('.barra').setAttribute('aria-hidden', e.isIntersecting);
+  $('.barra button').tabIndex = e.isIntersecting ? -1 : 0;
+}, { rootMargin: '-35% 0px 0px 0px' });
+io.observe($('.hero'));
+const ior = new IntersectionObserver((es) => es.forEach((e) => {
+  if (e.isIntersecting) { e.target.classList.add('in'); ior.unobserve(e.target); }
+}), { rootMargin: '0px 0px -8% 0px' });
+$$('.rivela').forEach((el) => ior.observe(el));
+
+/* ---------- intro ---------- */
+function fineIntro(subito) {
+  const intro = $('#intro');
+  if (!intro || intro.dataset.via) return;
+  intro.dataset.via = '1';
+  document.documentElement.classList.remove('intro-on');
+  document.documentElement.classList.add('ready');
+  if (subito) { intro.remove(); return; }
+  intro.classList.add('out');
+  setTimeout(() => intro.remove(), 1000);
+}
+(function avvio() {
+  aggiornaStato();
+  setInterval(aggiornaStato, 60000);
+  renderSerate();
+  renderMenu();
+  renderPrenota();
+  const ridotto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (ridotto) fineIntro(true);
+  else {
+    setTimeout(() => fineIntro(false), 4000);
+    $('#intro').addEventListener('click', () => fineIntro(false));
+  }
+  // link diretto a un foglio (es. …/spicchiodoro/#prenota)
+  const h = location.hash.slice(1);
+  if (FOGLI.includes(h)) {
+    history.replaceState(null, '', location.pathname + location.search);
+    setTimeout(() => apri(h), ridotto ? 0 : 4300);
+  }
+})();
+</script>
+</body>
+</html>

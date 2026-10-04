@@ -101,3 +101,13 @@ meccanica di Woman: il sorgente sta in `bazar/`, la build si ricopia in
     https://laicosweb0-afk.github.io/3d/bazar/
 
 Dominio, controllo da telefono e decisioni aperte: `BAZAR.md`.
+
+## Spicchio d'Oro (`/spicchiodoro/`)
+
+Dentro `public/spicchiodoro/` c'è la pagina della card NFC dello Spicchio
+d'Oro: HTML puro come il portfolio, che l'export copia senza toccare. Dopo un
+push su `main` è online a
+
+    https://laicosweb0-afk.github.io/3d/spicchiodoro/
+
+Serate, menù e foto: `SPICCHIODORO.md`.
