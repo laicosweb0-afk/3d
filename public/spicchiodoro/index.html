@@ -367,9 +367,15 @@ html.sheet-on .scrim { opacity: 1; pointer-events: auto; }
 .serate { list-style: none; margin: 26px 0 0; padding: 0; display: grid; gap: 14px; }
 .serata { display: grid; grid-template-columns: 70px 1fr; grid-template-rows: auto 1fr; align-items: start; gap: 6px 18px; padding: 22px; border-radius: 24px; background: var(--elevata); }
 .serata .data { grid-row: 1 / 3; text-align: center; padding-top: 2px; }
+/* con la locandina: il riquadro a sinistra, la data sopra il titolo */
+.serata.con-foto { grid-template-columns: 112px 1fr; grid-template-rows: auto auto 1fr; gap: 4px 18px; }
+.serata .locandina { grid-row: 1 / 4; border-radius: 14px; box-shadow: 0 16px 30px -18px rgba(0,0,0,.8); }
+.serata .locandina > img { height: auto; }
+.serata.con-foto .data { grid-row: auto; display: flex; align-items: baseline; gap: 10px; text-align: left; }
+.serata.con-foto .giorno { font-size: 40px; }
+.serata.con-foto .mese { margin-top: 0; }
 .serata .giorno { font: 600 46px/1 var(--serif); background: var(--oro-testo); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .serata .mese { margin-top: 6px; font: 600 11px/1 var(--sans); letter-spacing: .2em; text-transform: uppercase; color: var(--oro); }
-.serata .sett { margin-top: 5px; font-size: 12px; color: var(--grigio-tenue); }
 .serata h3 { margin: 0; font: 500 23px/1.2 var(--serif); }
 .serata .det { font-size: 14.5px; line-height: 1.5; color: var(--grigio); }
 .serata .btn-oro { grid-column: 1 / -1; margin-top: 16px; height: 48px; font-size: 15px; border-radius: 15px; }
@@ -456,7 +462,7 @@ html.sheet-on .scrim { opacity: 1; pointer-events: auto; }
       <span class="badge" data-prossima hidden></span>
       <span class="testo">
         <h2>Serate</h2>
-        <div class="sub">Musica dal vivo e spettacoli</div>
+        <div class="sub">Eventi da non perdere</div>
       </span>
     </button>
     <button class="tile piccola press rivela" data-apri="dove">
@@ -518,7 +524,7 @@ html.sheet-on .scrim { opacity: 1; pointer-events: auto; }
   <div class="scroll">
     <div class="testata">
       <div class="ph"><img src="img/sala.jpg" alt="La sala con la parete verde e il neon Let your light shine" loading="lazy"></div>
-      <div class="titolo"><div class="eyebrow">Musica dal vivo e spettacoli</div><h2>Serate</h2></div>
+      <div class="titolo"><div class="eyebrow">Buon cibo, buona musica, tanta allegria</div><h2>Serate</h2></div>
     </div>
     <div class="corpo">
       <p class="lead">Scegli la serata e prenota il tavolo su WhatsApp, con la data già scritta.</p>
@@ -602,15 +608,16 @@ html.sheet-on .scrim { opacity: 1; pointer-events: auto; }
 <script>
 /* ==========================================================================
    SERATE — per aggiornarle basta modificare questa lista.
-   data: 'AAAA-MM-GG' · titolo · dettagli (facoltativo, anche vuoto).
+   data: 'AAAA-MM-GG' · titolo · dettagli (facoltativo, anche vuoto)
+   · foto (facoltativa): il riquadro della locandina, in img/serate/.
    Le serate passate spariscono da sole il giorno dopo.
    ========================================================================== */
 const SERATE = [
-  { data: '2026-10-07', titolo: 'Il Cervellone',         dettagli: '' },
-  { data: '2026-10-16', titolo: 'Spettacolo brasiliano', dettagli: '' },
-  { data: '2026-10-22', titolo: 'Paella e sangria',      dettagli: '23€ a persona, musica dal vivo con Renato Ricci' },
-  { data: '2026-10-31', titolo: 'Halloween',             dettagli: 'Live show di Alessio Creatura' },
-  { data: '2026-11-27', titolo: 'Pier e Martina',        dettagli: 'Live show' },
+  { data: '2026-10-07', titolo: 'Il Cervellone',         dettagli: '',                                               foto: 'serate/cervellone.jpg' },
+  { data: '2026-10-16', titolo: 'Spettacolo brasiliano', dettagli: '',                                               foto: 'serate/brasiliano.jpg' },
+  { data: '2026-10-22', titolo: 'Paella e sangria',      dettagli: '23€ a persona, musica dal vivo con Renato Ricci', foto: 'serate/paella.jpg' },
+  { data: '2026-10-31', titolo: 'Halloween',             dettagli: 'Live show di Alessio Creatura',                   foto: 'serate/halloween.jpg' },
+  { data: '2026-11-27', titolo: 'Pier e Martina',        dettagli: 'Live show',                                       foto: 'serate/pier-martina.jpg' },
 ];
 
 /* Il locale */
@@ -710,14 +717,14 @@ function renderSerate() {
     return;
   }
   ul.innerHTML = lista.map((s, i) => `
-    <li class="serata">
+    <li class="serata${s.foto ? ' con-foto' : ''}">
+      ${s.foto ? `<div class="ph locandina"><img src="img/${s.foto}" alt="Locandina: ${esc(s.titolo)}" loading="lazy"></div>` : ''}
       <div class="data">
         <div class="giorno">${s.giorno.getDate()}</div>
-        <div class="mese">${MESI_BREVI[s.giorno.getMonth()]}</div>
-        <div class="sett">${GIORNI_BREVI[s.giorno.getDay()]}</div>
+        <div class="mese">${MESI_BREVI[s.giorno.getMonth()]} · ${GIORNI_BREVI[s.giorno.getDay()]}</div>
       </div>
       <h3>${esc(s.titolo)}</h3>
-      <div class="det">${s.dettagli ? esc(s.dettagli) : esteso(s.giorno)}</div>
+      ${s.dettagli ? `<div class="det">${esc(s.dettagli)}</div>` : ''}
       <button class="btn-oro press" data-serata="${i}">Prenota per questa serata</button>
     </li>`).join('');
   $$('[data-serata]', ul).forEach((b) => b.addEventListener('click', () => {

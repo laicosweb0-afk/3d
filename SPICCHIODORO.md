@@ -24,7 +24,9 @@ In cima allo script, l'array `SERATE`:
 { data: '2026-10-22', titolo: 'Paella e sangria', dettagli: '23€ a persona, …' },
 ```
 
-Le serate passate spariscono da sole il giorno dopo. Senza serate future
+`foto` è facoltativa: il riquadro della serata ritagliato dalla locandina
+(`img/serate/`), mostrato a sinistra nella card. Le serate passate
+spariscono da sole il giorno dopo. Senza serate future
 compare «Nuove serate in arrivo: le date escono su Instagram.»
 
 ## Il menù
@@ -60,6 +62,7 @@ convert originale.jpg -auto-orient -strip -interlace Plane -quality 70 -resize '
 | gnocchi.jpg | gnocchi panna e noci | da avere (non ancora usata: il piatto non è nel menù fornito) |
 | nutella.jpg · crema.jpg · tiramisu.jpg · bigne.jpg · bigne-sera.jpg | dolci | da avere |
 | cocktail.jpg | cocktail in coppa | da avere |
+| serate/*.jpg | i cinque riquadri della locandina «Eventi da non perdere» | ✅ |
 
 ## Da completare
 
@@ -67,7 +70,7 @@ convert originale.jpg -auto-orient -strip -interlace Plane -quality 70 -resize '
 
 - Nomi e prezzi delle pizze: per ora la scheda Pizze rimanda al sito.
 - I link «Tutte le pizze» e «Il menù completo sul sito» vanno a https://www.spicchiodoro.it/#menu.
-- Le serate del 7 e 16 ottobre e del 27 novembre non hanno orario né descrizione.
+- Le serate non hanno un orario d'inizio: la locandina non lo dice.
 
 ## Controllo
 
