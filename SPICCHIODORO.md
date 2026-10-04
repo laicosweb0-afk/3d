@@ -63,7 +63,7 @@ convert originale.jpg -auto-orient -strip -interlace Plane -quality 70 -resize '
 ## Da completare
 
 - Nomi e prezzi delle pizze: per ora la scheda Pizze rimanda al sito.
-- Il link al PDF del menù: per ora va alla home di spicchiodoro.it.
+- I link «Tutte le pizze» e «Il menù completo sul sito» vanno a https://www.spicchiodoro.it/#menu.
 - Le serate del 7 e 16 ottobre e del 27 novembre non hanno orario né descrizione.
 
 ## Controllo

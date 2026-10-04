@@ -611,6 +611,7 @@ const APRE = 19, CHIUDE = 24;
 const ORARI_PRENOTA = ['19:30', '20:00', '20:30', '21:00', '21:30', '22:00'];
 const PERSONE = ['1', '2', '3', '4', '5', '6', '7+'];
 const SITO = 'https://www.spicchiodoro.it';
+const MENU_SITO = 'https://www.spicchiodoro.it/#menu';
 
 /* Il menù. Solo piatti e descrizioni forniti dal locale.
    DA COMPLETARE: nomi e prezzi delle pizze, il menù del bar. */
@@ -618,7 +619,7 @@ const MENU = [
   { id: 'pizze', nome: 'Pizze', foto: 'burrata.jpg',
     lead: 'Cotte nel forno a legna.',
     galleria: ['forno.jpg', 'burrata.jpg', 'crudo.jpg'],
-    link: { testo: 'Tutte le pizze', href: SITO } },
+    link: { testo: 'Tutte le pizze', href: MENU_SITO } },
   { id: 'antipasti', nome: 'Per cominciare', foto: 'tagliere.jpg', piatti: [
     ['Tagliere rustico', 'Crudo di Parma, porchetta artigianale, salame Felino, mortadella Favola, gnocco fritto fatto in casa'],
     ['Crostini misti', 'Spinaci, melanzane, funghi, salsiccia, tuorlo e pancetta', '5 pz'],
@@ -645,7 +646,7 @@ const MENU = [
     ['bigne-sera.jpg', 'Bignè al cioccolato'] ] },
   { id: 'bar', nome: 'Bar', foto: 'cocktail.jpg',
     lead: 'Cocktail e birre, al tavolo o al bancone.',
-    link: { testo: 'Il menù completo sul sito', href: SITO } },
+    link: { testo: 'Il menù completo sul sito', href: MENU_SITO } },
 ];
 
 /* ---------- utilità ---------- */
