@@ -1,25 +1,28 @@
 import Link from 'next/link';
 import { deposito } from '@/lib/dati';
 import {
-  ETICHETTA_PERIODO, analisi as calcolaAnalisi, attenzioni as calcolaAttenzioni,
-  contattiInAttenzione, conversazioniDaRispondere, daFare, elenco, type Periodo,
+  attenzioni as calcolaAttenzioni, conversazioniDaRispondere, daFare, elenco,
 } from '@/lib/dati/istantanea';
 import { ETICHETTA_CANALE } from '@/lib/dominio/campagne';
 import { LogoCanale } from './loghi';
 import { ETICHETTA_AZIONE, euro } from '@/lib/dominio/etichette';
 import { dataOra, inRitardo, quando } from '@/lib/formato';
 import { segnaConversazione } from './azioni';
-import { CartaAzione } from './interattivi';
-import { Numero, RigaContatto } from './pezzi';
+import { CartaAzione, FrecciaDestra } from './interattivi';
 
-// La home risponde a una domanda sola: cosa faccio adesso. Il saluto e la
-// riga di riepilogo la rispondono in tre secondi; le card la rispondono con
-// un tocco. Tutto il resto — i numeri, i lead mai sentiti, gli avvisi — sta
-// sotto o dietro un tocco, ma non è stato toccato: è ancora tutto lì.
+// La home risponde a una domanda sola: cosa faccio adesso.
+//
+// Tutto quello che risponde a un'altra domanda è stato spostato dove quella
+// domanda si fa: i numeri stanno in Numeri, gli avvisi in Avvisi, chi è
+// appena arrivato sta nei Contatti. Niente è sparito — in fondo c'è una
+// riga per ognuno — ma non è più davanti agli occhi di chi deve solo
+// sapere chi chiamare adesso.
+//
+// E il rosso: una cosa in scadenza oggi non è in ritardo. Il rosso parte dal
+// primo giorno di ritardo vero, se no è rosso dappertutto e non vuol dire
+// più niente.
 
 export const dynamic = 'force-dynamic';
-
-const PERIODI: Periodo[] = ['oggi', '7', '30', 'mese'];
 
 // Il saluto è l'ora di Roma, non quella del server.
 function saluto(): string {
@@ -34,40 +37,32 @@ const cose = (n: number) => (n === 1 ? '1 cosa' : `${n} cose`);
 export default async function Oggi({
   searchParams,
 }: {
-  searchParams: Promise<{ periodo?: string; vetrina?: string }>;
+  searchParams: Promise<{ vetrina?: string }>;
 }) {
   const parametri = await searchParams;
-  const periodo = (PERIODI.includes(parametri.periodo as Periodo) ? parametri.periodo : '30') as Periodo;
 
   const dati = await (await deposito()).istantanea();
   const coda = daFare(dati, 3);
   const adesso = coda.filter((v) => inRitardo(v.azione.scadenza) || v.priorita === 'urgente');
   const dopo = coda.filter((v) => !adesso.includes(v));
-  const numeri = calcolaAnalisi(dati, periodo);
-  // Tutti gli avvisi, non più solo i primi tre: non si impilano in pagina,
-  // si contano in una card sola e si aprono in Attenzioni.
-  const avvisi = calcolaAttenzioni(dati);
-  const quantiAvvisi = avvisi.reduce((s, a) => s + a.conteggio, 0);
-  const senzaAzione = contattiInAttenzione(dati, 'senza_azione').length;
-  const maiSentiti = elenco(dati, { fase: 'nuovo', ordine: 'recenti' }).slice(0, 5);
+  const quantiAvvisi = calcolaAttenzioni(dati).reduce((s, a) => s + a.conteggio, 0);
+  const maiSentiti = elenco(dati, { fase: 'nuovo', ordine: 'recenti' });
   // Un messaggio senza risposta viene prima di tutto: quello lì è già stato
-  // pagato, e sta aspettando.
+  // pagato, e sta aspettando. Se ne mostrano tre, il resto sta in Avvisi.
   const daRispondere = conversazioniDaRispondere(dati);
+
+  // La riga sotto il saluto: una frase, non un bollettino.
+  const riepilogo = adesso.length > 0
+    ? `${cose(adesso.length)} da fare adesso`
+    : dopo.length > 0
+      ? `Niente di urgente · ${dopo.length} nei prossimi giorni`
+      : 'Niente in scadenza nei prossimi giorni';
 
   return (
     <main>
       <header className="testata-grande">
         <h1>{saluto()}</h1>
-        <p className="riepilogo">
-          {coda.length === 0 ? (
-            'Niente in scadenza nei prossimi giorni.'
-          ) : (
-            <>
-              <span className="adesso">{cose(adesso.length)} da fare adesso</span>
-              {dopo.length > 0 && ` · ${dopo.length} nei prossimi giorni`}
-            </>
-          )}
-        </p>
+        <p className="riepilogo"><span className="adesso">{riepilogo}</span></p>
       </header>
 
       {parametri.vetrina === 'bloccato' && (
@@ -80,36 +75,13 @@ export default async function Oggi({
         </div>
       )}
 
-      {/* Una card al posto dei banner impilati. Gli avvisi non sono stati
-          tolti: sono tutti in Attenzioni, raggruppati, con dentro le persone. */}
-      {avvisi.length > 0 && (
-        <section className="sezione">
-          <Link href="/attenzioni" className="da-controllare">
-            <span className="tondino" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M12 4.5 3.6 19h16.8L12 4.5Z" /><path d="M12 10v4M12 16.6v.4" /></svg>
-            </span>
-            <span className="testo">
-              <span className="forte">Avvisi ({avvisi.length})</span>
-              <span className="fiacco">
-                {avvisi[0].titolo}
-                {avvisi.length > 1 && ` · e altri ${avvisi.length - 1}`}
-              </span>
-            </span>
-            <span className="freccia" aria-hidden="true">
-              <svg viewBox="0 0 8 13" width="8" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m1 1 5.5 5.5L1 12" /></svg>
-            </span>
-          </Link>
-        </section>
-      )}
-
-      <section className="sezione">
-        <h2>Adesso</h2>
+      <section className="sezione" style={{ marginTop: 4 }}>
         {adesso.length === 0 ? (
           <div className="tutto-fatto">
             <span className="faccia" aria-hidden="true">🎉</span>
             <span className="frase">Tutto fatto per oggi</span>
             <span className="sotto-frase">
-              {dopo.length > 0 ? 'Se hai tempo, guarda cosa arriva nei prossimi giorni.' : 'Niente in calendario.'}
+              {dopo.length > 0 ? 'Qui sotto c’è cosa arriva nei prossimi giorni.' : 'Niente in calendario.'}
             </span>
           </div>
         ) : adesso.map((v) => (
@@ -119,13 +91,14 @@ export default async function Oggi({
             contattoId={v.contatto.id}
             cosa={v.azione.descrizione}
             scadenza={v.azione.scadenza}
-            scaduto={inRitardo(v.azione.scadenza)}
+            /* In scadenza oggi non è in ritardo: il rosso parte da domani. */
+            scaduto={v.giorniDiRitardo >= 1}
             scadutoDa={v.giorniDiRitardo}
             chi={(
               <>
                 <span>{v.contatto.nomeCompleto}</span>
                 {v.contatto.valore > 0 && <span className="euro">{euro(v.contatto.valore)}</span>}
-                {!inRitardo(v.azione.scadenza) && <span>{quando(v.azione.scadenza)}</span>}
+                {v.giorniDiRitardo < 1 && <span>{quando(v.azione.scadenza)}</span>}
               </>
             )}
           />
@@ -136,7 +109,7 @@ export default async function Oggi({
         <section className="sezione">
           <h2>Messaggi senza risposta</h2>
           <div className="scheda scheda-fitta">
-            {daRispondere.map(({ conversazione: f, contatto }) => (
+            {daRispondere.slice(0, 3).map(({ conversazione: f, contatto }) => (
               <div key={f.id} className="riga">
                 <span className="cresce">
                   <Link href={`/contatti/${contatto.id}`} className="titolo">
@@ -145,7 +118,7 @@ export default async function Oggi({
                   </Link>
                   <span className="sotto">
                     {ETICHETTA_CANALE[f.canale]} · {dataOra(f.ultimoMessaggioIl)}
-                    {f.ultimoMessaggioTesto ? ` · «${f.ultimoMessaggioTesto.slice(0, 70)}»` : ''}
+                    {f.ultimoMessaggioTesto ? ` · «${f.ultimoMessaggioTesto.slice(0, 60)}»` : ''}
                   </span>
                 </span>
                 <form action={segnaConversazione}>
@@ -156,13 +129,30 @@ export default async function Oggi({
                 </form>
               </div>
             ))}
+            {daRispondere.length > 3 && (
+              <p className="nota-piede" style={{ padding: '10px 0 2px' }}>
+                <Link href="/attenzioni">Vedi tutti e {daRispondere.length} →</Link>
+              </p>
+            )}
           </div>
         </section>
       )}
 
+      {/* I prossimi giorni non sono il lavoro di adesso: stanno piegati, a un
+          tocco. Aperti occupavano metà schermo per cose che non si fanno. */}
       {dopo.length > 0 && (
         <section className="sezione">
-          <h2>Prossimi giorni</h2>
+          <details className="fisarmonica">
+            <summary>
+              <span className="testo-avviso">
+                <span className="titolo-avviso">Prossimi giorni</span>
+                <span className="conto-avviso">{cose(dopo.length)} in calendario</span>
+              </span>
+              <span className="giu" aria-hidden="true">
+                <svg viewBox="0 0 13 8"><path d="m1 1 5.5 5.5L12 1" /></svg>
+              </span>
+            </summary>
+            <div className="dentro">
           {dopo.map((v) => (
             <CartaAzione
               key={v.azione.id}
@@ -183,48 +173,31 @@ export default async function Oggi({
               )}
             />
           ))}
+            </div>
+          </details>
         </section>
       )}
 
+      {/* Il resto della casa, in fondo e senza allarmi. Sono le stesse cose
+          di prima: hanno solo smesso di mettersi davanti al lavoro. */}
       <section className="sezione">
-        <h2>Arrivati e mai sentiti</h2>
-        {maiSentiti.length === 0
-          ? <div className="scheda"><p className="elenco-vuoto">Nessuno in attesa: buon segno.</p></div>
-          : maiSentiti.map((c) => <RigaContatto key={c.id} contatto={c} />)}
-      </section>
-
-      <section className="sezione">
-        <h2>Il quadro</h2>
-        {/* Il periodo è un selettore a segmenti: le quattro scelte sono tutte
-            visibili, una sola è accesa. Sono le stesse di prima. */}
-        <nav className="segmentato" aria-label="Periodo dei numeri" style={{ marginBottom: 12 }}>
-          {PERIODI.map((p) => (
-            <Link
-              key={p}
-              href={p === '30' ? '/' : `/?periodo=${p}`}
-              className={periodo === p ? 'attiva' : undefined}
-              aria-current={periodo === p ? 'true' : undefined}
-            >
-              {ETICHETTA_PERIODO[p]}
-            </Link>
-          ))}
-        </nav>
-        <div className="numeri">
-          <Numero etichetta="Persone entrate" valore={numeri.ingressi} sotto={`${numeri.qualificati} qualificate`} href="/ingressi" />
-          <Numero etichetta="Valore in gioco" valore={euro(numeri.valorePipeline)} sotto={`${numeri.preventivi} preventivi`} href="/pipeline" />
-          <Numero
-            etichetta="Ordini chiusi"
-            valore={numeri.ordiniChiusi}
-            sotto={numeri.ordiniChiusi ? euro(numeri.valoreOrdiniChiusi) : 'nessuno nel periodo'}
-            href="/analisi"
-          />
-          <Numero
-            etichetta="Avvisi"
-            valore={quantiAvvisi}
-            sotto={senzaAzione ? `${senzaAzione} senza prossima azione` : 'nessuno lasciato indietro'}
-            allarme={senzaAzione > 0}
-            href="/attenzioni"
-          />
+        <h2>Il resto</h2>
+        <div className="lista-ios">
+          <Link className="voce-ios" href="/attenzioni">
+            Da controllare
+            <span className="conto-ios">{quantiAvvisi}</span>
+            <FrecciaDestra />
+          </Link>
+          <Link className="voce-ios" href="/contatti?fase=nuovo&ordine=recenti">
+            Arrivati e mai sentiti
+            <span className="conto-ios">{maiSentiti.length}</span>
+            <FrecciaDestra />
+          </Link>
+          <Link className="voce-ios" href="/analisi">
+            I numeri del periodo
+            <span className="conto-ios" />
+            <FrecciaDestra />
+          </Link>
         </div>
       </section>
     </main>

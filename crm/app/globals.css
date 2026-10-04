@@ -844,6 +844,8 @@ body[data-scorso="si"] .testata-grande .riepilogo { opacity: .55; }
 .fisarmonica .dentro { border-top: 1px solid var(--linea); padding: 4px 16px 14px; }
 /* Dentro una sezione apribile il vetro è già quello della fisarmonica: una
    seconda cornice sarebbe una scatola dentro una scatola. */
+/* Le card dentro una sezione piegata respirano come fuori. */
+.fisarmonica .dentro > .scorri:first-child, .fisarmonica .dentro > .carta-azione:first-child { margin-top: 10px; }
 .fisarmonica .dentro > .scheda {
   background: transparent; border: 0; box-shadow: none; padding: 0;
   backdrop-filter: none; -webkit-backdrop-filter: none;
