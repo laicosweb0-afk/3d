@@ -339,11 +339,24 @@ html.sheet-on .scrim { opacity: 1; pointer-events: auto; }
 .pannello { padding: 18px var(--gutter) 0; animation: sale .45s var(--morbido); }
 .pannello[hidden] { display: none; }
 .piatti { list-style: none; margin: 8px 0 0; padding: 0; }
-.piatti li { padding: 20px 0; border-bottom: 1px solid var(--linea); }
+.piatti li { padding: 17px 0; border-bottom: 1px solid var(--linea); }
 .piatti li:last-child { border-bottom: 0; }
 .piatti .n { font: 500 21px/1.25 var(--serif); color: var(--panna); }
 .piatti .n small { font: 500 12px/1 var(--sans); color: var(--oro); letter-spacing: .06em; margin-left: 8px; vertical-align: 3px; }
 .piatti .d { margin-top: 6px; font-size: 14.5px; line-height: 1.5; color: var(--grigio); }
+.piatti .riga-n { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.piatti .p, .impasto .p { flex: none; font: 500 16px/1 var(--sans); color: var(--oro-chiaro); font-variant-numeric: tabular-nums; }
+.piatti .cuore { width: 15px; height: 15px; margin-right: 8px; vertical-align: -1px; color: var(--oro); }
+.taglie { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.taglie span { height: 30px; padding: 0 11px; display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; background: var(--elevata); border: 1px solid var(--linea); font-size: 13px; color: var(--grigio); }
+.taglie b { font-weight: 500; color: var(--oro-chiaro); }
+.sez-titolo { margin: 34px 0 2px; font: 600 11.5px/1 var(--sans); letter-spacing: .22em; text-transform: uppercase; color: var(--oro); }
+.impasti { margin-top: 12px; display: grid; gap: 10px; }
+.impasto { padding: 16px 18px; border-radius: 18px; background: var(--elevata); }
+.impasto .n { font: 500 18px/1.2 var(--serif); }
+.impasto .p { margin-left: 6px; font-size: 14px; }
+.impasto .d { margin-top: 5px; font-size: 13.5px; line-height: 1.5; color: var(--grigio); }
+.menu-note { margin: 28px var(--gutter) 0; font-size: 13px; line-height: 1.6; color: var(--grigio-tenue); }
 
 .galleria {
   display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory;
@@ -510,6 +523,7 @@ html.sheet-on .scrim { opacity: 1; pointer-events: auto; }
     </div>
     <div class="schede"><div class="fila" role="tablist" aria-label="Sezioni del menù"></div></div>
     <div data-pannelli></div>
+    <p class="menu-note">Coperto €1,50. Per informazioni sugli allergeni chiedere al personale (Reg. UE 1169/2011).</p>
     <div class="fine-cta">
       <p>Ti aspettiamo a tavola.</p>
       <button class="btn-oro full press" data-apri="prenota">Prenota un tavolo</button>
@@ -627,42 +641,139 @@ const APRE = 19, CHIUDE = 24;
 const ORARI_PRENOTA = ['19:30', '20:00', '20:30', '21:00', '21:30', '22:00'];
 const PERSONE = ['1', '2', '3', '4', '5', '6', '7+'];
 const SITO = 'https://www.spicchiodoro.it';
-const MENU_SITO = 'https://www.spicchiodoro.it/#menu';
+/* I prezzi del menù del locale. false = il menù si vede senza prezzi. */
+const MOSTRA_PREZZI = true;
 
-/* Il menù. Solo piatti e descrizioni forniti dal locale.
-   DA COMPLETARE: nomi e prezzi delle pizze, il menù del bar. */
+/* IL MENÙ — trascritto dal menù del locale (menù PDF, ottobre 2026).
+   Ogni scheda ha una o più sezioni; ogni piatto è
+   [nome, descrizione, prezzo, { q: quantità, c: true se ha il cuore
+   del locale (♥), t: [[formato, prezzo], …] per le bevande a formati }]. */
 const MENU = [
   { id: 'pizze', nome: 'Pizze', foto: 'burrata.jpg',
-    lead: 'Cotte nel forno a legna.',
+    lead: 'Cotte nel forno a legna. Lenta maturazione, passione artigianale e ingredienti selezionati: una pizza leggera, profumata e fragrante ad ogni morso.',
     galleria: ['forno.jpg', 'burrata.jpg', 'crudo.jpg'],
-    link: { testo: 'Tutte le pizze', href: MENU_SITO } },
-  { id: 'antipasti', nome: 'Per cominciare', foto: 'tagliere.jpg', piatti: [
-    ['Tagliere rustico', 'Crudo di Parma, porchetta artigianale, salame Felino, mortadella Favola, gnocco fritto fatto in casa'],
-    ['Crostini misti', 'Spinaci, melanzane, funghi, salsiccia, tuorlo e pancetta', '5 pz'],
-    ['Degustazione di formaggi', 'Con squacquerone, miele e gnocco fritto'] ] },
-  { id: 'primi', nome: 'Primi', foto: 'spatzle.jpg', piatti: [
-    ['Cappelletti', 'Al ragù oppure panna e prosciutto'],
-    ['Garganelli alla zingara', 'Peperoni, funghi e pancetta'],
-    ['Tagliatelle', 'Funghi porcini'],
-    ['Spätzle', 'Crema di parmigiano, funghi e speck'] ] },
-  { id: 'secondi', nome: 'Secondi', foto: 'arrosticini.jpg', piatti: [
-    ['Arrosticini casarecci', 'Salsa di pomodoro alle erbe aromatiche e patate al forno'],
-    ['Stinco', 'Arrosto con patate al forno'],
-    ['Cotoletta', 'Maxi cotoletta di maiale da 300 g con patate al forno'] ] },
-  { id: 'burger', nome: 'Burger', foto: 'burger.jpg', piatti: [
-    ['Maestro junior', 'Burger da 100 g di manzo 100% italiano, bacon, cheddar'],
-    ['Chicken burger', 'Filetto di pollo croccante da 200 g, insalata iceberg, pomodoro, cheddar, maionese, bacon'],
-    ['Chianina burger', 'Chianina 200 g, insalata iceberg, bacon, cheddar, salsa BBQ'],
-    ['Da accompagnare', 'Patatine fritte, patate al forno, gnocco fritto, jalapeños, anelli di cipolla'] ] },
-  { id: 'dolci', nome: 'Dolci', foto: 'nutella.jpg', dolci: [
-    ['nutella.jpg', 'Pizza dolce alla Nutella'],
-    ['crema.jpg', 'Pizza dolce con crema e Nutella'],
-    ['tiramisu.jpg', 'Pizza tiramisù'],
-    ['bigne.jpg', 'Bignè al caramello, cioccolato e pistacchio'],
-    ['bigne-sera.jpg', 'Bignè al cioccolato'] ] },
+    impasti: [
+      ['Ruota di carro', '+€3,50', 'Una stesa d’autore da 50 cm di diametro, per chi ama la pizza tradizionale in grande formato.'],
+      ['Multicereale', '+€2', 'Cereali tostati e farine integrali: gusto più ricco e rustico, spiccata digeribilità.'],
+      ['Stesa', '+€2,50', ''] ],
+    sezioni: [{ piatti: [
+      ['Margherita', 'Pomodoro Cirio, fiordilatte, basilico', '6'],
+      ['Marinara', 'Pomodoro Cirio, aglio, origano, olio', '5'],
+      ['Napoli', 'Pomodoro Cirio, fiordilatte, acciughe, origano', '8'],
+      ['Diavola', 'Pomodoro Cirio, fiordilatte, salame piccante', '8,50'],
+      ['Wurstel e patatine', 'Pomodoro Cirio, fiordilatte, wurstel, patatine fritte Extra Wonders', '9'],
+      ['Capricciosa', 'Pomodoro Cirio, fiordilatte, cotto alta qualità, funghi freschi, carciofi, salsiccia', '10'],
+      ['Quattro stagioni', 'Pomodoro Cirio, fiordilatte, cotto alta qualità, funghi freschi, carciofi, olive', '10'],
+      ['Romana', 'Pomodoro Cirio, fiordilatte, acciughe, capperi, origano', '9'],
+      ['Vegetariana', 'Pomodoro Cirio, fiordilatte, verdure miste al forno', '9'],
+      ['Tonno cipolla', 'Pomodoro Cirio, fiordilatte, tonno, cipolla', '8,50'],
+      ['Crudo', 'Pomodoro Cirio, fiordilatte, crudo di Parma in uscita', '9'],
+      ['Speck e gorgonzola', 'Pomodoro Cirio, fiordilatte, speck, gorgonzola', '10'],
+      ['Speck e provola', 'Pomodoro Cirio, fiordilatte, speck, provola', '10'],
+      ['Trevigiana', 'Pomodoro Cirio, fiordilatte, radicchio, pancetta arrotolata', '9'],
+      ['Boscaiola', 'Pomodoro Cirio, fiordilatte, porcini, pancetta arrotolata, grana', '11'],
+      ['Affumicata', 'Pomodoro Cirio, fiordilatte, pancetta arrotolata, scamorza', '10'],
+      ['Manara caibo', 'Pomodoro Cirio, fiordilatte, salame piccante, cipolla, gorgonzola, olive nere', '11'],
+      ['Duchessa', 'Pomodoro Cirio, fiordilatte, in uscita: crudo di Parma, rucola, grana, aceto balsamico', '13'],
+      ['Spicchio d’oro', 'Pomodoro Cirio, fiordilatte, cotto alta qualità, patate al forno, salsiccia, grana a scaglie', '11', { c: true }],
+      ['Pataca', 'Pomodoro Cirio, fiordilatte, salsiccia, patate al forno', '9'],
+      ['Rustica caramellata', 'Pomodoro Cirio, fiordilatte, pancetta arrotolata, cipolla caramellata, grana a scaglie in cottura', '10'],
+      ['Speciale', 'Pomodoro Cirio, bufala campana DOP, pomodorini, basilico', '9,50'],
+      ['Campestre', 'Pomodoro Cirio, funghi freschi, bufala campana DOP, in uscita: crudo di Parma, pomodorini, basilico', '13'],
+      ['Sogno di Parma', 'Pomodoro Cirio, fiordilatte, in uscita: crudo di Parma, burrata 100 g, rucola', '12'],
+      ['Delizia', 'Datterini, fiordilatte, in uscita: mortadella Favola, burrata 100 g, granella di pistacchi', '12'],
+      ['Regina', 'Datterini, fiordilatte, in uscita: burrata 100 g, basilico, olio d’oliva', '10'],
+      ['San Savino', 'Datterini, fiordilatte, salsiccia, in uscita: crudo di Parma, rucola, parmigiano a scaglie, glassa d’aceto balsamico', '14'],
+      ['Burrata suprema', 'Pomodoro Cirio, fiordilatte, salsiccia, in uscita: burrata 125 g, velatura d’olio tartufato', '13'],
+      ['Fico d’oro', 'Crema di fichi, fiordilatte, in uscita: crudo di Parma, chiazze di squacquerone', '13'],
+      ['Nocina', 'Crema ai porcini, fiordilatte, in uscita: crudo di Parma, burrata 125 g, cascata di noci croccanti', '14'],
+      ['Cirio special', 'Pomodoro Cirio, fiordilatte, in uscita: crudo di Parma, burrata 100 g, rucola', '14'],
+      ['Golosa', 'Pomodoro, fior di latte, pancetta, porcini, scamorza, patate al forno', '13'],
+      ['Oasi', 'Crema di basilico, fior di latte, in uscita: crudo di Parma, gocce di bufala, datterini, basilico', '15'],
+      ['Ligure', 'Fior di latte, patate schiacciate, salsiccia, scamorza, in uscita: stracciatella di burrata, datterini, crema di basilico', '15'],
+      ['Tartufata', 'Crema di tartufo, fior di latte, pancetta, grana', '14'],
+      ['Sottobosco', 'Fior di latte, patate al forno, scamorza, in uscita: speck, ciuffetti di crema ai porcini', '13'],
+      ['Calorosa', 'Fior di latte, patate al forno, scamorza, porchetta artigianale', '14'],
+      ['Focosa', 'Fior di latte, porchetta artigianale, datterini, in uscita: burrata 125 g, gocce di pesto di basilico', '16'],
+      ['Crudo tartufata', 'Fior di latte, in uscita: crudo di Parma, stracciatella di burrata, crema al tartufo, olio extra vergine d’oliva', '16'] ] }] },
+  { id: 'antipasti', nome: 'Per cominciare', foto: 'tagliere.jpg', sezioni: [{ piatti: [
+    ['Tagliere rustico', 'Crudo di Parma, porchetta artigianale, salame Felino, mortadella Favola, gnocco fritto fatto in casa', '16'],
+    ['Crostini misti', 'Spinaci, melanzane, funghi, salsiccia, tuorlo e pancetta', '10', { q: '5 pz' }],
+    ['Degustazione di formaggi', 'Con squacquerone, miele e gnocco fritto', '16'] ] }] },
+  { id: 'primi', nome: 'Primi', foto: 'spatzle.jpg', sezioni: [{ piatti: [
+    ['Cappelletti', 'Al ragù oppure panna e prosciutto', '12'],
+    ['Garganelli alla zingara', 'Peperoni, funghi e pancetta', '12'],
+    ['Tagliatelle', 'Funghi porcini', '12'],
+    ['Spätzle', 'Crema di parmigiano, funghi e speck', '12', { c: true }] ] }] },
+  { id: 'secondi', nome: 'Secondi', foto: 'arrosticini.jpg', sezioni: [{ piatti: [
+    ['Arrosticini casarecci', 'Salsa di pomodoro alle erbe aromatiche e patate al forno', '16'],
+    ['Stinco', 'Arrosto con patate al forno', '16'],
+    ['Cotoletta', 'Maxi cotoletta di maiale da 300 g con patate al forno', '18'] ] }] },
+  { id: 'burger', nome: 'Burger', foto: 'burger.jpg',
+    lead: 'Hamburger di manzo 100% italiano e di chianina, pollo selezionato, sempre preparati al momento. Ogni hamburger è servito con le patate Extra Wonders.',
+    sezioni: [
+      { piatti: [
+        ['Maestro junior', 'Burger da 100 g di manzo 100% italiano, bacon, cheddar', '10'],
+        ['Chicken burger', 'Filetto di pollo croccante da 200 g, insalata iceberg, pomodoro, cheddar, maionese, bacon', '13'],
+        ['Chianina burger', 'Chianina 200 g, insalata iceberg, bacon, cheddar, salsa BBQ', '13'] ] },
+      { titolo: 'Sfizi e contorni', piatti: [
+        ['Patatine fritte, patate al forno o gnocco fritto', '', '5'],
+        ['Jalapeños', '', '7'],
+        ['Anelli di cipolla', '', '7'] ] }] },
+  { id: 'dolci', nome: 'Dolci', foto: 'nutella.jpg',
+    dolci: [
+      ['nutella.jpg', 'Pizza dolce alla Nutella'],
+      ['crema.jpg', 'Pizza dolce con crema e Nutella'],
+      ['tiramisu.jpg', 'Pizza tiramisù'],
+      ['bigne.jpg', 'Bombette d’oro, tris di bignè'],
+      ['bigne-sera.jpg', 'Bignè al cioccolato'] ],
+    sezioni: [
+      { titolo: 'Dalla pizzeria', piatti: [
+        ['Spicchio al bacio', 'Pizza con mascarpone artigianale, giro di crema alla nocciola, spolverata di zucchero a velo', '13', { c: true }],
+        ['Sbriciol’Oro', 'Pizza con Nutella, granella di nocciole, zucchero a velo', '13'] ] },
+      { titolo: 'Dalla cucina', piatti: [
+        ['Bombette d’oro', 'Tris di bignè con diversa farcitura a seconda della disponibilità', '8'],
+        ['Zuppa inglese', '', '7'],
+        ['Crema catalana', '', '6'],
+        ['Mascarpone', 'Con cioccolato', '6'],
+        ['Sorbetto al limone artigianale', '', '5'] ] }] },
   { id: 'bar', nome: 'Bar', foto: 'cocktail.jpg',
     lead: 'Cocktail e birre, al tavolo o al bancone.',
-    link: { testo: 'Il menù completo sul sito', href: MENU_SITO } },
+    sezioni: [
+      { titolo: 'Cocktail', piatti: [
+        ['Il Dorato', 'Vodka, limoncello, ananas', '5', { c: true }],
+        ['Spritz Aperol', 'Prosecco, Aperol', '5'],
+        ['Spritz Campari', 'Prosecco, Campari', '7'],
+        ['Gin tonic', 'Gin, tonica', '7'],
+        ['Gin tonic premium', 'Gin premium, tonica', '10'],
+        ['Moscow mule', 'Vodka, limone, zenzero', '8'],
+        ['Negroni', 'Martini, Campari, gin', '8'],
+        ['Americano', 'Martini, Campari, angostura, soda', '8'],
+        ['Hugo', 'Prosecco, sciroppo di fiori di sambuco', '5'],
+        ['Mojito', 'Lime, zucchero, menta, rum, soda', '8'] ] },
+      { titolo: 'Alla spina', piatti: [
+        ['Heineken', 'Lager chiara olandese dal 5%, fresca e leggera', '', { t: [['1,5 l', '14,50'], ['1 l', '9,50'], ['0,5 l', '5'], ['0,25 l', '3']] }],
+        ['Erdinger Weizen', 'Birra di frumento tedesca al 5,3%, note delicate di banana e chiodi di garofano', '', { t: [['1 l', '13,50'], ['0,5 l', '7'], ['0,3 l', '4']] }],
+        ['Affligem Rouge', 'Rossa belga dall’8%, corpo pieno, sentori di frutti rossi e caramello', '', { t: [['1 l', '15,50'], ['0,5 l', '8'], ['0,33 l', '5']] }],
+        ['Coca-Cola', '', '', { t: [['grande', '9'], ['media', '4'], ['piccola', '3']] }],
+        ['Vino frizzante bianco o rosso', '', '', { t: [['1 l', '9,50'], ['0,5 l', '5,50'], ['quartino', '3']] }] ] },
+      { titolo: 'Bevande', piatti: [
+        ['Acqua naturale o gassata', '0,75 l', '2,50'],
+        ['Coca-Cola, Coca-Cola Zero, Sprite', 'Lattina', '3'],
+        ['Fanta arancia', 'Lattina 0,33 l', '3'],
+        ['Red Bull', '', '3,50'],
+        ['Fuze Tea pesca o limone', '0,4 l', '3,50'],
+        ['IPA Lagunitas', '0,33 l', '5'],
+        ['Messina', '0,33 l', '4'],
+        ['Erdinger Weizen', '0,5 l', '7,50'],
+        ['Ichnusa non filtrata', '0,33 l', '4'],
+        ['Ceres', '0,33 l', '4'],
+        ['Guinness', '0,33 l', '6'] ] },
+      { titolo: 'Caffetteria e liquori', nota: 'Per rum, grappe e whisky chiedere al personale.', piatti: [
+        ['Caffè', '', '2'],
+        ['Caffè ginseng', '', '2,50'],
+        ['Infusi', '', '2,50'],
+        ['Amari e liquori', '', '4'] ] }] },
 ];
 
 /* ---------- utilità ---------- */
@@ -744,15 +855,26 @@ function renderMenu() {
     foto(s.foto, '', `data-cop="${s.id}" class="ph${i ? ' spento' : ''}"`).replace('class="ph" ', '')).join(''));
   fila.innerHTML = MENU.map((s, i) =>
     `<button class="pill press" role="tab" aria-selected="${i === 0}" data-tab="${s.id}">${s.nome}</button>`).join('');
+  const cuore = '<svg class="cuore" viewBox="0 0 24 24" aria-label="Consigliato dal locale"><path fill="currentColor" d="M12 21s-7.5-4.6-10-9.3C.4 8.4 2.2 4.5 6 4.5c2.2 0 3.6 1.2 4.5 2.6l1.5 2 1.5-2c.9-1.4 2.3-2.6 4.5-2.6 3.8 0 5.6 3.9 4 7.2C19.5 16.4 12 21 12 21z"/></svg>';
+  const prezzo = (p) => MOSTRA_PREZZI && p ? `<span class="p">€${p}</span>` : '';
+  const piatto = ([n, d, p, o = {}]) => `<li>
+      <div class="riga-n"><div class="n">${o.c ? cuore : ''}${esc(n)}${o.q ? `<small>${o.q}</small>` : ''}</div>${prezzo(p)}</div>
+      ${d ? `<div class="d">${esc(d)}</div>` : ''}
+      ${o.t ? `<div class="taglie">${o.t.map(([f, pr]) => `<span>${f}${MOSTRA_PREZZI ? ` <b>€${pr}</b>` : ''}</span>`).join('')}</div>` : ''}
+    </li>`;
   pannelli.innerHTML = MENU.map((s, i) => {
     let h = '';
     if (s.lead) h += `<p class="lead">${s.lead}</p>`;
     if (s.galleria) h += `<div class="galleria">${s.galleria.map((f) => foto(f)).join('')}</div>`;
-    if (s.piatti) h += `<ul class="piatti">${s.piatti.map(([n, d, q]) =>
-      `<li><div class="n">${esc(n)}${q ? `<small>${q}</small>` : ''}</div><div class="d">${esc(d)}</div></li>`).join('')}</ul>`;
     if (s.dolci) h += `<div class="dolci">${s.dolci.map(([f, c]) =>
       `<figure>${foto(f, c)}<figcaption>${esc(c)}</figcaption></figure>`).join('')}</div>`;
-    if (s.link) h += `<a class="link-oro" href="${s.link.href}" target="_blank" rel="noopener">${s.link.testo} ${ARROW}</a>`;
+    if (s.impasti) h += `<div class="sez-titolo">Gli impasti</div><div class="impasti">${s.impasti.map(([n, p, d]) =>
+      `<div class="impasto"><div class="n">${esc(n)}${MOSTRA_PREZZI ? ` <span class="p">${p}</span>` : ''}</div>${d ? `<div class="d">${esc(d)}</div>` : ''}</div>`).join('')}</div>`;
+    (s.sezioni || []).forEach((z) => {
+      if (z.titolo) h += `<div class="sez-titolo">${esc(z.titolo)}</div>`;
+      h += `<ul class="piatti">${z.piatti.map(piatto).join('')}</ul>`;
+      if (z.nota) h += `<p class="nota">${esc(z.nota)}</p>`;
+    });
     return `<div class="pannello" role="tabpanel" data-pan="${s.id}" ${i ? 'hidden' : ''}>${h}</div>`;
   }).join('');
 

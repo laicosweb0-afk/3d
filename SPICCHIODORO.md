@@ -31,9 +31,15 @@ compare «Nuove serate in arrivo: le date escono su Instagram.»
 
 ## Il menù
 
-L'array `MENU` nello script: una voce per scheda (foto di copertina, piatti
-`[nome, descrizione, quantità]`, gallerie, link). Solo i piatti forniti dal
-locale, senza prezzi.
+L'array `MENU` nello script, trascritto dal menù del locale (il PDF con pizze,
+impasti, cucina, dolci, cocktail, birre, bevande e bar, coperto e nota
+allergeni). Ogni scheda ha la foto di copertina e una o più sezioni; ogni
+piatto è `[nome, descrizione, prezzo, { q, c, t }]` (`c: true` è il cuore
+del locale, `t` i formati delle bevande). Per nascondere tutti i prezzi:
+`MOSTRA_PREZZI = false`.
+
+Quando cambia il menù del locale (o le specialità fuori menù del mese), si
+aggiorna qui.
 
 ## Le foto
 
@@ -68,8 +74,7 @@ convert originale.jpg -auto-orient -strip -interlace Plane -quality 70 -resize '
 
 - I file del font Gaglio (licenza web, WOFF2) in `fonts/`: finché mancano si vede Inter.
 
-- Nomi e prezzi delle pizze: per ora la scheda Pizze rimanda al sito.
-- I link «Tutte le pizze» e «Il menù completo sul sito» vanno a https://www.spicchiodoro.it/#menu.
+- Facebook: il menù dice «@Spicchio d’Oro», manca l'indirizzo della pagina.
 - Le serate non hanno un orario d'inizio: la locandina non lo dice.
 
 ## Controllo
