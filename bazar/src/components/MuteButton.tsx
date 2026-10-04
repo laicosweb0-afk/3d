@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { commutaSilenzio, osservaSilenzio, silenziato } from '../lib/suono';
 
 /**
- * Il silenziatore: in basso a destra, tenue, fuori dal percorso. I suoni —
+ * Il silenziatore: in alto a destra, tenue, fuori dal percorso. I suoni —
  * gli scatti della ruota, il conteggio del credito — ci sono perché in
  * negozio fanno la differenza, ma non devono mai essere una sorpresa da cui
  * si scappa.
@@ -17,14 +17,17 @@ export function MuteButton() {
       onClick={() => commutaSilenzio()}
       aria-label={muto ? 'Riattiva i suoni' : 'Silenzia i suoni'}
       aria-pressed={muto}
+      // In alto a destra, in vetro come i bottoni sopra le foto: in basso
+      // c'è la barra della vetrina, e due cose che galleggiano nello stesso
+      // angolo si pestano i piedi.
       style={{
         position: 'fixed', right: 16,
-        bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
-        width: 34, height: 34, borderRadius: '50%',
-        border: '1px solid rgba(255,255,255,.18)',
-        background: 'rgba(255,255,255,.10)',
-        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-        color: 'currentColor', opacity: 0.5, zIndex: 20, cursor: 'pointer',
+        top: 'calc(18px + env(safe-area-inset-top, 0px))',
+        width: 32, height: 32, borderRadius: '50%',
+        border: '1px solid rgba(242,235,221,.08)',
+        background: 'rgba(33,27,23,.72)',
+        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+        color: '#EDE7DD', opacity: 0.7, zIndex: 20, cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
     >

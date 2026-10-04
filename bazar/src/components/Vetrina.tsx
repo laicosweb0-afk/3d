@@ -8,6 +8,9 @@ import { pop } from '../lib/suono';
 /** Il percorso di un file in `public/`, servito anche da una sottocartella. */
 const url = (f: string) => import.meta.env.BASE_URL + f.replace(/^\/+/, '');
 
+/** I contatori a due cifre: «01 / 04», come nelle schede di prodotto. */
+const due = (n: number) => String(n).padStart(2, '0');
+
 const riduci = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -35,9 +38,7 @@ export function RiquadroCollezione({
   onApri: (a: Articolo) => void;
 }) {
   const binario = useRef<HTMLDivElement>(null);
-  const cursore = useRef<HTMLSpanElement>(null);
   const [corrente, setCorrente] = useState(0);
-  const [usato, setUsato] = useState(false);
   const ultimo = useRef(0);
 
   /* Il 3D: per ogni copertina, la distanza dal centro in larghezze di carta.
@@ -72,10 +73,6 @@ export function RiquadroCollezione({
       const img = dentro.querySelector('img');
       if (img) img.style.transform = `translateX(${(a * -6).toFixed(2)}%) scale(1.14)`;
     });
-    const max = b.scrollWidth - b.clientWidth;
-    if (cursore.current) {
-      cursore.current.style.setProperty('--pos', (max > 0 ? b.scrollLeft / max : 0).toFixed(4));
-    }
     if (vicina !== ultimo.current) {
       ultimo.current = vicina;
       setCorrente(vicina);
@@ -90,7 +87,6 @@ export function RiquadroCollezione({
     if (!b) return;
     let raf = 0;
     const scorre = () => {
-      if (b.scrollLeft > 4) setUsato(true);
       if (!raf) raf = requestAnimationFrame(() => { raf = 0; disegna(); });
     };
     b.addEventListener('scroll', scorre, { passive: true });
@@ -142,26 +138,22 @@ export function RiquadroCollezione({
         ))}
       </div>
 
-      {/* Il nome dell'articolo in centro: testo vivo sotto il carosello, che
-          cambia quando cambia la copertina. La chiave fa ripartire la
-          dissolvenza. */}
-      <div className="riquadro-nome" aria-live="polite">
-        <p key={art.id} className="riquadro-nome-in">
-          <span className="nome">{art.nome}</span>
-          <span className="riga">{art.riga}</span>
-        </p>
-      </div>
-
-      {/* La guida, presa dalla vetrina della Bufala: una frase e sotto la
-          pista, che è già l'indicatore di dove sei. Appena il carosello si
-          muove la frase si ritira e la pista resta. */}
-      <div className="guida" data-usato={usato ? 'si' : undefined}>
-        <p className="guida-testo">
-          <span className="guida-icona" aria-hidden />
-          Scorri, e tocca per le foto
-        </p>
-        <div className="guida-pista" aria-hidden>
-          <span className="guida-cursore" ref={cursore} />
+      {/* Il prodotto in centro, come in una scheda Apple: il nome, le finiture
+          in una riga, e sotto il contatore e una sola azione. Niente altro:
+          la foto sopra fa già il lavoro. La chiave fa rientrare il testo
+          sfumato quando cambia l'articolo. */}
+      <div className="prodotto" aria-live="polite">
+        <div key={art.id} className="prodotto-in">
+          <p className="prodotto-nome">{art.nome}</p>
+          <p className="prodotto-meta">{art.dettagli.join(' · ')}</p>
+        </div>
+        <div className="prodotto-barra">
+          <span className="prodotto-conta" aria-label={`Articolo ${corrente + 1} di ${collezione.articoli.length}`}>
+            {due(corrente + 1)} <span className="sep">/</span> {due(collezione.articoli.length)}
+          </span>
+          <button type="button" className="pill" onClick={() => { toccoAptico(); pop(); onApri(art); }}>
+            Scopri <span aria-hidden>→</span>
+          </button>
         </div>
       </div>
     </section>
@@ -264,7 +256,7 @@ export function SchedaArticolo({
                 onClick={() => vai(i)}
               />
             ))}
-            <span className="galleria-conta">{foto + 1} / {articolo.foto.length}</span>
+            <span className="galleria-conta">{due(foto + 1)} / {due(articolo.foto.length)}</span>
           </div>
         )}
 

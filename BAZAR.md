@@ -36,6 +36,33 @@ scritte in cima a `bazar/src/config/gioco.ts`.
 | 7 | I dati | nome e cognome, email **oppure** telefono, consenso |
 | 8 | La tessera | credito, stile, codice `BAZAR-XXXX`, scadenza, **i preferiti della vetrina**; sotto, i contatti del retro del biglietto |
 
+## La direzione: Apple, con il calore di Marrakech
+
+*«Apple, se progettasse l'esperienza digitale di uno showroom di
+arredamento marocchino contemporaneo»* — non un sito Apple con un logo
+Bazar, e nemmeno un sito luxury editoriale. Apple dà la UX, lo spazio, la
+gerarchia, le superfici e le interazioni; Marrakech dà la tavolozza (oro
+champagne, marrone, sabbia), il calore e le fotografie.
+
+- **Superfici** appena differenziate: fondo `#15110F`, superficie `#211B17`,
+  superficie sollevata `#29221D`. La profondità viene da lì; le ombre sono
+  larghe e morbide, mai nere e pesanti.
+- **Vetro** quasi impercettibile — `rgba(33,27,23,.72)`, sfocatura 20px,
+  bordo `rgba(242,235,221,.08)` — solo su ciò che galleggia: la barra in
+  basso, i bottoni sopra le foto, il silenziatore.
+- **Raggi** 20 · 24 · 28 a seconda dell'elemento.
+- **Tipografia**: titoli semibold con la crenatura stretta, testo regular,
+  etichette piccole in maiuscolo spaziato. Sembra interfaccia, non
+  pubblicità.
+- **Pulsanti** compatti (44px, «SCOPRI →»), che si stringono un poco sotto
+  il dito; il pieno in oro champagne è solo per la prossima cosa da fare.
+- **Movimento** fra 200 e 400ms, in uscita morbida: ogni schermata entra con
+  dissolvenza, un velo di sfocatura e dieci pixel di salita; il prodotto in
+  centro rientra allo stesso modo quando cambia.
+- **Come un'app**: una barra traslucida in fondo alla vetrina con i
+  preferiti e l'azione, il foglio della scheda che sale dal basso, le foto
+  da scorrere, il feedback al tocco.
+
 ## La vetrina
 
 La prima schermata dopo l'apertura, come la vetrina di Rama: prima di
@@ -50,8 +77,9 @@ chiedere qualcosa si fa vedere cosa c'è in showroom. È quasi un negozio:
   vicine girate, più indietro e più scure, con il riflesso sul pavimento
   lucido. Il 3D è una funzione pura della posizione, ricalcolata a ogni
   fotogramma, come la processione dei prodotti della Bufala — ma con le foto
-  vere e senza un filmato da scaricare. Sotto, il nome dell'articolo in
-  centro e la guida della Bufala: la frase e la pista che indica dove sei.
+  vere e senza un filmato da scaricare. Sotto, come in una scheda di
+  prodotto Apple: il nome, le finiture in una riga, il contatore «01 / 04»
+  e un solo pulsante, «Scopri →».
 - **Si tocca e si apre la scheda**, un foglio che sale dal basso come su
   iOS: le foto si scorrono di lato con i puntini e il contatore, poi il
   nome, i dettagli e il cuore **«Aggiungi ai preferiti»**.

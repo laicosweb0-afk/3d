@@ -17,18 +17,42 @@
  * di SHOWROOM e dell'email. Il carattere è il suo: Poppins.
  *
  * Il biglietto è tutto scuro, e così la card: nessuna schermata chiara.
+ *
+ * DIREZIONE: «Apple, se progettasse l'esperienza digitale di uno showroom di
+ * arredamento marocchino contemporaneo». Apple dà la UX, lo spazio, la
+ * gerarchia, le superfici e le interazioni; Marrakech dà la tavolozza — oro
+ * champagne, marrone, sabbia —, il calore e le fotografie.
+ *
+ *   - Superfici scure appena differenziate (fondo, superficie, superficie
+ *     sollevata): la profondità viene da lì, non da ombre pesanti.
+ *   - Vetro quasi impercettibile solo su ciò che galleggia (la barra in
+ *     basso, i bottoni sopra le foto, il foglio della scheda).
+ *   - Raggi 20 · 24 · 28, niente forme a bolla.
+ *   - Titoli semibold con la crenatura stretta, testo regular, etichette
+ *     piccole in maiuscolo spaziato.
+ *   - Molta aria. Pochi elementi, ognuno dove deve stare.
+ *   - Micro-interazioni fra 200 e 400ms, in uscita morbida: dissolvenza,
+ *     un velo di sfocatura, un piccolo scorrimento. Niente di vistoso.
  */
 @layer base {
   :root {
-    --nero: #16120F;          /* il fondo del biglietto, in alto */
-    --nero-fondo: #0D0A08;    /* lo stesso fondo, in basso */
+    --nero: #15110F;          /* il fondo */
+    --nero-fondo: #110E0C;    /* lo stesso fondo, un tono sotto */
+    --superficie: #211B17;    /* i riquadri, le risposte, i campi */
+    --elevata: #29221D;       /* ciò che sta sopra: il foglio, la tessera */
+    --vetro: rgba(33, 27, 23, 0.72);
+    --vetro-bordo: rgba(242, 235, 221, 0.08);
+    --sabbia: #C9B79C;        /* le etichette calde */
     --crema: #EDE7DD;         /* BAZAR */
     --oro: #D8BC86;           /* MARRAKECH, @bazar.marrakech9 */
     --oro-scuro: #8E7751;     /* i capi del filo, dove sfuma */
     --grigio: #AAA59E;        /* SHOWROOM ARREDAMENTO · LUGO */
     --grigio-tenue: #98948D;  /* l'email */
     --crema-tenue: rgba(237, 231, 221, 0.62);
-    --linea: rgba(237, 231, 221, 0.12);
+    --linea: rgba(242, 235, 221, 0.08);
+    /* Ombre morbide e larghe: separano senza pesare. */
+    --ombra: 0 24px 60px -24px rgba(0, 0, 0, 0.45);
+    --ombra-foto: 0 28px 60px -28px rgba(0, 0, 0, 0.6);
 
     /* Il filo d'oro del biglietto: scuro ai capi, pieno al centro. */
     --filo: linear-gradient(90deg, rgba(142, 119, 81, 0.15) 0%, #8E7751 18%,
@@ -41,16 +65,17 @@
      * (ruota, credito, tessera) l'alone sale di più.
      */
     --mesh:
-      radial-gradient(90% 45% at 50% 108%, rgba(216, 188, 134, 0.10) 0%, rgba(216, 188, 134, 0) 70%),
-      linear-gradient(180deg, #16120F 0%, #0D0A08 100%);
+      radial-gradient(90% 45% at 50% 108%, rgba(216, 188, 134, 0.08) 0%, rgba(216, 188, 134, 0) 70%),
+      linear-gradient(180deg, #15110F 0%, #110E0C 100%);
     --mesh-forte:
-      radial-gradient(95% 55% at 50% 108%, rgba(216, 188, 134, 0.20) 0%, rgba(216, 188, 134, 0) 70%),
-      radial-gradient(60% 35% at 50% 40%, rgba(216, 188, 134, 0.05) 0%, rgba(216, 188, 134, 0) 70%),
-      linear-gradient(180deg, #16120F 0%, #0D0A08 100%);
+      radial-gradient(95% 55% at 50% 108%, rgba(216, 188, 134, 0.16) 0%, rgba(216, 188, 134, 0) 70%),
+      radial-gradient(60% 35% at 50% 40%, rgba(216, 188, 134, 0.04) 0%, rgba(216, 188, 134, 0) 70%),
+      linear-gradient(180deg, #15110F 0%, #110E0C 100%);
 
-    --ease: cubic-bezier(0.32, 0.72, 0, 1);
-    --dur: 520ms;
-    --dur-fast: 220ms;
+    /* Uscita morbida: parte decisa, arriva piano. */
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --dur: 380ms;
+    --dur-fast: 200ms;
     color-scheme: dark;
   }
 
@@ -61,6 +86,8 @@
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
     -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
     display: flex;
     justify-content: center;
   }
@@ -78,7 +105,7 @@
     position: relative;
     min-height: 100dvh;
     display: flex; flex-direction: column; align-items: center;
-    padding: 1.75rem 1.75rem calc(2.5rem + env(safe-area-inset-bottom, 0px));
+    padding: 1.5rem 1.5rem calc(2.5rem + env(safe-area-inset-bottom, 0px));
     background: var(--mesh);
     color: var(--crema);
     animation: step-up var(--dur) var(--ease) both;
@@ -94,9 +121,13 @@
     mask-image: linear-gradient(180deg, #000 0%, rgba(0,0,0,.65) 40%, rgba(0,0,0,0) 85%);
   }
   .step > :not(.step-sfondo) { position: relative; z-index: 1; }
+  /* L'entrata di ogni schermata: dissolvenza, un velo di sfocatura che si
+     scioglie, dieci pixel di salita. Finisce su `transform: none` e non su
+     `translateY(0)`: un antenato trasformato toglierebbe ai figli
+     `position: fixed`, e la barra in basso non galleggerebbe più. */
   @keyframes step-up {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(10px); filter: blur(6px); }
+    to { opacity: 1; transform: none; filter: none; }
   }
 
   .step-top {
@@ -107,7 +138,7 @@
   .step-main {
     flex: 1; width: 100%; max-width: 620px;
     display: flex; flex-direction: column; justify-content: center; align-items: center;
-    padding-block: 1.5rem;
+    padding-block: 2rem;
   }
   .step-bottom {
     width: 100%; max-width: 620px;
@@ -142,43 +173,52 @@
   /* ---- tipografia ---- */
   .eyebrow {
     font-size: 0.6875rem; font-weight: 500; text-transform: uppercase;
-    letter-spacing: 0.26em; color: var(--oro); margin: 0 0 1.25rem;
+    letter-spacing: 0.2em; color: var(--oro); margin: 0 0 1rem;
   }
   /* I titoli vanno sempre spezzati a mano su due righe, nel testo. */
   .h1 {
-    font-size: clamp(2.3rem, 9vw, 2.75rem); font-weight: 500;
-    line-height: 1.12; letter-spacing: -0.015em; color: var(--crema);
+    font-size: clamp(2.25rem, 9vw, 2.75rem); font-weight: 600;
+    line-height: 1.08; letter-spacing: -0.03em; color: var(--crema);
     margin: 0; white-space: pre-line;
   }
   /* Il nome dello stile, in oro come MARRAKECH: è l'unico titolo che lo è. */
   .h1-oro { color: var(--oro); }
   .lede {
-    font-size: 1rem; font-weight: 300; line-height: 1.6; color: var(--crema-tenue);
-    margin: 1.5rem auto 0; white-space: pre-line; max-width: 310px;
+    font-size: 1rem; font-weight: 400; line-height: 1.55; color: var(--crema-tenue);
+    margin: 1.25rem auto 0; white-space: pre-line; max-width: 310px;
   }
   .lede-stretta { margin-top: 1rem; font-size: 0.875rem; }
   .nota {
-    font-size: 0.8125rem; font-weight: 300; letter-spacing: 0.04em; line-height: 1.6;
+    font-size: 0.8125rem; font-weight: 400; letter-spacing: 0.01em; line-height: 1.55;
     color: var(--grigio); margin: 0;
   }
   .terms { font-size: 0.75rem; font-weight: 300; line-height: 1.5; color: var(--grigio-tenue); margin: 0.875rem 0 0; }
 
-  /* ---- azioni ---- */
-  .cta {
+  /* ---- azioni ----
+   * Pulsanti alla maniera di Apple: compatti, leggibili, parte del sistema
+   * e non manifesti da landing page. Il tocco si sente subito: il pulsante
+   * si stringe un poco sotto il dito e torna. */
+  .cta, .pill {
     appearance: none; display: inline-flex; align-items: center; justify-content: center;
-    gap: 0.75rem; min-height: 52px; padding: 0 2rem; width: auto;
-    border: 1px solid rgba(216, 188, 134, 0.55); border-radius: 980px; background: transparent;
-    color: var(--crema); font-family: inherit; font-size: 0.8125rem; font-weight: 500;
-    text-transform: uppercase; letter-spacing: 0.16em; cursor: pointer; text-decoration: none;
-    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
-      border-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
+    gap: 0.5rem; min-height: 44px; padding: 0 1.375rem; width: auto;
+    border: 1px solid var(--vetro-bordo); border-radius: 980px;
+    background: var(--vetro);
+    -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+    color: var(--crema); font-family: inherit; font-size: 0.75rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.12em; cursor: pointer; text-decoration: none;
+    transition: transform 160ms var(--ease), background-color var(--dur-fast) var(--ease),
+      color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
   }
-  .cta:hover, .cta:active { background: var(--oro); border-color: var(--oro); color: var(--nero); }
-  .cta:disabled { opacity: 0.35; cursor: default; background: transparent; color: var(--crema); }
-  /* L'unica pill piena di tutto il percorso: la conferma finale. */
-  .cta-fill { background: var(--oro); border-color: var(--oro); color: var(--nero); }
-  .cta-fill:hover, .cta-fill:active { background: var(--oro); color: var(--nero); filter: brightness(1.05); }
+  .cta:active, .pill:active { transform: scale(0.96); }
+  .cta:hover, .pill:hover { background: var(--elevata); }
+  .cta:disabled { opacity: 0.35; cursor: default; transform: none; }
+  /* La pill piena: la prossima cosa da fare. Oro champagne, testo scuro. */
+  .cta-fill, .pill-piena { background: var(--oro); border-color: var(--oro); color: var(--nero); }
+  .cta-fill:hover, .cta-fill:active, .pill-piena:hover, .pill-piena:active {
+    background: var(--oro); color: var(--nero); filter: brightness(1.04);
+  }
   .cta-fill:disabled { background: var(--oro); border-color: var(--oro); color: var(--nero); }
+  .pill { min-height: 36px; padding: 0 1rem; font-size: 0.6875rem; }
 
   .ghost {
     appearance: none; border: none; background: none; padding: 0.625rem;
@@ -188,30 +228,30 @@
   .ghost:hover { color: var(--crema); }
 
   /* ---- le risposte ---- */
-  .opts { width: 100%; margin-top: 2.25rem; display: flex; flex-direction: column; gap: 0.625rem; }
+  .opts { width: 100%; margin-top: 2.5rem; display: flex; flex-direction: column; gap: 0.625rem; }
   .opt {
-    appearance: none; display: block; width: 100%; min-height: 60px; padding: 1rem 1.25rem;
-    border: 1px solid var(--linea); border-radius: 1rem;
-    background: rgba(237, 231, 221, 0.04);
+    appearance: none; display: block; width: 100%; min-height: 64px; padding: 1rem 1.25rem;
+    border: 1px solid var(--linea); border-radius: 20px;
+    background: var(--superficie);
     color: var(--crema); font-family: inherit; font-size: 1.0625rem; font-weight: 400;
     cursor: pointer; text-align: center;
     transition: border-color var(--dur-fast) var(--ease),
       background-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
   }
-  .opt:hover { background: rgba(237, 231, 221, 0.08); }
-  .opt:active { transform: scale(0.985); }
-  .opt[data-active='true'] { border-color: var(--oro); background: rgba(216, 188, 134, 0.12); }
+  .opt:hover { background: var(--elevata); }
+  .opt:active { transform: scale(0.98); }
+  .opt[data-active='true'] { border-color: rgba(216, 188, 134, 0.6); background: var(--elevata); }
   .opt-nota {
-    display: block; font-size: 0.8125rem; font-weight: 300; letter-spacing: 0.04em;
+    display: block; font-size: 0.8125rem; font-weight: 400; letter-spacing: 0.01em;
     color: var(--grigio); margin-top: 0.2rem;
   }
 
   /* ---- i blocchi ---- */
   .vetro {
     width: 100%;
-    background: rgba(237, 231, 221, 0.04);
-    border: 1px solid var(--linea); border-radius: 1.5rem;
-    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.35);
+    background: var(--superficie);
+    border: 1px solid var(--linea); border-radius: 24px;
+    box-shadow: var(--ombra);
   }
 
   .premio-cifra {
@@ -222,15 +262,15 @@
     font-size: 0.6875rem; font-weight: 500; text-transform: uppercase;
     letter-spacing: 0.26em; color: var(--grigio); margin: 0.875rem 0 0;
   }
-  .premio-sub { font-size: 0.875rem; font-weight: 300; color: var(--crema-tenue); margin: 0.875rem 0 0; }
+  .premio-sub { font-size: 0.875rem; font-weight: 400; color: var(--crema-tenue); margin: 0.875rem 0 0; }
 
   /* ---- i pezzi ---- */
   .recs { margin: 2.25rem 0 0; padding: 0; list-style: none; text-align: left; overflow: hidden; }
-  .rec { padding: 1rem 1.25rem; display: flex; gap: 1rem; align-items: center; }
+  .rec { padding: 1.125rem 1.25rem; display: flex; gap: 1rem; align-items: center; }
   /* La miniatura: il pezzo sul suo fondo crema da studio. Dove la foto non
      c'è ancora, l'iniziale del reparto in oro tiene la colonna allineata. */
   .rec-foto {
-    flex: none; width: 64px; height: 64px; border-radius: 0.75rem; object-fit: cover;
+    flex: none; width: 64px; height: 64px; border-radius: 14px; object-fit: cover;
     background: #E9E1D3;
   }
   .novita {
@@ -248,9 +288,9 @@
      nero. Sopra i 220px ruba la scena al nome. */
   .foto-stile {
     width: min(56vw, 220px); height: auto; aspect-ratio: 4 / 5; object-fit: cover;
-    border-radius: 1.25rem; margin: 0 auto 1.75rem; display: block;
-    border: 1px solid rgba(216, 188, 134, 0.35);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    border-radius: 24px; margin: 0 auto 2rem; display: block;
+    border: 1px solid var(--linea);
+    box-shadow: var(--ombra-foto);
     background: #E9E1D3;
   }
   /* Un salotto intero o un divano lungo: orizzontale, più largo. */
@@ -258,15 +298,15 @@
   .rec + .rec { border-top: 1px solid var(--linea); }
   .rec-reparto {
     font-size: 0.625rem; font-weight: 500; text-transform: uppercase;
-    letter-spacing: 0.24em; color: var(--oro); margin: 0;
+    letter-spacing: 0.2em; color: var(--sabbia); margin: 0;
   }
   .rec-nome { font-size: 1.0625rem; font-weight: 500; color: var(--crema); margin: 0.375rem 0 0; }
-  .rec-note { font-size: 0.8125rem; font-weight: 300; color: var(--grigio); margin: 0.25rem 0 0; }
+  .rec-note { font-size: 0.8125rem; font-weight: 400; color: var(--grigio); margin: 0.25rem 0 0; }
 
   /* ---- i campi ---- */
   .campo {
-    width: 100%; height: 54px; border: 1px solid var(--linea); border-radius: 1rem;
-    background: rgba(237, 231, 221, 0.05);
+    width: 100%; height: 52px; border: 1px solid var(--linea); border-radius: 16px;
+    background: var(--superficie);
     color: var(--crema); font-family: inherit; font-size: 1rem; font-weight: 400;
     text-align: center; padding: 0 1.25rem;
     transition: border-color var(--dur-fast) var(--ease);
@@ -276,7 +316,7 @@
   .campo[aria-invalid='true'] { border-color: #c96a4f; }
   .consenso {
     display: flex; gap: 0.625rem; align-items: flex-start; text-align: left;
-    margin-top: 0.875rem; font-size: 0.8125rem; font-weight: 300;
+    margin-top: 0.875rem; font-size: 0.8125rem; font-weight: 400;
     line-height: 1.55; color: var(--grigio);
   }
   .consenso input { margin-top: 3px; accent-color: var(--oro); }
@@ -286,10 +326,10 @@
    * È un piccolo biglietto: stesso nero, stesso filo d'oro. */
   .tessera {
     position: relative; width: 100%; max-width: 330px; margin-top: 2.25rem;
-    padding: 1.75rem 1.5rem 1.5rem; border-radius: 1.25rem;
-    background: linear-gradient(180deg, #1c1713 0%, #110d0b 100%);
-    border: 1px solid rgba(216, 188, 134, 0.35);
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+    padding: 1.75rem 1.5rem 1.5rem; border-radius: 24px;
+    background: var(--elevata);
+    border: 1px solid rgba(216, 188, 134, 0.22);
+    box-shadow: var(--ombra);
   }
   .tessera-cifra {
     font-size: 3.5rem; font-weight: 300; line-height: 1; margin: 0; color: var(--oro);
@@ -303,14 +343,14 @@
     font-size: 1.0625rem; font-weight: 500; letter-spacing: 0.22em; color: var(--crema);
     font-variant-numeric: tabular-nums; margin: 0.75rem 0 0;
   }
-  .tessera-scade { font-size: 0.75rem; font-weight: 300; line-height: 1.5; color: var(--grigio-tenue); margin: 0.75rem 0 0; }
+  .tessera-scade { font-size: 0.75rem; font-weight: 400; line-height: 1.5; color: var(--grigio-tenue); margin: 0.75rem 0 0; }
 
   /* ---- i contatti, come sul retro del biglietto ---- */
   .contatti { list-style: none; margin: 1.75rem 0 0; padding: 0; font-size: 0.9375rem; line-height: 2; }
   .contatti a { color: var(--crema); text-decoration: none; font-variant-numeric: tabular-nums; }
   .contatto-nome { font-weight: 500; }
   .indirizzo {
-    font-size: 0.8125rem; font-weight: 300; line-height: 1.6;
+    font-size: 0.8125rem; font-weight: 400; line-height: 1.6;
     color: var(--grigio); margin: 0.875rem 0 0;
   }
   .indirizzo a { color: inherit; text-decoration: none; }
@@ -380,24 +420,24 @@
   /* ================================================================ */
   /* La vetrina                                                        */
   /* ================================================================ */
-  .vetrina { width: 100%; margin-top: 1.75rem; display: grid; gap: 14px; }
+  .vetrina { width: 100%; margin-top: 2.25rem; display: grid; gap: 16px; }
 
   /* Il riquadro alla maniera di Apple: angoli larghi, un nero appena più
      chiaro del fondo, un filo di luce sul bordo. Dentro, il testo sta a
      sinistra come nelle schede di Apple; il carosello esce fino ai bordi. */
   .riquadro {
     width: 100%; text-align: left; overflow: hidden;
-    padding: 1.375rem 0 1.125rem;
+    padding: 1.625rem 0 1.375rem;
     border-radius: 28px;
-    background: linear-gradient(180deg, #1F1915 0%, #15110E 100%);
-    border: 1px solid rgba(237, 231, 221, 0.08);
-    box-shadow: 0 1px 0 rgba(237, 231, 221, 0.05) inset, 0 24px 60px rgba(0, 0, 0, 0.45);
+    background: var(--superficie);
+    border: 1px solid var(--linea);
+    box-shadow: 0 1px 0 rgba(242, 235, 221, 0.04) inset, var(--ombra);
   }
-  .riquadro-testa { padding: 0 1.375rem; }
+  .riquadro-testa { padding: 0 1.5rem; }
   .riquadro-titolo {
-    margin: 0; font-size: 1.625rem; font-weight: 600; letter-spacing: -0.02em; color: var(--crema);
+    margin: 0; font-size: 1.75rem; font-weight: 600; letter-spacing: -0.03em; color: var(--crema);
   }
-  .riquadro-sotto { margin: 0.25rem 0 0; font-size: 0.875rem; font-weight: 300; color: var(--grigio); }
+  .riquadro-sotto { margin: 0.3rem 0 0; font-size: 0.875rem; font-weight: 400; color: var(--grigio); }
 
   /* Il binario: uno scorrimento vero, agganciato al centro. Il rientro è
      mezzo binario meno mezza carta, così la prima e l'ultima arrivano al
@@ -406,26 +446,26 @@
     /* Le copertine si sovrappongono: il margine negativo le infila una
        dietro l'altra, e il 3D le fa vedere girate ai lati di quella in
        centro. Le vicine escono a metà dal bordo: si capisce che si scorre. */
-    --w: 204px;
+    --w: 244px;
     display: flex; gap: 0; overflow-x: auto; overflow-y: hidden;
     scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
     padding: 1.375rem calc(50% - var(--w) / 2) 2.25rem;
     scrollbar-width: none; -webkit-overflow-scrolling: touch;
   }
   .binario::-webkit-scrollbar { display: none; }
-  .binario-alta { --w: 156px; }
+  .binario-alta { --w: 184px; }
   .binario-posto { position: relative; flex: none; width: var(--w); scroll-snap-align: center; }
-  .binario-posto + .binario-posto { margin-left: -34px; }
-  .binario-alta .binario-posto + .binario-posto { margin-left: -26px; }
+  .binario-posto + .binario-posto { margin-left: -44px; }
+  .binario-alta .binario-posto + .binario-posto { margin-left: -34px; }
 
   /* La copertina in 3D. La trasformazione la scrive il codice a ogni
      fotogramma; qui c'è quello che non cambia: la forma, l'ombra, e il
      riflesso sul pavimento lucido dello showroom. */
   .carta3d {
     position: relative; display: block; width: 100%; padding: 0; border: 0; cursor: pointer;
-    aspect-ratio: 4 / 3; border-radius: 18px; overflow: hidden;
+    aspect-ratio: 4 / 3; border-radius: 20px; overflow: hidden;
     background: #E9E1D3;
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+    box-shadow: var(--ombra-foto);
     filter: brightness(var(--luce, 1));
     will-change: transform;
     -webkit-tap-highlight-color: transparent;
@@ -453,35 +493,44 @@
     font-size: 0.625rem; font-weight: 500; letter-spacing: 0.04em;
   }
 
-  /* Il nome dell'articolo in centro. */
-  .riquadro-nome { min-height: 3.1rem; padding: 0 1.375rem; text-align: center; }
-  .riquadro-nome-in { margin: 0; animation: nome-in 320ms var(--ease) both; }
-  .riquadro-nome .nome { display: block; font-size: 1.0625rem; font-weight: 500; color: var(--crema); }
-  .riquadro-nome .riga { display: block; margin-top: 0.15rem; font-size: 0.8125rem; font-weight: 300; color: var(--grigio); }
-  @keyframes nome-in { from { opacity: 0; transform: translateY(6px); } }
+  /* Il prodotto in centro: nome, finiture, poi contatore e azione. */
+  .prodotto { padding: 0 1.5rem; text-align: left; }
+  .prodotto-in { animation: prodotto-in 320ms var(--ease) both; }
+  @keyframes prodotto-in { from { opacity: 0; transform: translateY(6px); filter: blur(4px); } }
+  .prodotto-nome {
+    margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; color: var(--crema);
+  }
+  .prodotto-meta { margin: 0.3rem 0 0; font-size: 0.875rem; font-weight: 400; color: var(--grigio); }
+  .prodotto-barra {
+    margin-top: 1.125rem; display: flex; align-items: center; justify-content: space-between;
+  }
+  .prodotto-conta {
+    font-size: 0.75rem; font-weight: 500; letter-spacing: 0.12em; color: var(--crema);
+    font-variant-numeric: tabular-nums;
+  }
+  .prodotto-conta .sep { color: var(--grigio-tenue); margin: 0 0.15em; }
 
-  /* La guida della Bufala: la frase, e la pista che è già l'indicatore. */
-  .guida { margin-top: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
-  .guida-testo {
-    margin: 0; display: inline-flex; align-items: center; gap: 0.5rem;
-    font-size: 0.75rem; font-weight: 300; color: var(--grigio);
-    transition: opacity 400ms var(--ease);
+  /* La barra in basso: traslucida, galleggia sopra la vetrina. */
+  .step-con-dock { padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px)); }
+  .dock {
+    position: fixed; z-index: 30;
+    left: 50%; transform: translateX(-50%);
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    width: calc(100% - 24px); max-width: 596px;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: 8px 8px 8px 20px; border-radius: 24px;
+    background: var(--vetro); border: 1px solid var(--vetro-bordo);
+    -webkit-backdrop-filter: blur(20px) saturate(1.2); backdrop-filter: blur(20px) saturate(1.2);
+    box-shadow: var(--ombra);
+    animation: dock-in 420ms var(--ease) 200ms both;
   }
-  .guida[data-usato='si'] .guida-testo { opacity: 0.4; }
-  .guida-icona {
-    position: relative; width: 18px; height: 1px; background: rgba(216, 188, 134, 0.45);
+  @keyframes dock-in { from { opacity: 0; transform: translate(-50%, 16px); } }
+  .dock-info {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.8125rem; font-weight: 500; color: var(--crema-tenue);
   }
-  .guida-icona::after {
-    content: ''; position: absolute; top: -2px; left: 0; width: 5px; height: 5px; border-radius: 50%;
-    background: var(--oro); animation: scivola 1.8s var(--ease) infinite;
-  }
-  .guida[data-usato='si'] .guida-icona::after { animation: none; left: 13px; }
-  @keyframes scivola { 0%, 15% { left: 0; } 60%, 100% { left: 13px; } }
-  .guida-pista { position: relative; width: 72px; height: 2px; border-radius: 2px; background: var(--linea); }
-  .guida-cursore {
-    position: absolute; top: 0; left: 0; width: 20px; height: 2px; border-radius: 2px; background: var(--oro);
-    transform: translateX(calc(var(--pos, 0) * 52px));
-  }
+  .dock-cuore { color: var(--oro); font-size: 1rem; }
+  .dock .pill { min-height: 40px; padding: 0 1.125rem; }
 
   /* ================================================================ */
   /* La scheda: il foglio che sale dal basso                           */
@@ -489,19 +538,19 @@
   .scheda-velo {
     position: fixed; inset: 0; z-index: 200;
     display: flex; align-items: flex-end; justify-content: center;
-    background: rgba(0, 0, 0, 0.55);
-    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-    animation: velo-in 260ms ease both;
+    background: rgba(10, 8, 6, 0.5);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    animation: velo-in 280ms var(--ease) both;
   }
   .scheda-velo.via { animation: velo-out 260ms ease both; }
   @keyframes velo-in { from { opacity: 0; } }
   @keyframes velo-out { to { opacity: 0; } }
   .scheda {
     position: relative; width: 100%; max-width: 620px; max-height: 94dvh; overflow-y: auto;
-    background: var(--nero); color: var(--crema);
-    border-radius: 28px 28px 0 0; border-top: 1px solid rgba(237, 231, 221, 0.1);
+    background: var(--superficie); color: var(--crema);
+    border-radius: 28px 28px 0 0; border-top: 1px solid var(--vetro-bordo);
     padding-bottom: env(safe-area-inset-bottom, 0px);
-    animation: foglio-in 460ms cubic-bezier(0.32, 0.72, 0, 1) both;
+    animation: foglio-in 400ms var(--ease) both;
     overscroll-behavior: contain;
   }
   .scheda-velo.via .scheda { animation: foglio-out 260ms cubic-bezier(0.4, 0, 1, 1) both; }
@@ -515,9 +564,11 @@
     position: absolute; top: 14px; right: 14px; z-index: 2;
     width: 32px; height: 32px; border-radius: 50%; border: 0; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(22, 18, 15, 0.55); color: var(--crema);
-    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    background: var(--vetro); color: var(--crema); border: 1px solid var(--vetro-bordo);
+    -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+    transition: transform 160ms var(--ease);
   }
+  .scheda-chiudi:active { transform: scale(0.92); }
 
   .galleria {
     display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
@@ -542,25 +593,26 @@
   .punto[aria-current='true'] { width: 18px; background: var(--oro); }
   .galleria-conta { margin-left: 0.5rem; font-size: 0.6875rem; color: var(--grigio-tenue); font-variant-numeric: tabular-nums; }
 
-  .scheda-testo { padding: 1rem 1.5rem 1.75rem; text-align: left; }
+  .scheda-testo { padding: 1.25rem 1.5rem 2rem; text-align: left; }
   .scheda-testo .eyebrow { margin-bottom: 0.5rem; }
   .scheda-nome { margin: 0; font-size: 1.75rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; }
-  .scheda-riga { margin: 0.5rem 0 0; font-size: 0.9375rem; font-weight: 300; line-height: 1.55; color: var(--crema-tenue); }
+  .scheda-riga { margin: 0.5rem 0 0; font-size: 0.9375rem; font-weight: 400; line-height: 1.55; color: var(--crema-tenue); }
   .scheda-dettagli { list-style: none; margin: 1.125rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
   .scheda-dettagli li {
     padding: 0.35rem 0.75rem; border-radius: 99px; border: 1px solid var(--linea);
-    font-size: 0.8125rem; font-weight: 300; color: var(--crema-tenue);
+    font-size: 0.8125rem; font-weight: 400; color: var(--crema-tenue);
   }
   .cuore {
-    margin-top: 1.5rem; width: 100%; min-height: 52px; border-radius: 99px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 0.6rem;
-    border: 1px solid rgba(216, 188, 134, 0.55); background: transparent; color: var(--crema);
-    font-family: inherit; font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
-    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+    margin-top: 1.5rem; min-height: 44px; padding: 0 1.25rem; border-radius: 99px; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    border: 1px solid var(--vetro-bordo); background: var(--elevata); color: var(--crema);
+    font-family: inherit; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    transition: transform 160ms var(--ease), background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
   }
+  .cuore:active { transform: scale(0.96); }
   .cuore span { font-size: 1.125rem; letter-spacing: 0; }
   .cuore.pieno { background: var(--oro); border-color: var(--oro); color: var(--nero); }
-  .scheda-nota { margin: 1rem 0 0; font-size: 0.8125rem; font-weight: 300; line-height: 1.6; color: var(--grigio); text-align: center; }
+  .scheda-nota { margin: 1.5rem 0 0; font-size: 0.8125rem; font-weight: 400; line-height: 1.6; color: var(--grigio); }
 
   /* I preferiti sulla tessera. */
   .tessera-preferiti { margin-top: 1rem; padding-top: 0.875rem; border-top: 1px solid var(--linea); }
