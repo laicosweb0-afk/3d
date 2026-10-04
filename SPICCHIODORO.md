@@ -25,7 +25,8 @@ In cima allo script, l'array `SERATE`:
 ```
 
 `foto` è facoltativa: il riquadro della serata ritagliato dalla locandina
-(`img/serate/`), mostrato a sinistra nella card. Le serate passate
+(`img/serate/`), mostrato a sinistra nella card; la locandina della serata
+più vicina diventa anche la foto della box «Serate» in home. Le serate passate
 spariscono da sole il giorno dopo. Senza serate future
 compare «Nuove serate in arrivo: le date escono su Instagram.»
 

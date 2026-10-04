@@ -189,7 +189,7 @@ html.ready .hero .ph > img { transform: scale(1); transition: transform 4.5s var
   font: 500 12.5px/1 var(--sans); color: var(--panna); white-space: nowrap;
 }
 .badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--verde); box-shadow: 0 0 0 3px rgba(111,207,142,.18); }
-.badge .dot[hidden] { display: none; }
+.badge[hidden], .badge .dot[hidden] { display: none; }
 
 .hero-text {
   position: absolute; z-index: 2; left: 0; right: 0; bottom: 0;
@@ -505,11 +505,11 @@ html.sheet-on .scrim { opacity: 1; pointer-events: auto; }
       </span>
     </button>
     <button class="tile piccola press rivela" data-apri="serate">
-      <div class="ph"><img src="img/bancone.jpg" alt="" loading="lazy" style="object-position:62% 80%"></div>
+      <div class="ph"><img src="img/bancone.jpg" alt="" loading="lazy" style="object-position:62% 80%" data-locandina></div>
       <span class="badge" data-prossima hidden></span>
       <span class="testo">
         <h2>Serate</h2>
-        <div class="sub">Eventi da non perdere</div>
+        <div class="sub" data-prossima-sub>Eventi da non perdere</div>
       </span>
     </button>
     <button class="tile piccola press rivela" data-apri="dove">
@@ -878,9 +878,26 @@ function renderSerate() {
   $$('[data-serata]', ul).forEach((b) => b.addEventListener('click', () => {
     apri('prenota', { serata: lista[Number(b.dataset.serata)] });
   }));
-  const p = lista[0].giorno;
-  badge.innerHTML = `Prossima · <b>${stessoGiorno(p, oggi0()) ? 'stasera' : `${p.getDate()} ${MESI_BREVI[p.getMonth()]}`}</b>`;
-  badge.hidden = false;
+  const prima = lista[0], p = prima.giorno;
+  const quando = stessoGiorno(p, oggi0()) ? 'stasera' : `${p.getDate()} ${MESI_BREVI[p.getMonth()]}`;
+  if (prima.foto) {
+    // La box mostra la locandina della serata più vicina, con «Prossima ·
+    // data» sotto il titolo. Se il file manca, torna il bancone.
+    const img = $('[data-locandina]');
+    img.setAttribute('data-riserva', img.getAttribute('src'));
+    img.style.objectPosition = '50% 0%';
+    // Locandina quadrata: intera in alto, con il fondo scuro sotto per il
+    // titolo; locandina verticale: riempie la box partendo dall'alto.
+    img.addEventListener('load', () => {
+      if (img.getAttribute('src').includes('serate/') && img.naturalWidth / img.naturalHeight > .8) img.style.objectFit = 'contain';
+    }, { once: true });
+    img.alt = `Locandina: ${prima.titolo}`;
+    img.src = `img/${prima.foto}`;
+    $('[data-prossima-sub]').textContent = `Prossima · ${quando}`;
+  } else {
+    badge.innerHTML = `Prossima · <b>${quando}</b>`;
+    badge.hidden = false;
+  }
 }
 
 /* ---------- menù ---------- */
