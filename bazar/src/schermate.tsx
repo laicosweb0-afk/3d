@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Step, Cta } from './components/Step';
 import { Ruota, type RuotaHandle } from './components/Ruota';
 import { RiquadroCollezione, SchedaArticolo } from './components/Vetrina';
@@ -40,15 +41,22 @@ export function Vetrina({
   const [aperto, setAperto] = useState<{ a: Articolo; forma: Collezione['forma'] } | null>(null);
 
   return (
-    <Step bottom={
-      <>
-        <p className="nota">
+    <Step className="step-con-dock" bottom={
+      // La barra in basso, come nelle app: traslucida, galleggia sopra la
+      // vetrina mentre si scorre. A sinistra i preferiti, a destra l'unica
+      // azione che porta avanti. Sta sul `body`: dentro la schermata, che
+      // entra con una trasformazione, `position: fixed` non varrebbe.
+      createPortal(<div className="dock" role="toolbar" aria-label="Vetrina">
+        <span className="dock-info">
+          <span className="dock-cuore" aria-hidden>{preferiti.size ? '♥' : '♡'}</span>
           {preferiti.size
-            ? `${preferiti.size === 1 ? 'Un preferito' : `${preferiti.size} preferiti`}: li ritrovi sulla tua tessera.`
-            : 'Poi una domanda sola, e vinci un credito.'}
-        </p>
-        <Cta onClick={onAvanti}>Scopri il tuo stile</Cta>
-      </>
+            ? `${preferiti.size} ${preferiti.size === 1 ? 'preferito' : 'preferiti'}`
+            : 'Tocca un prodotto'}
+        </span>
+        <button type="button" className="pill pill-piena" onClick={onAvanti}>
+          Il tuo stile <span aria-hidden>→</span>
+        </button>
+      </div>, document.body)
     }>
       <p className="eyebrow">Showroom arredamento · Lugo</p>
       <h1 className="h1">{'Sfoglia\nil Bazar.'}</h1>

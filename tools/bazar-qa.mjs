@@ -119,18 +119,32 @@ await p.waitForTimeout(600);
 await scatto('0v-vetrina');
 await overflow('vetrina');
 {
+  // Il contatore a due cifre, e la barra che galleggia in fondo allo schermo.
+  const conta = (await p.locator('.prodotto-conta').first().innerText()).replace(/\s+/g, ' ');
+  if (!/^01 \/ 0\d$/.test(conta)) errori.push(`VETRINA: il contatore dice «${conta}», non «01 / 0N»`);
+  const d = await p.locator('.dock').boundingBox();
+  if (!d || d.y + d.height > 844 || d.y < 844 - 120) errori.push(`VETRINA: la barra non galleggia in fondo allo schermo (${d && d.y})`);
+  await p.mouse.wheel(0, 600);
+  await p.waitForTimeout(300);
+  const d2 = await p.locator('.dock').boundingBox();
+  if (!d2 || Math.abs(d2.y - d.y) > 2) errori.push('VETRINA: scorrendo la pagina la barra si muove');
+  await p.mouse.wheel(0, -600);
+  await p.waitForTimeout(300);
+}
+{
   // Scorrere il binario cambia l'articolo in centro.
-  const prima = await p.locator('.riquadro').first().locator('.riquadro-nome .nome').innerText();
+  const prima = await p.locator('.riquadro').first().locator('.prodotto-nome').innerText();
   await p.locator('.binario').first().evaluate((b) => b.scrollTo({ left: b.children[1].offsetLeft - (b.clientWidth - b.children[1].offsetWidth) / 2 }));
   await p.waitForTimeout(500);
-  const dopo = await p.locator('.riquadro').first().locator('.riquadro-nome .nome').innerText();
+  const dopo = await p.locator('.riquadro').first().locator('.prodotto-nome').innerText();
   if (prima === dopo) errori.push('VETRINA: scorrendo, il nome in centro non cambia');
   await scatto('0v-scorsa');
   await p.locator('.binario').first().evaluate((b) => b.scrollTo({ left: 0 }));
   await p.waitForTimeout(400);
 }
-// La scheda: si apre, ha le foto, si scorre, il cuore funziona, si chiude.
-await p.locator('.carta3d').first().click();
+// La scheda: si apre dal «Scopri», ha le foto, si scorre, il cuore
+// funziona, si chiude.
+await p.locator('.riquadro').first().getByRole('button', { name: /Scopri/ }).click();
 await p.waitForSelector('.scheda', { timeout: 3000 });
 await p.waitForTimeout(600);
 {
@@ -140,7 +154,7 @@ await p.waitForTimeout(600);
   await p.locator('.galleria').evaluate((g) => g.scrollTo({ left: g.clientWidth }));
   await p.waitForTimeout(600);
   const conta = await p.locator('.galleria-conta').innerText();
-  if (!conta.startsWith('2 /')) errori.push(`SCHEDA: dopo lo scorrimento il contatore dice «${conta}»`);
+  if (!conta.startsWith('02 /')) errori.push(`SCHEDA: dopo lo scorrimento il contatore dice «${conta}»`);
   const rotte = await p.locator('.galleria-foto img').evaluateAll((im) => im.filter((i) => i.complete && !i.naturalWidth).length);
   if (rotte) errori.push(`SCHEDA: ${rotte} foto non si caricano`);
   await scatto('0v-scheda-2');
@@ -154,7 +168,7 @@ await p.waitForTimeout(600);
   const rotte = await p.locator('.carta3d img').evaluateAll((im) => im.filter((i) => i.complete && !i.naturalWidth).length);
   if (rotte) errori.push(`VETRINA: ${rotte} copertine non si caricano`);
 }
-await p.getByRole('button', { name: /Scopri il tuo stile/ }).click();
+await p.locator('.dock').getByRole('button', { name: /Il tuo stile/ }).click();
 
 // 1 — ingresso, con il velluto da vicino dietro
 await p.waitForTimeout(500);
