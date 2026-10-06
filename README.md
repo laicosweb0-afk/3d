@@ -17,6 +17,7 @@ Un unico piano sequenza: il visitatore assiste alla trasformazione di uno spazio
 | [WOMAN.md](./WOMAN.md) | Woman — The Fragrance Experience: la pagina della fialetta sorpresa, QR e NFC, messa online |
 | [BAZAR.md](./BAZAR.md) | Bazar Marrakech — Il tuo stile: la card NFC dello showroom di Lugo, messa online |
 | [SPICCHIODORO.md](./SPICCHIODORO.md) | Spicchio d'Oro — la card NFC del locale di Fusignano: menù, serate, prenotazione WhatsApp |
+| [VIDEO_IA_PROMPT.md](./VIDEO_IA_PROMPT.md) | Video IA: come si scrive un prompt (character sheet, fermo immagine, animazione) |
 
 ## Stato
 
