@@ -32,7 +32,7 @@ color-scheme:dark;
 }
 }
 body{background-image:radial-gradient(120% 50% at 50% 0%,var(--glow),transparent 60%);background-repeat:no-repeat;background-size:100% 900px}
-.marble{position:absolute;top:0;left:0;width:100%;height:1800px;pointer-events:none;z-index:-1;opacity:0}
+.marble{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:-1;opacity:0}
 @media (prefers-color-scheme: dark){.marble{opacity:1}}
 body{position:relative;z-index:0}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -51,7 +51,7 @@ button:active{opacity:.7}
 .switch button[aria-pressed="true"],.tabs button[aria-pressed="true"]{background:var(--pill);color:var(--ink);font-weight:600;box-shadow:0 3px 8px rgba(0,0,0,.18),inset 0 0 0 .5px var(--line)}
 .from{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
 .from select{flex:1;background:var(--fill);border:0;border-radius:9px;padding:6px 10px;font-size:13px;color:var(--ink);-webkit-appearance:none;appearance:none}
-.view{max-width:560px;margin:0 auto;padding:0 16px 140px}
+.view{max-width:560px;margin:0 auto;padding:0 16px calc(48px + env(safe-area-inset-bottom))}
 .logo{display:block;border-radius:50%;box-shadow:0 0 0 1px rgba(224,188,106,.25),0 12px 40px rgba(201,154,62,.25)}
 .hero{text-align:center;padding:34px 0 26px}
 .hero .logo{width:132px;height:132px;margin:0 auto 20px}
