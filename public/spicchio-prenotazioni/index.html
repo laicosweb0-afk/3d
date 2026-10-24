@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spicchio d'Oro · Prenotazioni</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg:#F6F2EA; --surface:#FFFDF8; --surface2:#F1EADC; --fill:rgba(162,122,38,.10); --ink:#1A140A; --muted:#8A7B60; --line:rgba(162,122,38,.20);
+--gold:#A27A26; --gold-hi:#C99A3E; --gold-soft:rgba(162,122,38,.12); --on-gold:#FFFFFF;
+--seat:#C2398F; --seat-soft:rgba(194,57,143,.12);
+--floor:#FBF8F2; --vein:#E2D3AA; --dim:.25; --glass:rgba(246,242,234,.8); --pill:#FFFDF8;
+--wa:#28A55F; --ig:#C13584; --tel:#3A72C4; --web:#A27A26;
+--rosa:rgba(194,57,143,.05); --bar:rgba(30,140,160,.05); --veranda:rgba(162,122,38,.03);
+--shadow:0 1px 2px rgba(60,40,10,.05),0 10px 30px rgba(60,40,10,.07);
+--glow:rgba(201,154,62,.18);
+color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+:root{
+--bg:#070604; --surface:#120F0A; --surface2:#1B160E; --fill:rgba(224,188,106,.09); --ink:#F7F0E1; --muted:#A8977A; --line:rgba(224,188,106,.16);
+--gold:#E0BC6A; --gold-hi:#F4D891; --gold-soft:rgba(224,188,106,.14); --on-gold:#1A1408;
+--seat:#F06BC9; --seat-soft:rgba(240,107,201,.15);
+--floor:#0C0A06; --vein:#4A3A18; --dim:.22; --glass:rgba(7,6,4,.72); --pill:#3A2E17;
+--wa:#30D158; --ig:#FF5CA8; --tel:#64A2FF; --web:#E0BC6A;
+--rosa:rgba(240,107,201,.06); --bar:rgba(60,190,210,.05); --veranda:rgba(224,188,106,.03);
+--shadow:inset 0 0 0 .5px rgba(224,188,106,.18);
+--glow:rgba(224,188,106,.16);
+color-scheme:dark;
+}
+}
+body{background-image:radial-gradient(120% 50% at 50% 0%,var(--glow),transparent 60%);background-repeat:no-repeat;background-size:100% 900px}
+.marble{position:absolute;top:0;left:0;width:100%;height:1800px;pointer-events:none;z-index:-1;opacity:0}
+@media (prefers-color-scheme: dark){.marble{opacity:1}}
+body{position:relative;z-index:0}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background-color:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,sans-serif;color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;font-size:16px;line-height:1.4;letter-spacing:-.011em}
+.num-font,.party output,.selected .big,.ticket .table-no,.sheet-head .n,.kpi b{font-family:ui-rounded,"SF Pro Rounded",-apple-system,"Inter",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+button,input,select{font:inherit;color:inherit;letter-spacing:inherit}
+button{cursor:pointer;border:0;background:none;-webkit-tap-highlight-color:transparent}
+button:active{opacity:.7}
+:focus-visible{outline:3px solid var(--gold-hi);outline-offset:2px;border-radius:10px}
+[hidden]{display:none!important}
+.demo{position:sticky;top:0;z-index:30;background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid var(--line);padding:10px 16px}
+.demo-in{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.switch,.tabs{display:flex;background:var(--fill);border-radius:10px;padding:2px;gap:0}
+.switch button,.tabs button{flex:1;padding:7px 8px;border-radius:8px;font-weight:500;font-size:13.5px;color:var(--muted);white-space:nowrap;transition:background .2s,box-shadow .2s}
+.switch button[aria-pressed="true"],.tabs button[aria-pressed="true"]{background:var(--pill);color:var(--ink);font-weight:600;box-shadow:0 3px 8px rgba(0,0,0,.18),inset 0 0 0 .5px var(--line)}
+.from{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.from select{flex:1;background:var(--fill);border:0;border-radius:9px;padding:6px 10px;font-size:13px;color:var(--ink);-webkit-appearance:none;appearance:none}
+.view{max-width:560px;margin:0 auto;padding:0 16px 140px}
+.logo{display:block;border-radius:50%;box-shadow:0 0 0 1px rgba(224,188,106,.25),0 12px 40px rgba(201,154,62,.25)}
+.hero{text-align:center;padding:34px 0 26px}
+.hero .logo{width:132px;height:132px;margin:0 auto 20px}
+.hero h1{font-size:34px;font-weight:700;letter-spacing:-.025em;line-height:1.1}
+.hero p{color:var(--muted);margin-top:8px;font-size:15px}
+.steps{display:flex;gap:6px;margin:0 2px 18px}
+.steps div{flex:1}
+.steps i{display:block;height:4px;border-radius:2px;background:var(--fill);transition:background .35s}
+.steps span{display:block;font-size:12.5px;color:var(--muted);margin-top:7px;font-weight:500}
+.steps .on i{background:var(--gold)}
+.steps .on span{color:var(--ink)}
+.card{background:var(--surface);border-radius:22px;padding:22px 20px;box-shadow:var(--shadow)}
+.block+.block{margin-top:26px}
+.q{font-weight:600;font-size:17px;margin-bottom:12px;letter-spacing:-.02em}
+.party{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:16px;padding:12px}
+.party output{font-weight:700;font-size:48px;line-height:1;color:var(--ink);letter-spacing:-.03em}
+.party small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.round-btn{width:48px;height:48px;border-radius:50%;font-size:26px;font-weight:300;background:var(--surface);color:var(--gold);box-shadow:var(--shadow)}
+.round-btn:disabled{opacity:.3;cursor:default}
+.dates{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -20px;padding:2px 20px 4px;scrollbar-width:none}
+.dates::-webkit-scrollbar{display:none}
+.date{scroll-snap-align:start;flex:0 0 58px;border-radius:16px;padding:10px 0;text-align:center;background:var(--surface2);transition:background .2s}
+.date b{display:block;font-size:21px;font-weight:600;line-height:1.25;letter-spacing:-.02em}
+.date span{font-size:11.5px;color:var(--muted);text-transform:capitalize;font-weight:500}
+.date[aria-pressed="true"]{background:var(--gold);color:var(--on-gold)}
+.date[aria-pressed="true"] span{color:var(--on-gold);opacity:.85}
+.date:disabled{opacity:.35;cursor:default}
+.times{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.time{border-radius:12px;padding:11px 0;font-weight:600;font-size:15px;background:var(--surface2);font-variant-numeric:tabular-nums}
+.time[aria-pressed="true"]{background:var(--gold);color:var(--on-gold)}
+.cta{display:block;width:100%;margin-top:24px;background:var(--gold);color:var(--on-gold);font-weight:600;font-size:17px;padding:16px;border-radius:14px;transition:opacity .2s,transform .1s}
+.cta:active{transform:scale(.98)}
+.cta:disabled{opacity:.3;cursor:default;transform:none}
+.ghost{display:block;width:100%;margin-top:6px;padding:12px;color:var(--gold);font-size:16px;font-weight:500}
+.pick-head{display:flex;justify-content:space-between;align-items:baseline;margin:0 2px 12px}
+.pick-head h2{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.pick-head span{font-size:13.5px;color:var(--muted)}
+.pick-note{font-size:14px;color:var(--muted);margin:12px 4px 0;text-align:center}
+.selected{display:flex;align-items:center;gap:14px;margin-top:14px;padding:14px 16px;border-radius:18px;background:var(--surface);box-shadow:var(--shadow)}
+.selected .big{width:52px;height:52px;border-radius:14px;background:var(--gold);color:var(--on-gold);display:grid;place-items:center;font-weight:700;font-size:24px;flex:none}
+.selected strong{display:block;font-weight:600}
+.selected small{color:var(--muted);font-size:14px}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
+.summary div{background:var(--surface2);padding:12px 14px;border-radius:14px}
+.summary span{display:block;font-size:12.5px;color:var(--muted)}
+.summary b{font-weight:600;font-size:15.5px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:13px;color:var(--muted);font-weight:500;padding-left:4px}
+.field input{background:var(--surface2);border:1.5px solid transparent;border-radius:12px;padding:14px;font-size:17px;width:100%;transition:border-color .2s}
+.field input:focus{border-color:var(--gold);outline:none}
+.tel{display:flex;gap:8px}
+.tel span{display:flex;align-items:center;padding:0 14px;border-radius:12px;background:var(--surface2);color:var(--muted);font-weight:500}
+.fine{font-size:12.5px;color:var(--muted);margin:2px 4px 0;line-height:1.45}
+.ticket{text-align:center;padding:30px 22px 22px;overflow:hidden}
+.ticket .logo{width:84px;height:84px;margin:0 auto 18px}
+.ticket h2{font-size:28px;font-weight:700;letter-spacing:-.025em}
+.ticket>p{color:var(--muted);margin-top:4px}
+.ticket .table-no{font-weight:700;font-size:96px;color:var(--gold);line-height:1;margin:22px 0 4px;letter-spacing:-.04em}
+.ticket .table-room{color:var(--muted);font-size:15px}
+.perf{height:0;border-top:1.5px dashed var(--line);margin:24px -22px}
+.ticket .rows{text-align:left;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ticket .rows span{display:block;font-size:12.5px;color:var(--muted)}
+.ticket .rows b{font-weight:600}
+.where{margin-top:22px;font-size:14px;color:var(--muted)}
+.ticket.pop{animation:pop .55s cubic-bezier(.2,.9,.3,1.15)}
+@keyframes pop{from{transform:scale(.95) translateY(8px);opacity:0}to{transform:none;opacity:1}}
+.tabs{margin-bottom:12px}
+.plan{background:var(--floor);border-radius:22px;overflow:hidden;box-shadow:var(--shadow)}
+.plan svg{display:block;width:100%;height:auto;touch-action:manipulation;font-family:-apple-system,"Inter",system-ui,sans-serif}
+.room-label{font-weight:600;font-size:15px;fill:var(--muted);letter-spacing:-.01em}
+.wall{stroke:var(--ink);stroke-width:2;stroke-opacity:.18}
+.vein{fill:none;stroke:var(--vein);stroke-width:1.1}
+.fixture{fill:var(--surface);stroke:var(--line);stroke-width:1}
+.fx-text{font-size:10px;fill:var(--muted);text-anchor:middle;font-weight:500}
+.t .top{fill:var(--surface);stroke:var(--line);stroke-width:1.2;transition:fill .25s,stroke .25s}
+.t .chair{fill:var(--muted);fill-opacity:.35;transition:fill .25s}
+.t .num{font-size:16px;font-weight:600;fill:var(--ink);text-anchor:middle;dominant-baseline:central;pointer-events:none;letter-spacing:-.02em}
+.t .sub{font-size:9px;fill:var(--muted);text-anchor:middle;pointer-events:none;font-weight:500}
+.t{transition:opacity .25s}
+.t.click{cursor:pointer}
+.t.booked .top{fill:var(--gold-soft);stroke:var(--gold);stroke-width:1.8}
+.t.booked .chair{fill:var(--gold);fill-opacity:1}
+.t.seated .top{fill:var(--seat-soft);stroke:var(--seat);stroke-width:1.8}
+.t.seated .chair{fill:var(--seat);fill-opacity:1}
+.t.booked .sub,.t.seated .sub{font-size:9.5px;font-weight:700}
+.t .sub.wa{fill:var(--wa)} .t .sub.ig{fill:var(--ig)} .t .sub.tel{fill:var(--tel)} .t .sub.web{fill:var(--web)}
+.t.fresh .top{animation:fresh 1.1s ease-in-out 4}
+@keyframes fresh{50%{stroke-width:6;stroke:var(--gold-hi)}}
+.t.no{opacity:var(--dim)}
+.t.ok .top{stroke:var(--gold);stroke-width:1.8}
+.t.ok .chair{fill:var(--gold);fill-opacity:.7}
+.t.picked .top{fill:var(--gold);stroke:var(--gold)}
+.t.picked .num,.t.picked .sub{fill:var(--on-gold)}
+.t.picked .sub{font-weight:600}
+.t.picked .chair{fill:var(--gold);fill-opacity:1}
+.legend{display:flex;gap:18px;justify-content:center;padding:12px 4px 0;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px;border:1.5px solid}
+.lg-free{background:var(--surface);border-color:var(--muted)}
+.lg-ok{background:var(--gold-soft);border-color:var(--gold)}
+.lg-no{background:var(--surface);border-color:var(--muted);opacity:.35}
+.lg-booked{background:var(--gold-soft);border-color:var(--gold)}
+.lg-seated{background:var(--seat-soft);border-color:var(--seat)}
+.top-bar{display:flex;align-items:center;gap:14px;padding:22px 2px 4px}
+.top-bar .logo{width:54px;height:54px;flex:none}
+.top-bar h1{font-size:22px;font-weight:700;line-height:1.15;letter-spacing:-.025em}
+.top-bar p{font-size:14px;color:var(--muted)}
+.daynav{display:flex;align-items:center;justify-content:space-between;margin:16px 0 14px}
+.daynav button{width:40px;height:40px;border-radius:50%;font-size:22px;color:var(--gold);background:var(--surface);box-shadow:var(--shadow)}
+.daynav div{text-align:center}
+.daynav strong{display:block;font-size:28px;font-weight:700;letter-spacing:-.025em;text-transform:capitalize;line-height:1.15}
+.daynav small{font-size:13px;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:10px;margin-bottom:10px}
+.kpi{background:var(--surface);border-radius:18px;padding:14px;box-shadow:var(--shadow)}
+.kpi b{display:block;font-size:28px;font-weight:700;line-height:1.1;letter-spacing:-.03em}
+.kpi b small{font-size:15px;color:var(--muted);font-weight:500}
+.kpi span{font-size:12.5px;color:var(--muted)}
+.kpi.main b{color:var(--gold)}
+.meter{height:5px;border-radius:3px;background:var(--fill);margin-top:9px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--gold);border-radius:3px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.channels{background:var(--surface);border-radius:18px;padding:16px;margin-bottom:24px;box-shadow:var(--shadow)}
+.channels h3{font-size:15px;font-weight:600;margin-bottom:12px;letter-spacing:-.015em}
+.bar-stack{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--fill);gap:2px}
+.bar-stack i{display:block;transition:flex .5s}
+.ch-list{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;margin-top:14px}
+.ch{display:flex;align-items:center;gap:8px;font-size:15px}
+.ch b{margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}
+.dot.wa,.bar-stack .wa{background:var(--wa)} .dot.ig,.bar-stack .ig{background:var(--ig)}
+.dot.tel,.bar-stack .tel{background:var(--tel)} .dot.web,.bar-stack .web{background:var(--web)}
+.sec{display:flex;justify-content:space-between;align-items:baseline;margin:28px 4px 10px}
+.sec h2{font-size:22px;font-weight:700;letter-spacing:-.025em}
+.sec span{font-size:14px;color:var(--muted)}
+.list{background:var(--surface);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)}
+.row{display:flex;align-items:center;gap:12px;padding:13px 16px;text-align:left;width:100%;position:relative}
+.row+.row::before{content:"";position:absolute;top:0;left:70px;right:0;border-top:.5px solid var(--line)}
+.row .hour{font-weight:600;font-size:15px;min-width:42px;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:8px}
+.row .hour::before{content:"";width:4px;height:28px;border-radius:2px;background:var(--gold)}
+.row.is-seated .hour::before{background:var(--seat)}
+.row .who{flex:1;min-width:0}
+.row .who strong{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .who small{color:var(--muted);font-size:13.5px}
+.row.fresh{background:var(--gold-soft)}
+.row::after{content:"›";color:var(--muted);font-size:20px;opacity:.6;margin-left:2px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:20px;background:var(--fill);white-space:nowrap}
+.new{font-size:11px;font-weight:700;color:var(--on-gold);background:var(--gold);padding:2px 7px;border-radius:8px;margin-left:6px;vertical-align:1px}
+.empty{color:var(--muted);font-size:14.5px;padding:20px 18px;line-height:1.5;text-align:center}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .3s;z-index:40}
+.scrim.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;background:var(--bg);border-radius:14px 14px 0 0;padding:8px 16px calc(24px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .45s cubic-bezier(.32,.72,0,1);max-height:92vh;overflow-y:auto;z-index:50}
+.sheet.open{transform:none}
+.grab{width:36px;height:5px;border-radius:3px;background:var(--muted);opacity:.4;margin:0 auto 14px}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;margin:0 4px 16px}
+.sheet-head>div{display:flex;align-items:center;gap:12px}
+.sheet-head .n{width:50px;height:50px;border-radius:14px;background:var(--gold);color:var(--on-gold);display:grid;place-items:center;font-weight:700;font-size:23px}
+.sheet-head p{color:var(--muted);font-size:14px;margin:0}
+.sheet-head p::before{content:"Tavolo";display:block;color:var(--ink);font-weight:700;font-size:20px;letter-spacing:-.02em}
+.close{width:30px;height:30px;border-radius:50%;background:var(--fill);font-size:13px;font-weight:700;color:var(--muted)}
+.bk{border-radius:18px;padding:16px;margin-bottom:10px;background:var(--surface);border-left:4px solid var(--gold)}
+.bk.seated{border-left-color:var(--seat)}
+.bk .l1{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.bk .l1 strong{font-size:17px;font-weight:600;letter-spacing:-.015em}
+.bk .info{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.bk .info span{display:block;font-size:12.5px;color:var(--muted)}
+.bk .info b{font-weight:600;font-size:15px}
+.bk .info a{color:var(--gold);font-weight:600;font-size:15px;text-decoration:none}
+.acts{display:flex;gap:8px;margin-top:16px}
+.btn{flex:1;padding:12px;border-radius:12px;font-weight:600;font-size:15px;background:var(--fill)}
+.btn.dark{background:var(--gold);color:var(--on-gold)}
+.btn.warn{color:var(--seat)}
+#oForm{background:var(--surface);border-radius:18px;padding:16px}
+#oForm .field input,#oForm select.sel,#oForm .mini-step{background:var(--surface2)}
+.add-title{font-weight:600;font-size:17px;margin:0 0 14px;letter-spacing:-.015em}
+.two{display:flex;gap:10px}
+.two>*{flex:1;min-width:0}
+.mini-step{display:flex;align-items:center;border-radius:12px}
+.mini-step button{width:46px;height:50px;font-size:22px;color:var(--gold)}
+.mini-step output{flex:1;text-align:center;font-weight:600;font-size:17px}
+select.sel{border:0;border-radius:12px;padding:14px;font-size:17px;width:100%}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chips button{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;border-radius:20px;background:var(--surface2);font-size:14.5px;font-weight:500;border:1.5px solid transparent}
+.chips button[aria-pressed="true"]{border-color:var(--gold);background:var(--gold-soft);font-weight:600}
+.alert{font-size:13px;color:var(--seat);margin:-6px 4px 12px}
+.toast{position:fixed;left:50%;top:14px;transform:translate(-50%,-20px);background:var(--surface);color:var(--ink);padding:13px 18px;border-radius:18px;font-size:14.5px;font-weight:500;opacity:0;transition:.4s cubic-bezier(.32,.72,0,1);pointer-events:none;z-index:60;max-width:92vw;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.18)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<svg class="marble" viewBox="0 0 600 1800" preserveAspectRatio="xMidYMin slice" aria-hidden="true" fill="none" stroke="#E0BC6A" stroke-opacity=".10">
+<path d="M-20 120 C120 160 180 60 320 140 S520 260 640 200" stroke-width="1.2"/>
+<path d="M-20 420 C80 380 200 520 300 470 S480 360 640 430" stroke-width=".8"/>
+<path d="M120 -20 C160 140 90 260 210 380 S260 640 180 920" stroke-width=".7"/>
+<path d="M-20 760 C140 700 260 820 400 760 S560 680 640 720" stroke-width="1"/>
+<path d="M460 -20 C420 120 520 220 470 360" stroke-width=".6"/>
+<path d="M-20 1100 C160 1040 240 1180 420 1120 S580 1040 640 1080" stroke-width=".9"/>
+<path d="M300 900 C340 1060 260 1240 360 1400 S420 1660 380 1820" stroke-width=".7"/>
+<path d="M-20 1500 C120 1460 220 1580 360 1530 S540 1440 640 1490" stroke-width="1"/>
+</svg>
+<div class="demo">
+<div class="demo-in">
+<div class="switch" id="switch">
+<button data-view="client" aria-pressed="true">Vista cliente</button>
+<button data-view="owner" aria-pressed="false">Vista titolare</button>
+</div>
+<label class="from" id="fromWrap">Il cliente arriva dal link di
+<select id="fromSel">
+<option value="Instagram">Instagram</option>
+<option value="WhatsApp">WhatsApp</option>
+<option value="Sito">Sito</option>
+</select>
+</label>
+</div>
+</div>
+<section class="view" id="client">
+<div class="hero">
+<div id="heroLogo"></div>
+<h1>Prenota il tuo tavolo</h1>
+<p>Via San Savino 50, Fusignano<br>Da mercoledì a domenica, 19:00 – 24:00</p>
+</div>
+<div class="steps" id="steps">
+<div class="on"><i></i><span>1 Quando</span></div>
+<div><i></i><span>2 Il tavolo</span></div>
+<div><i></i><span>3 I tuoi dati</span></div>
+</div>
+<div class="card" id="s1">
+<div class="block">
+<div class="q">Quanti siete?</div>
+<div class="party">
+<button class="round-btn" id="pMinus" aria-label="Meno persone">−</button>
+<div style="text-align:center"><output id="pOut">2</output><small id="pLbl">persone</small></div>
+<button class="round-btn" id="pPlus" aria-label="Più persone">+</button>
+</div>
+</div>
+<div class="block">
+<div class="q">Che giorno?</div>
+<div class="dates" id="dates"></div>
+</div>
+<div class="block">
+<div class="q">A che ora?</div>
+<div class="times" id="times"></div>
+</div>
+<button class="cta" id="toS2">Scegli il tavolo</button>
+</div>
+<div id="s2" hidden>
+<div class="pick-head"><h2>Scegli il tuo tavolo</h2><span id="s2info"></span></div>
+<div class="tabs" data-for="client"></div>
+<div class="plan"><svg id="planC" viewBox="0 0 600 1100" aria-label="Piantina con i tavoli disponibili"></svg></div>
+<div class="legend">
+<span><i class="lg-ok"></i>Disponibile per voi</span>
+<span><i class="lg-no"></i>Non disponibile</span>
+</div>
+<div class="selected" id="selCard" hidden>
+<div class="big" id="selN"></div>
+<div><strong id="selT"></strong><small id="selS"></small></div>
+</div>
+<p class="pick-note" id="pickNote">Tocca un tavolo dorato sulla piantina.</p>
+<button class="cta" id="toS3" disabled>Continua</button>
+<button class="ghost" id="back1">Cambia giorno o persone</button>
+</div>
+<div class="card" id="s3" hidden>
+<div class="summary" id="sum"></div>
+<form id="cForm" autocomplete="on">
+<div class="two">
+<div class="field"><label for="cNome">Nome</label><input id="cNome" name="given-name" autocomplete="given-name" required></div>
+<div class="field"><label for="cCog">Cognome</label><input id="cCog" name="family-name" autocomplete="family-name" required></div>
+</div>
+<div class="field"><label for="cTel">Numero di telefono</label>
+<div class="tel"><span>+39</span><input id="cTel" type="tel" inputmode="tel" autocomplete="tel-national" required placeholder="333 123 4567"></div>
+</div>
+<p class="fine">Usiamo il tuo numero solo per la prenotazione e per avvisarti delle nostre serate.</p>
+<button class="cta" type="submit">Conferma prenotazione</button>
+</form>
+<button class="ghost" id="back2">Cambia tavolo</button>
+</div>
+<div class="card ticket" id="s4" hidden>
+<div id="tLogo"></div>
+<h2>Tavolo prenotato</h2>
+<p id="tName"></p>
+<div class="table-no" id="tNo"></div>
+<div class="table-room" id="tRoom"></div>
+<div class="perf"></div>
+<div class="rows" id="tRows"></div>
+<p class="where">Ti aspettiamo in Via San Savino 50, Fusignano.</p>
+<button class="cta" id="again">Nuova prenotazione</button>
+</div>
+</section>
+<section class="view" id="owner" hidden>
+<div class="top-bar">
+<div id="ownLogo"></div>
+<div><h1>Software Spicchio d'Oro</h1><p>Tavoli e prenotazioni in tempo reale</p></div>
+</div>
+<div class="daynav">
+<button id="dPrev" aria-label="Giorno precedente">‹</button>
+<div><strong id="dName"></strong><small id="dDate"></small></div>
+<button id="dNext" aria-label="Giorno successivo">›</button>
+</div>
+<div class="kpis">
+<div class="kpi main"><b id="kCov">0</b><span id="kCovOf">coperti prenotati</span><div class="meter"><i id="kMeter" style="width:0"></i></div></div>
+<div class="kpi"><b id="kFree">0</b><span>tavoli liberi</span></div>
+<div class="kpi"><b id="kSeat">0</b><span>già al tavolo</span></div>
+</div>
+<div class="channels">
+<h3>Da dove arrivano le prenotazioni</h3>
+<div class="bar-stack" id="chBar"></div>
+<div class="ch-list" id="chList"></div>
+</div>
+<div class="tabs" data-for="owner"></div>
+<div class="plan"><svg id="planO" viewBox="0 0 600 1100" aria-label="Piantina del locale"></svg></div>
+<div class="legend">
+<span><i class="lg-free"></i>Libero</span>
+<span><i class="lg-booked"></i>Prenotato</span>
+<span><i class="lg-seated"></i>Al tavolo</span>
+</div>
+<div class="sec"><h2>Prenotazioni</h2><span id="listCount"></span></div>
+<div class="list" id="list"></div>
+</section>
+<div class="scrim" id="scrim"></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shN">
+<div class="grab"></div>
+<div class="sheet-head">
+<div><div class="n" id="shN"></div><p id="shSub"></p></div>
+<button class="close" id="shClose" aria-label="Chiudi">✕</button>
+</div>
+<div id="shList"></div>
+<form id="oForm" autocomplete="off">
+<div class="add-title">Aggiungi prenotazione</div>
+<div class="two">
+<div class="field"><label for="oNome">Nome</label><input id="oNome" required></div>
+<div class="field"><label for="oCog">Cognome</label><input id="oCog"></div>
+</div>
+<div class="field"><label for="oTel">Telefono</label><input id="oTel" type="tel" inputmode="tel" required></div>
+<div class="two">
+<div class="field"><label>Persone</label>
+<div class="mini-step"><button type="button" id="oMinus" aria-label="Meno">−</button><output id="oP">2</output><button type="button" id="oPlus" aria-label="Più">+</button></div>
+</div>
+<div class="field"><label for="oOra">Orario</label><select class="sel" id="oOra"></select></div>
+</div>
+<p class="alert" id="oAlert"></p>
+<div class="field"><label>Da dove arriva</label>
+<div class="chips" id="oSrc"></div>
+</div>
+<button class="cta" type="submit" style="margin-top:8px">Salva prenotazione</button>
+</form>
+</section>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const ROOMS = {
+all:{name:"Tutto",box:[0,0,600,1100]},
+veranda:{name:"Veranda",box:[0,420,600,680]},
+bar:{name:"Sala bar",box:[300,0,300,420]},
+rosa:{name:"Sala rosa",box:[0,0,300,420]}
+};
+const TABLES = [
+{n:1,room:"rosa",x:28,y:66,w:70,h:44,seats:4},{n:2,room:"rosa",x:115,y:66,w:70,h:44,seats:4},
+{n:3,room:"rosa",x:202,y:66,w:70,h:44,seats:4},{n:4,room:"rosa",x:70,y:155,w:150,h:48,seats:6},
+{n:5,room:"rosa",x:28,y:255,w:70,h:46,seats:4},{n:6,room:"rosa",x:202,y:255,w:70,h:46,seats:4},
+{n:7,room:"rosa",x:28,y:345,w:62,h:42,seats:2},{n:8,room:"rosa",x:202,y:345,w:70,h:44,seats:4},
+{n:9,room:"rosa",cx:150,cy:340,r:36,seats:6,round:true},
+{n:10,room:"bar",cx:385,cy:335,r:34,seats:4,round:true},{n:11,room:"bar",x:470,y:310,w:72,h:48,seats:4},
+{n:12,room:"bar",x:335,y:200,w:120,h:48,seats:6},{n:13,room:"bar",x:490,y:205,w:76,h:48,seats:4},
+{n:14,room:"veranda",x:30,y:465,w:62,h:48,seats:4},{n:15,room:"veranda",x:30,y:560,w:56,h:104,seats:6},
+{n:16,room:"veranda",x:30,y:700,w:56,h:104,seats:6},{n:17,room:"veranda",cx:300,cy:510,r:36,seats:6,round:true},
+{n:18,room:"veranda",x:150,y:595,w:62,h:48,seats:4},{n:19,room:"veranda",x:150,y:680,w:62,h:48,seats:4},
+{n:20,room:"veranda",x:150,y:765,w:62,h:48,seats:4},{n:21,room:"veranda",x:505,y:460,w:62,h:150,seats:8},
+{n:22,room:"veranda",x:370,y:595,w:62,h:48,seats:4},{n:23,room:"veranda",x:370,y:680,w:62,h:48,seats:4},
+{n:24,room:"veranda",x:250,y:860,w:210,h:56,seats:10},{n:25,room:"veranda",x:35,y:870,w:58,h:46,seats:2},
+{n:26,room:"veranda",x:35,y:965,w:130,h:48,seats:6},{n:27,room:"veranda",x:250,y:975,w:72,h:48,seats:4},
+{n:28,room:"veranda",x:505,y:690,w:62,h:48,seats:4},{n:29,room:"veranda",x:505,y:780,w:62,h:44,seats:2},
+];
+const SOURCES = {WhatsApp:"wa",Instagram:"ig",Telefono:"tel",Sito:"web"};
+const TIMES = ["19:00","19:30","20:00","20:30","21:00","21:30","22:00","22:30"];
+const CLOSED = [1,2];
+const $ = s=>document.querySelector(s);
+const NS="http://www.w3.org/2000/svg";
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const key=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const mins=t=>{const[h,m]=t.split(":").map(Number);return h*60+m};
+const today=new Date();today.setHours(0,0,0,0);
+const fmtLong=d=>d.toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"});
+const tableOf=n=>TABLES.find(t=>t.n===n);
+const LOGO="logo.png";
+function logo(size){return `<img class="logo" src="${LOGO}" width="${size}" height="${size}" alt="Spicchio d'Oro">`}
+$("#heroLogo").innerHTML=logo(148);
+$("#ownLogo").innerHTML=logo(52);
+$("#tLogo").innerHTML=logo(96);
+const TODAY=key(today);
+let bookings=[
+["Marco","Rossi","333 000 0001",4,"19:30","Telefono",2,true],
+["Giulia","Bianchi","333 000 0002",6,"20:00","Instagram",4,true],
+["Luca","Ferri","333 000 0003",6,"20:00","WhatsApp",9,false],
+["Sara","Montanari","333 000 0004",2,"20:30","Sito",7,false],
+["Andrea","Casadei","333 000 0005",4,"19:30","WhatsApp",11,true],
+["Elena","Ricci","333 000 0006",6,"21:00","Instagram",12,false],
+["Davide","Ghetti","333 000 0007",8,"20:00","Telefono",21,true],
+["Chiara","Baldini","333 000 0008",4,"20:30","Sito",18,false],
+["Matteo","Lolli","333 000 0009",10,"21:00","WhatsApp",24,false],
+["Francesca","Zanotti","333 000 0010",4,"19:45","Telefono",22,true],
+["Simone","Pirazzini","333 000 0011",6,"21:30","Instagram",17,false],
+["Martina","Babini","333 000 0012",2,"20:15","Sito",29,true],
+].map(([nome,cognome,tel,people,ora,source,table,seated],i)=>({id:i+1,date:TODAY,nome,cognome,tel,people,ora,source,table,seated,fresh:false}));
+let nextId=100;
+function drawPlan(svg,onTap){
+svg.innerHTML="";
+const v=el("g",{},svg);
+["M0 140 Q160 120 260 220 T600 260","M40 520 Q220 600 300 760 T560 1060","M600 600 Q430 640 380 820","M0 930 Q140 900 210 1000","M300 30 Q360 160 520 180"]
+.forEach(d=>el("path",{d,class:"vein"},v));
+el("rect",{x:8,y:8,width:288,height:404,fill:"var(--rosa)",class:"wall"},svg);
+el("rect",{x:304,y:8,width:288,height:404,fill:"var(--bar)",class:"wall"},svg);
+el("rect",{x:8,y:430,width:584,height:662,fill:"var(--veranda)",class:"wall"},svg);
+[[296,300,296,370,8],[380,412,380,430,40],[110,412,110,430,40]].forEach(([x1,y1,x2,y2,w])=>el("line",{x1,y1,x2,y2,stroke:"var(--floor)","stroke-width":w},svg));
+el("rect",{x:28,y:16,width:244,height:22,rx:4,class:"fixture"},svg);
+el("text",{x:150,y:31,class:"fx-text"},svg).textContent="Passavivande cucina";
+el("path",{d:"M318 70 Q420 40 470 95 T585 120 L585 150 Q520 140 470 125 Q410 75 318 100 Z",class:"fixture"},svg);
+el("text",{x:452,y:118,class:"fx-text"},svg).textContent="Bancone";
+el("rect",{x:520,y:1086,width:60,height:6,fill:"var(--gold)"},svg);
+el("text",{x:550,y:1078,class:"fx-text"},svg).textContent="Ingresso";
+el("text",{x:20,y:404,class:"room-label"},svg).textContent="Sala rosa";
+el("text",{x:318,y:404,class:"room-label"},svg).textContent="Sala bar";
+el("text",{x:20,y:1080,class:"room-label"},svg).textContent="Veranda";
+TABLES.forEach(t=>{
+const g=el("g",{class:"t","data-n":t.n,tabindex:0,role:"button"},svg);
+const ch=el("g",{},g);
+if(t.round){
+for(let i=0;i<t.seats;i++){const a=i/t.seats*Math.PI*2-Math.PI/2;el("circle",{cx:t.cx+Math.cos(a)*(t.r+9),cy:t.cy+Math.sin(a)*(t.r+9),r:5,class:"chair"},ch)}
+el("circle",{cx:t.cx,cy:t.cy,r:t.r,class:"top"},g);
+el("text",{x:t.cx,y:t.cy-5,class:"num"},g).textContent=t.n;
+el("text",{x:t.cx,y:t.cy+14,class:"sub"},g);
+}else{
+const hz=t.w>=t.h,a=Math.ceil(t.seats/2),b=t.seats-a;
+const place=(c,side)=>{for(let i=0;i<c;i++){const f=(i+1)/(c+1);
+const p=hz?{x:t.x+t.w*f,y:side?t.y+t.h+7:t.y-7}:{x:side?t.x+t.w+7:t.x-7,y:t.y+t.h*f};
+el("rect",{x:p.x-6,y:p.y-3.5,width:12,height:7,rx:3.5,class:"chair",transform:hz?"":`rotate(90 ${p.x} ${p.y})`},ch)}};
+place(a,0);place(b,1);
+el("rect",{x:t.x,y:t.y,width:t.w,height:t.h,rx:7,class:"top"},g);
+const cx=t.x+t.w/2,cy=t.y+t.h/2,o=t.h>46?7:5;
+el("text",{x:cx,y:cy-o,class:"num"},g).textContent=t.n;
+el("text",{x:cx,y:cy+o+9,class:"sub"},g);
+}
+el("title",{},g);
+g.addEventListener("click",()=>onTap(t.n));
+g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onTap(t.n)}});
+});
+}
+function zoom(svg,room,state){
+const target=ROOMS[room].box,start=[...state.vb],t0=performance.now();
+const dur=matchMedia("(prefers-reduced-motion: reduce)").matches?0:380;
+const step=now=>{const k=dur?Math.min(1,(now-t0)/dur):1,e=1-Math.pow(1-k,3);
+state.vb=start.map((v,i)=>v+(target[i]-v)*e);svg.setAttribute("viewBox",state.vb.join(" "));if(k<1)requestAnimationFrame(step)};
+requestAnimationFrame(step);
+}
+function buildTabs(container,onPick){
+container.innerHTML="";
+Object.entries(ROOMS).forEach(([k,r])=>{const b=document.createElement("button");b.textContent=r.name;b.dataset.room=k;b.setAttribute("aria-pressed",k==="all");container.appendChild(b)});
+container.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+container.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));onPick(b.dataset.room)});
+}
+const C={people:2,date:null,time:"20:00",table:null,vb:[...ROOMS.all.box],room:"all"};
+function clientFree(t){
+if(t.seats<C.people||t.seats>C.people+4) return false;
+const k=key(C.date);
+return !bookings.some(b=>b.date===k&&b.table===t.n&&Math.abs(mins(b.ora)-mins(C.time))<120);
+}
+function renderParty(){
+$("#pOut").textContent=C.people;$("#pLbl").textContent=C.people===1?"persona":"persone";
+$("#pMinus").disabled=C.people<=1;$("#pPlus").disabled=C.people>=10;
+}
+$("#pMinus").onclick=()=>{C.people--;renderParty()};
+$("#pPlus").onclick=()=>{C.people++;renderParty()};
+(function buildDates(){
+const box=$("#dates");
+for(let i=0;i<21;i++){
+const d=new Date(today);d.setDate(d.getDate()+i);
+const closed=CLOSED.includes(d.getDay());
+const b=document.createElement("button");b.className="date";b.disabled=closed;
+b.innerHTML=`<span>${i===0?"Oggi":d.toLocaleDateString("it-IT",{weekday:"short"}).replace(".","")}</span><b>${d.getDate()}</b><span>${closed?"Chiuso":d.toLocaleDateString("it-IT",{month:"short"}).replace(".","")}</span>`;
+b.setAttribute("aria-label",fmtLong(d)+(closed?", chiuso":""));
+b.onclick=()=>{C.date=d;box.querySelectorAll(".date").forEach(x=>x.setAttribute("aria-pressed",x===b))};
+b.setAttribute("aria-pressed","false");
+if(!closed&&!C.date){C.date=d;b.setAttribute("aria-pressed","true")}
+box.appendChild(b);
+}
+})();
+(function buildTimes(){
+const box=$("#times");
+TIMES.forEach(t=>{const b=document.createElement("button");b.className="time";b.textContent=t;b.setAttribute("aria-pressed",t===C.time);
+b.onclick=()=>{C.time=t;box.querySelectorAll(".time").forEach(x=>x.setAttribute("aria-pressed",x===b))};box.appendChild(b)});
+})();
+renderParty();
+function goStep(n){
+["#s1","#s2","#s3","#s4"].forEach((s,i)=>$(s).hidden=i!==n-1);
+$("#steps").hidden=n===4;
+document.querySelectorAll("#steps>div").forEach((d,i)=>d.classList.toggle("on",i<Math.min(n,3)));
+window.scrollTo({top:0,behavior:"smooth"});
+}
+$("#toS2").onclick=()=>{
+C.table=null;renderClientPlan();
+$("#s2info").textContent=`${C.people} pers. · ${C.date.toLocaleDateString("it-IT",{weekday:"short",day:"numeric"})} · ${C.time}`;
+goStep(2);
+};
+$("#back1").onclick=()=>goStep(1);
+$("#back2").onclick=()=>goStep(2);
+drawPlan($("#planC"),n=>{const t=tableOf(n);if(!clientFree(t))return;C.table=n;renderClientPlan()});
+buildTabs(document.querySelector('.tabs[data-for="client"]'),r=>{C.room=r;zoom($("#planC"),r,C)});
+function renderClientPlan(){
+let any=0;
+$("#planC").querySelectorAll(".t").forEach(g=>{
+const t=tableOf(+g.dataset.n),ok=clientFree(t);any+=ok;
+g.classList.toggle("ok",ok);g.classList.toggle("no",!ok);g.classList.toggle("click",ok);
+g.classList.toggle("picked",C.table===t.n);
+g.querySelector(".sub").textContent=t.seats+" posti";
+g.querySelector("title").textContent=`Tavolo ${t.n}, ${t.seats} posti, ${ok?"disponibile":"non disponibile"}`;
+g.setAttribute("tabindex",ok?0:-1);
+});
+const t=C.table&&tableOf(C.table);
+$("#selCard").hidden=!t;$("#pickNote").hidden=!!t;$("#toS3").disabled=!t;
+if(!any){$("#pickNote").hidden=false;$("#pickNote").textContent="Per questo orario non ci sono tavoli liberi adatti al vostro gruppo. Prova un altro orario o un altro giorno.";}
+else $("#pickNote").textContent="Tocca un tavolo dorato sulla piantina.";
+if(t){$("#selN").textContent=t.n;$("#selT").textContent=`Tavolo ${t.n} · ${ROOMS[t.room].name}`;$("#selS").textContent=`${t.seats} posti, perfetto per ${C.people} ${C.people===1?"persona":"persone"}`}
+}
+$("#toS3").onclick=()=>{
+const t=tableOf(C.table);
+$("#sum").innerHTML=`<div><span>Giorno</span><b style="text-transform:capitalize">${C.date.toLocaleDateString("it-IT",{weekday:"short",day:"numeric",month:"short"})}</b></div>
+<div><span>Orario</span><b>${C.time}</b></div><div><span>Persone</span><b>${C.people}</b></div>
+<div><span>Tavolo</span><b>${t.n} · ${ROOMS[t.room].name}</b></div>`;
+goStep(3);
+};
+$("#cForm").addEventListener("submit",e=>{
+e.preventDefault();
+const b={id:nextId++,date:key(C.date),nome:$("#cNome").value.trim(),cognome:$("#cCog").value.trim(),
+tel:$("#cTel").value.trim(),people:C.people,ora:C.time,source:$("#fromSel").value,table:C.table,seated:false,fresh:true};
+bookings.push(b);
+const t=tableOf(b.table);
+$("#tName").textContent=`A nome di ${b.nome} ${b.cognome}`;
+$("#tNo").textContent=t.n;$("#tRoom").textContent=`Tavolo ${t.n} · ${ROOMS[t.room].name}`;
+$("#tRows").innerHTML=`<div><span>Giorno</span><b style="text-transform:capitalize">${fmtLong(C.date)}</b></div>
+<div><span>Orario</span><b>${b.ora}</b></div><div><span>Persone</span><b>${b.people}</b></div><div><span>Telefono</span><b>+39 ${b.tel}</b></div>`;
+goStep(4);
+const s4=$("#s4");s4.classList.remove("pop");void s4.offsetWidth;s4.classList.add("pop");
+O.date=new Date(C.date);
+pendingToast=`Nuova prenotazione da ${b.source} · Tavolo ${t.n} · ${b.nome} ${b.cognome}`;
+e.target.reset();
+});
+$("#again").onclick=()=>{C.table=null;goStep(1)};
+const O={date:new Date(today),room:"all",vb:[...ROOMS.all.box],open:null,people:2,src:"Telefono"};
+let pendingToast=null;
+const dayB=()=>bookings.filter(b=>b.date===key(O.date)).sort((a,b)=>a.ora.localeCompare(b.ora));
+const badge=s=>`<span class="badge"><span class="dot ${SOURCES[s]}"></span>${s}</span>`;
+drawPlan($("#planO"),n=>openSheet(n));
+$("#planO").querySelectorAll(".t").forEach(g=>g.classList.add("click"));
+buildTabs(document.querySelector('.tabs[data-for="owner"]'),r=>{O.room=r;zoom($("#planO"),r,O);renderOwner()});
+function renderOwner(){
+$("#dName").textContent=key(O.date)===TODAY?"Oggi":O.date.toLocaleDateString("it-IT",{weekday:"long"});
+$("#dDate").textContent=O.date.toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+const db=dayB();
+$("#planO").querySelectorAll(".t").forEach(g=>{
+const n=+g.dataset.n,t=tableOf(n),tb=db.filter(b=>b.table===n);
+const seated=tb.some(b=>b.seated),shown=tb.find(b=>b.seated)||tb[0];
+g.classList.toggle("seated",seated);g.classList.toggle("booked",tb.length>0&&!seated);
+g.classList.toggle("fresh",tb.some(b=>b.fresh));
+const sub=g.querySelector(".sub");sub.setAttribute("class","sub"+(shown?" "+SOURCES[shown.source]:""));
+sub.textContent=shown?shown.source+(tb.length>1?` +${tb.length-1}`:""):t.seats+" posti";
+g.querySelector("title").textContent=`Tavolo ${n}, ${t.seats} posti`+(shown?`, ${shown.nome} ${shown.cognome}, da ${shown.source}`:", libero");
+});
+const inRoom=t=>O.room==="all"||t.room===O.room;
+const rt=TABLES.filter(inRoom),ids=rt.map(t=>t.n),rb=db.filter(b=>ids.includes(b.table));
+const seats=rt.reduce((a,t)=>a+t.seats,0),cov=rb.reduce((a,b)=>a+b.people,0);
+$("#kCov").innerHTML=`${cov}<small> / ${seats}</small>`;
+$("#kCovOf").textContent="coperti prenotati"+(O.room==="all"?"":" in "+ROOMS[O.room].name.toLowerCase());
+$("#kMeter").style.width=Math.min(100,cov/seats*100)+"%";
+$("#kFree").textContent=ids.filter(n=>!db.some(b=>b.table===n)).length;
+$("#kSeat").textContent=rb.filter(b=>b.seated).length;
+const counts=Object.keys(SOURCES).map(s=>[s,rb.filter(b=>b.source===s).length]);
+$("#chBar").innerHTML=rb.length?counts.filter(c=>c[1]).map(([s,c])=>`<i class="${SOURCES[s]}" style="flex:${c}"></i>`).join(""):"";
+$("#chList").innerHTML=counts.map(([s,c])=>`<div class="ch"><span class="dot ${SOURCES[s]}"></span>${s}<b>${c}</b></div>`).join("");
+$("#listCount").textContent=rb.length?`${rb.length} ${rb.length===1?"tavolo":"tavoli"}`:"";
+const list=$("#list");list.innerHTML="";
+if(!rb.length) list.innerHTML=`<p class="empty">Nessuna prenotazione per questa serata. Le prenotazioni online compaiono qui da sole. Per una telefonata, tocca un tavolo sulla piantina.</p>`;
+rb.forEach(b=>{
+const r=document.createElement("button");r.className="row "+(b.seated?"is-seated":"is-booked")+(b.fresh?" fresh":"");
+r.innerHTML=`<span class="hour">${b.ora}</span><span class="who"><strong></strong><small>Tavolo ${b.table} · ${b.people} pers.${b.seated?" · al tavolo":""}</small></span>${badge(b.source)}`;
+r.querySelector("strong").textContent=`${b.nome} ${b.cognome}`.trim();
+if(b.fresh) r.querySelector("strong").insertAdjacentHTML("beforeend",'<span class="new">Nuova</span>');
+r.onclick=()=>openSheet(b.table);list.appendChild(r);
+});
+}
+$("#dPrev").onclick=()=>{O.date.setDate(O.date.getDate()-1);renderOwner()};
+$("#dNext").onclick=()=>{O.date.setDate(O.date.getDate()+1);renderOwner()};
+const oOra=$("#oOra");TIMES.forEach(t=>{const o=document.createElement("option");o.textContent=t;oOra.appendChild(o)});
+Object.keys(SOURCES).forEach(s=>{const b=document.createElement("button");b.type="button";b.dataset.src=s;b.innerHTML=`<span class="dot ${SOURCES[s]}"></span>${s}`;$("#oSrc").appendChild(b)});
+function setSrc(s){O.src=s;$("#oSrc").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.src===s))}
+$("#oSrc").addEventListener("click",e=>{const b=e.target.closest("button");if(b)setSrc(b.dataset.src)});
+function oAlert(){const t=tableOf(O.open);$("#oAlert").textContent=t&&O.people>t.seats?`Il tavolo ha ${t.seats} posti: servono sedie in più o un tavolo vicino.`:""}
+$("#oMinus").onclick=()=>{O.people=Math.max(1,O.people-1);$("#oP").textContent=O.people;oAlert()};
+$("#oPlus").onclick=()=>{O.people=Math.min(30,O.people+1);$("#oP").textContent=O.people;oAlert()};
+function openSheet(n){
+O.open=n;const t=tableOf(n);
+$("#shN").textContent=n;$("#shSub").textContent=`${ROOMS[t.room].name} · ${t.seats} posti`;
+renderSheet();
+$("#oForm").reset();oOra.value="20:00";O.people=Math.min(2,t.seats);$("#oP").textContent=O.people;oAlert();setSrc("Telefono");
+$("#sheet").classList.add("open");$("#scrim").classList.add("open");
+}
+function closeSheet(){$("#sheet").classList.remove("open");$("#scrim").classList.remove("open");O.open=null}
+$("#shClose").onclick=closeSheet;$("#scrim").onclick=closeSheet;
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
+function renderSheet(){
+const box=$("#shList");box.innerHTML="";
+dayB().filter(b=>b.table===O.open).forEach(b=>{
+b.fresh=false;
+const d=document.createElement("div");d.className="bk"+(b.seated?" seated":"");
+d.innerHTML=`<div class="l1"><strong></strong>${badge(b.source)}</div>
+<div class="info"><div><span>Orario</span><b>${b.ora}</b></div><div><span>Persone</span><b>${b.people}</b></div>
+<div><span>Telefono</span><a href="tel:${b.tel.replace(/\s/g,"")}"></a></div><div><span>Stato</span><b>${b.seated?"Al tavolo":"In arrivo"}</b></div></div>
+<div class="acts"><button class="btn dark seat">${b.seated?"Non ancora arrivati":"Sono arrivati"}</button><button class="btn warn del">Cancella</button></div>`;
+d.querySelector("strong").textContent=`${b.nome} ${b.cognome}`.trim();
+d.querySelector("a").textContent=b.tel;
+d.querySelector(".seat").onclick=()=>{b.seated=!b.seated;renderSheet();renderOwner()};
+d.querySelector(".del").onclick=()=>{bookings=bookings.filter(x=>x!==b);renderSheet();renderOwner();toast("Prenotazione cancellata")};
+box.appendChild(d);
+});
+$(".add-title").textContent=box.children.length?"Aggiungi un'altra prenotazione":"Aggiungi prenotazione";
+renderOwner();
+}
+$("#oForm").addEventListener("submit",e=>{
+e.preventDefault();
+bookings.push({id:nextId++,date:key(O.date),table:O.open,nome:$("#oNome").value.trim(),cognome:$("#oCog").value.trim(),
+tel:$("#oTel").value.trim(),people:O.people,ora:oOra.value,source:O.src,seated:false,fresh:false});
+e.target.reset();oOra.value="20:00";setSrc("Telefono");renderSheet();toast(`Prenotazione salvata sul tavolo ${O.open}`);
+});
+$("#switch").addEventListener("click",e=>{
+const b=e.target.closest("button");if(!b)return;
+$("#switch").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+const owner=b.dataset.view==="owner";
+$("#client").hidden=owner;$("#owner").hidden=!owner;$("#fromWrap").hidden=owner;
+window.scrollTo({top:0});
+if(owner){renderOwner();if(pendingToast){setTimeout(()=>toast(pendingToast),250);pendingToast=null;
+setTimeout(()=>{bookings.forEach(x=>x.fresh=false);renderOwner()},6000)}}
+});
+let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),3200)}
+renderOwner();
+</script>
+</body>
+</html>
