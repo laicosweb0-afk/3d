@@ -1,0 +1,1106 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#120F0C">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex, nofollow">
+<title>Tavoli · Spicchio d'Oro</title>
+<meta name="apple-mobile-web-app-title" content="Tavoli">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" type="image/jpeg" href="../img/icona.jpg">
+<link rel="apple-touch-icon" href="../img/icona.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600&display=swap">
+
+<style>
+/* ==========================================================================
+   SPICCHIO D'ORO — i tavoli
+   La pagina dello staff: la piantina del locale con lo stato di ogni tavolo
+   all'ora scelta, le prenotazioni del giorno e il messaggio WhatsApp della
+   card che si incolla e diventa una prenotazione. Stessi colori della card.
+   ========================================================================== */
+:root {
+  --nero: #120F0C;
+  --superficie: #1B1713;
+  --elevata: #241F1A;
+  --alta: #2E2721;
+  --linea: rgba(244, 238, 227, .09);
+  --linea-forte: rgba(244, 238, 227, .18);
+  --oro: #D3AE63;
+  --oro-chiaro: #E9CD8E;
+  --oro-scuro: #9C7E43;
+  --panna: #F4EEE3;
+  --grigio: #B4ABA0;
+  --grigio-tenue: #8C847A;
+  --libero: #6FCF8E;
+  --occupato: #E2725B;
+  --ritardo: #F0A04B;
+  --serif: 'Playfair Display', Georgia, serif;
+  --sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', Roboto, sans-serif;
+  --ios: cubic-bezier(.32, .72, 0, 1);
+  --st: env(safe-area-inset-top, 0px);
+  --sb: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--nero); }
+body {
+  color: var(--panna); font: 400 15px/1.45 var(--sans);
+  -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  padding-bottom: calc(96px + var(--sb));
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; border-radius: 8px; }
+[hidden] { display: none !important; }
+.press { transition: transform .3s var(--ios), background-color .3s var(--ios), opacity .3s; }
+.press:active { transform: scale(.96); }
+
+/* ---------- pulsanti ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 40px; padding: 0 14px; border-radius: 12px;
+  background: var(--elevata); border: 1px solid var(--linea); font-weight: 500; white-space: nowrap;
+}
+.btn:hover { background: var(--alta); }
+.btn.oro { background: var(--oro); color: #1B1407; border-color: transparent; font-weight: 600; }
+.btn.oro:hover { background: var(--oro-chiaro); }
+.btn.verde { background: rgba(111, 207, 142, .16); color: #A6E9BB; border-color: rgba(111, 207, 142, .3); }
+.btn.rosso { background: rgba(226, 114, 91, .14); color: #F3A897; border-color: rgba(226, 114, 91, .3); }
+.btn.piccolo { min-height: 32px; padding: 0 10px; border-radius: 10px; font-size: 13px; }
+.btn[aria-pressed="true"] { background: rgba(211, 174, 99, .18); border-color: rgba(211, 174, 99, .5); color: var(--oro-chiaro); }
+.btn:disabled { opacity: .4; pointer-events: none; }
+
+/* ---------- testata ---------- */
+.top {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  padding: calc(10px + var(--st)) 16px 10px;
+  background: rgba(18, 15, 12, .9); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--linea);
+}
+.marchio { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+.marchio img { width: 38px; height: 38px; border-radius: 50%; }
+.marchio b { display: block; font: 600 19px/1.1 var(--serif); }
+.marchio span { font-size: 12px; color: var(--grigio-tenue); letter-spacing: .04em; }
+.giorno { display: flex; align-items: center; gap: 6px; }
+.giorno .freccia { width: 40px; padding: 0; font-size: 20px; }
+.data-btn { position: relative; min-width: 150px; font-weight: 600; }
+.data-btn input { position: absolute; inset: 0; opacity: 0; width: 100%; cursor: pointer; }
+.azioni-top { display: flex; gap: 6px; }
+@media (max-width: 640px) {
+  .giorno { order: 3; width: 100%; }
+  .data-btn { flex: 1; }
+}
+
+/* ---------- impaginazione ---------- */
+.layout {
+  display: grid; gap: 16px; padding: 16px;
+  grid-template-columns: minmax(0, 1fr) 360px; align-items: start;
+  max-width: 1500px; margin: 0 auto;
+}
+@media (max-width: 980px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+.pannello { background: var(--superficie); border: 1px solid var(--linea); border-radius: 18px; }
+
+/* ---------- piantina ---------- */
+.pianta-box { padding: 12px; min-width: 0; }
+.riga-sale { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.sale { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.sale::-webkit-scrollbar { display: none; }
+.sale .btn .n { font-size: 12px; color: var(--grigio-tenue); font-weight: 500; }
+.tempo { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 240px; max-width: 460px; }
+.tempo output { font: 600 17px/1 var(--sans); font-variant-numeric: tabular-nums; min-width: 48px; text-align: right; color: var(--oro-chiaro); }
+.tempo input[type=range] { flex: 1; accent-color: var(--oro); min-width: 0; }
+
+.banner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 10px;
+  padding: 10px 12px; border-radius: 14px;
+  background: rgba(211, 174, 99, .12); border: 1px solid rgba(211, 174, 99, .35);
+}
+.banner .t { flex: 1; min-width: 200px; }
+.banner .t b { color: var(--oro-chiaro); }
+
+.pianta-scroll { overflow: auto; border-radius: 14px; background: #16120F; border: 1px solid var(--linea); }
+.pianta-scroll svg { display: block; width: 100%; min-width: 720px; height: auto; user-select: none; -webkit-user-select: none; }
+.modifica .pianta-scroll svg { touch-action: none; }
+svg text { font-family: var(--sans); pointer-events: none; }
+.el { cursor: pointer; }
+.modifica .el { cursor: grab; }
+.el .piano { transition: fill .25s, stroke .25s; }
+.el.ritardo .piano { animation: pulsa 1.4s ease-in-out infinite; }
+@keyframes pulsa { 50% { stroke-opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .el.ritardo .piano { animation: none; } }
+
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 12.5px; color: var(--grigio); }
+.legenda i { display: inline-block; width: 11px; height: 11px; border-radius: 4px; margin-right: 6px; vertical-align: -1px; }
+
+.edit-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
+.edit-bar .sp { flex: 1; }
+.edit-sel {
+  display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: end; margin-top: 10px; padding: 12px;
+  border-radius: 14px; background: var(--elevata); border: 1px solid var(--linea);
+}
+.edit-sel label { display: grid; gap: 4px; font-size: 12px; color: var(--grigio-tenue); }
+.edit-sel input, .edit-sel select { width: 92px; }
+.edit-sel input.largo { width: 140px; }
+
+/* ---------- lista del giorno ---------- */
+.lista { padding: 14px; position: sticky; top: 76px; max-height: calc(100vh - 92px); overflow: auto; }
+@media (max-width: 980px) { .lista { position: static; max-height: none; } }
+.riepilogo { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+.riepilogo div { background: var(--elevata); border-radius: 12px; padding: 8px 10px; }
+.riepilogo b { display: block; font: 600 20px/1.1 var(--sans); font-variant-numeric: tabular-nums; }
+.riepilogo span { font-size: 11.5px; color: var(--grigio-tenue); }
+.riepilogo .att b { color: var(--ritardo); }
+.lista h3 { font: 600 12px/1 var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--grigio-tenue); margin: 16px 2px 8px; }
+.pren {
+  display: grid; grid-template-columns: 52px 1fr auto; gap: 2px 10px; align-items: center; width: 100%;
+  text-align: left; padding: 10px 12px; margin-bottom: 6px; border-radius: 14px;
+  background: var(--elevata); border: 1px solid transparent;
+}
+.pren:hover { border-color: var(--linea-forte); }
+.pren .ora { font: 600 16px/1 var(--sans); font-variant-numeric: tabular-nums; grid-row: span 2; }
+.pren .nome { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pren .info { font-size: 12.5px; color: var(--grigio); grid-column: 2 / 4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pren.chiusa { opacity: .55; }
+.pill-stato { font-size: 11.5px; font-weight: 600; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+.s-attesa { background: rgba(211, 174, 99, .16); color: var(--oro-chiaro); }
+.s-ritardo { background: rgba(240, 160, 75, .18); color: #F6C38A; }
+.s-seduti { background: rgba(226, 114, 91, .18); color: #F3A897; }
+.s-finito { background: rgba(244, 238, 227, .08); color: var(--grigio); }
+.s-noshow, .s-annullata { background: rgba(244, 238, 227, .06); color: var(--grigio-tenue); }
+.s-assegna { background: rgba(240, 160, 75, .18); color: #F6C38A; }
+.vuoto { color: var(--grigio-tenue); font-size: 14px; padding: 18px 6px; text-align: center; }
+details.chiuse summary { cursor: pointer; color: var(--grigio-tenue); font-size: 13px; margin: 14px 2px 8px; }
+
+/* ---------- pulsante nuova prenotazione ---------- */
+.fab {
+  position: fixed; z-index: 30; right: 16px; bottom: calc(16px + var(--sb));
+  min-height: 54px; padding: 0 22px; border-radius: 999px; font-size: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+}
+.modifica .fab, .scelta .fab { display: none; }
+
+/* ---------- finestre ---------- */
+dialog {
+  width: min(560px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); padding: 0;
+  border: 1px solid var(--linea-forte); border-radius: 22px; background: var(--superficie); color: var(--panna);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .6);
+}
+dialog::backdrop { background: rgba(8, 6, 5, .65); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.dlg-testa { display: flex; align-items: center; gap: 10px; padding: 16px 18px 12px; border-bottom: 1px solid var(--linea); position: sticky; top: 0; background: var(--superficie); z-index: 1; }
+.dlg-testa h2 { margin: 0; font: 600 21px/1.2 var(--serif); flex: 1; }
+.dlg-testa .x { width: 36px; height: 36px; border-radius: 50%; background: var(--elevata); font-size: 18px; }
+.dlg-corpo { padding: 14px 18px 18px; display: grid; gap: 14px; }
+.dlg-piede { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 18px calc(16px + var(--sb)); border-top: 1px solid var(--linea); position: sticky; bottom: 0; background: var(--superficie); }
+.dlg-piede .sp { flex: 1; }
+
+.campo { display: grid; gap: 6px; }
+.campo > span { font-size: 12.5px; color: var(--grigio-tenue); font-weight: 500; }
+.campi2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.campi3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+@media (max-width: 460px) { .campi3 { grid-template-columns: 1fr 1fr; } .campi3 > :first-child { grid-column: span 2; } }
+input[type=text], input[type=tel], input[type=number], input[type=date], select, textarea {
+  width: 100%; min-height: 44px; padding: 10px 12px; border-radius: 12px;
+  background: var(--elevata); border: 1px solid var(--linea-forte); font-size: 16px;
+}
+textarea { min-height: 70px; resize: vertical; }
+select { appearance: none; -webkit-appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--grigio) 50%), linear-gradient(135deg, var(--grigio) 50%, transparent 50%); background-position: calc(100% - 17px) 50%, calc(100% - 12px) 50%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 30px; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--oro); }
+.stepper { display: flex; align-items: center; gap: 6px; }
+.stepper button { width: 44px; height: 44px; border-radius: 12px; background: var(--elevata); border: 1px solid var(--linea-forte); font-size: 20px; flex: none; }
+.stepper input { text-align: center; font-weight: 600; }
+.incolla { border: 1px dashed rgba(211, 174, 99, .45); border-radius: 14px; padding: 10px 12px; background: rgba(211, 174, 99, .05); }
+.incolla summary { cursor: pointer; color: var(--oro-chiaro); font-weight: 500; }
+.incolla .dentro { display: grid; gap: 8px; margin-top: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip { padding: 6px 10px; border-radius: 10px; background: rgba(211, 174, 99, .16); color: var(--oro-chiaro); font-weight: 600; font-size: 14px; }
+.chip.no { background: rgba(240, 160, 75, .14); color: #F6C38A; font-weight: 500; }
+.avviso { font-size: 13px; color: #F6C38A; }
+.azioni-pren { display: flex; flex-wrap: wrap; gap: 8px; }
+.stato-riga { display: flex; align-items: center; gap: 8px; color: var(--grigio); font-size: 14px; }
+.lista-mini { display: grid; gap: 6px; }
+.lista-mini .pren { margin: 0; }
+.sotto { font-size: 13px; color: var(--grigio-tenue); }
+.sale-imp { display: grid; gap: 8px; }
+.sale-imp .r { display: flex; gap: 8px; align-items: center; }
+
+/* ---------- avviso a scomparsa ---------- */
+.toast {
+  position: fixed; z-index: 60; left: 50%; bottom: calc(86px + var(--sb)); transform: translate(-50%, 20px);
+  max-width: calc(100vw - 32px); display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px 10px 16px; border-radius: 14px; background: var(--alta); border: 1px solid var(--linea-forte);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .5); opacity: 0; pointer-events: none;
+  transition: opacity .25s, transform .35s var(--ios);
+}
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+.toast.on button { pointer-events: auto; }  /* l'avviso non blocca i tavoli sotto */
+.toast button { color: var(--oro-chiaro); font-weight: 600; padding: 6px 8px; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="marchio">
+    <img src="../img/logo.jpg" alt="">
+    <div><b>Tavoli</b><span>Spicchio d'Oro</span></div>
+  </div>
+  <div class="giorno">
+    <button class="btn freccia press" data-prev aria-label="Giorno prima">‹</button>
+    <label class="btn data-btn press"><span data-data-txt></span><input type="date" data-data aria-label="Scegli il giorno"></label>
+    <button class="btn freccia press" data-next aria-label="Giorno dopo">›</button>
+    <button class="btn press" data-oggi>Oggi</button>
+  </div>
+  <div class="azioni-top">
+    <button class="btn press" data-modifica aria-pressed="false">Modifica piantina</button>
+    <button class="btn freccia press" data-impost aria-label="Impostazioni e backup">⚙︎</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="pannello pianta-box">
+    <div class="riga-sale">
+      <div class="sale" data-sale></div>
+      <div class="tempo" data-tempo>
+        <button class="btn piccolo press" data-adesso aria-pressed="false">Adesso</button>
+        <input type="range" data-ora min="1080" max="1560" step="15" aria-label="Ora da guardare">
+        <output data-ora-txt></output>
+      </div>
+    </div>
+    <div class="banner" data-banner hidden></div>
+    <div class="pianta-scroll"><svg data-svg viewBox="0 0 1000 640" role="img" aria-label="Piantina della sala"></svg></div>
+    <div class="legenda" data-legenda>
+      <span><i style="background:rgba(111,207,142,.55)"></i>Libero</span>
+      <span><i style="background:transparent;border:2px dashed var(--oro)"></i>Prenotato a breve</span>
+      <span><i style="background:var(--oro)"></i>Prenotato ora</span>
+      <span><i style="background:var(--ritardo)"></i>In ritardo</span>
+      <span><i style="background:var(--occupato)"></i>Al tavolo</span>
+    </div>
+    <div class="edit-bar" data-editbar hidden>
+      <button class="btn piccolo press" data-add="tondo">+ Tondo</button>
+      <button class="btn piccolo press" data-add="quadro">+ Quadrato</button>
+      <button class="btn piccolo press" data-add="rett">+ Lungo</button>
+      <button class="btn piccolo press" data-add="arredo">+ Arredo</button>
+      <span class="sp"></span>
+      <span class="sotto">Trascina per spostare, tocca per modificare</span>
+      <button class="btn oro piccolo press" data-fine-modifica>Fatto</button>
+    </div>
+    <div class="edit-sel" data-editsel hidden></div>
+  </section>
+
+  <aside class="pannello lista">
+    <div class="riepilogo" data-riepilogo></div>
+    <div data-lista></div>
+  </aside>
+</main>
+
+<button class="btn oro fab press" data-nuova>+ Prenotazione</button>
+
+<!-- Prenotazione: nuova o da modificare -->
+<dialog data-dlg-pren>
+  <form data-form>
+    <div class="dlg-testa"><h2 data-f-titolo>Nuova prenotazione</h2><button type="button" class="x press" data-chiudi aria-label="Chiudi">✕</button></div>
+    <div class="dlg-corpo">
+      <div class="stato-riga" data-f-stato hidden></div>
+      <div class="azioni-pren" data-f-azioni hidden></div>
+      <details class="incolla" data-f-incolla>
+        <summary>Incolla il messaggio WhatsApp</summary>
+        <div class="dentro">
+          <textarea data-f-msg placeholder="Ciao Spicchio d'Oro! Vorrei prenotare un tavolo per 4 persone, sabato 24 ottobre alle 21:00. Grazie!"></textarea>
+          <button type="button" class="btn piccolo press" data-f-leggi>Compila dal messaggio</button>
+        </div>
+      </details>
+      <div class="campi2">
+        <label class="campo"><span>Nome</span><input type="text" data-f="nome" autocomplete="off" placeholder="Rossi"></label>
+        <label class="campo"><span>Telefono</span><input type="tel" data-f="tel" autocomplete="off" placeholder="333 123 4567"></label>
+      </div>
+      <div class="campi3">
+        <div class="campo"><span>Persone</span>
+          <div class="stepper"><button type="button" class="press" data-meno>−</button><input type="number" inputmode="numeric" min="1" max="99" data-f="persone"><button type="button" class="press" data-piu>+</button></div>
+        </div>
+        <label class="campo"><span>Giorno</span><input type="date" data-f="data"></label>
+        <label class="campo"><span>Ora</span><select data-f="ora"></select></label>
+      </div>
+      <div class="campi2">
+        <label class="campo"><span>Si ferma circa</span><select data-f="durata"></select></label>
+        <div class="campo"><span>Tavolo</span>
+          <div class="chips" data-f-tavoli></div>
+        </div>
+      </div>
+      <div class="chips">
+        <button type="button" class="btn piccolo press" data-f-pianta>Scegli in piantina</button>
+        <button type="button" class="btn piccolo press" data-f-auto>Trova un tavolo libero</button>
+      </div>
+      <div class="avviso" data-f-avviso hidden></div>
+      <label class="campo"><span>Note</span><textarea data-f="note" placeholder="Seggiolone, allergie, compleanno, serata…"></textarea></label>
+    </div>
+    <div class="dlg-piede">
+      <button type="button" class="btn rosso piccolo press" data-f-elimina hidden>Elimina</button>
+      <span class="sp"></span>
+      <button type="button" class="btn press" data-chiudi>Annulla</button>
+      <button type="submit" class="btn oro press">Salva</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Tavolo -->
+<dialog data-dlg-tav>
+  <div class="dlg-testa"><h2 data-t-titolo></h2><button class="x press" data-chiudi aria-label="Chiudi">✕</button></div>
+  <div class="dlg-corpo" data-t-corpo></div>
+</dialog>
+
+<!-- Impostazioni e backup -->
+<dialog data-dlg-imp>
+  <div class="dlg-testa"><h2>Impostazioni</h2><button class="x press" data-chiudi aria-label="Chiudi">✕</button></div>
+  <div class="dlg-corpo">
+    <div class="campo"><span>Sale</span><div class="sale-imp" data-i-sale></div>
+      <button type="button" class="btn piccolo press" data-i-nuova-sala style="justify-self:start">+ Aggiungi sala</button></div>
+    <label class="campo"><span>Quanto si ferma un tavolo, di solito</span><select data-i-durata></select></label>
+    <div class="campo"><span>Backup</span>
+      <p class="sotto" style="margin:0">Piantina e prenotazioni restano salvate su questo dispositivo. Scarica un backup ogni tanto, o per spostarle su un altro telefono o tablet.</p>
+      <div class="chips">
+        <button type="button" class="btn piccolo press" data-i-esporta>Scarica backup</button>
+        <label class="btn piccolo press">Carica backup<input type="file" accept="application/json,.json" data-i-importa hidden></label>
+      </div>
+    </div>
+    <div class="campo"><span>Piantina</span>
+      <div class="chips"><button type="button" class="btn rosso piccolo press" data-i-reset>Torna alla piantina di esempio</button></div>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast" data-toast role="status"><span data-toast-txt></span><button data-toast-az hidden></button></div>
+
+<script>
+/* ---------- costanti ---------- */
+const CHIAVE = 'spicchiodoro-tavoli-v1';
+const GIORNI = ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato'];
+const GIORNI_BREVI = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+const MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+const MESI_BREVI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
+const DURATE = [60, 90, 120, 150, 180, 240];
+const PRIMA_ORA = 18 * 60, ULTIMA_ORA = 23 * 60 + 45;  // le ore prenotabili, ogni quarto d'ora
+const RITARDO = 15;      // minuti dopo i quali una prenotazione non arrivata è «in ritardo»
+const A_BREVE = 60;      // un tavolo libero ma prenotato entro un'ora è «prenotato a breve»
+const W = 1000, H = 640; // la piantina, in unità della viewBox
+const CHIUSI = ['finito', 'noshow', 'annullata'];
+const STATI = {
+  attesa: 'In arrivo', seduti: 'Al tavolo', finito: 'Andati via', noshow: 'Non venuti', annullata: 'Annullata',
+};
+
+/* ---------- utilità ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const pad = (n) => String(n).padStart(2, '0');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const daIso = (s) => { const [y, m, g] = s.split('-').map(Number); return new Date(y, m - 1, g); };
+const minuti = (hhmm) => { const [h, m] = hhmm.split(':').map(Number); return (h < FINE_NOTTE ? h + 24 : h) * 60 + m; };
+const ora = (m) => `${pad(Math.floor(m / 60) % 24)}:${pad(m % 60)}`;
+// La serata finisce dopo mezzanotte: fino alle 5 del mattino conta ancora come
+// il giorno prima, e l'ora va oltre le 24 (00:30 → 24:30).
+const FINE_NOTTE = 5;
+const adesso = () => { const d = new Date(), m = d.getHours() * 60 + d.getMinutes(); return d.getHours() < FINE_NOTTE ? m + 1440 : m; };
+const oggiIso = () => iso(new Date(Date.now() - FINE_NOTTE * 36e5));
+const durataTesto = (m) => m % 60 ? `${Math.floor(m / 60)} h ${m % 60}` : `${m / 60} ${m === 60 ? 'ora' : 'ore'}`;
+const persone = (n) => `${n} ${n == 1 ? 'persona' : 'persone'}`;
+const giornoEsteso = (s) => { const d = daIso(s); return `${GIORNI[d.getDay()]} ${d.getDate()} ${MESI[d.getMonth()]}`; };
+
+/* ---------- i dati: tutto in un oggetto, salvato su questo dispositivo ---------- */
+function piantaDiEsempio() {
+  // Una disposizione di partenza da ridisegnare con «Modifica piantina»:
+  // x, y è l'angolo in alto a sinistra, w × h l'ingombro.
+  const t = (nome, sala, forma, posti, x, y, w, h) => ({ id: 't' + nome, nome, sala, forma, posti, x, y, w, h });
+  const a = (id, nome, sala, x, y, w, h) => ({ id, nome, sala, forma: 'arredo', posti: 0, x, y, w, h });
+  return {
+    v: 1,
+    durata: 120,
+    sale: [{ id: 'sala', nome: 'Sala' }, { id: 'veranda', nome: 'Veranda' }, { id: 'fuori', nome: 'Esterno' }],
+    tavoli: [
+      a('a-bancone', 'Bancone', 'sala', 40, 30, 300, 60),
+      a('a-forno', 'Forno', 'sala', 820, 30, 140, 90),
+      a('a-ingresso', 'Ingresso', 'sala', 430, 600, 140, 30),
+      t('1', 'sala', 'rett', 4, 60, 170, 120, 80),
+      t('2', 'sala', 'rett', 4, 60, 310, 120, 80),
+      t('3', 'sala', 'rett', 6, 60, 460, 180, 80),
+      t('4', 'sala', 'tondo', 4, 300, 190, 110, 110),
+      t('5', 'sala', 'tondo', 4, 300, 380, 110, 110),
+      t('6', 'sala', 'quadro', 2, 490, 190, 80, 80),
+      t('7', 'sala', 'quadro', 2, 490, 340, 80, 80),
+      t('8', 'sala', 'rett', 6, 640, 180, 180, 80),
+      t('9', 'sala', 'rett', 8, 640, 330, 250, 90),
+      t('10', 'sala', 'quadro', 4, 680, 480, 100, 100),
+      a('a-vetrata', 'Vetrata', 'veranda', 40, 30, 920, 26),
+      t('11', 'veranda', 'quadro', 2, 80, 140, 80, 80),
+      t('12', 'veranda', 'quadro', 2, 80, 330, 80, 80),
+      t('13', 'veranda', 'rett', 4, 250, 140, 140, 80),
+      t('14', 'veranda', 'rett', 4, 250, 330, 140, 80),
+      t('15', 'veranda', 'rett', 6, 480, 140, 190, 80),
+      t('16', 'veranda', 'tondo', 6, 500, 320, 140, 140),
+      t('17', 'veranda', 'rett', 8, 740, 230, 100, 250),
+      a('a-fuoco', 'Fuoco', 'fuori', 430, 40, 140, 80),
+      t('20', 'fuori', 'tondo', 4, 140, 200, 110, 110),
+      t('21', 'fuori', 'tondo', 4, 340, 300, 110, 110),
+      t('22', 'fuori', 'tondo', 4, 560, 300, 110, 110),
+      t('23', 'fuori', 'tondo', 4, 760, 200, 110, 110),
+    ],
+    pren: [],
+  };
+}
+function carica() {
+  try {
+    const j = JSON.parse(localStorage.getItem(CHIAVE));
+    if (j && j.v === 1 && Array.isArray(j.tavoli) && Array.isArray(j.pren)) return j;
+  } catch (e) {}
+  return piantaDiEsempio();
+}
+function salva() {
+  try { localStorage.setItem(CHIAVE, JSON.stringify(S)); }
+  catch (e) { avvisa('Salvataggio non riuscito su questo dispositivo: scarica un backup.'); }
+}
+let S = carica();
+
+/* ---------- lo stato della pagina ---------- */
+const V = {
+  data: oggiIso(),
+  sala: S.sale[0].id,
+  T: 20 * 60 + 30,     // l'ora che si sta guardando
+  live: true,          // «Adesso»: l'ora segue l'orologio
+  modifica: false,
+  sel: null,           // l'elemento selezionato in modifica
+  scelta: null,        // { bozza, tavoli: Set } mentre si scelgono i tavoli in piantina
+  bozza: null,         // la prenotazione aperta nella finestra
+};
+
+/* ---------- prenotazioni e tavoli ---------- */
+const tavolo = (id) => S.tavoli.find((t) => t.id === id);
+const nomiTavoli = (ids) => ids.map((id) => tavolo(id)?.nome).filter(Boolean);
+const attive = (data) => S.pren.filter((p) => p.data === data && !CHIUSI.includes(p.stato));
+const inizio = (p) => minuti(p.ora);
+const sovrappone = (p, t0, t1) => inizio(p) < t1 && t0 < inizio(p) + p.durata;
+
+// Le prenotazioni che si accavallano con [t0, t1) su quel tavolo, esclusa `tranne`.
+function conflitti(tid, data, t0, t1, tranne) {
+  return attive(data).filter((p) => p.id !== tranne && p.tavoli.includes(tid) && sovrappone(p, t0, t1));
+}
+function liberoPer(tid, b) {
+  return !conflitti(tid, b.data, inizio(b), inizio(b) + b.durata, b.id).length;
+}
+
+// Com'è il tavolo all'ora T: chi c'è seduto, chi deve arrivare, o libero.
+function statoTavolo(tid, data, T) {
+  const sue = attive(data).filter((p) => p.tavoli.includes(tid)).sort((a, b) => inizio(a) - inizio(b));
+  const seduti = sue.find((p) => p.stato === 'seduti' && T >= inizio(p) - 60);
+  if (seduti) return { k: 'occupato', p: seduti };
+  const ora = sue.find((p) => sovrappone(p, T, T + 1));
+  if (ora) return { k: T >= inizio(ora) + RITARDO ? 'ritardo' : 'prenotato', p: ora };
+  const dopo = sue.find((p) => inizio(p) > T);
+  if (dopo && inizio(dopo) - T <= A_BREVE) return { k: 'breve', p: dopo };
+  return { k: 'libero', p: dopo };
+}
+function ritardo(p) {
+  return p.stato === 'attesa' && p.data === oggiIso() && adesso() >= inizio(p) + RITARDO;
+}
+
+// Il tavolo più piccolo che basta, libero per tutta la durata; prima nella sala aperta.
+function suggerisci(b) {
+  const liberi = S.tavoli.filter((t) => t.forma !== 'arredo' && t.posti >= b.persone && liberoPer(t.id, b));
+  liberi.sort((x, y) => (x.sala !== V.sala) - (y.sala !== V.sala) || x.posti - y.posti || x.nome.localeCompare(y.nome, 'it', { numeric: true }));
+  return liberi[0] || null;
+}
+
+/* ---------- il messaggio WhatsApp della card ---------- */
+// «Ciao Spicchio d'Oro! Vorrei prenotare un tavolo per 4 persone, giovedì 8 ottobre alle 21:00,
+// per la serata "…". Grazie!» — anche con la riga copiata da WhatsApp «[24/10/26, 18:02] Mario Rossi: …».
+function leggiMessaggio(testo) {
+  const out = {}, t = testo.toLowerCase();
+  let m = testo.match(/^\s*\[[^\]]*\]\s*([^:\n]{2,40}):/m) || testo.match(/^\s*\d{1,2}\/\d{1,2}\/\d{2,4},?\s+\d{1,2}[:.]\d{2}\s*-\s*([^:\n]{2,40}):/m);
+  if (m && !/^\+?[\d\s]+$/.test(m[1])) out.nome = m[1].trim();
+  m = t.match(/(\d+)\s*(?:o più\s*)?person[ae]/) || t.match(/\bin\s+(\d+)\b/);
+  if (m) out.persone = Number(m[1]);
+  m = t.match(/(\d{1,2})\s+(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)/);
+  if (m) {
+    const oggi = daIso(oggiIso());
+    const d = new Date(oggi.getFullYear(), MESI.indexOf(m[2]), Number(m[1]));
+    if (oggi - d > 60 * 864e5) d.setFullYear(d.getFullYear() + 1);
+    out.data = iso(d);
+  } else if (/\bdomani\b/.test(t)) {
+    const d = new Date(); d.setDate(d.getDate() + 1); out.data = iso(d);
+  } else if (/\b(oggi|stasera)\b/.test(t)) out.data = oggiIso();
+  m = t.match(/\b(?:alle|ore|per le)\s*(\d{1,2})(?:[:.](\d{2}))?/);
+  if (m) {
+    let h = Number(m[1]); if (h < 12) h += 12;
+    out.ora = ora(Math.min(h * 60 + Number(m[2] || 0), 24 * 60 - 15));
+  }
+  m = testo.match(/serata\s*["“«]([^"”»]+)["”»]/i);
+  if (m) out.note = `Serata: ${m[1]}`;
+  m = testo.match(/(?:\+|00)?\d[\d\s]{7,14}\d/);
+  if (m) out.tel = m[0].replace(/\s+/g, ' ').trim();
+  return out;
+}
+function numeroWa(tel) {
+  let n = String(tel || '').replace(/\D/g, '');
+  if (n.startsWith('00')) n = n.slice(2);
+  if (/^3\d{8,9}$/.test(n)) n = '39' + n;
+  return n.length >= 10 ? n : '';
+}
+function linkConferma(p) {
+  const n = numeroWa(p.tel); if (!n) return '';
+  const tav = nomiTavoli(p.tavoli);
+  const txt = `Ciao${p.nome ? ' ' + p.nome : ''}! Ti confermiamo il tavolo per ${persone(p.persone)}, ${giornoEsteso(p.data)} alle ${p.ora}. A presto, Spicchio d'Oro`;
+  return `https://wa.me/${n}?text=${encodeURIComponent(txt)}`;
+}
+
+/* ---------- disegno della piantina ---------- */
+const svg = $('[data-svg]');
+const COLORI = {
+  libero:    { f: 'rgba(111,207,142,.16)', s: 'rgba(111,207,142,.75)', t: '#D9F5E2' },
+  breve:     { f: 'rgba(111,207,142,.10)', s: '#D3AE63', t: '#F1DCA6', d: '8 6' },
+  prenotato: { f: 'rgba(211,174,99,.30)', s: '#E9CD8E', t: '#FFF3D6' },
+  ritardo:   { f: 'rgba(240,160,75,.32)', s: '#F0A04B', t: '#FFE3C2' },
+  occupato:  { f: 'rgba(226,114,91,.34)', s: '#E2725B', t: '#FFE0D8' },
+  spento:    { f: 'rgba(244,238,227,.04)', s: 'rgba(244,238,227,.16)', t: 'rgba(244,238,227,.35)' },
+  scelto:    { f: '#D3AE63', s: '#F1DCA6', t: '#1B1407' },
+  modifica:  { f: 'rgba(244,238,227,.07)', s: 'rgba(244,238,227,.45)', t: '#F4EEE3' },
+};
+
+function sedie(t) {
+  const out = [], r = 10, g = 15, n = t.posti;
+  if (!n) return out;
+  if (t.forma === 'tondo') {
+    const R = t.w / 2 + g;
+    for (let i = 0; i < n; i++) {
+      const a = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+      out.push([t.w / 2 + Math.cos(a) * R, t.h / 2 + Math.sin(a) * R]);
+    }
+    return out;
+  }
+  const lungo = t.w >= t.h;
+  const L = lungo ? t.w : t.h, C = lungo ? t.h : t.w;
+  // Quadrato fino a 4: una per lato. Sennò sui due lati lunghi, e le dispari in testa.
+  if (t.forma === 'quadro' && n <= 4) {
+    const lati = [[t.w / 2, -g], [t.w / 2, t.h + g], [-g, t.h / 2], [t.w + g, t.h / 2]];
+    return n === 2 ? [lati[2], lati[3]] : lati.slice(0, n);
+  }
+  let testa = n % 2, lati = n - testa;
+  const perLato = lati / 2;
+  for (let s = 0; s < 2; s++) for (let i = 0; i < perLato; i++) {
+    const u = (L * (i + 1)) / (perLato + 1), v = s ? C + g : -g;
+    out.push(lungo ? [u, v] : [v, u]);
+  }
+  if (testa) out.push(lungo ? [-g, C / 2] : [C / 2, -g]);
+  return out.map(([x, y]) => [x, y, r]);
+}
+
+function disegna() {
+  const elementi = S.tavoli.filter((t) => t.sala === V.sala);
+  let h = `<defs><pattern id="griglia" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="rgba(244,238,227,.035)"/></pattern></defs>
+    <rect x="0" y="0" width="${W}" height="${H}" fill="url(#griglia)"/>
+    <rect x="10" y="10" width="${W - 20}" height="${H - 20}" rx="16" fill="none" stroke="rgba(244,238,227,.14)" stroke-width="3"/>`;
+  for (const t of elementi) {
+    if (t.forma === 'arredo') {
+      const c = V.modifica && V.sel === t.id;
+      h += `<g class="el" data-el="${t.id}" transform="translate(${t.x} ${t.y})">
+        <rect width="${t.w}" height="${t.h}" rx="8" fill="rgba(244,238,227,.06)" stroke="${c ? '#D3AE63' : 'rgba(244,238,227,.2)'}" stroke-width="${c ? 3 : 1.5}" stroke-dasharray="${c ? '' : '6 5'}"/>
+        <text x="${t.w / 2}" y="${t.h / 2 + 6}" text-anchor="middle" font-size="17" fill="rgba(244,238,227,.45)" letter-spacing="1">${esc(t.nome.toUpperCase())}</text></g>`;
+      continue;
+    }
+    let k, info = null;
+    if (V.modifica) k = 'modifica';
+    else if (V.scelta) {
+      const b = V.scelta.bozza;
+      k = V.scelta.tavoli.has(t.id) ? 'scelto' : liberoPer(t.id, b) ? 'libero' : 'spento';
+    } else {
+      const st = statoTavolo(t.id, V.data, V.T);
+      k = st.k; info = st.p;
+    }
+    const c = COLORI[k];
+    const sel = V.modifica && V.sel === t.id;
+    const piano = t.forma === 'tondo'
+      ? `<ellipse class="piano" cx="${t.w / 2}" cy="${t.h / 2}" rx="${t.w / 2}" ry="${t.h / 2}"`
+      : `<rect class="piano" width="${t.w}" height="${t.h}" rx="${t.forma === 'quadro' ? 10 : 12}"`;
+    const sd = sedie(t).map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9" fill="${k === 'spento' ? 'rgba(244,238,227,.08)' : 'rgba(244,238,227,.16)'}"/>`).join('');
+    let testo;
+    const cx = t.w / 2, cy = t.h / 2;
+    const largo = Math.min(t.w, t.h) >= 90 || t.w >= 120;
+    if (info && !V.scelta && (k !== 'libero')) {
+      const nome = (info.nome || '—').slice(0, Math.max(7, Math.floor(t.w / 9)));
+      testo = `<text x="${cx}" y="${cy - (largo ? 10 : 4)}" text-anchor="middle" font-size="${largo ? 22 : 20}" font-weight="700" fill="${c.t}">${esc(t.nome)}</text>
+        ${largo ? `<text x="${cx}" y="${cy + 12}" text-anchor="middle" font-size="14" font-weight="600" fill="${c.t}">${esc(nome)}</text>` : ''}
+        <text x="${cx}" y="${cy + (largo ? 30 : 16)}" text-anchor="middle" font-size="13" fill="${c.t}" opacity=".85">${info.ora} · ${info.persone}p</text>`;
+    } else {
+      testo = `<text x="${cx}" y="${cy + 2}" text-anchor="middle" font-size="24" font-weight="700" fill="${c.t}">${esc(t.nome)}</text>
+        <text x="${cx}" y="${cy + 22}" text-anchor="middle" font-size="13" fill="${c.t}" opacity=".7">${t.posti} posti</text>`;
+    }
+    h += `<g class="el ${k}" data-el="${t.id}" transform="translate(${t.x} ${t.y})">${sd}
+      ${piano} fill="${c.f}" stroke="${sel ? '#D3AE63' : c.s}" stroke-width="${sel ? 4 : 2.5}" ${c.d && !sel ? `stroke-dasharray="${c.d}"` : ''}/>${testo}</g>`;
+  }
+  svg.innerHTML = h;
+}
+
+/* ---------- la pagina ---------- */
+function render() {
+  if (!S.sale.some((s) => s.id === V.sala)) V.sala = S.sale[0].id;
+  if (V.live) V.T = adesso();
+  document.body.classList.toggle('modifica', V.modifica);
+  document.body.classList.toggle('scelta', !!V.scelta);
+  $('[data-modifica]').disabled = !!V.scelta;
+
+  const d = daIso(V.data);
+  $('[data-data-txt]').textContent = (V.data === oggiIso() ? 'Oggi, ' : GIORNI_BREVI[d.getDay()] + ' ') + `${d.getDate()} ${MESI_BREVI[d.getMonth()]}`;
+  $('[data-data]').value = V.data;
+  $('[data-oggi]').hidden = V.data === oggiIso();
+
+  $('[data-sale]').innerHTML = S.sale.map((s) => {
+    const n = attive(V.data).filter((p) => p.tavoli.some((id) => tavolo(id)?.sala === s.id)).length;
+    return `<button class="btn piccolo press" aria-pressed="${s.id === V.sala}" data-s="${s.id}">${esc(s.nome)}${n ? ` <span class="n">${n}</span>` : ''}</button>`;
+  }).join('');
+  $$('[data-sale] [data-s]').forEach((b) => b.onclick = () => { V.sala = b.dataset.s; V.sel = null; render(); });
+
+  const rng = $('[data-ora]');
+  rng.value = Math.max(PRIMA_ORA, Math.min(Number(rng.max), V.T));
+  $('[data-ora-txt]').textContent = ora(V.T);
+  const adessoBtn = $('[data-adesso]');
+  adessoBtn.hidden = V.data !== oggiIso();
+  adessoBtn.setAttribute('aria-pressed', V.live);
+  $('[data-tempo]').style.visibility = V.modifica || V.scelta ? 'hidden' : '';
+  $('[data-legenda]').hidden = V.modifica || !!V.scelta;
+
+  $('[data-modifica]').setAttribute('aria-pressed', V.modifica);
+  $('[data-editbar]').hidden = !V.modifica;
+  renderBanner();
+  disegna();
+  renderSelezione();
+  renderLista();
+}
+
+function renderBanner() {
+  const b = $('[data-banner]');
+  if (!V.scelta) { b.hidden = true; return; }
+  const p = V.scelta.bozza;
+  const posti = [...V.scelta.tavoli].reduce((n, id) => n + (tavolo(id)?.posti || 0), 0);
+  b.hidden = false;
+  b.innerHTML = `<div class="t">Tavoli per <b>${esc(p.nome || 'la prenotazione')}</b> · ${persone(p.persone)} · ${giornoEsteso(p.data)} alle ${p.ora}<br>
+    <span class="sotto">Tocca i tavoli liberi (anche più di uno, per unirli). Posti scelti: <b>${posti}</b> su ${p.persone}</span></div>
+    <button class="btn piccolo press" data-sc-annulla>Annulla</button>
+    <button class="btn oro piccolo press" data-sc-ok>Fatto</button>`;
+  $('[data-sc-annulla]').onclick = () => fineScelta(false);
+  $('[data-sc-ok]').onclick = () => fineScelta(true);
+}
+
+function rigaPren(p) {
+  const tav = nomiTavoli(p.tavoli);
+  const chiusa = CHIUSI.includes(p.stato);
+  const k = chiusa ? p.stato : p.stato === 'seduti' ? 'seduti' : ritardo(p) ? 'ritardo' : !tav.length ? 'assegna' : 'attesa';
+  const etichetta = k === 'ritardo' ? 'In ritardo' : k === 'assegna' ? 'Senza tavolo' : STATI[p.stato];
+  const info = [persone(p.persone), tav.length ? `Tavolo ${tav.join(' + ')}` : null, p.note].filter(Boolean).map(esc).join(' · ');
+  return `<button class="pren press${chiusa ? ' chiusa' : ''}" data-p="${p.id}">
+    <span class="ora">${p.ora}</span><span class="nome">${esc(p.nome || 'Senza nome')}</span>
+    <span class="pill-stato s-${k}">${etichetta}</span><span class="info">${info}</span></button>`;
+}
+
+function renderLista() {
+  const giorno = S.pren.filter((p) => p.data === V.data).sort((a, b) => inizio(a) - inizio(b) || a.creata - b.creata);
+  const aperte = giorno.filter((p) => !CHIUSI.includes(p.stato));
+  const chiuse = giorno.filter((p) => CHIUSI.includes(p.stato));
+  const coperti = giorno.filter((p) => !['noshow', 'annullata'].includes(p.stato)).reduce((n, p) => n + Number(p.persone), 0);
+  const alTavolo = aperte.filter((p) => p.stato === 'seduti').reduce((n, p) => n + Number(p.persone), 0);
+  const senza = aperte.filter((p) => !nomiTavoli(p.tavoli).length).length;
+  $('[data-riepilogo]').innerHTML = `
+    <div><b>${aperte.length}</b><span>prenotazioni</span></div>
+    <div><b>${coperti}</b><span>coperti</span></div>
+    <div><b>${alTavolo}</b><span>al tavolo</span></div>
+    <div class="${senza ? 'att' : ''}"><b>${senza}</b><span>senza tavolo</span></div>`;
+  let h = `<h3>${V.data === oggiIso() ? 'Stasera' : giornoEsteso(V.data)}</h3>`;
+  h += aperte.length ? aperte.map(rigaPren).join('') : `<div class="vuoto">Nessuna prenotazione.<br>Tocca «+ Prenotazione» o un tavolo libero.</div>`;
+  if (chiuse.length) h += `<details class="chiuse"><summary>Chiuse e annullate (${chiuse.length})</summary>${chiuse.map(rigaPren).join('')}</details>`;
+  $('[data-lista]').innerHTML = h;
+  $$('[data-lista] [data-p]').forEach((b) => b.onclick = () => apriPren(S.pren.find((p) => p.id === b.dataset.p)));
+}
+
+/* ---------- finestra della prenotazione ---------- */
+const dlgPren = $('[data-dlg-pren]');
+const F = (k) => $(`[data-f="${k}"]`);
+
+function nuovaBozza(extra = {}) {
+  const live = V.data === oggiIso() && V.live;
+  let T = live ? Math.ceil(adesso() / 15) * 15 : Math.round(V.T / 15) * 15;
+  T = Math.max(PRIMA_ORA, Math.min(ULTIMA_ORA, T));
+  return { id: null, nome: '', tel: '', persone: 2, data: V.data, ora: ora(T), durata: S.durata, note: '', tavoli: [], stato: 'attesa', ...extra };
+}
+
+function apriPren(p, tieniBozza) {
+  V.bozza = tieniBozza ? p : { ...p, tavoli: [...p.tavoli] };
+  const b = V.bozza, nuova = !b.id;
+  $('[data-f-titolo]').textContent = nuova ? 'Nuova prenotazione' : (b.nome || 'Prenotazione');
+  F('nome').value = b.nome; F('tel').value = b.tel; F('persone').value = b.persone;
+  F('data').value = b.data; F('note').value = b.note;
+  const ore = [];
+  for (let m = PRIMA_ORA; m <= ULTIMA_ORA; m += 15) ore.push(ora(m));
+  if (!ore.includes(b.ora)) ore.push(b.ora), ore.sort();
+  F('ora').innerHTML = ore.map((o) => `<option${o === b.ora ? ' selected' : ''}>${o}</option>`).join('');
+  F('durata').innerHTML = DURATE.map((m) => `<option value="${m}"${m === b.durata ? ' selected' : ''}>${durataTesto(m)}</option>`).join('');
+  $('[data-f-incolla]').hidden = !nuova;
+  if (nuova && !tieniBozza) { $('[data-f-incolla]').open = false; $('[data-f-msg]').value = ''; }
+  $('[data-f-elimina]').hidden = nuova;
+
+  const statoEl = $('[data-f-stato]'), az = $('[data-f-azioni]');
+  statoEl.hidden = az.hidden = nuova;
+  if (!nuova) {
+    const orig = S.pren.find((x) => x.id === b.id);
+    statoEl.innerHTML = `<span class="pill-stato s-${ritardo(orig) ? 'ritardo' : orig.stato}">${ritardo(orig) ? 'In ritardo' : STATI[orig.stato]}</span>`;
+    const wa = linkConferma(orig);
+    const btn = [];
+    if (orig.stato === 'attesa') btn.push(`<button type="button" class="btn verde piccolo press" data-st="seduti">Sono arrivati</button>`, `<button type="button" class="btn piccolo press" data-st="noshow">Non sono venuti</button>`, `<button type="button" class="btn piccolo press" data-st="annullata">Hanno disdetto</button>`);
+    if (orig.stato === 'seduti') btn.push(`<button type="button" class="btn verde piccolo press" data-st="finito">Tavolo libero</button>`, `<button type="button" class="btn piccolo press" data-st="attesa">Non ancora arrivati</button>`);
+    if (CHIUSI.includes(orig.stato)) btn.push(`<button type="button" class="btn piccolo press" data-st="attesa">Riapri</button>`);
+    if (orig.tel) btn.push(`<a class="btn piccolo press" href="tel:${esc(orig.tel.replace(/[^\d+]/g, ''))}">Chiama</a>`);
+    if (wa) btn.push(`<a class="btn piccolo press" href="${wa}" target="_blank" rel="noopener">Conferma su WhatsApp</a>`);
+    az.innerHTML = btn.join('');
+    $$('[data-st]', az).forEach((x) => x.onclick = () => cambiaStato(orig, x.dataset.st));
+  }
+  aggiornaTavoliForm();
+  if (!dlgPren.open) dlgPren.showModal();
+  // Col mouse si scrive subito il nome; sul telefono la tastiera coprirebbe «Incolla».
+  if (nuova && !tieniBozza && matchMedia('(pointer: fine)').matches) setTimeout(() => F('nome').focus(), 50);
+}
+
+function leggiForm() {
+  const b = V.bozza;
+  b.nome = F('nome').value.trim(); b.tel = F('tel').value.trim();
+  b.persone = Math.max(1, Math.min(99, parseInt(F('persone').value, 10) || 1));
+  b.data = F('data').value || V.data; b.ora = F('ora').value;
+  b.durata = Number(F('durata').value); b.note = F('note').value.trim();
+  return b;
+}
+
+function aggiornaTavoliForm() {
+  const b = V.bozza;
+  b.tavoli = b.tavoli.filter((id) => tavolo(id));
+  const tav = nomiTavoli(b.tavoli);
+  $('[data-f-tavoli]').innerHTML = tav.length ? tav.map((n) => `<span class="chip">${esc(n)}</span>`).join('') : `<span class="chip no">Da assegnare</span>`;
+  const av = $('[data-f-avviso]'), msg = [];
+  const posti = b.tavoli.reduce((n, id) => n + (tavolo(id)?.posti || 0), 0);
+  for (const id of b.tavoli) {
+    const c = conflitti(id, b.data, inizio(b), inizio(b) + b.durata, b.id);
+    if (c.length) msg.push(`Il tavolo ${esc(tavolo(id).nome)} è già prenotato: ${c.map((p) => `${esc(p.nome || 'senza nome')} alle ${p.ora}`).join(', ')}.`);
+  }
+  if (b.tavoli.length && posti < b.persone) msg.push(`Posti al tavolo: ${posti} per ${persone(b.persone)}.`);
+  av.hidden = !msg.length; av.innerHTML = msg.join('<br>');
+}
+
+function salvaPren() {
+  const b = leggiForm();
+  const nuova = !b.id;
+  if (nuova) { b.id = uid(); b.creata = Date.now(); S.pren.push(b); }
+  else { const i = S.pren.findIndex((p) => p.id === b.id); S.pren[i] = { ...S.pren[i], ...b }; }
+  salva();
+  dlgPren.close();
+  if (b.data !== V.data) { V.data = b.data; V.live = V.data === oggiIso(); }
+  const tav = nomiTavoli(b.tavoli);
+  const sala = tav.length && tavolo(b.tavoli[0]).sala;
+  if (sala) V.sala = sala;
+  if (!V.live) V.T = Math.max(PRIMA_ORA, inizio(b));
+  render();
+  avvisa(`${nuova ? 'Prenotato' : 'Salvato'}: ${b.nome || 'senza nome'}, ${b.ora}${tav.length ? ' · tavolo ' + tav.join(' + ') : ' · senza tavolo'}`);
+}
+
+function cambiaStato(p, stato) {
+  const prima = p.stato;
+  p.stato = stato;
+  if (stato === 'seduti' && p.data === oggiIso() && !p.arrivo) p.arrivo = ora(adesso());
+  salva(); dlgPren.close(); render();
+  avvisa(`${p.nome || 'Prenotazione'}: ${STATI[stato].toLowerCase()}`, 'Annulla', () => { p.stato = prima; salva(); render(); });
+}
+
+dlgPren.addEventListener('close', () => { if (!V.scelta) V.bozza = null; });
+$('[data-form]').addEventListener('submit', (e) => { e.preventDefault(); salvaPren(); });
+$('[data-f-elimina]').onclick = () => {
+  const b = V.bozza, i = S.pren.findIndex((p) => p.id === b.id);
+  if (i < 0) return;
+  const [via] = S.pren.splice(i, 1);
+  salva(); dlgPren.close(); render();
+  avvisa(`Eliminata: ${via.nome || 'senza nome'}`, 'Annulla', () => { S.pren.push(via); salva(); render(); });
+};
+$('[data-meno]').onclick = () => { F('persone').value = Math.max(1, (parseInt(F('persone').value, 10) || 1) - 1); leggiForm(); aggiornaTavoliForm(); };
+$('[data-piu]').onclick = () => { F('persone').value = Math.min(99, (parseInt(F('persone').value, 10) || 0) + 1); leggiForm(); aggiornaTavoliForm(); };
+['persone', 'data', 'ora', 'durata'].forEach((k) => F(k).addEventListener('change', () => { leggiForm(); aggiornaTavoliForm(); }));
+$('[data-f-leggi]').onclick = () => {
+  const r = leggiMessaggio($('[data-f-msg]').value);
+  if (!Object.keys(r).length) return avvisa('Non trovo persone, giorno o ora nel messaggio.');
+  leggiForm();
+  const b = V.bozza;
+  if (r.nome && !b.nome) b.nome = r.nome;
+  if (r.tel && !b.tel) b.tel = r.tel;
+  if (r.note) b.note = b.note ? `${b.note} · ${r.note}` : r.note;
+  Object.assign(b, { persone: r.persone ?? b.persone, data: r.data ?? b.data, ora: r.ora ?? b.ora });
+  apriPren(b, true);
+  $('[data-f-incolla]').open = false;
+  avvisa(`Letto: ${persone(b.persone)}, ${giornoEsteso(b.data)} alle ${b.ora}`);
+};
+$('[data-f-auto]').onclick = () => {
+  const b = leggiForm(), t = suggerisci(b);
+  if (!t) return avvisa(`Nessun tavolo singolo libero per ${persone(b.persone)}: uniscine due con «Scegli in piantina».`);
+  b.tavoli = [t.id];
+  aggiornaTavoliForm();
+  avvisa(`Tavolo ${t.nome} (${S.sale.find((s) => s.id === t.sala)?.nome}, ${t.posti} posti)`);
+};
+$('[data-f-pianta]').onclick = () => {
+  const b = leggiForm();
+  V.scelta = { bozza: b, tavoli: new Set(b.tavoli), prima: { data: V.data, live: V.live, T: V.T } };
+  if (b.tavoli.length) V.sala = tavolo(b.tavoli[0]).sala;
+  V.data = b.data; V.live = false; V.T = inizio(b);
+  dlgPren.close();
+  render();
+  $('.pianta-box').scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+function fineScelta(ok) {
+  const sc = V.scelta; V.scelta = null;
+  Object.assign(V, sc.prima);
+  if (ok) sc.bozza.tavoli = [...sc.tavoli];
+  render();
+  apriPren(sc.bozza, true);
+}
+
+/* ---------- finestra del tavolo ---------- */
+const dlgTav = $('[data-dlg-tav]');
+function apriTavolo(t) {
+  const st = statoTavolo(t.id, V.data, V.T);
+  const sue = S.pren.filter((p) => p.data === V.data && p.tavoli.includes(t.id)).sort((a, b) => inizio(a) - inizio(b));
+  const sala = S.sale.find((s) => s.id === t.sala)?.nome || '';
+  $('[data-t-titolo]').textContent = `Tavolo ${t.nome}`;
+  const testo = {
+    libero: 'Libero', breve: `Libero, prenotato alle ${st.p?.ora}`, prenotato: `Prenotato: ${esc(st.p?.nome || 'senza nome')}`,
+    ritardo: `In ritardo: ${esc(st.p?.nome || 'senza nome')} (${st.p?.ora})`, occupato: `Al tavolo: ${esc(st.p?.nome || 'senza nome')}`,
+  }[st.k];
+  let h = `<div class="sotto">${esc(sala)} · ${t.posti} posti · alle ${ora(V.T)}: <b style="color:var(--panna)">${testo}</b></div><div class="azioni-pren">`;
+  if (st.k === 'occupato') h += `<button class="btn verde press" data-ta="libera">Tavolo libero</button>`;
+  if (st.k === 'prenotato' || st.k === 'ritardo' || st.k === 'breve') h += `<button class="btn verde press" data-ta="arrivati">${esc(st.p.nome || 'Sono')} arrivati</button>`;
+  h += `<button class="btn oro press" data-ta="nuova">Prenota questo tavolo</button></div>`;
+  if (st.k !== 'occupato' && V.data === oggiIso()) {
+    const max = Math.max(t.posti + 2, 4);
+    h += `<div class="campo"><span>Siedi ora senza prenotazione</span><div class="chips">${Array.from({ length: max }, (_, i) =>
+      `<button class="btn piccolo press" data-siedi="${i + 1}">${i + 1}</button>`).join('')}</div></div>`;
+  }
+  h += `<div class="campo"><span>${V.data === oggiIso() ? 'Stasera' : 'Quel giorno'} su questo tavolo</span><div class="lista-mini">${
+    sue.length ? sue.map(rigaPren).join('') : '<div class="sotto">Nessuna prenotazione.</div>'}</div></div>`;
+  $('[data-t-corpo]').innerHTML = h;
+  const corpo = $('[data-t-corpo]');
+  $$('[data-p]', corpo).forEach((b) => b.onclick = () => { dlgTav.close(); apriPren(S.pren.find((p) => p.id === b.dataset.p)); });
+  $$('[data-ta]', corpo).forEach((b) => b.onclick = () => {
+    dlgTav.close();
+    const a = b.dataset.ta;
+    if (a === 'libera') cambiaStato(st.p, 'finito');
+    else if (a === 'arrivati') cambiaStato(st.p, 'seduti');
+    else {
+      const bozza = nuovaBozza({ tavoli: [t.id], persone: Math.min(t.posti, 2) || 2 });
+      if (!V.live) bozza.ora = ora(Math.max(PRIMA_ORA, Math.min(ULTIMA_ORA, Math.round(V.T / 15) * 15)));
+      apriPren(bozza);
+    }
+  });
+  $$('[data-siedi]', corpo).forEach((b) => b.onclick = () => {
+    const n = Number(b.dataset.siedi), m = adesso();
+    const p = { id: uid(), creata: Date.now(), nome: 'Senza prenotazione', tel: '', persone: n, data: oggiIso(), ora: ora(m - (m % 5)), durata: S.durata, note: '', tavoli: [t.id], stato: 'seduti', arrivo: ora(m) };
+    const c = conflitti(t.id, p.data, inizio(p), inizio(p) + p.durata, null);
+    S.pren.push(p); salva(); dlgTav.close(); render();
+    avvisa(c.length ? `Seduti al ${t.nome}. Attenzione: prenotato per ${c[0].nome || 'qualcuno'} alle ${c[0].ora}` : `Seduti al tavolo ${t.nome}, ${persone(n)}`, 'Annulla', () => { S.pren = S.pren.filter((x) => x !== p); salva(); render(); });
+  });
+  dlgTav.showModal();
+}
+$$('[data-chiudi]').forEach((b) => b.onclick = () => b.closest('dialog').close());
+$$('dialog').forEach((d) => d.addEventListener('click', (e) => { if (e.target === d) d.close(); }));
+
+/* ---------- tocchi sulla piantina ---------- */
+let trascina = null;
+function puntoSvg(e) {
+  const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY;
+  return p.matrixTransform(svg.getScreenCTM().inverse());
+}
+const aGriglia = (v) => Math.round(v / 10) * 10;
+svg.addEventListener('pointerdown', (e) => {
+  if (!V.modifica) return;
+  const g = e.target.closest('[data-el]');
+  if (!g) { V.sel = null; render(); return; }
+  const t = tavolo(g.dataset.el), p = puntoSvg(e);
+  trascina = { t, g, x0: p.x, y0: p.y, x: t.x, y: t.y, mosso: false };
+  svg.setPointerCapture(e.pointerId);
+  e.preventDefault();
+});
+svg.addEventListener('pointermove', (e) => {
+  if (!trascina) return;
+  const p = puntoSvg(e), d = trascina;
+  if (!d.mosso && Math.hypot(p.x - d.x0, p.y - d.y0) < 6) return;
+  d.mosso = true;
+  d.t.x = Math.max(0, Math.min(W - d.t.w, aGriglia(d.x + p.x - d.x0)));
+  d.t.y = Math.max(0, Math.min(H - d.t.h, aGriglia(d.y + p.y - d.y0)));
+  d.g.setAttribute('transform', `translate(${d.t.x} ${d.t.y})`);
+});
+svg.addEventListener('pointerup', () => {
+  if (!trascina) return;
+  const d = trascina; trascina = null;
+  V.sel = d.t.id;
+  if (d.mosso) salva();
+  render();
+});
+svg.addEventListener('click', (e) => {
+  if (V.modifica) return;
+  const g = e.target.closest('[data-el]'); if (!g) return;
+  const t = tavolo(g.dataset.el);
+  if (t.forma === 'arredo') return;
+  if (V.scelta) {
+    const sc = V.scelta;
+    if (sc.tavoli.has(t.id)) sc.tavoli.delete(t.id);
+    else if (!liberoPer(t.id, sc.bozza)) {
+      const c = conflitti(t.id, sc.bozza.data, inizio(sc.bozza), inizio(sc.bozza) + sc.bozza.durata, sc.bozza.id)[0];
+      return avvisa(`Il ${t.nome} è prenotato: ${c.nome || 'senza nome'} alle ${c.ora}`);
+    } else sc.tavoli.add(t.id);
+    renderBanner(); disegna();
+    return;
+  }
+  apriTavolo(t);
+});
+
+/* ---------- modifica della piantina ---------- */
+function renderSelezione() {
+  const box = $('[data-editsel]');
+  const t = V.modifica && V.sel && tavolo(V.sel);
+  if (!t) { box.hidden = true; return; }
+  box.hidden = false;
+  const arredo = t.forma === 'arredo';
+  box.innerHTML = `
+    <label>${arredo ? 'Scritta' : 'Nome'}<input type="text" class="${arredo ? 'largo' : ''}" data-e="nome" value="${esc(t.nome)}"></label>
+    ${arredo ? '' : `<label>Posti<input type="number" inputmode="numeric" min="1" max="30" data-e="posti" value="${t.posti}"></label>
+    <label>Forma<select data-e="forma">${[['tondo', 'Tondo'], ['quadro', 'Quadrato'], ['rett', 'Lungo']].map(([v, n]) => `<option value="${v}"${t.forma === v ? ' selected' : ''}>${n}</option>`).join('')}</select></label>`}
+    <label>Largo<input type="number" inputmode="numeric" min="30" max="${W}" step="10" data-e="w" value="${t.w}"></label>
+    <label>Alto<input type="number" inputmode="numeric" min="20" max="${H}" step="10" data-e="h" value="${t.h}"></label>
+    <label>Sala<select data-e="sala">${S.sale.map((s) => `<option value="${s.id}"${s.id === t.sala ? ' selected' : ''}>${esc(s.nome)}</option>`).join('')}</select></label>
+    <button class="btn piccolo press" data-e-ruota>Ruota</button>
+    <button class="btn piccolo press" data-e-dup>Duplica</button>
+    <button class="btn rosso piccolo press" data-e-via>Elimina</button>`;
+  $$('[data-e]', box).forEach((i) => i.onchange = () => {
+    const k = i.dataset.e;
+    let v = i.value;
+    if (['posti', 'w', 'h'].includes(k)) v = Math.max(Number(i.min) || 1, Math.min(Number(i.max) || 999, parseInt(v, 10) || 0));
+    if (k === 'nome' && !String(v).trim()) return;
+    t[k] = k === 'nome' ? String(v).trim() : v;
+    if (k === 'forma' && v === 'tondo') t.h = t.w;
+    if (k === 'sala') { V.sala = v; }
+    t.x = Math.min(t.x, W - t.w); t.y = Math.min(t.y, H - t.h);
+    salva(); render();
+  });
+  $('[data-e-ruota]', box).onclick = () => { [t.w, t.h] = [t.h, t.w]; t.x = Math.min(t.x, W - t.w); t.y = Math.min(t.y, H - t.h); salva(); render(); };
+  $('[data-e-dup]', box).onclick = () => {
+    const n = { ...t, id: uid(), nome: arredo ? t.nome : prossimoNome(), x: Math.min(W - t.w, t.x + 30), y: Math.min(H - t.h, t.y + 30) };
+    S.tavoli.push(n); V.sel = n.id; salva(); render();
+  };
+  $('[data-e-via]', box).onclick = () => {
+    const usato = S.pren.some((p) => p.tavoli.includes(t.id) && !CHIUSI.includes(p.stato) && p.data >= oggiIso());
+    if (usato && !confirm(`Il tavolo ${t.nome} ha prenotazioni in arrivo: restano senza tavolo. Elimino lo stesso?`)) return;
+    S.tavoli = S.tavoli.filter((x) => x !== t);
+    V.sel = null; salva(); render();
+  };
+}
+function prossimoNome() {
+  const n = S.tavoli.filter((t) => t.forma !== 'arredo').map((t) => parseInt(t.nome, 10)).filter((x) => !isNaN(x));
+  return String(n.length ? Math.max(...n) + 1 : 1);
+}
+$$('[data-add]').forEach((b) => b.onclick = () => {
+  const f = b.dataset.add;
+  const dim = { tondo: [110, 110, 4], quadro: [90, 90, 4], rett: [160, 80, 6], arredo: [160, 50, 0] }[f];
+  const t = { id: uid(), nome: f === 'arredo' ? 'Arredo' : prossimoNome(), sala: V.sala, forma: f, posti: dim[2], w: dim[0], h: dim[1], x: aGriglia(W / 2 - dim[0] / 2), y: aGriglia(H / 2 - dim[1] / 2) };
+  S.tavoli.push(t); V.sel = t.id; salva(); render();
+});
+$('[data-modifica]').onclick = () => { V.modifica = !V.modifica; V.sel = null; V.scelta = null; render(); };
+$('[data-fine-modifica]').onclick = () => { V.modifica = false; V.sel = null; render(); avvisa('Piantina salvata'); };
+
+/* ---------- impostazioni e backup ---------- */
+const dlgImp = $('[data-dlg-imp]');
+function renderImp() {
+  $('[data-i-sale]').innerHTML = S.sale.map((s) => {
+    const n = S.tavoli.filter((t) => t.sala === s.id && t.forma !== 'arredo').length;
+    return `<div class="r"><input type="text" value="${esc(s.nome)}" data-i-nome="${s.id}"><span class="sotto" style="white-space:nowrap">${n} tavoli</span>
+      <button type="button" class="btn rosso piccolo press" data-i-via="${s.id}" ${S.sale.length < 2 ? 'disabled' : ''}>Elimina</button></div>`;
+  }).join('');
+  $$('[data-i-nome]').forEach((i) => i.onchange = () => { const s = S.sale.find((x) => x.id === i.dataset.iNome); if (i.value.trim()) s.nome = i.value.trim(); salva(); render(); });
+  $$('[data-i-via]').forEach((b) => b.onclick = () => {
+    const id = b.dataset.iVia, n = S.tavoli.filter((t) => t.sala === id).length;
+    if (n && !confirm(`La sala ha ${n} elementi in piantina: li elimino insieme alla sala?`)) return;
+    S.sale = S.sale.filter((s) => s.id !== id); S.tavoli = S.tavoli.filter((t) => t.sala !== id);
+    salva(); renderImp(); render();
+  });
+  $('[data-i-durata]').innerHTML = DURATE.map((m) => `<option value="${m}"${m === S.durata ? ' selected' : ''}>${durataTesto(m)}</option>`).join('');
+}
+$('[data-impost]').onclick = () => { renderImp(); dlgImp.showModal(); };
+$('[data-i-nuova-sala]').onclick = () => { const s = { id: uid(), nome: `Sala ${S.sale.length + 1}` }; S.sale.push(s); V.sala = s.id; salva(); renderImp(); render(); };
+$('[data-i-durata]').onchange = (e) => { S.durata = Number(e.target.value); salva(); };
+$('[data-i-esporta]').onclick = () => {
+  const blob = new Blob([JSON.stringify(S, null, 1)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = `spicchiodoro-tavoli-${oggiIso()}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+$('[data-i-importa]').onchange = async (e) => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  try {
+    const j = JSON.parse(await f.text());
+    if (!(j && j.v === 1 && Array.isArray(j.tavoli) && Array.isArray(j.pren) && Array.isArray(j.sale) && j.sale.length)) throw 0;
+    if (!confirm(`Il backup ha ${j.tavoli.length} elementi in piantina e ${j.pren.length} prenotazioni. Sostituisce quelli di questo dispositivo: procedo?`)) return;
+    S = j; salva(); dlgImp.close(); render(); avvisa('Backup caricato');
+  } catch (err) { avvisa('Questo file non è un backup dei tavoli.'); }
+};
+$('[data-i-reset]').onclick = () => {
+  if (!confirm('Torno alla piantina di esempio? Le prenotazioni restano, ma i tavoli che non esistono più tornano «senza tavolo».')) return;
+  const nuovo = piantaDiEsempio();
+  S.sale = nuovo.sale; S.tavoli = nuovo.tavoli;
+  salva(); renderImp(); render();
+};
+
+/* ---------- giorno e ora ---------- */
+function vaiA(data) {
+  if (V.scelta) fineScelta(false);
+  V.data = data; V.live = data === oggiIso(); if (!V.live) V.T = 20 * 60 + 30; V.scelta = null; render(); }
+function sposta(n) { const d = daIso(V.data); d.setDate(d.getDate() + n); vaiA(iso(d)); }
+$('[data-prev]').onclick = () => sposta(-1);
+$('[data-next]').onclick = () => sposta(1);
+$('[data-oggi]').onclick = () => vaiA(oggiIso());
+$('[data-data]').onchange = (e) => e.target.value && vaiA(e.target.value);
+$('[data-ora]').oninput = (e) => { V.live = false; V.T = Number(e.target.value); $('[data-ora-txt]').textContent = ora(V.T); $('[data-adesso]').setAttribute('aria-pressed', false); disegna(); };
+$('[data-adesso]').onclick = () => { V.live = true; render(); };
+$('[data-nuova]').onclick = () => apriPren(nuovaBozza());
+
+/* ---------- avvisi ---------- */
+let timerAvviso;
+function avvisa(testo, azione, fn) {
+  const t = $('[data-toast]'), b = $('[data-toast-az]');
+  $('[data-toast-txt]').textContent = testo;
+  b.hidden = !azione; b.textContent = azione || '';
+  b.onclick = () => { t.classList.remove('on'); fn && fn(); };
+  // sopra le finestre aperte: il top layer copre tutto il resto
+  const aperta = $$('dialog').find((d) => d.open);
+  (aperta || document.body).appendChild(t);
+  t.classList.add('on');
+  clearTimeout(timerAvviso);
+  timerAvviso = setTimeout(() => t.classList.remove('on'), azione ? 6000 : 3200);
+}
+
+/* ---------- avvio ---------- */
+// Un'altra scheda aperta sullo stesso dispositivo ha salvato: si ricarica.
+addEventListener('storage', (e) => { if (e.key === CHIAVE) { S = carica(); render(); } });
+// L'orologio: ogni mezzo minuto, se si guarda «adesso».
+setInterval(() => {
+  if (V.live && V.data === oggiIso() && !V.modifica && !trascina) render();
+  else if (V.live && V.data !== oggiIso()) vaiA(oggiIso()); // passata la mezzanotte
+}, 30000);
+if (location.hash === '#nuova') apriPren(nuovaBozza());
+render();
+</script>
+</body>
+</html>

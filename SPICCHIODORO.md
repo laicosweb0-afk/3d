@@ -75,6 +75,47 @@ convert originale.jpg -auto-orient -strip -interlace Plane -quality 70 -resize '
 | intro.jpg | lo sfondo a onde oro dell'intro | ✅ |
 | serate/*.jpg | i cinque riquadri della locandina «Eventi da non perdere» | ✅ |
 
+## I tavoli
+
+La pagina dello staff per prenotazioni e sala, separata dalla card (non è
+linkata da nessuna parte e non è indicizzata):
+
+    https://laicosweb0-afk.github.io/3d/spicchiodoro/tavoli/
+
+Da aprire sul tablet o sul telefono del locale e aggiungere alla schermata
+Home. File unico: `public/spicchiodoro/tavoli/index.html`.
+
+- **La piantina**: una scheda per sala (Sala, Veranda, Esterno). Ogni tavolo ha
+  il colore del suo stato all'ora scelta: verde libero, tratteggio oro
+  prenotato entro un'ora, oro prenotato ora, arancio in ritardo (15 minuti
+  dopo l'orario), rosso al tavolo. «Adesso» segue l'orologio; il cursore
+  serve a guardare come sarà la sala alle 21:30. Dopo mezzanotte, fino alle 5,
+  conta ancora come la serata prima.
+- **Tocco su un tavolo**: chi c'è e chi arriva, «Sono arrivati», «Tavolo
+  libero», «Prenota questo tavolo», e «Siedi ora» con il numero di persone per
+  chi entra senza prenotazione.
+- **+ Prenotazione**: nome, telefono, persone, giorno, ora, quanto si ferma
+  (2 ore di default), note. «Incolla il messaggio WhatsApp» compila da solo
+  persone, giorno, ora e serata dal messaggio della card (e il nome, se si
+  copia la riga di WhatsApp con il mittente). «Trova un tavolo libero» sceglie
+  il più piccolo che basta, libero per tutta la durata; «Scegli in piantina»
+  permette di unire più tavoli per i gruppi. Se un tavolo è già preso lo dice.
+- **Dalla lista** si apre ogni prenotazione: arrivati, non venuti, disdetta,
+  chiama, «Conferma su WhatsApp» (messaggio già scritto al cliente).
+- **Modifica piantina**: trascina i tavoli, tocca per cambiare nome, posti,
+  forma, misure, sala; aggiungi tondi, quadrati, lunghi e arredi (bancone,
+  forno, ingresso…). La piantina iniziale è **di esempio**: va ridisegnata una
+  volta come il locale vero.
+- **⚙︎**: nomi delle sale, durata di default, backup.
+
+**Dove stanno i dati**: sul dispositivo (localStorage del browser), niente
+server e niente account. Quindi un dispositivo = un registro: meglio usarne
+uno solo (il tablet alla cassa). «Scarica backup» / «Carica backup» spostano
+piantina e prenotazioni su un altro dispositivo. Se servirà vedere le stesse
+prenotazioni da più telefoni insieme, il passo dopo è un piccolo database
+condiviso (es. Supabase) al posto del localStorage: il resto della pagina non
+cambia.
+
 ## Da completare
 
 - I file del font Gaglio (licenza web, WOFF2) in `fonts/`: finché mancano si vede Inter.
