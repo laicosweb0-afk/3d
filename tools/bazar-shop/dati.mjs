@@ -47,7 +47,10 @@ export const WEB3FORMS_KEY = '';
 
 /** Numero WhatsApp ufficiale, con prefisso e senza spazi (es. '393890127054').
  *  Vuoto = nessun pulsante WhatsApp. */
-export const WHATSAPP = '';
+export const WHATSAPP = ''; // [NUMERO WHATSAPP DA CONFERMARE]
+
+/** Il messaggio già scritto del pulsante WhatsApp nell'header. [TESTO DA CONFERMARE] */
+export const WHATSAPP_MESSAGGIO = 'Buongiorno, vorrei informazioni sui vostri salotti e prenotare una visita allo showroom di Lugo.';
 
 /** Documenti legali: quando il testo vero è pronto, `pronto: true`. */
 export const LEGALI = [

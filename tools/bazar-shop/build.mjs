@@ -9,10 +9,10 @@
  * nessuna libreria, nessuna build lato client. Ogni pagina ha un indirizzo
  * leggibile (/salotti/salotto-tortora/) che funziona anche senza JavaScript.
  */
-import { mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
+import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { NEGOZIO, ORARI, SET, LEGALI, WEB3FORMS_KEY, WHATSAPP } from './dati.mjs';
+import { NEGOZIO, ORARI, SET, LEGALI, WEB3FORMS_KEY, WHATSAPP, WHATSAPP_MESSAGGIO } from './dati.mjs';
 
 const OUT = join(dirname(fileURLToPath(import.meta.url)), '../../public/bazar-shop');
 /** Indirizzo pubblico attuale (anteprima). Da cambiare quando c'è il dominio. */
@@ -37,7 +37,14 @@ const COLLEZIONI = [...new Map(SET.map((s) => [s.stile, { stile: s.stile, nome: 
 const img = (root, f, { cls = '', eager = false, sizes = '' } = {}) =>
   `<img src="${root}img/${f.file}.webp" width="${f.w}" height="${f.h}" alt="${esc(f.alt)}"${eager ? ' fetchpriority="high"' : ' loading="lazy" decoding="async"'}${cls ? ` class="${cls}"` : ''}${sizes}>`;
 
-const ICON_BAG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M5.5 8.5h13l-1 12h-11z"/><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"/></svg>';
+// Il fumetto di WhatsApp, disegnato a filo come le altre icone (nessun logo colorato).
+const ICON_WA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><path d="M4.2 19.8l1.1-3.9A8.2 8.2 0 1 1 8.4 19z"/><path d="M9.2 8.6c.3-.6.9-.6 1.1 0l.5 1.2c.1.3 0 .6-.2.8l-.4.4c.5 1 1.3 1.8 2.3 2.3l.4-.4c.2-.2.5-.3.8-.2l1.2.5c.6.2.6.8 0 1.1-.6.4-1.3.6-2 .4a7 7 0 0 1-4.1-4.1c-.2-.7 0-1.4.4-2z"/></svg>';
+/** Link WhatsApp: con il numero apre la chat col negozio; senza numero apre
+ *  WhatsApp col messaggio già scritto e il destinatario da scegliere. */
+const waLink = (testo) => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(testo)}`;
+
+// La hero scroll-driven: fotogrammi generati da hero-frames.sh.
+const HERO = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../public/bazar-shop/assets/hero/manifest.json'), 'utf8'));
 const ICON_MENU = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 9h16M4 15h16"/></svg>';
 
 /* ---- dati strutturati: solo dati reali -------------------------------- */
@@ -55,7 +62,7 @@ const jsonLdNegozio = (root) => ({
 });
 
 /* ---- layout ----------------------------------------------------------- */
-function layout({ path, title, description, body, root, nav = '', image = 'salotto-completo', jsonLd = null, noindex = false, bodyClass = '' }) {
+function layout({ path, title, description, body, root, nav = '', image = 'salotto-completo', jsonLd = null, noindex = false, bodyClass = '', heroOver = false, scripts = '' }) {
   const navLink = (href, label, key) => `<a href="${root}${href}"${nav === key ? ' aria-current="page"' : ''}>${label}</a>`;
   return `<!doctype html>
 <html lang="it" class="no-js">
@@ -81,7 +88,7 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script
 </head>
 <body data-root="${root}"${bodyClass ? ` class="${bodyClass}"` : ''}>
 <a class="skip" href="#main">Vai al contenuto</a>
-<header class="header">
+<header class="header${heroOver ? ' header--over' : ''}" data-header>
   <div class="wrap">
     <a class="brand" href="${root}" aria-label="Bazar Marrakech, home"><img src="${root}img/logo.webp" alt="Bazar Marrakech" width="884" height="258"></a>
     <nav class="nav" aria-label="Principale">
@@ -89,7 +96,7 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script
       ${navLink('showroom/', 'Showroom', 'showroom')}
       ${navLink('contatti/', 'Contatti', 'contatti')}
     </nav>
-    <a class="bag-link" href="${root}borsa/" aria-label="Borsa, 0 set" data-bag-link>${ICON_BAG}<span class="bag-word">Borsa</span><span class="bag-count" data-bag-count aria-hidden="true"></span></a>
+    <a class="wa-link" href="${waLink(WHATSAPP_MESSAGGIO)}" target="_blank" rel="noopener" aria-label="Scrivici su WhatsApp: informazioni o visita in showroom">${ICON_WA}<span class="wa-word">WhatsApp</span></a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Apri il menu" data-menu>${ICON_MENU}</button>
   </div>
 </header>
@@ -106,6 +113,7 @@ ${body}
 ${footer(root)}
 <script src="${root}assets/catalogo.js"></script>
 <script src="${root}assets/app.js" defer></script>
+${scripts}
 </body>
 </html>
 `;
@@ -172,23 +180,33 @@ const page = (path, html) => pages.push({ path, html });
   const root = '';
   const tortora = SET.find((s) => s.slug === 'salotto-tortora');
   page('', layout({
-    path: '', root,
+    path: '', root, heroOver: true, bodyClass: 'page-home',
+    // GSAP, ScrollTrigger e Lenis serviti dal sito stesso: nessuna chiamata esterna.
+    scripts: ['vendor/gsap.min.js', 'vendor/ScrollTrigger.min.js', 'vendor/lenis.min.js', 'hero.js'].map((f) => `<script src="assets/${f}" defer></script>`).join('\n'),
     title: 'Bazar Marrakech — Salotti in velluto e oro · Showroom a Lugo',
     description: 'Salotti completi in velluto, capitonné e dettagli in oro. Scegli la tua composizione online o nello showroom di Lugo (RA). Consegne in tutta Italia.',
     jsonLd: jsonLdNegozio(root),
     body: `
 <script>(function(){var h=location.hash,m=h.match(/^#\\/(p|negozio|borsa|showroom)(?:\\/([\\w-]+))?/);if(!m)return;var t={borsa:'borsa/',showroom:'showroom/',negozio:'collezioni/'}[m[1]];if(m[1]==='p')t=/^salotto-(tortora|beige)$/.test(m[2])?'salotti/'+m[2]+'/':'collezioni/';location.replace(t)})()</script>
-<section class="hero">
-  <div class="wrap">
-    <div class="hero__content">
-      <h1 class="hero__title">Il tuo salotto ti aspetta.</h1>
-      <p class="hero__lead">Comfort, carattere e dettagli che trasformano ogni ambiente.</p>
-      <a class="hero__cta" href="collezioni/">Scopri la collezione</a>
+<!-- HERO SCROLL-DRIVEN: la porta si apre, la camera entra e si posa su un salotto.
+     I fotogrammi sono disegnati su canvas da assets/hero.js; il poster è
+     l'immagine fissa per il primo caricamento, senza JS e con «riduci movimento». -->
+<section class="hero-seq" data-hero
+  data-hero-mobile="${HERO.mobile.fotogrammi}" data-hero-desktop="${HERO.desktop.fotogrammi}" data-hero-nome="${HERO.nome}"
+  aria-label="Ingresso nello showroom Bazar Marrakech">
+  <div class="hero-seq__stage">
+    <picture class="hero-seq__poster">
+      <source media="(min-width: 768px) and (min-aspect-ratio: 1/1)" srcset="assets/hero/hero-poster-desktop.webp" width="${HERO.desktop.larghezza}" height="${HERO.desktop.altezza}">
+      <img src="assets/hero/hero-poster-mobile.webp" width="${HERO.mobile.larghezza}" height="${HERO.mobile.altezza}" alt="Lo showroom Bazar Marrakech a Lugo" fetchpriority="high">
+    </picture>
+    <canvas class="hero-seq__canvas" aria-hidden="true"></canvas>
+    <div class="hero-seq__veil" aria-hidden="true"></div>
+    <div class="hero-seq__copy" data-hero-copy>
+      <h1 class="hero-seq__title">Il tuo salotto<br class="hero-seq__br"> ti aspetta.</h1>
+      <p class="hero-seq__lead">Comfort, carattere e dettagli che trasformano ogni ambiente.</p>
+      <a class="hero-seq__cta" href="collezioni/">Scopri la collezione</a>
     </div>
-    <figure class="hero-figure">
-      ${img(root, tortora.foto.find((f) => f.file === 'salotto-completo'), { eager: true })}
-      <figcaption class="caption">${esc(tortora.nome)} — collezione ${esc(tortora.collezione)}</figcaption>
-    </figure>
+    <p class="hero-seq__hint" data-hero-hint aria-hidden="true"><span>Scorri</span><i></i></p>
   </div>
 </section>
 
