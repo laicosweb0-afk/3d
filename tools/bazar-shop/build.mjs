@@ -204,6 +204,20 @@ const page = (path, html) => pages.push({ path, html });
   </div>
 </section>
 
+<section class="section section--white">
+  <div class="wrap">
+    <div class="head-row reveal">
+      <div><span class="eyebrow">In showroom</span><h2 class="h2" style="margin-top:var(--s-2)">Divani e poltrone.</h2></div>
+      <a class="link" href="${waLink(WHATSAPP_MESSAGGIO)}" target="_blank" rel="noopener">Chiedi informazioni</a>
+    </div>
+    <div class="pieces">
+      <figure class="reveal"><img src="img/studio/chesterfield-nero.webp" width="1600" height="1200" alt="Divano chesterfield in velluto nero con base color oro" loading="lazy" decoding="async"><figcaption><h3>Chesterfield Nero</h3><p>Velluto nero, capitonné, base color oro.</p></figcaption></figure>
+      <figure class="reveal"><img src="img/studio/poltrona-blu.webp" width="1600" height="2000" alt="Poltrona bergère in velluto blu con gambe color oro" loading="lazy" decoding="async"><figcaption><h3>Bergère Blu</h3><p>Velluto blu, gambe color oro.</p></figcaption></figure>
+      <figure class="reveal"><img src="img/studio/poltrona-tonda.webp" width="1600" height="2000" alt="Poltrona tonda girevole capitonné in velluto tortora" loading="lazy" decoding="async"><figcaption><h3>Poltrona Tonda</h3><p>Velluto tortora, girevole, base color oro.</p></figcaption></figure>
+    </div>
+  </div>
+</section>
+
 <section class="section">
   <div class="wrap split">
     <div class="split__media split__media--portrait reveal">${img(root, tortora.foto.find((f) => f.file === 'divano-ambientato'))}</div>
@@ -231,6 +245,20 @@ const page = (path, html) => pages.push({ path, html });
   </div>
 </section>
 
+<section class="section">
+  <div class="wrap">
+    <div class="head-row reveal">
+      <div><span class="eyebrow">Sale da pranzo</span><h2 class="h2" style="margin-top:var(--s-2)">A tavola, con lo stesso velluto.</h2></div>
+      <a class="link" href="showroom/">Vedile in showroom</a>
+    </div>
+    <figure class="pranzo-wide reveal"><img src="img/pranzo-scena.webp" width="1100" height="760" alt="Due sale da pranzo: sedie capitonné in velluto blu e nero, tavoli effetto marmo nero con basi color oro" loading="lazy" decoding="async"></figure>
+    <div class="pranzo-pair">
+      <figure class="reveal"><img src="img/pranzo-nero.webp" width="900" height="1200" alt="Tavolo ovale effetto marmo nero con base a canne color oro e sedie in velluto nero" loading="lazy" decoding="async"><figcaption>Tavolo ovale effetto marmo nero, sedie in velluto nero.</figcaption></figure>
+      <figure class="reveal"><img src="img/pranzo-verde.webp" width="900" height="1350" alt="Tavolo effetto marmo chiaro con sedie in velluto verde e profili color oro" loading="lazy" decoding="async"><figcaption>Tavolo effetto marmo chiaro, sedie in velluto verde.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
 
 
 <section class="section section--beige">
@@ -240,6 +268,21 @@ const page = (path, html) => pages.push({ path, html });
       <figure class="material reveal"><img src="img/velluto-dettaglio.webp" width="720" height="900" alt="Il velluto tortora da vicino, con il profilo color oro" loading="lazy" decoding="async"><figcaption><h3>Velluto</h3><p>Morbido sotto la mano, profondo alla luce.</p></figcaption></figure>
       <figure class="material reveal"><img src="img/studio/poltrona-tonda.webp" width="1600" height="2000" alt="La lavorazione capitonné di una poltrona tonda" loading="lazy" decoding="async"><figcaption><h3>Capitonné</h3><p>Ogni bottone disegna la forma.</p></figcaption></figure>
       <figure class="material reveal"><img src="img/tavolini-oro.webp" width="490" height="612" alt="Le strutture color oro dei tavolini nesting" loading="lazy" decoding="async"><figcaption><h3>Oro</h3><p>Un filo sottile che segue ogni curva.</p></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="section section--white">
+  <div class="wrap">
+    <div class="head-row reveal">
+      <div><span class="eyebrow">Dallo showroom</span><h2 class="h2" style="margin-top:var(--s-2)">Non solo salotti.</h2><p class="lead">Tappeti, profumi, complementi: da scoprire dal vivo, a Lugo.</p></div>
+    </div>
+    <div class="mosaic">
+      <figure class="mosaic__big reveal"><img src="img/showroom-salotto-bianco.webp" width="1100" height="1303" alt="Lo showroom: salotto bianco con profili oro e mobile con camino" loading="lazy" decoding="async"></figure>
+      <figure class="reveal"><img src="img/reparto-tappeti.webp" width="700" height="875" alt="Tappeti arrotolati con disegni geometrici e dettagli oro" loading="lazy" decoding="async"><figcaption>Tappeti</figcaption></figure>
+      <figure class="reveal"><img src="img/reparto-profumi.webp" width="700" height="874" alt="Profumi in esposizione" loading="lazy" decoding="async"><figcaption>Profumi e casalinghi</figcaption></figure>
+      <figure class="reveal"><img src="img/reparto-complementi.webp" width="700" height="875" alt="Pavone decorativo dorato" loading="lazy" decoding="async"><figcaption>Complementi</figcaption></figure>
+      <figure class="reveal"><img src="img/showroom-ingresso.webp" width="760" height="1204" alt="L’ingresso del negozio in Via Fratelli Zucchini" loading="lazy" decoding="async"><figcaption>L’ingresso</figcaption></figure>
     </div>
   </div>
 </section>

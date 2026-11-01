@@ -212,6 +212,20 @@ body:has(.mobile-nav.is-open) .header--over { background: var(--ink); }
 .material h3 { font-family: var(--serif); font-size: var(--t-h3); font-weight: 400; margin-top: var(--s-3); }
 .material p { color: var(--grey); margin-top: .35rem; max-width: 22rem; }
 
+/* ---- Home: divani e poltrone, sale da pranzo, mosaico showroom ----- */
+.pieces { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--s-4); align-items: end; }
+.pieces img, .pranzo-wide img, .pranzo-pair img, .mosaic img { width: 100%; border-radius: var(--r-img); }
+.pieces h3 { font-family: var(--serif); font-size: var(--t-h3); font-weight: 400; margin-top: var(--s-3); }
+.pieces p { color: var(--grey); margin-top: .25rem; font-size: var(--t-small); }
+.pranzo-wide img { aspect-ratio: 1100 / 760; object-fit: cover; }
+.pranzo-pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); margin-top: var(--s-4); align-items: start; }
+.pranzo-pair img { aspect-ratio: 3 / 4; object-fit: cover; }
+.pranzo-pair figcaption, .mosaic figcaption { margin-top: .75rem; font-size: var(--t-small); color: var(--grey); }
+.mosaic { display: grid; grid-template-columns: 2fr 1fr 1fr; grid-auto-rows: auto; gap: var(--s-3); }
+.mosaic__big { grid-row: span 2; }
+.mosaic__big img { height: 100%; object-fit: cover; }
+.mosaic figure:not(.mosaic__big) img { aspect-ratio: 4 / 5; object-fit: cover; }
+
 /* ---- Card dei set ----------------------------------------------------- */
 .sets { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s-5) var(--s-4); }
 .set-card { display: flex; flex-direction: column; }
@@ -424,6 +438,14 @@ details.acc .acc-body { padding: 0 0 1.25rem; font-size: var(--t-small); color: 
   .story__text, .story__media, .showroom-band__head, .showroom-band__info,
   .contact-grid__media, .contact-grid__info { grid-column: 1; order: initial; }
   .materials, .reparti { grid-template-columns: 1fr; gap: var(--s-5); }
+  .pieces { grid-template-columns: 1fr 1fr; gap: var(--s-4) var(--s-2); }
+  .pieces figure:first-child { grid-column: 1 / -1; }
+  .pranzo-wide { margin: 0 calc(-1 * var(--gutter)); }
+  .pranzo-wide img { border-radius: 0; }
+  .pranzo-pair { gap: var(--s-2); }
+  .mosaic { grid-template-columns: 1fr 1fr; gap: var(--s-2); }
+  .mosaic__big { grid-column: 1 / -1; grid-row: auto; }
+  .mosaic__big img { aspect-ratio: 4 / 5; }
   .sets { grid-template-columns: 1fr; }
   .note { grid-template-columns: 1fr; }
   .pdp { grid-template-columns: 1fr; gap: var(--s-4); }
