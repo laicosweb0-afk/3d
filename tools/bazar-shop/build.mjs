@@ -25,6 +25,13 @@ const prezzo = (p) => (p == null ? '<span class="price price--req">Prezzo su ric
 const indirizzo = `${NEGOZIO.via}, ${NEGOZIO.cap} ${NEGOZIO.citta} (${NEGOZIO.provincia})`;
 const fasce = (o) => o.fasce.map(([a, b]) => `${a} – ${b}`).join(' · ');
 
+/** I reparti dello showroom (dal biglietto da visita) con le foto del negozio. Solo editoriale: non sono in vendita online. */
+const REPARTI = [
+  { nome: 'Tappeti', riga: 'Disegni geometrici, effetto marmo, fili d’oro: da srotolare e scegliere.', foto: 'reparto-tappeti', alt: 'Tappeti arrotolati in esposizione, con disegni geometrici e dettagli oro' },
+  { nome: 'Profumi e casalinghi', riga: 'Fragranze e oggetti per la casa, sugli scaffali dello showroom.', foto: 'reparto-profumi', alt: 'Profumi Volaré in esposizione con le loro scatole' },
+  { nome: 'Complementi', riga: 'Gli oggetti che danno carattere a un ambiente.', foto: 'reparto-complementi', alt: 'Pavone decorativo dorato con pietre blu' },
+];
+
 const COLLEZIONI = [...new Map(SET.map((s) => [s.stile, { stile: s.stile, nome: s.collezione }])).values()];
 
 const img = (root, f, { cls = '', eager = false, sizes = '' } = {}) =>
@@ -414,7 +421,7 @@ page('borsa/', layout({
 
 // SHOWROOM
 page('showroom/', layout({
-  path: 'showroom/', root: '../', nav: 'showroom', image: 'showroom-ingresso',
+  path: 'showroom/', root: '../', nav: 'showroom', image: 'showroom-salotto-bianco',
   title: 'Showroom a Lugo — Bazar Marrakech',
   description: `Lo showroom Bazar Marrakech: ${indirizzo}. Orari, indicazioni e contatti.`,
   jsonLd: jsonLdNegozio('../'),
@@ -426,11 +433,12 @@ page('showroom/', layout({
     <p class="lead">Scopri le collezioni Bazar Marrakech anche nel nostro showroom: vedi da vicino le composizioni, i velluti e le finiture.</p>
   </header>
   <div class="contact-grid">
-    <div class="contact-grid__media reveal"><img src="../img/showroom-ingresso.webp" width="760" height="1204" alt="L’ingresso del negozio Bazar Marrakech" loading="lazy" decoding="async"></div>
+    <div class="contact-grid__media reveal"><img src="../img/showroom-salotto-bianco.webp" width="1100" height="1303" alt="Lo showroom Bazar Marrakech: salotto bianco con profili oro e mobile con camino" fetchpriority="high"></div>
     <div class="contact-grid__info">
       <div class="reveal">
         <h2>Dove siamo</h2>
         <dl class="info-list"><div><dt>Indirizzo</dt><dd>${esc(indirizzo)}</dd></div></dl>
+        <figure class="entrance"><img src="../img/showroom-ingresso.webp" width="760" height="1204" alt="L’ingresso del negozio Bazar Marrakech" loading="lazy" decoding="async"><figcaption class="small muted">L’ingresso, in Via Fratelli Zucchini.</figcaption></figure>
         <p style="margin-top:var(--s-3)"><a class="btn btn--line" href="${NEGOZIO.mappa}" target="_blank" rel="noopener">Indicazioni stradali</a></p>
       </div>
       <div class="reveal">
@@ -440,12 +448,21 @@ page('showroom/', layout({
       </div>
       <div class="reveal">
         <h2>Prima di venire</h2>
-        <p class="muted" style="max-width:var(--measure)">Se cerchi una composizione in particolare, chiamaci: la prepariamo per la tua visita.</p>
+        <p class="muted" style="max-width:var(--measure)">Se cerchi una composizione in particolare, chiamaci prima di venire.</p>
         <div class="info-list" style="margin-top:var(--s-3)">${NEGOZIO.telefoni.map((t) => `<a href="${tel(t.numero)}"><span class="k">${t.nome}</span><span class="v">${t.numero}</span></a>`).join('')}</div>
       </div>
     </div>
   </div>
-</div>`,
+</div>
+
+<section class="section section--ink">
+  <div class="wrap">
+    <div class="head-row reveal"><div><span class="eyebrow">Nello showroom</span><h2 class="h2" style="margin-top:var(--s-2)">Non solo salotti.</h2><p class="lead">I reparti del negozio, da scoprire dal vivo.</p></div></div>
+    <div class="reparti">
+      ${REPARTI.map((r) => `<figure class="reparto reveal"><img src="../img/${r.foto}.webp" width="700" height="875" alt="${esc(r.alt)}" loading="lazy" decoding="async"><figcaption><h3>${r.nome}</h3><p>${r.riga}</p></figcaption></figure>`).join('')}
+    </div>
+  </div>
+</section>`,
 }));
 
 // CONTATTI
