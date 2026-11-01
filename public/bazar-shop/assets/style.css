@@ -170,7 +170,7 @@ ul, ol { list-style: none; }
   max-width: 15ch; text-wrap: balance;
 }
 .hero__lead {
-  font-family: var(--hero-font); font-weight: 400; color: var(--grey);
+  font-family: var(--hero-font); font-weight: 400; color: #77736D;
   font-size: clamp(1.0625rem, .98rem + .35vw, 1.25rem);       /* 17 → 20 px */
   line-height: 1.45; letter-spacing: -.01em;
   max-width: 33.75rem; margin-top: var(--hero-gap-lead); text-wrap: pretty;
