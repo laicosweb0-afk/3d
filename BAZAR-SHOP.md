@@ -30,6 +30,17 @@ elenca i pezzi in `nelSet`. Per aggiungere un articolo basta un elemento in
 più con le sue foto in `img/`. I nomi sono descrittivi (gli stessi della
 card NFC): vanno sostituiti con quelli dei modelli del negozio.
 
+## Showroom e orari
+
+La sezione Showroom mostra la foto dell'ingresso (`img/showroom-ingresso.webp`)
+e l'orario del cartello sulla porta, nell'array `ORARI`: lunedì–sabato
+9:00–13:00 · 15:30–20:00, domenica 9:00–13:00. Sopra c'è «Aperto ora» /
+«Chiuso ora», calcolato sull'ora di chi guarda.
+
+Il cartello riporta anche due numeri «Per informazioni» (347 570 5464,
+327 652 6025) diversi da quelli del biglietto: non sono stati aggiunti
+finché il negozio non conferma quali usare.
+
 ## Prima dei clienti veri
 
 1. **I prezzi.** Sono tutti `prezzo: null` → «Prezzo su richiesta». Non sono

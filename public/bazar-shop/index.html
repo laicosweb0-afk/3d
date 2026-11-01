@@ -211,7 +211,14 @@ main{padding-top:var(--nav-h);min-height:100vh}
 
 /* Showroom */
 .showroom{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(28px,5vw,64px);align-items:center}
-.showroom-img{border-radius:var(--r-l);overflow:hidden;aspect-ratio:4/5}
+.showroom-img{border-radius:var(--r-l);overflow:hidden;aspect-ratio:2/3;max-height:820px}
+.orari{margin-top:28px;display:grid;gap:6px;font-size:15px}
+.orari div{display:flex;justify-content:space-between;gap:16px}
+.orari div span:first-child{color:var(--on-dark-2)}
+.orari .oggi span{color:var(--on-dark)}
+.stato{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;margin-top:22px}
+.stato i{width:8px;height:8px;border-radius:50%;background:#6fbf73;box-shadow:0 0 0 4px rgba(111,191,115,.18)}
+.stato.chiuso i{background:#c0473a;box-shadow:0 0 0 4px rgba(192,71,58,.18)}
 .showroom-img img{width:100%;height:100%;object-fit:cover}
 .contact-list{margin-top:28px;border-top:1px solid var(--line-dark)}
 .contact-list a,.contact-list div{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--line-dark);font-size:16px}
@@ -472,6 +479,12 @@ const NEGOZIO = {
 };
 /** Numero WhatsApp con prefisso, senza spazi (es. '393890127054'). Vuoto = niente bottone. */
 const WHATSAPP = '';
+
+/** Orario d'apertura, dal cartello sulla porta del negozio. Fasce in ore decimali. */
+const ORARI = [
+  { giorni: 'Lunedì – Sabato', dal: 1, al: 6, fasce: [[9, 13], [15.5, 20]], testo: '9:00 – 13:00 · 15:30 – 20:00' },
+  { giorni: 'Domenica', dal: 0, al: 0, fasce: [[9, 13]], testo: '9:00 – 13:00' },
+];
 
 const CATEGORIE = [
   { id: 'tutti', nome: 'Tutti' },
@@ -760,15 +773,24 @@ function home() {
   ${showroomSection()}`;
 }
 
+function statoOrari() {
+  const d = new Date(), g = d.getDay(), h = d.getHours() + d.getMinutes() / 60;
+  const oggi = ORARI.find((o) => g >= o.dal && g <= o.al);
+  const aperto = oggi && oggi.fasce.some(([a, b]) => h >= a && h < b);
+  return `<div class="stato rv d2 ${aperto ? '' : 'chiuso'}"><i></i>${aperto ? 'Aperto ora' : 'Chiuso ora'}</div>
+    <div class="orari rv d2">${ORARI.map((o) => `<div class="${o === oggi ? 'oggi' : ''}"><span>${o.giorni}</span><span>${o.testo}</span></div>`).join('')}</div>`;
+}
+
 function showroomSection() {
   return `
   <section class="section dark" id="showroom">
     <div class="wrap showroom">
-      <div class="showroom-img rv"><img src="img/poltrone-tonde-salotto.webp" alt="Poltrone tonde nello showroom" loading="lazy"></div>
+      <div class="showroom-img rv"><img src="img/showroom-ingresso.webp" alt="L'ingresso del negozio Bazar Marrakech" loading="lazy"></div>
       <div>
         <span class="eyebrow rv">Showroom</span>
         <h2 class="h1 rv d1" style="margin:10px 0 14px">Vieni a sederti.</h2>
         <p class="lead rv d2">Le foto raccontano. Il velluto si sente. Ti aspettiamo a Lugo per scegliere il tuo salotto dal vivo.</p>
+        ${statoOrari()}
         <div class="contact-list rv d3">
           <a href="${NEGOZIO.mappa}" target="_blank" rel="noopener"><span>Indirizzo</span><span>${NEGOZIO.indirizzo}</span></a>
           ${NEGOZIO.telefoni.map((t) => `<a href="${tel(t.n)}"><span>${t.nome}</span><span>${t.n}</span></a>`).join('')}
