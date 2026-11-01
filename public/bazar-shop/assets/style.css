@@ -150,10 +150,46 @@ ul, ol { list-style: none; }
 .mobile-nav { display: none; }
 
 /* ---- Hero ------------------------------------------------------------- */
-.hero { padding: clamp(3.5rem, 2rem + 5vw, 7rem) 0 0; text-align: center; }
-.hero .display { max-width: 14ch; margin: 0 auto; }
-.hero .lead { margin: var(--s-3) auto var(--s-4); max-width: 30rem; }
-.hero-figure { margin-top: clamp(3rem, 2rem + 4vw, 5.5rem); }
+/* La hero ha un sistema suo, sans-serif: SF Pro Display sui dispositivi
+   Apple (carattere di sistema), Inter altrove. Le misure sono token locali:
+   ogni distanza viene da qui, desktop e mobile. */
+.hero {
+  --hero-font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --hero-ink: #171717;
+  --hero-pad-top: clamp(4.25rem, 2.9rem + 4vw, 6.5rem);    /* 68 → 104 px */
+  --hero-gap-lead: clamp(1.125rem, 1rem + .4vw, 1.375rem); /* 18 → 22 px */
+  --hero-gap-cta: clamp(2rem, 1.85rem + .65vw, 2.5rem);         /* 32 → 40 px */
+  --hero-gap-media: clamp(3.5rem, 3rem + 1.6vw, 4.5rem);      /* 56 → 72 px */
+  padding-top: var(--hero-pad-top);
+}
+.hero__content { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.hero__title {
+  font-family: var(--hero-font); font-weight: 600; color: var(--hero-ink);
+  font-size: clamp(2.5rem, 1.71rem + 3.38vw, 4.75rem);        /* 40 px a 375 → 76 px a 1440 */
+  line-height: 1.06; letter-spacing: -.04em;
+  max-width: 15ch; text-wrap: balance;
+}
+.hero__lead {
+  font-family: var(--hero-font); font-weight: 400; color: var(--grey);
+  font-size: clamp(1.0625rem, .98rem + .35vw, 1.25rem);       /* 17 → 20 px */
+  line-height: 1.45; letter-spacing: -.01em;
+  max-width: 33.75rem; margin-top: var(--hero-gap-lead); text-wrap: pretty;
+}
+.hero__cta {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 3.375rem; padding: 0 2.25rem; margin-top: var(--hero-gap-cta);
+  border-radius: 10px; background: var(--hero-ink); color: #fff;
+  font-family: var(--hero-font); font-size: .875rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  transition: background-color .2s ease, transform .2s ease;
+}
+.hero__cta:hover { background: #2B2A28; }
+.hero__cta:active { transform: scale(.985); }
+.hero__cta:focus-visible { outline: 2px solid var(--champagne); outline-offset: 3px; }
+.hero__title, .hero__lead, .hero__cta { animation: hero-in .55s cubic-bezier(.25, .46, .25, 1) both; }
+.hero__lead { animation-delay: .08s; }
+.hero__cta { animation-delay: .16s; }
+@keyframes hero-in { from { opacity: 0; transform: translateY(8px); } }
+.hero-figure { margin-top: var(--hero-gap-media); }
 .hero-figure img { width: 100%; aspect-ratio: 1200 / 670; object-fit: cover; border-radius: var(--r-img); }
 .caption { margin-top: var(--s-2); font-size: var(--t-micro); letter-spacing: .04em; color: var(--grey); text-align: left; }
 
@@ -385,11 +421,14 @@ details.acc .acc-body { padding: 0 0 1.25rem; font-size: var(--t-small); color: 
   .mobile-nav.is-open { opacity: 1; visibility: visible; }
   .mobile-nav a { display: block; font-family: var(--serif); font-size: 2.25rem; color: var(--on-ink); padding: .5rem 0; border-bottom: 1px solid var(--line-ink); }
   .mobile-nav p { margin-top: var(--s-4); color: var(--on-ink-2); font-size: var(--t-small); }
-  .hero { text-align: left; }
-  .hero .display, .hero .lead { margin-left: 0; }
-  .hero-figure { margin-left: calc(-1 * var(--gutter)); margin-right: calc(-1 * var(--gutter)); }
-  .hero-figure img { aspect-ratio: 4 / 3; border-radius: 0; }
-  .hero-figure .caption { padding: 0 var(--gutter); }
+  .hero > .wrap { padding-left: 1.5rem; padding-right: 1.5rem; }
+  .hero__title { line-height: 1.1; letter-spacing: -.035em; }
+  .hero__lead { max-width: 100%; }
+  .hero__cta { min-height: 3.5rem; padding: 0 2rem; }
+  /* l'immagine intera, da bordo a bordo: nessun ritaglio che tagli le poltrone */
+  .hero-figure { margin-left: -1.5rem; margin-right: -1.5rem; }
+  .hero-figure img { border-radius: 0; }
+  .hero-figure .caption { padding: 0 1.5rem; }
   .split, .story, .showroom-band, .contact-grid { grid-template-columns: 1fr; gap: var(--s-4); }
   .split__media, .split__text, .split--rev .split__media, .split--rev .split__text,
   .story__text, .story__media, .showroom-band__head, .showroom-band__info,

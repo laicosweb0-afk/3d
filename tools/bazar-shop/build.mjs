@@ -173,9 +173,11 @@ const page = (path, html) => pages.push({ path, html });
 <script>(function(){var h=location.hash,m=h.match(/^#\\/(p|negozio|borsa|showroom)(?:\\/([\\w-]+))?/);if(!m)return;var t={borsa:'borsa/',showroom:'showroom/',negozio:'collezioni/'}[m[1]];if(m[1]==='p')t=/^salotto-(tortora|beige)$/.test(m[2])?'salotti/'+m[2]+'/':'collezioni/';location.replace(t)})()</script>
 <section class="hero">
   <div class="wrap">
-    <h1 class="display reveal">Il tuo salotto ti aspetta.</h1>
-    <p class="lead reveal">Comfort, carattere e dettagli che trasformano ogni ambiente.</p>
-    <a class="btn reveal" href="collezioni/">Scopri la collezione</a>
+    <div class="hero__content">
+      <h1 class="hero__title">Il tuo salotto ti aspetta.</h1>
+      <p class="hero__lead">Comfort, carattere e dettagli che trasformano ogni ambiente.</p>
+      <a class="hero__cta" href="collezioni/">Scopri la collezione</a>
+    </div>
     <figure class="hero-figure">
       ${img(root, tortora.foto.find((f) => f.file === 'salotto-completo'), { eager: true })}
       <figcaption class="caption">${esc(tortora.nome)} — collezione ${esc(tortora.collezione)}</figcaption>
