@@ -45,25 +45,40 @@
 <main id="main">
 
 <script>(function(){var h=location.hash,m=h.match(/^#\/(p|negozio|borsa|showroom)(?:\/([\w-]+))?/);if(!m)return;var t={borsa:'borsa/',showroom:'showroom/',negozio:'collezioni/'}[m[1]];if(m[1]==='p')t=/^salotto-(tortora|beige)$/.test(m[2])?'salotti/'+m[2]+'/':'collezioni/';location.replace(t)})()</script>
-<!-- HERO SCROLL-DRIVEN: la porta si apre, la camera entra e si posa su un salotto.
-     I fotogrammi sono disegnati su canvas da assets/hero.js; il poster è
-     l'immagine fissa per il primo caricamento, senza JS e con «riduci movimento». -->
-<section class="hero-seq" data-hero
-  data-hero-mobile="120" data-hero-desktop="120" data-hero-nome="porta-showroom"
-  aria-label="Ingresso nello showroom Bazar Marrakech">
-  <div class="hero-seq__stage">
-    <picture class="hero-seq__poster">
-      <source media="(min-width: 768px) and (min-aspect-ratio: 1/1)" srcset="assets/hero/hero-poster-desktop.webp" width="1600" height="900">
-      <img src="assets/hero/hero-poster-mobile.webp" width="720" height="1280" alt="Lo showroom Bazar Marrakech a Lugo" fetchpriority="high">
-    </picture>
-    <canvas class="hero-seq__canvas" aria-hidden="true"></canvas>
-    <div class="hero-seq__veil" aria-hidden="true"></div>
-    <div class="hero-seq__copy" data-hero-copy>
-      <h1 class="hero-seq__title">Il tuo salotto<br class="hero-seq__br"> ti aspetta.</h1>
-      <p class="hero-seq__lead">Comfort, carattere e dettagli che trasformano ogni ambiente.</p>
-      <a class="hero-seq__cta" href="collezioni/">Scopri la collezione</a>
+<!-- HERO: calma, alla maniera di Apple. Prima di tutto il marchio, grande e
+     nitido sul nero caldo; scorrendo arrivano subito i salotti. -->
+<section class="hero-logo" data-hero aria-labelledby="hero-titolo">
+  <h1 id="hero-titolo" class="sr-only">Bazar Marrakech — salotti e divani, showroom a Lugo</h1>
+  <img class="hero-logo__mark" src="img/logo.webp" width="884" height="258" alt="Bazar Marrakech" fetchpriority="high">
+  <p class="hero-logo__line">Il tuo salotto ti aspetta.</p>
+  <a class="hero-logo__hint" href="#salotti" aria-label="Scorri ai salotti"><span>Scorri</span><i aria-hidden="true"></i></a>
+</section>
+
+<section class="section" id="salotti">
+  <div class="wrap">
+    <div class="head-row reveal">
+      <div><span class="eyebrow">Le collezioni</span><h2 class="h2" style="margin-top:var(--s-2)">Salotti completi, pensati come un insieme.</h2></div>
+      <a class="link" href="collezioni/">Tutte le collezioni</a>
     </div>
-    <p class="hero-seq__hint" data-hero-hint aria-hidden="true"><span>Scorri</span><i></i></p>
+    <div class="sets">
+  <article class="set-card reveal">
+    <a class="set-card__media" href="salotti/salotto-tortora/" tabindex="-1" aria-hidden="true"><img src="img/studio/salotto-tortora.webp" width="1600" height="1200" alt="Salotto Tortora: divano capitonné, due poltrone tonde e tavolini nesting" loading="lazy" decoding="async"></a>
+    <div class="set-card__body">
+      <span class="eyebrow">Collezione Capitonné</span>
+      <div class="set-card__title"><h3 class="h3"><a href="salotti/salotto-tortora/">Salotto Tortora</a></h3><span class="price price--req">Prezzo su richiesta</span></div>
+      <p>Velluto tortora, capitonné e profili in oro, dal divano alle poltrone.</p>
+      <a class="link" href="salotti/salotto-tortora/" aria-label="Scopri il Salotto Tortora">Scopri il salotto</a>
+    </div>
+  </article>
+  <article class="set-card reveal">
+    <a class="set-card__media" href="salotti/salotto-beige/" tabindex="-1" aria-hidden="true"><img src="img/divano-beige.webp" width="1000" height="749" alt="Salotto Beige: due divani chesterfield affacciati con tavolino in marmo" loading="lazy" decoding="async"></a>
+    <div class="set-card__body">
+      <span class="eyebrow">Collezione Chesterfield</span>
+      <div class="set-card__title"><h3 class="h3"><a href="salotti/salotto-beige/">Salotto Beige</a></h3><span class="price price--req">Prezzo su richiesta</span></div>
+      <p>Due chesterfield affacciati, luminosi, con il tavolino in marmo fra loro.</p>
+      <a class="link" href="salotti/salotto-beige/" aria-label="Scopri il Salotto Beige">Scopri il salotto</a>
+    </div>
+  </article></div>
   </div>
 </section>
 
@@ -94,33 +109,7 @@
   </div>
 </section>
 
-<section class="section">
-  <div class="wrap">
-    <div class="head-row reveal">
-      <div><span class="eyebrow">Le collezioni</span><h2 class="h2" style="margin-top:var(--s-2)">Salotti completi, pensati come un insieme.</h2></div>
-      <a class="link" href="collezioni/">Tutte le collezioni</a>
-    </div>
-    <div class="sets">
-  <article class="set-card reveal">
-    <a class="set-card__media" href="salotti/salotto-tortora/" tabindex="-1" aria-hidden="true"><img src="img/studio/salotto-tortora.webp" width="1600" height="1200" alt="Salotto Tortora: divano capitonné, due poltrone tonde e tavolini nesting" loading="lazy" decoding="async"></a>
-    <div class="set-card__body">
-      <span class="eyebrow">Collezione Capitonné</span>
-      <div class="set-card__title"><h3 class="h3"><a href="salotti/salotto-tortora/">Salotto Tortora</a></h3><span class="price price--req">Prezzo su richiesta</span></div>
-      <p>Velluto tortora, capitonné e profili in oro, dal divano alle poltrone.</p>
-      <a class="link" href="salotti/salotto-tortora/" aria-label="Scopri il Salotto Tortora">Scopri il salotto</a>
-    </div>
-  </article>
-  <article class="set-card reveal">
-    <a class="set-card__media" href="salotti/salotto-beige/" tabindex="-1" aria-hidden="true"><img src="img/divano-beige.webp" width="1000" height="749" alt="Salotto Beige: due divani chesterfield affacciati con tavolino in marmo" loading="lazy" decoding="async"></a>
-    <div class="set-card__body">
-      <span class="eyebrow">Collezione Chesterfield</span>
-      <div class="set-card__title"><h3 class="h3"><a href="salotti/salotto-beige/">Salotto Beige</a></h3><span class="price price--req">Prezzo su richiesta</span></div>
-      <p>Due chesterfield affacciati, luminosi, con il tavolino in marmo fra loro.</p>
-      <a class="link" href="salotti/salotto-beige/" aria-label="Scopri il Salotto Beige">Scopri il salotto</a>
-    </div>
-  </article></div>
-  </div>
-</section>
+
 
 <section class="section section--beige">
   <div class="wrap">
@@ -186,9 +175,6 @@
 </footer>
 <script src="assets/catalogo.js"></script>
 <script src="assets/app.js" defer></script>
-<script src="assets/vendor/gsap.min.js" defer></script>
-<script src="assets/vendor/ScrollTrigger.min.js" defer></script>
-<script src="assets/vendor/lenis.min.js" defer></script>
 <script src="assets/hero.js" defer></script>
 </body>
 </html>

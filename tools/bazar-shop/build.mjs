@@ -43,8 +43,6 @@ const ICON_WA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
  *  WhatsApp col messaggio già scritto e il destinatario da scegliere. */
 const waLink = (testo) => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(testo)}`;
 
-// La hero scroll-driven: fotogrammi generati da hero-frames.sh.
-const HERO = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../public/bazar-shop/assets/hero/manifest.json'), 'utf8'));
 const ICON_MENU = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 9h16M4 15h16"/></svg>';
 
 /* ---- dati strutturati: solo dati reali -------------------------------- */
@@ -181,32 +179,28 @@ const page = (path, html) => pages.push({ path, html });
   const tortora = SET.find((s) => s.slug === 'salotto-tortora');
   page('', layout({
     path: '', root, heroOver: true, bodyClass: 'page-home',
-    // GSAP, ScrollTrigger e Lenis serviti dal sito stesso: nessuna chiamata esterna.
-    scripts: ['vendor/gsap.min.js', 'vendor/ScrollTrigger.min.js', 'vendor/lenis.min.js', 'hero.js'].map((f) => `<script src="assets/${f}" defer></script>`).join('\n'),
+    scripts: '<script src="assets/hero.js" defer></script>',
     title: 'Bazar Marrakech — Salotti in velluto e oro · Showroom a Lugo',
     description: 'Salotti completi in velluto, capitonné e dettagli in oro. Scegli la tua composizione online o nello showroom di Lugo (RA). Consegne in tutta Italia.',
     jsonLd: jsonLdNegozio(root),
     body: `
 <script>(function(){var h=location.hash,m=h.match(/^#\\/(p|negozio|borsa|showroom)(?:\\/([\\w-]+))?/);if(!m)return;var t={borsa:'borsa/',showroom:'showroom/',negozio:'collezioni/'}[m[1]];if(m[1]==='p')t=/^salotto-(tortora|beige)$/.test(m[2])?'salotti/'+m[2]+'/':'collezioni/';location.replace(t)})()</script>
-<!-- HERO SCROLL-DRIVEN: la porta si apre, la camera entra e si posa su un salotto.
-     I fotogrammi sono disegnati su canvas da assets/hero.js; il poster è
-     l'immagine fissa per il primo caricamento, senza JS e con «riduci movimento». -->
-<section class="hero-seq" data-hero
-  data-hero-mobile="${HERO.mobile.fotogrammi}" data-hero-desktop="${HERO.desktop.fotogrammi}" data-hero-nome="${HERO.nome}"
-  aria-label="Ingresso nello showroom Bazar Marrakech">
-  <div class="hero-seq__stage">
-    <picture class="hero-seq__poster">
-      <source media="(min-width: 768px) and (min-aspect-ratio: 1/1)" srcset="assets/hero/hero-poster-desktop.webp" width="${HERO.desktop.larghezza}" height="${HERO.desktop.altezza}">
-      <img src="assets/hero/hero-poster-mobile.webp" width="${HERO.mobile.larghezza}" height="${HERO.mobile.altezza}" alt="Lo showroom Bazar Marrakech a Lugo" fetchpriority="high">
-    </picture>
-    <canvas class="hero-seq__canvas" aria-hidden="true"></canvas>
-    <div class="hero-seq__veil" aria-hidden="true"></div>
-    <div class="hero-seq__copy" data-hero-copy>
-      <h1 class="hero-seq__title">Il tuo salotto<br class="hero-seq__br"> ti aspetta.</h1>
-      <p class="hero-seq__lead">Comfort, carattere e dettagli che trasformano ogni ambiente.</p>
-      <a class="hero-seq__cta" href="collezioni/">Scopri la collezione</a>
+<!-- HERO: calma, alla maniera di Apple. Prima di tutto il marchio, grande e
+     nitido sul nero caldo; scorrendo arrivano subito i salotti. -->
+<section class="hero-logo" data-hero aria-labelledby="hero-titolo">
+  <h1 id="hero-titolo" class="sr-only">Bazar Marrakech — salotti e divani, showroom a Lugo</h1>
+  <img class="hero-logo__mark" src="img/logo.webp" width="884" height="258" alt="Bazar Marrakech" fetchpriority="high">
+  <p class="hero-logo__line">Il tuo salotto ti aspetta.</p>
+  <a class="hero-logo__hint" href="#salotti" aria-label="Scorri ai salotti"><span>Scorri</span><i aria-hidden="true"></i></a>
+</section>
+
+<section class="section" id="salotti">
+  <div class="wrap">
+    <div class="head-row reveal">
+      <div><span class="eyebrow">Le collezioni</span><h2 class="h2" style="margin-top:var(--s-2)">Salotti completi, pensati come un insieme.</h2></div>
+      <a class="link" href="collezioni/">Tutte le collezioni</a>
     </div>
-    <p class="hero-seq__hint" data-hero-hint aria-hidden="true"><span>Scorri</span><i></i></p>
+    <div class="sets">${SET.map((s) => setCard(s, root)).join('')}</div>
   </div>
 </section>
 
@@ -237,15 +231,7 @@ const page = (path, html) => pages.push({ path, html });
   </div>
 </section>
 
-<section class="section">
-  <div class="wrap">
-    <div class="head-row reveal">
-      <div><span class="eyebrow">Le collezioni</span><h2 class="h2" style="margin-top:var(--s-2)">Salotti completi, pensati come un insieme.</h2></div>
-      <a class="link" href="collezioni/">Tutte le collezioni</a>
-    </div>
-    <div class="sets">${SET.map((s) => setCard(s, root)).join('')}</div>
-  </div>
-</section>
+
 
 <section class="section section--beige">
   <div class="wrap">

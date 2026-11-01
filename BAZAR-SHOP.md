@@ -33,41 +33,13 @@ per testi e prezzi. Le foto sono solo quelle originali del negozio.
 I vecchi indirizzi della prima versione (`#/p/…`, `#/negozio`, `#/borsa`)
 vengono reindirizzati.
 
-## La hero della home: scroll-driven
+## La hero della home
 
-La porta del Bazar si apre, la camera entra nello showroom e si posa su un
-salotto, guidata dallo scroll: niente click.
-
-- **Come funziona**: una sequenza di fotogrammi WebP disegnata su `<canvas>`
-  (`assets/hero.js`), legata allo scroll con GSAP ScrollTrigger (pin + scrub)
-  e Lenis per la rotella. Su iPhone lo scroll a dito resta quello nativo di
-  Safari. GSAP, ScrollTrigger e Lenis sono serviti dal sito
-  (`assets/vendor/`), senza CDN.
-- **Fotogrammi**: `assets/hero/mobile/` (720×1280) e `assets/hero/desktop/`
-  (1600×900), più `hero-poster-*.webp` (immagine fissa) e `manifest.json`.
-  Si caricano prima l'immagine fissa e i primi 8 fotogrammi, poi il resto a
-  priorità bassa.
-- **Riduci movimento**: nessuna sequenza, nessun pin, solo l'immagine fissa
-  con il titolo.
-- **Header**: trasparente sopra la hero, nero caldo dopo. Al posto della
-  borsa c'è l'icona WhatsApp (la borsa resta raggiungibile dal menu e dal piè
-  di pagina).
-
-### Caricare il video vero
-
-```bash
-bash tools/bazar-shop/hero-frames.sh video-orizzontale.mp4 120 [video-verticale.mp4]
-node tools/bazar-shop/build.mjs
-```
-
-Con un solo video orizzontale la versione mobile è il ritaglio centrale: per
-restare nitida serve un sorgente almeno 4K. `QUALITA=72` (default) regola la
-compressione.
-
-**Oggi i fotogrammi sono un segnaposto** (`"segnaposto": true` nel
-manifest): una sequenza costruita con le foto vere dell'ingresso e dello
-showroom (`tools/bazar-shop/hero-segnaposto.py`), solo per provare la
-meccanica.
+Calma, alla maniera di Apple: nero caldo a tutto schermo, il logo originale
+grande al centro, una riga in serif («Il tuo salotto ti aspetta.») e
+«Scorri». Subito sotto, i salotti. L'header è trasparente sopra la hero (col
+logo piccolo nascosto, perché il marchio c'è già grande) e diventa nero
+caldo dopo (`assets/hero.js`). Al posto della borsa c'è l'icona WhatsApp.
 
 ### WhatsApp
 
