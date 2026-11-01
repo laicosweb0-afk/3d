@@ -79,7 +79,6 @@ ${noindex ? '<meta name="robots" content="noindex">\n' : ''}<meta name="theme-co
 <meta property="og:locale" content="it_IT">
 <link rel="icon" href="${root}img/icon.png">
 <link rel="apple-touch-icon" href="${root}img/icon.png">
-<link rel="preload" href="${root}fonts/cormorant-garamond-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="${root}fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="${root}assets/style.css">
 ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>\n` : ''}<script>document.documentElement.classList.remove('no-js')</script>
