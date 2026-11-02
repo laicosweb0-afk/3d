@@ -10,10 +10,10 @@
 <meta name="theme-color" content="#000000">
 <meta property="og:title" content="Car.G Multiservice · Officina mobile">
 <meta property="og:description" content="Veniamo da te. A casa tua, in strada, ovunque tu sia.">
-<meta property="og:image" content="furgone.webp">
+<meta property="og:image" content="hero.jpg">
 <meta property="og:type" content="website">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="preload" href="furgone.webp" as="image">
+<link rel="preload" href="hero.jpg" as="image">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -119,19 +119,22 @@ button{cursor:pointer;border:0;background:none;-webkit-tap-highlight-color:trans
 .ribbon a:hover{text-decoration:underline}
 
 /* ---------- hero ---------- */
-.hero{position:relative;overflow:hidden;padding:56px 0 0;text-align:center}
-.hero .wrap{position:relative;z-index:1}
-.hero h1{font-size:clamp(52px,10vw,96px);font-weight:700;letter-spacing:-.025em;line-height:1.02}
+.hero{position:relative;overflow:hidden;text-align:center;min-height:min(calc(100svh - 98px),940px);display:flex;flex-direction:column;justify-content:flex-end;padding:0}
+.hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 40%;background:#000}
+.hero::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,0) 22%,rgba(0,0,0,0) 38%,rgba(0,0,0,.55) 62%,rgba(0,0,0,.9) 86%,#000 100%)}
+.hero .wrap{position:relative;z-index:2;padding-top:160px}
+.hero h1{font-size:clamp(52px,10vw,96px);font-weight:700;letter-spacing:-.025em;line-height:1.02;text-shadow:0 2px 30px rgba(0,0,0,.35)}
 .grad{display:block;font-size:clamp(28px,5vw,48px);font-weight:600;letter-spacing:-.01em;line-height:1.15;margin-top:8px;
   background:linear-gradient(90deg,var(--yellow) 0%,#ffb340 22%,#7aa2ff 55%,var(--blue-on-dark) 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
-.hero .sub{margin-top:14px}
+.hero .sub{margin-top:14px;color:#d2d2d7}
 .hero .btns{margin-top:30px}
-.stage{position:relative;margin:54px auto 0;width:min(100%,640px);aspect-ratio:1.18}
-.stage::before{content:"";position:absolute;left:8%;right:8%;bottom:4%;height:42%;background:radial-gradient(50% 50% at 50% 50%,rgba(43,92,240,.55),rgba(43,92,240,0) 70%);filter:blur(30px)}
-.stage img{position:relative;width:auto;height:100%;margin:0 auto;object-fit:contain;
-  -webkit-mask-image:radial-gradient(62% 60% at 50% 48%,#000 58%,transparent 100%);mask-image:radial-gradient(62% 60% at 50% 48%,#000 58%,transparent 100%)}
-.where-chips{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;padding:10px 0 72px;position:relative;z-index:1}
-.where-chips span{white-space:nowrap;display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;background:rgba(255,255,255,.08);font-size:15px;color:#e8e8ed}
+.vctrl{position:absolute;right:max(22px,calc((100vw - var(--wrap))/2 + 22px));bottom:26px;z-index:3;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.16);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);transition:background .2s}
+.vctrl:hover{background:rgba(255,255,255,.26)}
+.vctrl svg{width:16px;height:16px}
+@media (max-width:600px){.hero{min-height:calc(100svh - 120px)}.hero-video{object-position:42% 40%}.vctrl{bottom:auto;top:16px;right:16px;width:38px;height:38px}}
+.where-chips{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;padding:36px 0 40px;position:relative;z-index:2}
+.where-chips span{white-space:nowrap;display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;background:rgba(255,255,255,.12);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);font-size:15px;color:#e8e8ed}
 .where-chips svg{width:17px;height:17px;color:var(--yellow)}
 
 @media (max-width:480px){.where-chips{gap:6px}.where-chips span{padding:8px 11px;font-size:13px;gap:6px}.where-chips svg{width:15px;height:15px}.veh{gap:22px}.veh svg{width:56px;height:56px}.veh div{font-size:14px;text-align:center}}
@@ -358,7 +361,12 @@ footer .bot{padding-top:16px;display:flex;flex-wrap:wrap;justify-content:space-b
 <main id="top">
 
 <!-- ================= HERO ================= -->
-<section class="hero dark" style="padding-bottom:0">
+<section class="hero dark">
+  <video class="hero-video" id="heroVideo" autoplay muted loop playsinline preload="auto" poster="hero.jpg" aria-hidden="true" tabindex="-1">
+    <source src="hero.webm" type="video/webm">
+    <source src="hero.mp4" type="video/mp4">
+  </video>
+  <button class="vctrl" id="vctrl" type="button" aria-label="Metti in pausa il video"><svg class="ico" viewBox="0 0 24 24"><use href="#i-pausa"/></svg></button>
   <div class="wrap">
     <h1 class="rv">Officina mobile</h1>
     <span class="grad rv">Veniamo da te.</span>
@@ -367,9 +375,6 @@ footer .bot{padding-top:16px;display:flex;flex-wrap:wrap;justify-content:space-b
       <a class="btn btn-fill" href="tel:+393793809830">Chiama ora</a>
       <a class="btn btn-out" id="waHero" href="https://wa.me/393793809830" target="_blank" rel="noopener">WhatsApp</a>
     </div>
-  </div>
-  <div class="stage rv">
-    <img src="furgone.webp" alt="Il furgone dell'officina mobile Car.G Multiservice" width="436" height="450">
   </div>
   <div class="where-chips rv">
     <span><svg class="ico" viewBox="0 0 24 24"><use href="#i-casa"/></svg>A casa tua</span>
@@ -663,6 +668,26 @@ footer .bot{padding-top:16px;display:flex;flex-wrap:wrap;justify-content:space-b
     }), { rootMargin: '0px 0px -6% 0px' });
     rv.forEach((el) => io.observe(el));
   } else rv.forEach((el) => el.classList.add('in'));
+
+  /* Il video dell'hero: in loop e muto come su apple.com, con il suo tasto pausa.
+     Si ferma da solo quando esce dallo schermo, e non parte se il telefono
+     chiede meno movimento. */
+  const hv = $('#heroVideo'), vc = $('#vctrl');
+  let vUser = !reduce;
+  const vSet = () => {
+    const on = !hv.paused;
+    vc.querySelector('use').setAttribute('href', on ? '#i-pausa' : '#i-play');
+    vc.setAttribute('aria-label', on ? 'Metti in pausa il video' : 'Riproduci il video');
+  };
+  hv.addEventListener('play', vSet); hv.addEventListener('pause', vSet);
+  if (reduce) { hv.removeAttribute('autoplay'); hv.pause(); }
+  vc.addEventListener('click', () => { vUser = hv.paused; vUser ? hv.play().catch(() => {}) : hv.pause(); });
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && vUser) hv.play().catch(() => {}); else if (!e.isIntersecting) hv.pause();
+    }, { threshold: .15 }).observe(hv);
+  }
+  vSet();
 
   /* Galleria: puntini, avanzamento automatico, pausa. */
   const g = $('#gallery'), cards = [...g.children], dots = $('#dots'), pp = $('#pp');
