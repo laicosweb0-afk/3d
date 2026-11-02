@@ -9,21 +9,36 @@ build: l'export di Next la copia così com'è. Logo, favicon e font (Inter) sono
 nella stessa cartella, quindi la pagina **non chiama nessun dominio esterno**
 finché il visitatore non tocca «Mostra la mappa».
 
+## Impianto
+
+Stile Apple: hero nera spaziosa, titoli grandi centrati, schede bianche su
+grigio chiaro, una barra che compare in alto dopo l'hero
+(«Officina mobile · Scrivici · Chiama»). Il sito è centrato sull'**officina
+mobile**; l'officina vera e propria viene dopo, come «E tutto il resto».
+
 ## Sezioni
 
-1. **Hero** — titolo, stato «aperto ora / chiuso» calcolato sull'ora di Roma.
-2. **Servizi** — gli otto lavori di `carg/src/config/gioco.ts` (`SERVIZI`), con
-   le stesse parole e gli stessi disegni della card.
-3. **Soccorso** — officina mobile notturna, testi della locandina (`SOCCORSO`).
-4. **Perché Car.G** — solo cose già dichiarate dall'officina.
-5. **Come funziona** — tre passi.
-6. **Card NFC** — rimanda a `../carg/` per il credito.
-7. **Prenota** — il modulo prepara un SMS al 379 380 9830 che il cliente invia
-   dal suo telefono: nessun server, nessun dato salvato.
-8. **Dove siamo** — indirizzo, orari con il giorno di oggi evidenziato, mappa
-   Google caricata solo su richiesta (GDPR), link alle indicazioni.
+1. **Hero** — «Officina mobile / Veniamo da te.», Chiama e WhatsApp, il
+   furgone (`furgone.webp`, ritagliato dal coupon) e «A casa tua · In strada ·
+   Ovunque tu sia».
+2. **Galleria** a scorrimento con pausa: batteria, gomme, fari, piccole
+   riparazioni, tagliando a domicilio, lucidatura fari (prima/dopo,
+   `fari-prima-dopo.webp`, dal volantino). Testi del volantino «Officina mobile».
+3. **Tu resti lì, ci muoviamo noi** — casa, strada, notte; auto, furgoni,
+   veicoli commerciali.
+4. **Lucidatura fari** — il prima/dopo in grande.
+5. **E tutto il resto** — i 12 servizi, con «Anche a domicilio» dove il
+   volantino lo dice.
+6. **Coupon nuovo cliente** — controllo auto gratuito (freni, pneumatici e
+   pressione, batteria, diagnosi, climatizzatore, livelli) e 10% sulla
+   manodopera del primo intervento in officina, con la nota del coupon.
+7. **Prenota** — casa / strada / officina, il modulo apre WhatsApp con il
+   messaggio già scritto. Nessun server, nessun dato salvato.
+8. **Dove siamo** — orari con «aperto ora», mappa Google solo su richiesta.
 
-Su telefono compare in basso la barra «Chiama / Prenota».
+Le fonti dei testi: `carg/src/config/gioco.ts` e i due volantini (coupon nuovo
+cliente, officina mobile). Il WhatsApp sul 379 380 9830 è sul furgone e sul
+coupon, quindi è considerato confermato.
 
 ## Se cambia qualcosa
 
@@ -37,6 +52,7 @@ testa, nel corpo e nello script (`ORARI`, `TEL`).
 - **Privacy e cookie policy.**
 - **Foto vere** dei lavori e dell'officina (vedi `carg/public/servizi/LEGGIMI.md`).
 - **Prezzi**: non ce li hanno dati, quindi non ci sono.
-- **WhatsApp**: se il numero è confermato, il modulo può aprire WhatsApp
-  invece dell'SMS.
+- **Facebook**: il volantino lo cita, ma manca l'indirizzo della pagina.
+- **Foto più grandi**: furgone e fari sono ritagli dei volantini; con le
+  foto originali la hero diventa più nitida.
 - Togliere il `noindex` e mettere `og:image` con l'URL assoluto.
