@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Car.G Multiservice · Officina meccanica a Lavezzola</title>
+<meta name="description" content="Officina meccanica e multiservice a Lavezzola (RA): tagliandi, cambio olio, gomme, diagnosi, pulizia FAP, lucidatura fari, batterie. Officina mobile anche di notte.">
+<!-- Anteprima su github.io: si toglie il noindex quando il sito va sul dominio dell'officina. -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#06080c">
+<meta property="og:title" content="Car.G Multiservice · Officina meccanica a Lavezzola">
+<meta property="og:description" content="Tagliandi, gomme, diagnosi, FAP, batterie. E un'officina mobile che viene da te, anche di notte.">
+<meta property="og:image" content="logo.png">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preload" href="logo.png" as="image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AutoRepair",
+  "name": "Car.G Multiservice",
+  "image": "logo.png",
+  "telephone": "+393793809830",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Via Bastia 169",
+    "postalCode": "48017",
+    "addressLocality": "Lavezzola",
+    "addressRegion": "RA",
+    "addressCountry": "IT"
+  },
+  "openingHoursSpecification": [
+    {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"], "opens": "08:00", "closes": "18:30"},
+    {"@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "08:00", "closes": "12:00"}
+  ],
+  "sameAs": ["https://www.instagram.com/officinacar.g/"]
+}
+</script>
+<style>
+@font-face{font-family:'Inter';src:url('inter.woff2') format('woff2');font-weight:100 900;font-display:swap}
+
+:root{
+  --ink:#0d1014;
+  --ink-2:#3d4550;
+  --sub:#646d7a;
+  --base:#f3f5f8;
+  --surface:#ffffff;
+  --line:rgba(13,16,20,.09);
+  --night:#06080c;
+  --night-2:#0d1118;
+  --night-3:#151b25;
+  --light:#eef2f7;
+  --light-soft:rgba(238,242,247,.62);
+  --night-line:rgba(238,242,247,.10);
+  --blue:#2b5cf0;
+  --blue-hi:#5b82ff;
+  --blue-soft:rgba(43,92,240,.10);
+  --acciaio:#c2c9d2;
+  --ok:#2fb36b;
+  --ease:cubic-bezier(.32,.72,0,1);
+  --r-card:22px;
+  --wrap:1180px;
+  --gutter:clamp(16px,4vw,40px);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:76px}
+body{
+  background:var(--base);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Inter',system-ui,'Helvetica Neue',sans-serif;
+  font-size:17px;line-height:1.5;letter-spacing:-.011em;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+img,svg{display:block}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit;letter-spacing:inherit}
+button{cursor:pointer;border:0;background:none;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--blue-hi);outline-offset:3px;border-radius:12px}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 var(--gutter)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- tipografia ---------- */
+.kicker{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--blue)}
+.dark .kicker{color:var(--blue-hi)}
+h1,h2,h3{font-weight:800;letter-spacing:-.04em;line-height:1.02}
+h2{font-size:clamp(34px,5.2vw,58px);margin-top:14px}
+h2 em,h1 em{font-style:normal;color:var(--blue)}
+.dark h2 em,.dark h1 em{color:var(--blue-hi)}
+.lead{font-size:clamp(17px,1.6vw,20px);color:var(--sub);max-width:620px;margin-top:18px;line-height:1.5}
+.dark .lead{color:var(--light-soft)}
+.head{margin-bottom:clamp(36px,5vw,56px)}
+.head.center{text-align:center}
+.head.center .lead{margin-left:auto;margin-right:auto}
+
+/* ---------- bottoni ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:54px;padding:0 26px;border-radius:999px;font-weight:650;font-size:16px;letter-spacing:-.01em;transition:transform .25s var(--ease),background .25s,box-shadow .25s;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn svg{width:20px;height:20px;flex:none}
+.btn-blue{background:var(--blue);color:#fff;box-shadow:0 10px 30px -10px rgba(43,92,240,.7)}
+.btn-blue:hover{background:#2450d6}
+.btn-ghost{background:rgba(238,242,247,.08);color:var(--light);box-shadow:inset 0 0 0 1px rgba(238,242,247,.18)}
+.btn-ghost:hover{background:rgba(238,242,247,.14)}
+.btn-light{background:var(--light);color:var(--ink)}
+.btn-light:hover{background:#fff}
+.btn-line{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn-line:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
+
+/* ---------- barra in alto ---------- */
+.nav{position:fixed;inset:0 0 auto;z-index:50;transition:background .3s,box-shadow .3s}
+.nav.solid{background:rgba(6,8,12,.78);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);box-shadow:0 1px 0 var(--night-line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:68px;gap:20px}
+.brand{display:flex;align-items:center;gap:12px;color:var(--light)}
+.brand img{width:42px;height:42px;border-radius:50%}
+.brand b{font-weight:800;letter-spacing:-.03em;font-size:18px;display:block;line-height:1.1}
+.brand small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--light-soft);font-weight:600}
+.links{display:flex;align-items:center;gap:4px}
+.links a{color:var(--light-soft);font-size:15px;font-weight:550;padding:8px 14px;border-radius:999px;transition:color .2s,background .2s}
+.links a:hover{color:var(--light);background:rgba(238,242,247,.07)}
+.nav .btn{height:42px;padding:0 18px;font-size:15px}
+.burger{display:none;width:44px;height:44px;border-radius:50%;color:var(--light);align-items:center;justify-content:center}
+.burger svg{width:24px;height:24px}
+@media (max-width:920px){
+  .links{position:fixed;inset:68px 0 auto;flex-direction:column;align-items:stretch;gap:0;background:rgba(6,8,12,.96);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);padding:8px var(--gutter) 22px;border-bottom:1px solid var(--night-line);transform:translateY(-8px);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s var(--ease)}
+  .links.open{opacity:1;transform:none;pointer-events:auto}
+  .links a{font-size:19px;padding:14px 4px;border-radius:0;border-bottom:1px solid var(--night-line);color:var(--light)}
+  .links a:hover{background:none}
+  .burger{display:inline-flex}
+  .nav .btn-call{display:none}
+}
+
+/* ---------- hero ---------- */
+.dark{background:var(--night);color:var(--light)}
+.hero{position:relative;overflow:hidden;min-height:100svh;display:flex;align-items:center;padding:120px 0 80px;
+  background:
+    radial-gradient(60% 55% at 78% 45%,rgba(43,92,240,.30) 0%,rgba(43,92,240,0) 70%),
+    radial-gradient(70% 50% at 10% 100%,rgba(24,60,228,.28) 0%,rgba(24,60,228,0) 65%),
+    var(--night)}
+.hero::after{content:"";position:absolute;inset:auto 0 0;height:1px;background:linear-gradient(90deg,transparent,rgba(91,130,255,.5),transparent)}
+.grid-lines{position:absolute;inset:0;background-image:linear-gradient(rgba(238,242,247,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(238,242,247,.035) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(70% 70% at 60% 40%,#000 0%,transparent 75%);-webkit-mask-image:radial-gradient(70% 70% at 60% 40%,#000 0%,transparent 75%);pointer-events:none}
+.hero .wrap{position:relative;display:grid;grid-template-columns:1.3fr .7fr;gap:48px;align-items:center;width:100%}
+.hero h1{font-size:clamp(44px,6.2vw,84px);margin-top:18px}
+.hero .lead{max-width:560px}
+.hero .ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
+.pill{display:inline-flex;align-items:center;gap:9px;padding:7px 14px 7px 10px;border-radius:999px;background:rgba(238,242,247,.06);box-shadow:inset 0 0 0 1px var(--night-line);font-size:13.5px;font-weight:600;color:var(--light-soft)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--sub);flex:none}
+.dot.on{background:var(--ok);box-shadow:0 0 0 4px rgba(47,179,107,.18);animation:pulse 2.4s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 7px rgba(47,179,107,0)}}
+.facts{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:44px;padding-top:26px;border-top:1px solid var(--night-line);font-size:14.5px;color:var(--light-soft)}
+.facts span{display:flex;align-items:center;gap:9px}
+.facts svg{width:18px;height:18px;color:var(--blue-hi);flex:none}
+.badge-wrap{position:relative;justify-self:center;width:min(100%,440px);aspect-ratio:1}
+.badge-wrap::before{content:"";position:absolute;inset:-8%;border-radius:50%;background:conic-gradient(from 200deg,rgba(91,130,255,0),rgba(91,130,255,.55),rgba(91,130,255,0) 35%,rgba(194,201,210,.25) 60%,rgba(91,130,255,0) 75%);filter:blur(28px);animation:spin 14s linear infinite}
+.badge-wrap::after{content:"";position:absolute;inset:-3%;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(238,242,247,.10)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.badge{position:relative;width:100%;height:100%;border-radius:50%;box-shadow:0 40px 90px -30px rgba(43,92,240,.65),0 0 0 1px rgba(238,242,247,.08);animation:float 7s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-10px)}}
+@media (max-width:920px){
+  .hero{min-height:auto;padding:110px 0 64px}
+  .hero .wrap{grid-template-columns:1fr;gap:36px}
+  .badge-wrap{order:-1;width:min(62vw,260px)}
+}
+
+/* ---------- soccorso ---------- */
+.sos{position:relative;padding:clamp(64px,8vw,100px) 0;background:linear-gradient(180deg,var(--night) 0%,var(--night-2) 100%);overflow:hidden}
+.sos-box{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(28px,5vw,64px);align-items:center;padding:clamp(28px,5vw,56px);border-radius:32px;background:radial-gradient(80% 120% at 100% 0%,rgba(43,92,240,.28),rgba(43,92,240,0) 60%),var(--night-3);box-shadow:inset 0 0 0 1px var(--night-line)}
+.sos h2{font-size:clamp(36px,5vw,60px)}
+.sos ul{list-style:none;display:grid;gap:10px}
+.sos li{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:16px;background:rgba(238,242,247,.05);box-shadow:inset 0 0 0 1px var(--night-line);font-weight:600;font-size:16px}
+.sos li svg{width:22px;height:22px;color:var(--blue-hi);flex:none}
+.call-big{display:flex;align-items:center;gap:16px;margin-top:30px;padding:14px 26px 14px 14px;border-radius:999px;background:var(--light);color:var(--ink);width:fit-content;max-width:100%;transition:transform .25s var(--ease)}
+.call-big:active{transform:scale(.97)}
+.call-big i{width:52px;height:52px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;flex:none}
+.call-big i svg{width:24px;height:24px}
+.call-big small{display:block;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sub)}
+.call-big b{display:block;font-size:clamp(22px,3vw,28px);font-weight:800;letter-spacing:-.03em;line-height:1.1;white-space:nowrap}
+@media (max-width:860px){.sos-box{grid-template-columns:1fr}}
+
+/* ---------- servizi ---------- */
+section.light{padding:clamp(72px,10vw,128px) 0}
+.services{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;grid-auto-flow:dense}
+.svc.big{grid-row:span 2;justify-content:flex-start}
+.svc.big h3{font-size:clamp(30px,3.2vw,40px);margin-top:auto;padding-top:40px}
+.svc.big p{font-size:18px}
+.svc.big .when{margin-top:0}
+.svc .wm{position:absolute;right:-30px;top:70px;width:300px;height:300px;color:var(--blue-hi);opacity:.13;pointer-events:none}
+@media (max-width:600px){.svc .wm{display:none}}
+.svc{position:relative;display:flex;flex-direction:column;padding:26px 24px 24px;border-radius:var(--r-card);background:var(--surface);box-shadow:0 1px 2px rgba(13,16,20,.04),0 10px 30px -14px rgba(13,16,20,.14);transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
+.svc:hover{transform:translateY(-4px);box-shadow:0 1px 2px rgba(13,16,20,.04),0 26px 50px -20px rgba(13,16,20,.25)}
+.svc .ico{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#141a24,#06080c);color:var(--light);box-shadow:inset 0 0 0 1px rgba(91,130,255,.35),0 8px 18px -8px rgba(43,92,240,.6)}
+.svc .ico svg{width:30px;height:30px}
+.svc h3{font-size:22px;letter-spacing:-.03em;margin-top:22px}
+.svc p{color:var(--ink-2);font-size:15.5px;margin-top:8px;line-height:1.45}
+.svc .when{margin-top:auto;padding-top:18px}
+.svc .when div{border-top:1px solid var(--line);padding-top:14px;font-size:14px;color:var(--sub);line-height:1.4}
+.svc .when b{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
+.svc.feature{background:var(--night);color:var(--light);grid-column:span 2;padding:30px 30px 28px;background:radial-gradient(70% 100% at 100% 0%,rgba(43,92,240,.35),rgba(43,92,240,0) 65%),var(--night)}
+.svc.feature p{color:var(--light-soft);font-size:17px;max-width:420px}
+.svc.feature h3{font-size:30px}
+.svc.feature .when div{border-color:var(--night-line);color:var(--light-soft)}
+.svc.feature .when b{color:var(--blue-hi)}
+.svc.feature .ico{background:var(--blue);box-shadow:0 10px 26px -8px rgba(43,92,240,.9)}
+.tag{position:absolute;top:24px;right:24px;font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:6px 11px;border-radius:999px;background:var(--blue-soft);color:var(--blue)}
+.svc.feature .tag{background:rgba(91,130,255,.18);color:#c9d6ff}
+@media (max-width:1080px){.services{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:600px){.services{grid-template-columns:1fr}.svc.feature{grid-column:auto}.svc.big{grid-row:auto}.svc.big h3{margin-top:22px;padding-top:0}}
+
+/* ---------- perché ---------- */
+.why{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border-radius:var(--r-card);overflow:hidden;box-shadow:0 0 0 1px var(--line)}
+.why div{background:var(--base);padding:30px 26px}
+.why b{display:block;font-size:44px;font-weight:800;letter-spacing:-.05em;line-height:1;color:var(--blue)}
+.why h3{font-size:19px;letter-spacing:-.025em;margin-top:18px;line-height:1.15}
+.why p{font-size:15px;color:var(--sub);margin-top:8px}
+@media (max-width:960px){.why{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:540px){.why{grid-template-columns:1fr}}
+
+/* ---------- come funziona ---------- */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;counter-reset:s}
+.step{position:relative;padding:30px 28px;border-radius:var(--r-card);background:var(--night-3);box-shadow:inset 0 0 0 1px var(--night-line)}
+.step::before{counter-increment:s;content:"0" counter(s);font-size:14px;font-weight:800;letter-spacing:.08em;color:var(--blue-hi)}
+.step h3{font-size:24px;letter-spacing:-.03em;margin-top:30px}
+.step p{color:var(--light-soft);font-size:15.5px;margin-top:10px}
+@media (max-width:860px){.steps{grid-template-columns:1fr}}
+section.dark{padding:clamp(72px,10vw,128px) 0}
+
+/* ---------- card NFC ---------- */
+.nfc{display:grid;grid-template-columns:auto 1fr auto;gap:28px;align-items:center;padding:clamp(26px,4vw,40px);border-radius:28px;background:var(--surface);box-shadow:0 1px 2px rgba(13,16,20,.04),0 20px 50px -24px rgba(13,16,20,.22)}
+.nfc-ico{width:76px;height:76px;border-radius:22px;background:var(--blue);color:#fff;display:grid;place-items:center;box-shadow:0 14px 30px -12px rgba(43,92,240,.8)}
+.nfc-ico svg{width:38px;height:38px}
+.nfc h3{font-size:clamp(24px,3vw,32px);letter-spacing:-.035em}
+.nfc p{color:var(--sub);margin-top:6px;font-size:16px}
+@media (max-width:760px){.nfc{grid-template-columns:1fr;gap:18px}}
+
+/* ---------- prenota ---------- */
+.book{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(28px,5vw,64px);align-items:start}
+.form{padding:clamp(22px,3.5vw,36px);border-radius:28px;background:var(--surface);box-shadow:0 1px 2px rgba(13,16,20,.04),0 20px 50px -24px rgba(13,16,20,.22);display:grid;gap:14px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:560px){.row2{grid-template-columns:1fr}}
+label{display:grid;gap:7px;font-size:13.5px;font-weight:650;color:var(--ink-2)}
+label span em{font-style:normal;font-weight:500;color:var(--sub)}
+input,select,textarea{width:100%;height:52px;padding:0 16px;border-radius:14px;border:0;background:var(--base);box-shadow:inset 0 0 0 1px var(--line);font-size:16px;font-weight:500;transition:box-shadow .2s;-webkit-appearance:none;appearance:none}
+textarea{height:auto;min-height:104px;padding:14px 16px;resize:vertical;line-height:1.45}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23646d7a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:20px;padding-right:44px}
+input:focus,select:focus,textarea:focus{outline:0;box-shadow:inset 0 0 0 2px var(--blue)}
+.form .btn{width:100%;margin-top:6px}
+.note{font-size:13px;color:var(--sub);line-height:1.45}
+.err{font-size:14px;color:#c4302b;font-weight:600}
+.alt{display:grid;gap:12px;margin-top:30px}
+.alt a{display:flex;align-items:center;gap:16px;padding:16px 18px;border-radius:18px;background:var(--surface);box-shadow:0 0 0 1px var(--line);transition:box-shadow .2s}
+.alt a:hover{box-shadow:0 0 0 1.5px var(--blue)}
+.alt i{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--blue-soft);color:var(--blue);flex:none}
+.alt i svg{width:22px;height:22px}
+.alt small{display:block;font-size:12px;color:var(--sub);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.alt b{display:block;font-size:18px;letter-spacing:-.02em}
+@media (max-width:900px){.book{grid-template-columns:1fr}}
+
+/* ---------- dove siamo ---------- */
+.where{display:grid;grid-template-columns:.85fr 1.15fr;gap:16px}
+.info{padding:clamp(26px,3.5vw,38px);border-radius:28px;background:var(--night-3);box-shadow:inset 0 0 0 1px var(--night-line);display:grid;gap:26px;align-content:start}
+.info h3{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--light-soft);font-weight:700;margin-bottom:8px}
+.info p,.info a{font-size:18px;font-weight:600;letter-spacing:-.02em;line-height:1.35}
+.info a:hover{color:var(--blue-hi)}
+.hours{display:grid;gap:4px;font-size:16px}
+.hours div{display:flex;justify-content:space-between;gap:20px;padding:8px 0;border-bottom:1px solid var(--night-line);color:var(--light-soft)}
+.hours div.today{color:var(--light);font-weight:700}
+.hours div span:last-child{font-variant-numeric:tabular-nums}
+.map{position:relative;min-height:420px;border-radius:28px;overflow:hidden;background:
+  linear-gradient(rgba(238,242,247,.05) 1px,transparent 1px) 0 0/40px 40px,
+  linear-gradient(90deg,rgba(238,242,247,.05) 1px,transparent 1px) 0 0/40px 40px,
+  radial-gradient(60% 60% at 50% 45%,rgba(43,92,240,.25),rgba(43,92,240,0) 70%),
+  var(--night-3);box-shadow:inset 0 0 0 1px var(--night-line);display:grid;place-items:center;text-align:center;padding:28px}
+.map iframe{position:absolute;inset:0;width:100%;height:100%;border:0;filter:grayscale(.2)}
+.pin{width:64px;height:64px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--blue);display:grid;place-items:center;margin:0 auto 22px;box-shadow:0 18px 40px -12px rgba(43,92,240,.9)}
+.pin img{width:46px;height:46px;border-radius:50%;transform:rotate(45deg)}
+.map p{color:var(--light-soft);font-size:14px;max-width:340px;margin:10px auto 20px}
+.map .btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+@media (max-width:900px){.where{grid-template-columns:1fr}.map{min-height:340px}}
+
+/* ---------- footer ---------- */
+footer{background:var(--night);color:var(--light-soft);padding:56px 0 calc(40px + env(safe-area-inset-bottom));border-top:1px solid var(--night-line);font-size:14.5px}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:28px;align-items:flex-start}
+footer .brand img{width:52px;height:52px}
+footer nav{display:flex;flex-wrap:wrap;gap:8px 22px}
+footer nav a:hover{color:var(--light)}
+.copy{width:100%;padding-top:24px;border-top:1px solid var(--night-line);font-size:13px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px}
+
+/* ---------- barra chiamata mobile ---------- */
+.dock{display:none}
+@media (max-width:720px){
+  .dock{display:grid;grid-template-columns:1fr 1fr;gap:8px;position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:40;padding:8px;border-radius:999px;background:rgba(6,8,12,.86);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);box-shadow:0 18px 40px -12px rgba(0,0,0,.6),inset 0 0 0 1px var(--night-line);transform:translateY(140%);transition:transform .4s var(--ease)}
+  .dock.show{transform:none}
+  .dock .btn{height:48px;padding:0 14px;font-size:15px}
+  footer{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+}
+
+/* ---------- entrata ---------- */
+.rv{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+  .rv{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Icone: tratto 2, estremi tondi, come i disegni della card NFC -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="i-tagliando" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="11" y="9" width="26" height="31" rx="4"/><rect x="18" y="5" width="12" height="7" rx="2.5"/><path d="M17 25.5l4 4 9-9.5"/><path d="M17 35h14"/></g>
+    <g id="i-olio" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M24 7c0 0 12 13.5 12 21a12 12 0 0 1-24 0C12 20.5 24 7 24 7z"/><path d="M29.5 28a5.5 5.5 0 0 1-5.5 5.5"/></g>
+    <g id="i-gomme" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="16"/><circle cx="24" cy="24" r="6.5"/><path d="M24 8v4M24 36v4M8 24h4M36 24h4"/><path d="M12.7 12.7l2.8 2.8M32.5 32.5l2.8 2.8M35.3 12.7l-2.8 2.8M15.5 32.5l-2.8 2.8"/></g>
+    <g id="i-diagnosi" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="11" width="34" height="23" rx="3.5"/><path d="M13 23h4l3-6 4 12 3-6h8"/><path d="M19 40h10"/><path d="M24 34v6"/></g>
+    <g id="i-fap" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="15" y="11" width="18" height="26" rx="7"/><path d="M19 18h10M19 24h10M19 30h10"/><path d="M24 5v6M24 37v6"/><path d="M21 8l3-3 3 3M21 40l3 3 3-3"/></g>
+    <g id="i-fari" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 13h7a11 11 0 0 1 0 22h-7z"/><path d="M13 13v22"/><path d="M35 17h7M35 24h9M35 31h7"/></g>
+    <g id="i-batteria" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="16" width="34" height="19" rx="3.5"/><path d="M14 16v-4h6v4M28 16v-4h6v4"/><path d="M15 25.5h6M18 22.5v6"/><path d="M27 25.5h6"/></g>
+    <g id="i-mobile" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 30V15h20v15"/><path d="M24 19h7l6 6v5"/><path d="M4 30h4M17 30h8M34 30h6"/><circle cx="12.5" cy="31" r="4"/><circle cx="29.5" cy="31" r="4"/></g>
+    <g id="i-tel" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></g>
+    <g id="i-pin" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></g>
+    <g id="i-clock" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></g>
+    <g id="i-moon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></g>
+    <g id="i-ig" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.6" cy="6.4" r=".6" fill="currentColor"/></g>
+    <g id="i-arrow" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></g>
+    <g id="i-nfc" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8.3a6 6 0 0 1 0 7.4M9.5 5.6a10.5 10.5 0 0 1 0 12.8M13 3a15 15 0 0 1 0 18M16.5 1a19 19 0 0 1 0 22" transform="translate(1 0)"/></g>
+    <g id="i-msg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.2A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"/></g>
+    <g id="i-menu" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8h16M4 16h16"/></g>
+    <g id="i-x" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></g>
+  </defs>
+</svg>
+
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Car.G Multiservice, torna su">
+      <img src="logo.png" alt="" width="42" height="42">
+      <span><b>Car.G</b><small>Multiservice</small></span>
+    </a>
+    <nav class="links" id="links" aria-label="Sezioni">
+      <a href="#servizi">Servizi</a>
+      <a href="#soccorso">Soccorso</a>
+      <a href="#come">Come funziona</a>
+      <a href="#prenota">Prenota</a>
+      <a href="#dove">Dove siamo</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:6px">
+      <a class="btn btn-blue btn-call" href="tel:+393793809830"><svg viewBox="0 0 24 24"><use href="#i-tel"/></svg>379 380 9830</a>
+      <button class="burger" id="burger" aria-label="Apri il menu" aria-expanded="false" aria-controls="links"><svg viewBox="0 0 24 24"><use href="#i-menu"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ================= HERO ================= -->
+<section class="hero dark">
+  <div class="grid-lines" aria-hidden="true"></div>
+  <div class="wrap">
+    <div>
+      <span class="pill rv"><i class="dot" id="statusDot"></i><span id="status">Officina meccanica · Lavezzola (RA)</span></span>
+      <h1 class="rv">La tua auto,<br>in buone mani.<br><em>Anche di notte.</em></h1>
+      <p class="lead rv">Tagliandi, gomme, diagnosi, FAP, fari e batterie in officina. E quando sei fermo per strada, un'officina mobile che viene da te.</p>
+      <div class="ctas rv">
+        <a class="btn btn-blue" href="#prenota">Prenota un intervento<svg viewBox="0 0 24 24"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn-ghost" href="#servizi">Tutti i servizi</a>
+      </div>
+      <div class="facts rv">
+        <span><svg viewBox="0 0 24 24"><use href="#i-pin"/></svg>Via Bastia 169, Lavezzola</span>
+        <span><svg viewBox="0 0 24 24"><use href="#i-clock"/></svg>Lun–Ven 8–18:30 · Sab 8–12</span>
+        <span><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg>Officina mobile notturna</span>
+      </div>
+    </div>
+    <div class="badge-wrap rv" aria-hidden="true">
+      <img class="badge" src="logo.png" alt="" width="512" height="512">
+    </div>
+  </div>
+</section>
+
+<!-- ================= SERVIZI ================= -->
+<section class="light" id="servizi">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="kicker">I servizi</span>
+      <h2>Tutto quello che<br>serve alla tua auto.</h2>
+      <p class="lead">Dalla manutenzione di tutti i giorni all'imprevisto in strada. Ogni lavoro, con quando conviene farlo.</p>
+    </div>
+
+    <div class="services">
+      <article class="svc feature big rv">
+        <span class="tag">Il più richiesto</span>
+        <svg class="wm" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-tagliando"/></svg>
+        <div class="ico"><svg viewBox="0 0 48 48"><use href="#i-tagliando"/></svg></div>
+        <h3>Tagliando completo</h3>
+        <p>Olio, filtri e una lista di controlli che non salta niente.</p>
+        <div class="when"><div><b>Quando serve</b>Ogni 12 mesi o 15.000 km, vale quello che arriva prima.</div></div>
+      </article>
+      <article class="svc rv">
+        <div class="ico"><svg viewBox="0 0 48 48"><use href="#i-olio"/></svg></div>
+        <h3>Cambio olio</h3>
+        <p>Esci con l'olio nuovo e l'auto lavata: il lavaggio è in omaggio.</p>
+        <div class="when"><div><b>Quando serve</b>Anche sul cambio automatico.</div></div>
+      </article>
+      <article class="svc rv">
+        <div class="ico"><svg viewBox="0 0 48 48"><use href="#i-gomme"/></svg></div>
+        <h3>Gomme</h3>
+        <p>Si ripara quando si può riparare. Si cambia quando serve davvero.</p>
+        <div class="when"><div><b>Quando serve</b>Una foratura, una vibrazione, il battistrada basso.</div></div>
+      </article>
+      <article class="svc rv">
+        <div class="ico"><svg viewBox="0 0 48 48"><use href="#i-diagnosi"/></svg></div>
+        <h3>Diagnosi completa</h3>
+        <p>Colleghiamo la centralina e leggiamo quello che l'auto ha già scritto da sola.</p>
+        <div class="when"><div><b>Quando serve</b>Una spia accesa, un rumore nuovo, un consumo che non torna.</div></div>
+      </article>
+      <article class="svc rv">
+        <div class="ico"><svg viewBox="0 0 48 48"><use href="#i-fap"/></svg></div>
+        <h3>Pulizia FAP</h3>
+        <p>Si pulisce. Sostituirlo è l'ultima strada, non la prima.</p>
+        <div class="when"><div><b>Quando serve</b>Spia del FAP, rigenerazioni continue, spinta che cala.</div></div>
+      </article>
+      <article class="svc rv">
+        <div class="ico"><svg viewBox="0 0 48 48"><use href="#i-fari"/></svg></div>
+        <h3>Lucidatura fari</h3>
+        <p>Tornano trasparenti, e di notte la differenza si vede. Letteralmente.</p>
+        <div class="when"><div><b>Quando serve</b>Fari opachi o ingialliti, revisione vicina.</div></div>
+      </article>
+      <article class="svc rv">
+        <div class="ico"><svg viewBox="0 0 48 48"><use href="#i-batteria"/></svg></div>
+        <h3>Batterie</h3>
+        <p>Prova, ricarica, e se è andata la sostituiamo sul momento.</p>
+        <div class="when"><div><b>Quando serve</b>Parte a fatica la mattina, o dopo qualche giorno ferma.</div></div>
+      </article>
+      <article class="svc feature rv">
+        <span class="tag">Anche di notte</span>
+        <div class="ico"><svg viewBox="0 0 48 48"><use href="#i-mobile"/></svg></div>
+        <h3>Officina mobile</h3>
+        <p>Non muovi l'auto: ci muoviamo noi. Ripariamo sul posto, con l'attrezzatura a bordo.</p>
+        <div class="when"><div><b>Quando serve</b>Sei fermo da qualche parte e non riparti.</div></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SOCCORSO ================= -->
+<section class="sos dark" id="soccorso">
+  <div class="wrap">
+    <div class="sos-box rv">
+      <div>
+        <span class="kicker">Servizio notturno · Officina mobile</span>
+        <h2>Rimasto a piedi?<br><em>Niente panico.</em></h2>
+        <p class="lead">Arriviamo noi, con l'attrezzatura a bordo. Anche di notte, quando hai bisogno.</p>
+        <a class="call-big" href="tel:+393793809830">
+          <i><svg viewBox="0 0 24 24"><use href="#i-tel"/></svg></i>
+          <span><small>Chiama ora</small><b>379 380 9830</b></span>
+        </a>
+      </div>
+      <ul>
+        <li><svg viewBox="0 0 48 48"><use href="#i-mobile"/></svg>Assistenza e riparazioni sul posto</li>
+        <li><svg viewBox="0 0 48 48"><use href="#i-gomme"/></svg>Gomme forate e sostituzioni</li>
+        <li><svg viewBox="0 0 48 48"><use href="#i-batteria"/></svg>Batterie: prova, ricarica, cambio</li>
+        <li><svg viewBox="0 0 48 48"><use href="#i-diagnosi"/></svg>Diagnosi e interventi urgenti</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PERCHÉ ================= -->
+<section class="light">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="kicker">Perché Car.G</span>
+      <h2>Il lavoro che serve,<br><em>non uno di più.</em></h2>
+    </div>
+    <div class="why rv">
+      <div><b>01</b><h3>Prima si ripara, poi si cambia</h3><p>Gomme e FAP: se si possono recuperare, si recuperano. La sostituzione è l'ultima strada.</p></div>
+      <div><b>02</b><h3>La centralina, prima delle ipotesi</h3><p>Una spia o un rumore si leggono con lo strumento, non si indovinano.</p></div>
+      <div><b>03</b><h3>Auto lavata, in omaggio</h3><p>Con il cambio olio la riprendi pulita. Senza sovrapprezzo.</p></div>
+      <div><b>04</b><h3>Fuori orario, ci siamo</h3><p>Officina mobile anche di notte: quando l'auto non riparte, veniamo noi.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= COME FUNZIONA ================= -->
+<section class="dark" id="come">
+  <div class="wrap">
+    <div class="head center rv">
+      <span class="kicker">Come funziona</span>
+      <h2>Tre passi,<br><em>zero pensieri.</em></h2>
+    </div>
+    <div class="steps">
+      <div class="step rv"><h3>Chiamaci o scrivici</h3><p>Raccontaci cosa fa l'auto, o quale lavoro ti serve. Fissiamo il giorno insieme.</p></div>
+      <div class="step rv"><h3>Porti l'auto, o veniamo noi</h3><p>In officina a Lavezzola, oppure sul posto con l'officina mobile se sei fermo.</p></div>
+      <div class="step rv"><h3>Riparti</h3><p>Lavoro fatto, auto pronta. E con il cambio olio te la riconsegniamo anche lavata.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PRENOTA ================= -->
+<section class="light" id="prenota">
+  <div class="wrap">
+    <div class="nfc rv" style="margin-bottom:clamp(56px,8vw,96px)">
+      <div class="nfc-ico"><svg viewBox="0 0 24 24"><use href="#i-nfc"/></svg></div>
+      <div>
+        <h3>Hai visto la nostra card al bancone?</h3>
+        <p>Una domanda sola, un giro di ruota e un credito sul prossimo lavoro. Ci vuole un minuto.</p>
+      </div>
+      <a class="btn btn-line" href="../carg/">Prendi il tuo credito<svg viewBox="0 0 24 24"><use href="#i-arrow"/></svg></a>
+    </div>
+
+    <div class="book">
+      <div class="rv">
+        <span class="kicker">Prenota</span>
+        <h2>Fissiamo<br><em>un appuntamento.</em></h2>
+        <p class="lead">Lasciaci due righe: prepariamo il messaggio, tu lo mandi dal tuo telefono e ti richiamiamo per confermare.</p>
+        <div class="alt">
+          <a href="tel:+393793809830"><i><svg viewBox="0 0 24 24"><use href="#i-tel"/></svg></i><span><small>Oppure chiama</small><b>379 380 9830</b></span></a>
+          <a href="https://www.instagram.com/officinacar.g/" target="_blank" rel="noopener"><i><svg viewBox="0 0 24 24"><use href="#i-ig"/></svg></i><span><small>Instagram</small><b>@officinacar.g</b></span></a>
+        </div>
+      </div>
+
+      <form class="form rv" id="form" novalidate>
+        <div class="row2">
+          <label><span>Nome e cognome</span><input name="nome" autocomplete="name" required></label>
+          <label><span>Telefono</span><input name="tel" type="tel" inputmode="tel" autocomplete="tel" required></label>
+        </div>
+        <div class="row2">
+          <label><span>Servizio</span>
+            <select name="servizio">
+              <option>Tagliando completo</option>
+              <option>Cambio olio</option>
+              <option>Gomme</option>
+              <option>Diagnosi completa</option>
+              <option>Pulizia FAP</option>
+              <option>Lucidatura fari</option>
+              <option>Batterie</option>
+              <option>Officina mobile</option>
+              <option>Altro</option>
+            </select>
+          </label>
+          <label><span>Auto <em>· facoltativo</em></span><input name="auto" placeholder="es. Fiat Panda 2018"></label>
+        </div>
+        <label><span>Cosa succede <em>· facoltativo</em></span><textarea name="msg" placeholder="Una spia, un rumore, un giorno che ti va bene…"></textarea></label>
+        <p class="err" id="err" hidden></p>
+        <button class="btn btn-blue" type="submit"><svg viewBox="0 0 24 24"><use href="#i-msg"/></svg>Prepara il messaggio</button>
+        <p class="note">Il messaggio si apre già scritto nell'app SMS del tuo telefono: lo controlli e lo invii tu. Da qui non parte e non si salva niente.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DOVE SIAMO ================= -->
+<section class="dark" id="dove">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="kicker">Dove siamo</span>
+      <h2>Ti aspettiamo<br><em>a Lavezzola.</em></h2>
+    </div>
+    <div class="where">
+      <div class="info rv">
+        <div><h3>Indirizzo</h3><p>Via Bastia 169<br>48017 Lavezzola (RA)</p></div>
+        <div><h3>Telefono</h3><a href="tel:+393793809830">379 380 9830</a></div>
+        <div>
+          <h3>Orari officina</h3>
+          <div class="hours" id="hours">
+            <div data-d="1"><span>Lunedì</span><span>8:00 – 18:30</span></div>
+            <div data-d="2"><span>Martedì</span><span>8:00 – 18:30</span></div>
+            <div data-d="3"><span>Mercoledì</span><span>8:00 – 18:30</span></div>
+            <div data-d="4"><span>Giovedì</span><span>8:00 – 18:30</span></div>
+            <div data-d="5"><span>Venerdì</span><span>8:00 – 18:30</span></div>
+            <div data-d="6"><span>Sabato</span><span>8:00 – 12:00</span></div>
+            <div data-d="0"><span>Domenica</span><span>Chiuso</span></div>
+          </div>
+          <p style="font-size:14px;font-weight:500;color:var(--light-soft);margin-top:12px">Fuori orario e di notte: officina mobile, su chiamata.</p>
+        </div>
+      </div>
+      <div class="map rv" id="map">
+        <div>
+          <div class="pin"><img src="logo.png" alt=""></div>
+          <b style="font-size:20px;letter-spacing:-.02em">Car.G Multiservice</b>
+          <p>La mappa si carica da Google solo se la chiedi: fino ad allora nessun dato parte da questa pagina.</p>
+          <div class="btns">
+            <button class="btn btn-light" id="loadMap" type="button">Mostra la mappa</button>
+            <a class="btn btn-ghost" id="dirs" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=Car.G%20Multiservice%20Via%20Bastia%20169%2048017%20Lavezzola%20RA">Indicazioni<svg viewBox="0 0 24 24"><use href="#i-arrow"/></svg></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="logo.png" alt="" width="52" height="52"><span><b>Car.G</b><small>Officina · Multiservice</small></span></a>
+    <nav aria-label="Piè di pagina">
+      <a href="#servizi">Servizi</a>
+      <a href="#soccorso">Soccorso</a>
+      <a href="#prenota">Prenota</a>
+      <a href="#dove">Dove siamo</a>
+      <a href="https://www.instagram.com/officinacar.g/" target="_blank" rel="noopener">Instagram</a>
+    </nav>
+    <div class="copy">
+      <span>© <span id="y">2026</span> Car.G Multiservice · Via Bastia 169, 48017 Lavezzola (RA)</span>
+      <span>Tel. 379 380 9830</span>
+    </div>
+  </div>
+</footer>
+
+<div class="dock" id="dock">
+  <a class="btn btn-blue" href="tel:+393793809830"><svg viewBox="0 0 24 24"><use href="#i-tel"/></svg>Chiama</a>
+  <a class="btn btn-ghost" href="#prenota">Prenota</a>
+</div>
+
+<script>
+(() => {
+  const TEL = '+393793809830';
+  const $ = (s) => document.querySelector(s);
+
+  /* Barra in alto: trasparente sull'hero, vetro scuro dopo. */
+  const nav = $('#nav'), dock = $('#dock');
+  const onScroll = () => {
+    const y = window.scrollY;
+    nav.classList.toggle('solid', y > 20);
+    dock.classList.toggle('show', y > window.innerHeight * 0.6);
+  };
+  addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+  /* Menu sul telefono. */
+  const burger = $('#burger'), links = $('#links');
+  const setMenu = (open) => {
+    links.classList.toggle('open', open);
+    burger.setAttribute('aria-expanded', open);
+    burger.setAttribute('aria-label', open ? 'Chiudi il menu' : 'Apri il menu');
+    burger.querySelector('use').setAttribute('href', open ? '#i-x' : '#i-menu');
+  };
+  burger.addEventListener('click', () => setMenu(!links.classList.contains('open')));
+  links.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
+
+  /* Entrata delle sezioni. */
+  const rv = document.querySelectorAll('.rv');
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((es) => es.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    }), { rootMargin: '0px 0px -8% 0px' });
+    rv.forEach((el) => io.observe(el));
+  } else rv.forEach((el) => el.classList.add('in'));
+
+  /* Aperto o chiuso adesso, sull'ora italiana e non su quella del telefono. */
+  const ORARI = { 1: [480, 1110], 2: [480, 1110], 3: [480, 1110], 4: [480, 1110], 5: [480, 1110], 6: [480, 720] };
+  try {
+    const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/Rome', weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+    }).formatToParts(new Date()).map((x) => [x.type, x.value]));
+    const d = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(p.weekday);
+    const m = (+p.hour) * 60 + (+p.minute);
+    const o = ORARI[d];
+    const aperto = o && m >= o[0] && m < o[1];
+    $('#statusDot').classList.toggle('on', !!aperto);
+    $('#status').textContent = aperto
+      ? `Aperto ora · fino alle ${o[1] === 720 ? '12:00' : '18:30'}`
+      : 'Officina chiusa · officina mobile su chiamata';
+    const riga = document.querySelector(`#hours [data-d="${d}"]`);
+    if (riga) riga.classList.add('today');
+    $('#y').textContent = new Date().getFullYear();
+  } catch (_) {}
+
+  /* Il modulo prepara un SMS: niente server, niente dati salvati. */
+  const form = $('#form'), err = $('#err');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(form));
+    const nome = (f.nome || '').trim(), tel = (f.tel || '').trim();
+    let msg = '';
+    if (nome.split(/\s+/).length < 2) msg = 'Scrivi nome e cognome.';
+    else if (tel.replace(/\D/g, '').length < 8) msg = 'Controlla il numero di telefono.';
+    if (msg) { err.textContent = msg; err.hidden = false; return; }
+    err.hidden = true;
+    const testo = [
+      `Ciao, sono ${nome}.`,
+      `Vorrei prenotare: ${f.servizio}.`,
+      f.auto && f.auto.trim() ? `Auto: ${f.auto.trim()}.` : '',
+      f.msg && f.msg.trim() ? f.msg.trim() : '',
+      `Il mio numero: ${tel}`,
+    ].filter(Boolean).join('\n');
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    location.href = `sms:${TEL}${ios ? '&' : '?'}body=${encodeURIComponent(testo)}`;
+  });
+
+  /* La mappa di Google solo su richiesta. */
+  $('#loadMap').addEventListener('click', () => {
+    const q = encodeURIComponent('Car.G Multiservice, Via Bastia 169, 48017 Lavezzola RA');
+    const f = document.createElement('iframe');
+    f.src = `https://www.google.com/maps?q=${q}&output=embed`;
+    f.title = 'Mappa: Car.G Multiservice, Via Bastia 169, Lavezzola';
+    f.loading = 'lazy';
+    f.referrerPolicy = 'no-referrer-when-downgrade';
+    $('#map').replaceChildren(f);
+  });
+})();
+</script>
+</body>
+</html>
