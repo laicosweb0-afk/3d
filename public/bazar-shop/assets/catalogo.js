@@ -94,10 +94,10 @@ window.BM = {
       "collezione": "Capitonné",
       "prezzo": null,
       "foto": {
-        "file": "salotto-nero-scena",
-        "w": 1200,
-        "h": 944,
-        "alt": "Salotto Nero: divani e poltrone in velluto nero, tavolino ovale e mobile basso, davanti alla parete effetto marmo"
+        "file": "studio/salotto-nero-poltrone",
+        "w": 1600,
+        "h": 1200,
+        "alt": "Le poltrone in velluto nero del Salotto Nero"
       },
       "composizione": [
         "Due divani in velluto nero",
@@ -164,10 +164,10 @@ window.BM = {
       "collezione": "Sale da pranzo",
       "prezzo": null,
       "foto": {
-        "file": "pranzo-ovale-blu",
-        "w": 1100,
-        "h": 1069,
-        "alt": "Tavolo ovale effetto marmo nero con le sedie in velluto blu"
+        "file": "studio/pranzo-ovale-blu",
+        "w": 1600,
+        "h": 1200,
+        "alt": "Sala da pranzo Ovale Blu: tavolo ovale effetto marmo nero e sedie in velluto blu"
       },
       "composizione": [
         "Tavolo ovale effetto marmo nero",

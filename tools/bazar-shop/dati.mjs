@@ -134,9 +134,12 @@ export const SET = [
     configurazioni: [],
     misure: [],
     prezzo: null,
-    copertina: img('salotto-nero-scena', 1200, 944, 'Salotto Nero: divani e poltrone in velluto nero, tavolino ovale e mobile basso, davanti alla parete effetto marmo'),
+    copertina: img('studio/salotto-nero-poltrone', 1600, 1200, 'Le poltrone in velluto nero del Salotto Nero'),
     foto: [
+      img('studio/salotto-nero-poltrone', 1600, 1200, 'Le poltrone in velluto nero con base color argento'),
       img('salotto-nero-scena', 1200, 944, 'Salotto Nero completo nello showroom'),
+      img('studio/salotto-nero-tavolino', 1600, 1200, 'Tavolino ovale effetto marmo nero con piedi color oro'),
+      img('studio/salotto-nero-mobile', 1600, 1200, 'Mobile basso con piano effetto marmo bianco'),
       img('salotto-nero-poltrone', 1000, 1333, 'Le poltrone in velluto nero con base color argento'),
       img('salotto-nero-tavolino', 1000, 1333, 'Tavolino ovale effetto marmo nero davanti ai divani'),
       img('salotto-nero-tavolino-alto', 1000, 1333, 'Il piano del tavolino ovale, effetto marmo nero con venature chiare'),
@@ -218,6 +221,10 @@ export const SET = [
     configurazioni: [],
     misure: [],
     prezzo: null,
-    foto: [img('pranzo-ovale-blu', 1100, 1069, 'Tavolo ovale effetto marmo nero con le sedie in velluto blu')],
+    copertina: img('studio/pranzo-ovale-blu', 1600, 1200, 'Sala da pranzo Ovale Blu: tavolo ovale effetto marmo nero e sedie in velluto blu'),
+    foto: [
+      img('studio/pranzo-ovale-blu', 1600, 1200, 'Tavolo ovale effetto marmo nero con le sedie in velluto blu'),
+      img('pranzo-ovale-blu', 1100, 1069, 'La sala da pranzo Ovale Blu nello showroom'),
+    ],
   },
 ];
