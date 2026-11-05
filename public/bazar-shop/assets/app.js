@@ -66,6 +66,37 @@
     $$('.reveal').forEach((el) => io.observe(el));
   } else $$('.reveal').forEach((el) => el.classList.add('is-in'));
 
+  /* ---- caroselli alla maniera di apple.com ---------------------------- */
+  // Avanzano da soli ogni 5 secondi; si fermano al tocco o con il pulsante.
+  // Con «riduci movimento» partono in pausa.
+  $$('[data-carousel]').forEach((c) => {
+    const track = $('[data-track]', c), cards = [...track.children], dots = $$('[data-dot]', c), play = $('[data-play]', c);
+    let attiva = 0, timer = null;
+    const passo = () => (cards[1] ? cards[1].offsetLeft - cards[0].offsetLeft : track.clientWidth);
+    const vai = (i) => { track.scrollTo({ left: i * passo(), behavior: reduce ? 'auto' : 'smooth' }); };
+    const segna = (i) => { attiva = i; dots.forEach((d, j) => d.setAttribute('aria-selected', String(i === j))); };
+    track.addEventListener('scroll', () => {
+      const fine = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+      segna(fine ? cards.length - 1 : Math.round(track.scrollLeft / passo()));
+    }, { passive: true });
+    const ferma = () => { clearInterval(timer); timer = null; play.setAttribute('aria-pressed', 'false'); play.setAttribute('aria-label', 'Riproduci'); };
+    const avvia = () => {
+      clearInterval(timer);
+      timer = setInterval(() => vai((attiva + 1) % cards.length), 5000);
+      play.setAttribute('aria-pressed', 'true'); play.setAttribute('aria-label', 'Metti in pausa');
+    };
+    play.addEventListener('click', () => (timer ? ferma() : avvia()));
+    dots.forEach((d) => d.addEventListener('click', () => { ferma(); vai(+d.dataset.dot); }));
+    ['pointerdown', 'wheel', 'touchstart'].forEach((ev) => track.addEventListener(ev, ferma, { passive: true }));
+    // parte solo quando il carosello si vede
+    if (reduce || !('IntersectionObserver' in window)) { ferma(); return; }
+    let visto = false;
+    new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !visto) { visto = true; avvia(); }
+      else if (!e.isIntersecting && timer) { clearInterval(timer); timer = null; visto = false; }
+    }, { threshold: 0.4 }).observe(c);
+  });
+
   /* ---- aperto / chiuso (ora di Roma) ---------------------------------- */
   function statoNegozio() {
     let g, m;
@@ -125,10 +156,34 @@
       });
       io.observe(main);
     }
-    const gal = $('[data-gallery]'), count = $('[data-gallery-count]');
-    if (gal && count) {
-      const n = gal.children.length;
-      gal.addEventListener('scroll', () => { count.textContent = `${Math.round(gal.scrollLeft / gal.clientWidth) + 1} / ${n}`; }, { passive: true });
+    /* visore delle foto: le pillole sotto scelgono la foto, il dito la scorre */
+    const viewer = $('[data-viewer]'), chips = $$('[data-chip]');
+    if (viewer && chips.length) {
+      const items = [...viewer.children];
+      const scegli = (i) => {
+        chips.forEach((c, j) => c.setAttribute('aria-selected', String(i === j)));
+        items.forEach((li, j) => li.setAttribute('aria-hidden', String(i !== j)));
+        chips[i].scrollIntoView({ block: 'nearest', inline: 'center', behavior: reduce ? 'auto' : 'smooth' });
+      };
+      chips.forEach((c) => c.addEventListener('click', () => {
+        viewer.scrollTo({ left: +c.dataset.chip * viewer.clientWidth, behavior: reduce ? 'auto' : 'smooth' });
+      }));
+      let t;
+      viewer.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(() => scegli(Math.round(viewer.scrollLeft / viewer.clientWidth)), 80); }, { passive: true });
+    }
+    /* barra prodotto a pillola: compare quando il titolo esce dallo schermo */
+    const bar = $('[data-prodbar]'), titoloProdotto = $('h1', buy);
+    if (bar && titoloProdotto) {
+      new IntersectionObserver(([e]) => {
+        const on = !e.isIntersecting && e.boundingClientRect.top < 0;
+        bar.classList.toggle('is-on', on);
+        bar.setAttribute('aria-hidden', String(!on));
+        $$('a', bar).forEach((a) => { a.tabIndex = on ? 0 : -1; });
+      }).observe(titoloProdotto);
+      $('[data-prodbar-buy]', bar).addEventListener('click', (e) => {
+        e.preventDefault();
+        $('#acquista').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+      });
     }
   }
 

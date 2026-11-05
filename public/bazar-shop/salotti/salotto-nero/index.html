@@ -46,10 +46,15 @@
   <nav class="page-head" style="padding-bottom:var(--s-4)" aria-label="Percorso">
     <ol class="crumbs"><li><a href="../../">Home</a></li><li><a href="../../collezioni/">Collezioni</a></li><li><a href="../../collezioni/capitonne/">Capitonné</a></li><li aria-current="page">Salotto Nero</li></ol>
   </nav>
+  <div class="prodbar" data-prodbar aria-hidden="true">
+    <span class="prodbar__name">Salotto Nero</span>
+    <a class="pill pill--line pill--sm" href="https://wa.me/?text=Buongiorno%2C%20vorrei%20informazioni%20su%20Salotto%20Nero." target="_blank" rel="noopener" tabindex="-1">Chiedi</a>
+    <a class="pill pill--sm" href="#acquista" data-prodbar-buy tabindex="-1">Richiedi</a>
+  </div>
   <div class="pdp">
-    <div>
-      <ul class="gallery" data-gallery aria-label="Foto del Salotto Nero"><li class=""><img src="../../img/studio/salotto-nero-poltrone.webp" width="1600" height="1200" alt="Le poltrone in velluto nero con base color argento" fetchpriority="high"></li><li class="wide"><img src="../../img/salotto-nero-scena.webp" width="1200" height="944" alt="Salotto Nero completo nello showroom" loading="lazy" decoding="async"></li><li class="wide"><img src="../../img/studio/salotto-nero-tavolino.webp" width="1600" height="1200" alt="Tavolino ovale effetto marmo nero con piedi color oro" loading="lazy" decoding="async"></li><li class="wide"><img src="../../img/studio/salotto-nero-mobile.webp" width="1600" height="1200" alt="Mobile basso con piano effetto marmo bianco" loading="lazy" decoding="async"></li><li class=""><img src="../../img/salotto-nero-poltrone.webp" width="1000" height="1333" alt="Le poltrone in velluto nero con base color argento" loading="lazy" decoding="async"></li><li class=""><img src="../../img/salotto-nero-tavolino.webp" width="1000" height="1333" alt="Tavolino ovale effetto marmo nero davanti ai divani" loading="lazy" decoding="async"></li><li class="wide"><img src="../../img/salotto-nero-tavolino-alto.webp" width="1000" height="1333" alt="Il piano del tavolino ovale, effetto marmo nero con venature chiare" loading="lazy" decoding="async"></li></ul>
-      <p class="gallery-count" data-gallery-count aria-hidden="true">1 / 7</p>
+    <div class="viewer-wrap">
+      <div class="viewer"><ul class="viewer__track" data-viewer aria-label="Foto del Salotto Nero"><li><img src="../../img/studio/salotto-nero-poltrone.webp" width="1600" height="1200" alt="Le poltrone in velluto nero con base color argento" fetchpriority="high"></li><li aria-hidden="true"><img src="../../img/salotto-nero-scena.webp" width="1200" height="944" alt="Salotto Nero completo nello showroom" loading="lazy" decoding="async"></li><li aria-hidden="true"><img src="../../img/studio/salotto-nero-tavolino.webp" width="1600" height="1200" alt="Tavolino ovale effetto marmo nero con piedi color oro" loading="lazy" decoding="async"></li><li aria-hidden="true"><img src="../../img/studio/salotto-nero-mobile.webp" width="1600" height="1200" alt="Mobile basso con piano effetto marmo bianco" loading="lazy" decoding="async"></li><li aria-hidden="true"><img src="../../img/salotto-nero-poltrone.webp" width="1000" height="1333" alt="Le poltrone in velluto nero con base color argento" loading="lazy" decoding="async"></li><li aria-hidden="true"><img src="../../img/salotto-nero-tavolino.webp" width="1000" height="1333" alt="Tavolino ovale effetto marmo nero davanti ai divani" loading="lazy" decoding="async"></li><li aria-hidden="true"><img src="../../img/salotto-nero-tavolino-alto.webp" width="1000" height="1333" alt="Il piano del tavolino ovale, effetto marmo nero con venature chiare" loading="lazy" decoding="async"></li></ul></div>
+      <div class="chips" role="tablist" aria-label="Scegli la foto"><button type="button" role="tab" class="chip" aria-selected="true" data-chip="0"><span class="chip__plus" aria-hidden="true">+</span>In studio</button><button type="button" role="tab" class="chip" aria-selected="false" data-chip="1"><span class="chip__plus" aria-hidden="true">+</span>Nello showroom</button><button type="button" role="tab" class="chip" aria-selected="false" data-chip="2"><span class="chip__plus" aria-hidden="true">+</span>In studio 2</button><button type="button" role="tab" class="chip" aria-selected="false" data-chip="3"><span class="chip__plus" aria-hidden="true">+</span>In studio 3</button><button type="button" role="tab" class="chip" aria-selected="false" data-chip="4"><span class="chip__plus" aria-hidden="true">+</span>Nello showroom 2</button><button type="button" role="tab" class="chip" aria-selected="false" data-chip="5"><span class="chip__plus" aria-hidden="true">+</span>Nello showroom 3</button><button type="button" role="tab" class="chip" aria-selected="false" data-chip="6"><span class="chip__plus" aria-hidden="true">+</span>Nello showroom 4</button></div>
     </div>
     <div class="buy" data-product="salotto-nero">
       <span class="eyebrow">Collezione Capitonné</span>
@@ -68,7 +73,7 @@
         <p class="buy__label">Finiture</p>
         <ul class="ticks"><li>Velluto nero</li><li>Lavorazione capitonné</li><li>Profili color argento</li><li>Piedi del tavolino color oro</li></ul>
       </div>
-      <div class="buy__block" data-buy-main>
+      <div class="buy__block" data-buy-main id="acquista">
         <div class="qty-row">
           <div class="qty" role="group" aria-label="Quantità"><button type="button" data-qty="-1" aria-label="Diminuisci">−</button><output data-qty-value aria-live="polite">1</output><button type="button" data-qty="1" aria-label="Aumenta">+</button></div>
           <button class="btn" type="button" data-add>Aggiungi alla borsa</button>
@@ -156,8 +161,8 @@
 </section>
 
 <div class="sticky-buy" data-sticky-buy aria-hidden="true">
-  <span class="sticky-buy__name">Salotto Nero</span>
-  <button class="btn" type="button" data-add-sticky tabindex="-1">Aggiungi alla borsa</button>
+  <div class="sticky-buy__info"><strong>Salotto Nero</strong><span>Prezzo su richiesta</span></div>
+  <button class="pill" type="button" data-add-sticky tabindex="-1">Aggiungi</button>
 </div>
 </main>
 <footer class="footer">

@@ -46,10 +46,15 @@
   <nav class="page-head" style="padding-bottom:var(--s-4)" aria-label="Percorso">
     <ol class="crumbs"><li><a href="../../">Home</a></li><li><a href="../../collezioni/">Collezioni</a></li><li><a href="../../collezioni/contemporanea/">Contemporanea</a></li><li aria-current="page">Salotto Avorio</li></ol>
   </nav>
+  <div class="prodbar" data-prodbar aria-hidden="true">
+    <span class="prodbar__name">Salotto Avorio</span>
+    <a class="pill pill--line pill--sm" href="https://wa.me/?text=Buongiorno%2C%20vorrei%20informazioni%20su%20Salotto%20Avorio." target="_blank" rel="noopener" tabindex="-1">Chiedi</a>
+    <a class="pill pill--sm" href="#acquista" data-prodbar-buy tabindex="-1">Richiedi</a>
+  </div>
   <div class="pdp">
-    <div>
-      <ul class="gallery" data-gallery aria-label="Foto del Salotto Avorio"><li class=""><img src="../../img/salotto-avorio-divano.webp" width="1200" height="736" alt="Divano avorio con schienale a canne e inserti a specchio" fetchpriority="high"></li><li class="wide"><img src="../../img/studio/salotto-avorio-poltrone.webp" width="1600" height="1200" alt="Le due poltrone del Salotto Avorio" loading="lazy" decoding="async"></li><li class="wide"><img src="../../img/salotto-avorio-poltrone.webp" width="1100" height="851" alt="Le poltrone avorio nello showroom" loading="lazy" decoding="async"></li></ul>
-      <p class="gallery-count" data-gallery-count aria-hidden="true">1 / 3</p>
+    <div class="viewer-wrap">
+      <div class="viewer"><ul class="viewer__track" data-viewer aria-label="Foto del Salotto Avorio"><li><img src="../../img/salotto-avorio-divano.webp" width="1200" height="736" alt="Divano avorio con schienale a canne e inserti a specchio" fetchpriority="high"></li><li aria-hidden="true"><img src="../../img/studio/salotto-avorio-poltrone.webp" width="1600" height="1200" alt="Le due poltrone del Salotto Avorio" loading="lazy" decoding="async"></li><li aria-hidden="true"><img src="../../img/salotto-avorio-poltrone.webp" width="1100" height="851" alt="Le poltrone avorio nello showroom" loading="lazy" decoding="async"></li></ul></div>
+      <div class="chips" role="tablist" aria-label="Scegli la foto"><button type="button" role="tab" class="chip" aria-selected="true" data-chip="0"><span class="chip__plus" aria-hidden="true">+</span>Nello showroom</button><button type="button" role="tab" class="chip" aria-selected="false" data-chip="1"><span class="chip__plus" aria-hidden="true">+</span>In studio</button><button type="button" role="tab" class="chip" aria-selected="false" data-chip="2"><span class="chip__plus" aria-hidden="true">+</span>Nello showroom 2</button></div>
     </div>
     <div class="buy" data-product="salotto-avorio">
       <span class="eyebrow">Collezione Contemporanea</span>
@@ -68,7 +73,7 @@
         <p class="buy__label">Finiture</p>
         <ul class="ticks"><li>Tessuto avorio lavorato</li><li>Inserti a specchio</li><li>Piedi color oro</li></ul>
       </div>
-      <div class="buy__block" data-buy-main>
+      <div class="buy__block" data-buy-main id="acquista">
         <div class="qty-row">
           <div class="qty" role="group" aria-label="Quantità"><button type="button" data-qty="-1" aria-label="Diminuisci">−</button><output data-qty-value aria-live="polite">1</output><button type="button" data-qty="1" aria-label="Aumenta">+</button></div>
           <button class="btn" type="button" data-add>Aggiungi alla borsa</button>
@@ -156,8 +161,8 @@
 </section>
 
 <div class="sticky-buy" data-sticky-buy aria-hidden="true">
-  <span class="sticky-buy__name">Salotto Avorio</span>
-  <button class="btn" type="button" data-add-sticky tabindex="-1">Aggiungi alla borsa</button>
+  <div class="sticky-buy__info"><strong>Salotto Avorio</strong><span>Prezzo su richiesta</span></div>
+  <button class="pill" type="button" data-add-sticky tabindex="-1">Aggiungi</button>
 </div>
 </main>
 <footer class="footer">

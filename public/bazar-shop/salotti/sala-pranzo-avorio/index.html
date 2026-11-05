@@ -46,9 +46,14 @@
   <nav class="page-head" style="padding-bottom:var(--s-4)" aria-label="Percorso">
     <ol class="crumbs"><li><a href="../../">Home</a></li><li><a href="../../collezioni/">Collezioni</a></li><li><a href="../../collezioni/sale-da-pranzo/">Sale da pranzo</a></li><li aria-current="page">Sala da pranzo Avorio</li></ol>
   </nav>
+  <div class="prodbar" data-prodbar aria-hidden="true">
+    <span class="prodbar__name">Sala da pranzo Avorio</span>
+    <a class="pill pill--line pill--sm" href="https://wa.me/?text=Buongiorno%2C%20vorrei%20informazioni%20su%20Sala%20da%20pranzo%20Avorio." target="_blank" rel="noopener" tabindex="-1">Chiedi</a>
+    <a class="pill pill--sm" href="#acquista" data-prodbar-buy tabindex="-1">Richiedi</a>
+  </div>
   <div class="pdp">
-    <div>
-      <ul class="gallery" data-gallery aria-label="Foto del Sala da pranzo Avorio"><li class=""><img src="../../img/pranzo-avorio.webp" width="1000" height="1333" alt="Tavolo con piano avorio, greca e centro effetto marmo nero, con le sedie imbottite" fetchpriority="high"></li></ul>
+    <div class="viewer-wrap">
+      <div class="viewer"><ul class="viewer__track" data-viewer aria-label="Foto del Sala da pranzo Avorio"><li><img src="../../img/pranzo-avorio.webp" width="1000" height="1333" alt="Tavolo con piano avorio, greca e centro effetto marmo nero, con le sedie imbottite" fetchpriority="high"></li></ul></div>
       
     </div>
     <div class="buy" data-product="sala-pranzo-avorio">
@@ -68,7 +73,7 @@
         <p class="buy__label">Finiture</p>
         <ul class="ticks"><li>Piano avorio con greca</li><li>Centro effetto marmo nero</li><li>Base a canne, zoccolo color oro</li></ul>
       </div>
-      <div class="buy__block" data-buy-main>
+      <div class="buy__block" data-buy-main id="acquista">
         <div class="qty-row">
           <div class="qty" role="group" aria-label="Quantità"><button type="button" data-qty="-1" aria-label="Diminuisci">−</button><output data-qty-value aria-live="polite">1</output><button type="button" data-qty="1" aria-label="Aumenta">+</button></div>
           <button class="btn" type="button" data-add>Aggiungi alla borsa</button>
@@ -156,8 +161,8 @@
 </section>
 
 <div class="sticky-buy" data-sticky-buy aria-hidden="true">
-  <span class="sticky-buy__name">Sala da pranzo Avorio</span>
-  <button class="btn" type="button" data-add-sticky tabindex="-1">Aggiungi alla borsa</button>
+  <div class="sticky-buy__info"><strong>Sala da pranzo Avorio</strong><span>Prezzo su richiesta</span></div>
+  <button class="pill" type="button" data-add-sticky tabindex="-1">Aggiungi</button>
 </div>
 </main>
 <footer class="footer">

@@ -46,9 +46,14 @@
   <nav class="page-head" style="padding-bottom:var(--s-4)" aria-label="Percorso">
     <ol class="crumbs"><li><a href="../../">Home</a></li><li><a href="../../collezioni/">Collezioni</a></li><li><a href="../../collezioni/chesterfield/">Chesterfield</a></li><li aria-current="page">Salotto Beige</li></ol>
   </nav>
+  <div class="prodbar" data-prodbar aria-hidden="true">
+    <span class="prodbar__name">Salotto Beige</span>
+    <a class="pill pill--line pill--sm" href="https://wa.me/?text=Buongiorno%2C%20vorrei%20informazioni%20su%20Salotto%20Beige." target="_blank" rel="noopener" tabindex="-1">Chiedi</a>
+    <a class="pill pill--sm" href="#acquista" data-prodbar-buy tabindex="-1">Richiedi</a>
+  </div>
   <div class="pdp">
-    <div>
-      <ul class="gallery" data-gallery aria-label="Foto del Salotto Beige"><li class=""><img src="../../img/divano-beige.webp" width="1000" height="749" alt="Salotto Beige: due divani chesterfield affacciati con tavolino in marmo" fetchpriority="high"></li></ul>
+    <div class="viewer-wrap">
+      <div class="viewer"><ul class="viewer__track" data-viewer aria-label="Foto del Salotto Beige"><li><img src="../../img/divano-beige.webp" width="1000" height="749" alt="Salotto Beige: due divani chesterfield affacciati con tavolino in marmo" fetchpriority="high"></li></ul></div>
       
     </div>
     <div class="buy" data-product="salotto-beige">
@@ -68,7 +73,7 @@
         <p class="buy__label">Finiture</p>
         <ul class="ticks"><li>Velluto beige</li><li>Lavorazione capitonné</li><li>Gambe color oro</li></ul>
       </div>
-      <div class="buy__block" data-buy-main>
+      <div class="buy__block" data-buy-main id="acquista">
         <div class="qty-row">
           <div class="qty" role="group" aria-label="Quantità"><button type="button" data-qty="-1" aria-label="Diminuisci">−</button><output data-qty-value aria-live="polite">1</output><button type="button" data-qty="1" aria-label="Aumenta">+</button></div>
           <button class="btn" type="button" data-add>Aggiungi alla borsa</button>
@@ -156,8 +161,8 @@
 </section>
 
 <div class="sticky-buy" data-sticky-buy aria-hidden="true">
-  <span class="sticky-buy__name">Salotto Beige</span>
-  <button class="btn" type="button" data-add-sticky tabindex="-1">Aggiungi alla borsa</button>
+  <div class="sticky-buy__info"><strong>Salotto Beige</strong><span>Prezzo su richiesta</span></div>
+  <button class="pill" type="button" data-add-sticky tabindex="-1">Aggiungi</button>
 </div>
 </main>
 <footer class="footer">

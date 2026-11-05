@@ -156,6 +156,41 @@ function footer(root) {
 </footer>`;
 }
 
+
+/* ---- Componenti alla maniera di apple.com -------------------------------- */
+/** Riquadro prodotto: nome, titolo grande, sottotitolo, due pillole, foto grande. */
+function tile({ tema = 'light', nome, titolo, sotto, href, wa, label1 = 'Scopri di più', href2, label2 = 'Chiedi info', media, foto = false }) {
+  const secondo = href2
+    ? `<a class="pill pill--line" href="${href2}">${label2}</a>`
+    : `<a class="pill pill--line" href="${waLink(`Buongiorno, vorrei informazioni su ${wa}.`)}" target="_blank" rel="noopener">${label2}</a>`;
+  return `<section class="tile tile--${tema}${foto ? ' tile--foto' : ''} reveal">
+  <div class="tile__copy">
+    <p class="tile__name">${nome}</p>
+    <h2 class="tile__title">${titolo}</h2>
+    <p class="tile__sub">${sotto}</p>
+    <div class="pills"><a class="pill" href="${href}">${label1}</a>${secondo}</div>
+  </div>
+  <div class="tile__media">${media}</div>
+</section>`;
+}
+
+/** Carosello di schede: testo in alto, immagine sotto; puntini e play/pausa. */
+function carosello({ id, titolo, link, schede, grigio = false }) {
+  return `<section class="carousel${grigio ? ' carousel--grey' : ''}" data-carousel aria-roledescription="carosello" aria-label="${esc(titolo)}">
+  <div class="carousel__head wrap"><h2 class="carousel__title">${titolo}</h2>${link ? `<a class="carousel__link" href="${link.href}">${link.label}</a>` : ''}</div>
+  <ul class="carousel__track" data-track id="car-${id}">
+    ${schede.map((c, i) => {
+      const [forte, ...resto] = c.testo.split('. ');
+      return `<li class="card${c.foto ? ' card--foto' : ''}" aria-roledescription="scheda" aria-label="${i + 1} di ${schede.length}"><p class="card__text"><strong>${forte}.</strong> ${resto.join('. ')}</p><div class="card__media">${c.img}</div></li>`;
+    }).join('\n    ')}
+  </ul>
+  <div class="carousel__controls">
+    <div class="carousel__dots" role="tablist" aria-label="Schede">${schede.map((_, i) => `<button type="button" role="tab" aria-label="Scheda ${i + 1}" aria-selected="${i === 0}" data-dot="${i}"></button>`).join('')}</div>
+    <button class="carousel__play" type="button" data-play aria-label="Metti in pausa" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-pause" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/><path class="i-play" d="M8 5l11 7-11 7z"/></svg></button>
+  </div>
+</section>`;
+}
+
 const setCard = (s, root, { heading = 'h3' } = {}) => `
   <article class="set-card reveal">
     <a class="set-card__media" href="${root}salotti/${s.slug}/" tabindex="-1" aria-hidden="true">${img(root, s.copertina || s.foto[0])}</a>
@@ -196,114 +231,42 @@ const page = (path, html) => pages.push({ path, html });
   <a class="hero-logo__hint" href="#salotti" aria-label="Scorri ai salotti"><span>Scorri</span><i aria-hidden="true"></i></a>
 </section>
 
-<section class="section" id="salotti">
-  <div class="wrap">
-    <div class="head-row reveal">
-      <div><span class="eyebrow">Le collezioni</span><h2 class="h2" style="margin-top:var(--s-2)">Salotti completi, pensati come un insieme.</h2></div>
-      <a class="link" href="collezioni/">Tutte le collezioni</a>
-    </div>
-    <div class="sets">${SET.filter((s) => s.tipo !== 'pranzo').map((s) => setCard(s, root)).join('')}</div>
+<!-- Fascia sotto la hero, come la striscia promozionale di apple.com -->
+<p class="promo" id="salotti">Showroom a Lugo, consegne in tutta Italia. <a href="showroom/">Orari e indicazioni ›</a></p>
+
+<div class="tiles">
+${tile({ tema: 'light', nome: 'Salotto Tortora', titolo: 'Le curve che abbracciano.', sotto: 'Velluto tortora, capitonné e profili in oro.', href: 'salotti/salotto-tortora/', wa: 'Salotto Tortora', media: '<img src="img/studio/salotto-tortora.webp" width="1600" height="1200" alt="Salotto Tortora: divano capitonné, due poltrone tonde e tavolini nesting" loading="lazy" decoding="async">' })}
+${tile({ tema: 'dark', nome: 'Nuova collezione', titolo: 'Profondo come la notte.', sotto: 'Velluto blu e oro.', href: 'contatti/', label1: 'Chiedi info', href2: 'showroom/', label2: 'Vieni a vederlo', media: '<img class="tile__png" src="img/studio/divano-blu-png.webp" width="1216" height="654" alt="Divano chesterfield in velluto blu con gambe color oro" loading="lazy" decoding="async">' })}
+${tile({ tema: 'light', nome: 'Salotto Nero', titolo: 'Il nero, pieno.', sotto: 'Velluto nero, capitonné e profili argento.', href: 'salotti/salotto-nero/', wa: 'Salotto Nero', media: '<img src="img/studio/salotto-nero-poltrone.webp" width="1600" height="1200" alt="Le poltrone in velluto nero del Salotto Nero" loading="lazy" decoding="async">' })}
+${tile({ tema: 'light', nome: 'Salotto Avorio', titolo: 'Luce, a canne.', sotto: 'Tessuto avorio lavorato, inserti a specchio, piedi color oro.', href: 'salotti/salotto-avorio/', wa: 'Salotto Avorio', media: '<img src="img/studio/salotto-avorio-poltrone.webp" width="1600" height="1200" alt="Le poltrone del Salotto Avorio" loading="lazy" decoding="async">' })}
+  <div class="tiles__pair">
+${tile({ tema: 'white', nome: 'Salotto Beige', titolo: 'Tutta la luce del salotto.', sotto: 'Due chesterfield affacciati.', href: 'salotti/salotto-beige/', wa: 'Salotto Beige', foto: true, media: '<img src="img/divano-beige.webp" width="1000" height="749" alt="Salotto Beige: due divani chesterfield con tavolino in marmo" loading="lazy" decoding="async">' })}
+${tile({ tema: 'light', nome: 'Sale da pranzo', titolo: 'A tavola, in velluto.', sotto: 'Tavoli effetto marmo, sedie in velluto.', href: 'collezioni/sale-da-pranzo/', wa: 'le sale da pranzo', media: '<img src="img/studio/pranzo-ovale-blu.webp" width="1600" height="1200" alt="Sala da pranzo Ovale Blu: tavolo ovale effetto marmo nero e sedie in velluto blu" loading="lazy" decoding="async">' })}
   </div>
-</section>
+</div>
 
-<section class="section section--white">
-  <div class="wrap">
-    <div class="head-row reveal">
-      <div><span class="eyebrow">In showroom</span><h2 class="h2" style="margin-top:var(--s-2)">Divani e poltrone.</h2></div>
-      <a class="link" href="${waLink(WHATSAPP_MESSAGGIO)}" target="_blank" rel="noopener">Chiedi informazioni</a>
-    </div>
-    <div class="pieces">
-      <figure class="reveal"><img src="img/studio/chesterfield-nero.webp" width="1600" height="1200" alt="Divano chesterfield in velluto nero con base color oro" loading="lazy" decoding="async"><figcaption><h3>Chesterfield Nero</h3><p>Velluto nero, capitonné, base color oro.</p></figcaption></figure>
-      <figure class="reveal"><img src="img/studio/poltrona-blu.webp" width="1600" height="2000" alt="Poltrona bergère in velluto blu con gambe color oro" loading="lazy" decoding="async"><figcaption><h3>Bergère Blu</h3><p>Velluto blu, gambe color oro.</p></figcaption></figure>
-      <figure class="reveal"><img src="img/studio/poltrona-tonda.webp" width="1600" height="2000" alt="Poltrona tonda girevole capitonné in velluto tortora" loading="lazy" decoding="async"><figcaption><h3>Poltrona Tonda</h3><p>Velluto tortora, girevole, base color oro.</p></figcaption></figure>
-    </div>
-  </div>
-</section>
+${carosello({ id: 'divani', titolo: 'Divani e poltrone.', link: { href: 'collezioni/', label: 'Tutte le collezioni ›' }, schede: [
+  { testo: 'Chesterfield Nero. Velluto nero, capitonné, base color oro.', img: '<img src="img/studio/chesterfield-nero.webp" width="1600" height="1200" alt="Divano chesterfield in velluto nero" loading="lazy" decoding="async">' },
+  { testo: 'Bergère Blu. Lo schienale alto, le gambe sottili color oro.', img: '<img src="img/studio/poltrona-blu.webp" width="1600" height="2000" alt="Poltrona bergère in velluto blu" loading="lazy" decoding="async">' },
+  { testo: 'Poltrona Tonda. Girevole, capitonné tutto intorno.', img: '<img src="img/studio/poltrona-tonda.webp" width="1600" height="2000" alt="Poltrona tonda girevole in velluto tortora" loading="lazy" decoding="async">' },
+  { testo: 'Il dettaglio. Velluto, capitonné e un filo color oro.', foto: true, img: '<img src="img/velluto-dettaglio.webp" width="720" height="900" alt="Il velluto tortora da vicino con il profilo color oro" loading="lazy" decoding="async">' },
+] })}
 
-<section class="section">
-  <div class="wrap split">
-    <div class="split__media split__media--portrait reveal">${img(root, tortora.foto.find((f) => f.file === 'divano-ambientato'))}</div>
-    <div class="split__text reveal">
-      <span class="eyebrow">Bazar Marrakech</span>
-      <h2 class="h2">Il piacere di sentirsi a casa.</h2>
-      <div class="prose muted">
-        <p>Il salotto è il posto in cui si torna ogni sera. Per questo va scelto con calma: la forma che accoglie, il colore che accompagna la luce, il velluto sotto la mano.</p>
-        <p>Nello showroom di Lugo puoi vedere da vicino ogni composizione, sederti e decidere insieme a noi.</p>
-      </div>
-      <div class="actions"><a class="link" href="showroom/">Scopri lo showroom</a></div>
-    </div>
-  </div>
-</section>
+${carosello({ id: 'showroom', titolo: 'Dallo showroom.', link: { href: 'showroom/', label: 'Scopri lo showroom ›' }, grigio: true, schede: [
+  { testo: 'Lo showroom di Lugo. Salotti da vedere, toccare, provare.', foto: true, img: '<img src="img/showroom-salotto-bianco.webp" width="1100" height="1303" alt="Lo showroom: salotto bianco con profili oro e mobile con camino" loading="lazy" decoding="async">' },
+  { testo: 'Tappeti. Disegni geometrici, effetto marmo, fili d’oro.', foto: true, img: '<img src="img/reparto-tappeti.webp" width="700" height="875" alt="Tappeti arrotolati con disegni geometrici e dettagli oro" loading="lazy" decoding="async">' },
+  { testo: 'Profumi e casalinghi. Fragranze e oggetti per la casa.', foto: true, img: '<img src="img/reparto-profumi.webp" width="700" height="874" alt="Profumi in esposizione" loading="lazy" decoding="async">' },
+  { testo: 'Bicchieri da tè. Set decorati in oro e colori.', foto: true, img: '<img src="img/bicchieri-te.webp" width="800" height="1000" alt="Set di bicchieri da tè decorati" loading="lazy" decoding="async">' },
+  { testo: 'Complementi. Gli oggetti che danno carattere.', foto: true, img: '<img src="img/reparto-complementi.webp" width="700" height="875" alt="Pavone decorativo dorato" loading="lazy" decoding="async">' },
+] })}
 
-<section class="section section--ink">
-  <div class="wrap split split--rev">
-    <div class="split__media stage-dark reveal"><img src="img/studio/divano-blu-png.webp" width="1216" height="654" alt="Divano chesterfield in velluto blu con gambe color oro, dalla nuova collezione" loading="lazy" decoding="async"></div>
-    <div class="split__text reveal">
-      <span class="eyebrow">Nuova collezione</span>
-      <h2 class="h2">Profondo come la notte.</h2>
-      <p class="lead">Una nuova interpretazione dell’eleganza, tra carattere e raffinatezza.</p>
-      <div class="actions"><a class="btn btn--line" href="contatti/">Chiedi informazioni</a></div>
-    </div>
-  </div>
-</section>
-
-<section class="section">
-  <div class="wrap">
-    <div class="head-row reveal">
-      <div><span class="eyebrow">Sale da pranzo</span><h2 class="h2" style="margin-top:var(--s-2)">A tavola, con lo stesso velluto.</h2></div>
-      <a class="link" href="collezioni/sale-da-pranzo/">Tutte le sale da pranzo</a>
-    </div>
-    <figure class="pranzo-wide reveal"><img src="img/pranzo-scena.webp" width="1100" height="760" alt="Due sale da pranzo: sedie capitonné in velluto blu e nero, tavoli effetto marmo nero con basi color oro" loading="lazy" decoding="async"></figure>
-    <div class="pranzo-pair">
-      <figure class="reveal"><img src="img/pranzo-nero.webp" width="900" height="1200" alt="Tavolo ovale effetto marmo nero con base a canne color oro e sedie in velluto nero" loading="lazy" decoding="async"><figcaption>Tavolo ovale effetto marmo nero, sedie in velluto nero.</figcaption></figure>
-      <figure class="reveal"><img src="img/pranzo-verde.webp" width="900" height="1350" alt="Tavolo effetto marmo chiaro con sedie in velluto verde e profili color oro" loading="lazy" decoding="async"><figcaption>Tavolo effetto marmo chiaro, sedie in velluto verde.</figcaption></figure>
-    </div>
-  </div>
-</section>
-
-
-
-<section class="section section--beige">
-  <div class="wrap">
-    <div class="head-row reveal"><div><span class="eyebrow">I materiali</span><h2 class="h2" style="margin-top:var(--s-2)">Velluto. Capitonné. Oro.</h2></div></div>
-    <div class="materials">
-      <figure class="material reveal"><img src="img/velluto-dettaglio.webp" width="720" height="900" alt="Il velluto tortora da vicino, con il profilo color oro" loading="lazy" decoding="async"><figcaption><h3>Velluto</h3><p>Morbido sotto la mano, profondo alla luce.</p></figcaption></figure>
-      <figure class="material reveal"><img src="img/studio/poltrona-tonda.webp" width="1600" height="2000" alt="La lavorazione capitonné di una poltrona tonda" loading="lazy" decoding="async"><figcaption><h3>Capitonné</h3><p>Ogni bottone disegna la forma.</p></figcaption></figure>
-      <figure class="material reveal"><img src="img/tavolini-oro.webp" width="490" height="612" alt="Le strutture color oro dei tavolini nesting" loading="lazy" decoding="async"><figcaption><h3>Oro</h3><p>Un filo sottile che segue ogni curva.</p></figcaption></figure>
-    </div>
-  </div>
-</section>
-
-<section class="section section--white">
-  <div class="wrap">
-    <div class="head-row reveal">
-      <div><span class="eyebrow">Dallo showroom</span><h2 class="h2" style="margin-top:var(--s-2)">Non solo salotti.</h2><p class="lead">Tappeti, profumi, complementi: da scoprire dal vivo, a Lugo.</p></div>
-    </div>
-    <div class="mosaic">
-      <figure class="mosaic__big reveal"><img src="img/showroom-salotto-bianco.webp" width="1100" height="1303" alt="Lo showroom: salotto bianco con profili oro e mobile con camino" loading="lazy" decoding="async"></figure>
-      <figure class="reveal"><img src="img/reparto-tappeti.webp" width="700" height="875" alt="Tappeti arrotolati con disegni geometrici e dettagli oro" loading="lazy" decoding="async"><figcaption>Tappeti</figcaption></figure>
-      <figure class="reveal"><img src="img/reparto-profumi.webp" width="700" height="874" alt="Profumi in esposizione" loading="lazy" decoding="async"><figcaption>Profumi e casalinghi</figcaption></figure>
-      <figure class="reveal"><img src="img/reparto-complementi.webp" width="700" height="875" alt="Pavone decorativo dorato" loading="lazy" decoding="async"><figcaption>Complementi</figcaption></figure>
-      <figure class="reveal"><img src="img/bicchieri-te.webp" width="800" height="1000" alt="Set di bicchieri da tè decorati in oro e colori, nelle loro confezioni" loading="lazy" decoding="async"><figcaption>Bicchieri da tè</figcaption></figure>
-    </div>
-  </div>
-</section>
-
-<section class="section section--ink">
-  <div class="wrap showroom-band">
-    <div class="showroom-band__head reveal">
-      <span class="eyebrow">Showroom · Lugo</span>
-      <h2 class="h2">Il tuo prossimo salotto ti aspetta.</h2>
-      <p class="lead">Scopri le collezioni Bazar Marrakech anche nel nostro showroom.</p>
-      <div class="actions" style="margin-top:var(--s-4)"><a class="btn btn--light" href="showroom/">Scopri lo showroom</a></div>
-    </div>
-    <div class="showroom-band__info reveal">
-      <p class="status" data-status data-open="true" hidden></p>
-      <dl class="info-list" style="margin-top:var(--s-2)">
-        <div><dt>Indirizzo</dt><dd>${esc(indirizzo)}</dd></div>
-        ${ORARI.map((o) => `<div><dt>${o.etichetta}</dt><dd>${fasce(o)}</dd></div>`).join('')}
-      </dl>
-    </div>
+<section class="tile tile--dark tile--info">
+  <div class="tile__copy">
+    <p class="tile__name">Showroom · Lugo</p>
+    <h2 class="tile__title">Il tuo prossimo salotto ti aspetta.</h2>
+    <p class="tile__sub">${esc(indirizzo)}</p>
+    <p class="status" data-status data-open="true" hidden></p>
+    <div class="pills"><a class="pill" href="${NEGOZIO.mappa}" target="_blank" rel="noopener">Indicazioni</a><a class="pill pill--line" href="showroom/">Orari e contatti</a></div>
   </div>
 </section>`,
   }));
@@ -365,18 +328,13 @@ for (const s of SET) {
   const root = '../../';
   const altri = SET.filter((x) => x.slug !== s.slug);
   const dettaglio = s.foto.find((f) => f.file === 'velluto-dettaglio') || s.foto[s.foto.length - 1];
-  // Desktop: le foto orizzontali a tutta larghezza, le verticali a coppie;
-  // una verticale rimasta sola va a tutta larghezza (ritaglio 4:3).
-  const classi = [];
-  for (let i = 0, sole = []; i < s.foto.length; i++) {
-    const f = s.foto[i];
-    if (i === 0 || f.w > f.h) { classi[i] = 'wide'; continue; }
-    sole.push(i);
-    const prossimaVerticale = s.foto.slice(i + 1).some((x) => x.h >= x.w);
-    if (sole.length === 2) { classi[sole[0]] = classi[sole[1]] = ''; sole = []; }
-    else if (!prossimaVerticale) { classi[i] = 'wide'; sole = []; }
-  }
-  const galleria = s.foto.map((f, i) => `<li class="${i === 0 ? '' : classi[i] || ''}">${img(root, f, { eager: i === 0 })}</li>`).join('');
+  // Visore alla maniera di apple.com: una foto grande alla volta (si scorre di
+  // lato col dito) e sotto le pillole per sceglierla.
+  const nomi = s.foto.map((f) => (f.file.startsWith('studio/') ? 'In studio' : /dettaglio/.test(f.file) ? 'Dettaglio' : 'Nello showroom'));
+  const etichette = nomi.map((n, i) => { const k = nomi.slice(0, i + 1).filter((x) => x === n).length; return k > 1 ? `${n} ${k}` : n; });
+  const galleria = s.foto.map((f, i) => `<li${i ? ' aria-hidden="true"' : ''}>${img(root, f, { eager: i === 0 })}</li>`).join('');
+  const pillole = s.foto.length > 1 ? `<div class="chips" role="tablist" aria-label="Scegli la foto">${etichette.map((l, i) => `<button type="button" role="tab" class="chip" aria-selected="${i === 0}" data-chip="${i}"><span class="chip__plus" aria-hidden="true">+</span>${l}</button>`).join('')}</div>` : '';
+  const waProdotto = waLink(`Buongiorno, vorrei informazioni su ${s.nome}.`);
   page(`salotti/${s.slug}/`, layout({
     path: `salotti/${s.slug}/`, root, nav: 'collezioni', image: s.foto[0].file, bodyClass: 'has-sticky-buy',
     title: `${s.nome} — ${etichetta(s)} | Bazar Marrakech`,
@@ -386,10 +344,15 @@ for (const s of SET) {
   <nav class="page-head" style="padding-bottom:var(--s-4)" aria-label="Percorso">
     <ol class="crumbs"><li><a href="${root}">Home</a></li><li><a href="${root}collezioni/">Collezioni</a></li><li><a href="${root}collezioni/${s.stile}/">${esc(s.collezione)}</a></li><li aria-current="page">${esc(s.nome)}</li></ol>
   </nav>
+  <div class="prodbar" data-prodbar aria-hidden="true">
+    <span class="prodbar__name">${esc(s.nome)}</span>
+    <a class="pill pill--line pill--sm" href="${waProdotto}" target="_blank" rel="noopener" tabindex="-1">Chiedi</a>
+    <a class="pill pill--sm" href="#acquista" data-prodbar-buy tabindex="-1">Richiedi</a>
+  </div>
   <div class="pdp">
-    <div>
-      <ul class="gallery" data-gallery aria-label="Foto del ${esc(s.nome)}">${galleria}</ul>
-      ${s.foto.length > 1 ? `<p class="gallery-count" data-gallery-count aria-hidden="true">1 / ${s.foto.length}</p>` : ''}
+    <div class="viewer-wrap">
+      <div class="viewer"><ul class="viewer__track" data-viewer aria-label="Foto del ${esc(s.nome)}">${galleria}</ul></div>
+      ${pillole}
     </div>
     <div class="buy" data-product="${s.slug}">
       <span class="eyebrow">${esc(etichetta(s))}</span>
@@ -412,7 +375,7 @@ for (const s of SET) {
         <p class="buy__label">Finiture</p>
         <ul class="ticks">${s.finiture.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
       </div>
-      <div class="buy__block" data-buy-main>
+      <div class="buy__block" data-buy-main id="acquista">
         <div class="qty-row">
           <div class="qty" role="group" aria-label="Quantità"><button type="button" data-qty="-1" aria-label="Diminuisci">−</button><output data-qty-value aria-live="polite">1</output><button type="button" data-qty="1" aria-label="Aumenta">+</button></div>
           <button class="btn" type="button" data-add>Aggiungi alla borsa</button>
@@ -446,8 +409,8 @@ ${altri.length ? `<section class="section">
 </section>` : ''}
 
 <div class="sticky-buy" data-sticky-buy aria-hidden="true">
-  <span class="sticky-buy__name">${esc(s.nome)}</span>
-  <button class="btn" type="button" data-add-sticky tabindex="-1">Aggiungi alla borsa</button>
+  <div class="sticky-buy__info"><strong>${esc(s.nome)}</strong><span>${s.prezzo == null ? 'Prezzo su richiesta' : eur(s.prezzo)}</span></div>
+  <button class="pill" type="button" data-add-sticky tabindex="-1">Aggiungi</button>
 </div>`,
   }));
 }
