@@ -30,9 +30,12 @@ const REPARTI = [
   { nome: 'Tappeti', riga: 'Disegni geometrici, effetto marmo, fili d’oro: da srotolare e scegliere.', foto: 'reparto-tappeti', alt: 'Tappeti arrotolati in esposizione, con disegni geometrici e dettagli oro' },
   { nome: 'Profumi e casalinghi', riga: 'Fragranze e oggetti per la casa, sugli scaffali dello showroom.', foto: 'reparto-profumi', alt: 'Profumi Volaré in esposizione con le loro scatole' },
   { nome: 'Complementi', riga: 'Gli oggetti che danno carattere a un ambiente.', foto: 'reparto-complementi', alt: 'Pavone decorativo dorato con pietre blu' },
+  { nome: 'Bicchieri da tè', riga: 'Set decorati in oro e colori, nelle loro confezioni.', foto: 'bicchieri-te', alt: 'Set di bicchieri da tè decorati in oro e colori', w: 800, h: 1000 },
 ];
 
-const COLLEZIONI = [...new Map(SET.map((s) => [s.stile, { stile: s.stile, nome: s.collezione }])).values()];
+const COLLEZIONI = [...new Map(SET.map((s) => [s.stile, { stile: s.stile, nome: s.collezione, pranzo: s.tipo === 'pranzo' }])).values()];
+/** L'etichetta sopra il nome: «Collezione Capitonné», oppure «Sala da pranzo». */
+const etichetta = (s) => (s.tipo === 'pranzo' ? 'Sala da pranzo' : `Collezione ${s.collezione}`);
 
 const img = (root, f, { cls = '', eager = false, sizes = '' } = {}) =>
   `<img src="${root}img/${f.file}.webp" width="${f.w}" height="${f.h}" alt="${esc(f.alt)}"${eager ? ' fetchpriority="high"' : ' loading="lazy" decoding="async"'}${cls ? ` class="${cls}"` : ''}${sizes}>`;
@@ -157,10 +160,10 @@ const setCard = (s, root, { heading = 'h3' } = {}) => `
   <article class="set-card reveal">
     <a class="set-card__media" href="${root}salotti/${s.slug}/" tabindex="-1" aria-hidden="true">${img(root, s.copertina || s.foto[0])}</a>
     <div class="set-card__body">
-      <span class="eyebrow">Collezione ${esc(s.collezione)}</span>
+      <span class="eyebrow">${esc(etichetta(s))}</span>
       <div class="set-card__title"><${heading} class="h3"><a href="${root}salotti/${s.slug}/">${esc(s.nome)}</a></${heading}>${prezzo(s.prezzo)}</div>
       <p>${esc(s.breve)}</p>
-      <a class="link" href="${root}salotti/${s.slug}/" aria-label="Scopri il ${esc(s.nome)}">Scopri il salotto</a>
+      <a class="link" href="${root}salotti/${s.slug}/" aria-label="Scopri: ${esc(s.nome)}">${s.tipo === 'pranzo' ? 'Scopri il tavolo' : 'Scopri il salotto'}</a>
     </div>
   </article>`;
 
@@ -199,7 +202,7 @@ const page = (path, html) => pages.push({ path, html });
       <div><span class="eyebrow">Le collezioni</span><h2 class="h2" style="margin-top:var(--s-2)">Salotti completi, pensati come un insieme.</h2></div>
       <a class="link" href="collezioni/">Tutte le collezioni</a>
     </div>
-    <div class="sets">${SET.map((s) => setCard(s, root)).join('')}</div>
+    <div class="sets">${SET.filter((s) => s.tipo !== 'pranzo').map((s) => setCard(s, root)).join('')}</div>
   </div>
 </section>
 
@@ -248,7 +251,7 @@ const page = (path, html) => pages.push({ path, html });
   <div class="wrap">
     <div class="head-row reveal">
       <div><span class="eyebrow">Sale da pranzo</span><h2 class="h2" style="margin-top:var(--s-2)">A tavola, con lo stesso velluto.</h2></div>
-      <a class="link" href="showroom/">Vedile in showroom</a>
+      <a class="link" href="collezioni/sale-da-pranzo/">Tutte le sale da pranzo</a>
     </div>
     <figure class="pranzo-wide reveal"><img src="img/pranzo-scena.webp" width="1100" height="760" alt="Due sale da pranzo: sedie capitonné in velluto blu e nero, tavoli effetto marmo nero con basi color oro" loading="lazy" decoding="async"></figure>
     <div class="pranzo-pair">
@@ -281,7 +284,7 @@ const page = (path, html) => pages.push({ path, html });
       <figure class="reveal"><img src="img/reparto-tappeti.webp" width="700" height="875" alt="Tappeti arrotolati con disegni geometrici e dettagli oro" loading="lazy" decoding="async"><figcaption>Tappeti</figcaption></figure>
       <figure class="reveal"><img src="img/reparto-profumi.webp" width="700" height="874" alt="Profumi in esposizione" loading="lazy" decoding="async"><figcaption>Profumi e casalinghi</figcaption></figure>
       <figure class="reveal"><img src="img/reparto-complementi.webp" width="700" height="875" alt="Pavone decorativo dorato" loading="lazy" decoding="async"><figcaption>Complementi</figcaption></figure>
-      <figure class="reveal"><img src="img/showroom-ingresso.webp" width="760" height="1204" alt="L’ingresso del negozio in Via Fratelli Zucchini" loading="lazy" decoding="async"><figcaption>L’ingresso</figcaption></figure>
+      <figure class="reveal"><img src="img/bicchieri-te.webp" width="800" height="1000" alt="Set di bicchieri da tè decorati in oro e colori, nelle loro confezioni" loading="lazy" decoding="async"><figcaption>Bicchieri da tè</figcaption></figure>
     </div>
   </div>
 </section>
@@ -343,14 +346,15 @@ function catalogo({ root, path, title, h1, lead, lista, crumbs, nav }) {
 page('collezioni/', catalogo({
   root: '../', path: 'collezioni/', nav: 'collezioni',
   title: 'Collezioni — Salotti completi | Bazar Marrakech',
-  h1: 'Collezioni', lead: 'Salotti completi in velluto, capitonné e dettagli in oro: ogni composizione pensata come un insieme.',
+  h1: 'Collezioni', lead: 'Salotti completi e sale da pranzo in velluto, capitonné e dettagli in oro: ogni composizione pensata come un insieme.',
   lista: SET, crumbs: '<li><a href="../">Home</a></li><li aria-current="page">Collezioni</li>',
 }));
 for (const c of COLLEZIONI) {
   page(`collezioni/${c.stile}/`, catalogo({
     root: '../../', path: `collezioni/${c.stile}/`, nav: 'collezioni',
-    title: `Collezione ${c.nome} — Salotti | Bazar Marrakech`,
-    h1: `Collezione ${c.nome}`, lead: `I salotti della collezione ${c.nome}.`,
+    title: c.pranzo ? 'Sale da pranzo — Tavoli e sedie | Bazar Marrakech' : `Collezione ${c.nome} — Salotti | Bazar Marrakech`,
+    h1: c.pranzo ? 'Sale da pranzo' : `Collezione ${c.nome}`,
+    lead: c.pranzo ? 'Tavoli e sedie in velluto, con i dettagli color oro.' : `I salotti della collezione ${c.nome}.`,
     lista: SET.filter((s) => s.stile === c.stile),
     crumbs: `<li><a href="../../">Home</a></li><li><a href="../">Collezioni</a></li><li aria-current="page">${c.nome}</li>`,
   }));
@@ -375,7 +379,7 @@ for (const s of SET) {
   const galleria = s.foto.map((f, i) => `<li class="${i === 0 ? '' : classi[i] || ''}">${img(root, f, { eager: i === 0 })}</li>`).join('');
   page(`salotti/${s.slug}/`, layout({
     path: `salotti/${s.slug}/`, root, nav: 'collezioni', image: s.foto[0].file, bodyClass: 'has-sticky-buy',
-    title: `${s.nome} — Collezione ${s.collezione} | Bazar Marrakech`,
+    title: `${s.nome} — ${etichetta(s)} | Bazar Marrakech`,
     description: `${s.nome}: ${s.breve} Richiedi il salotto online o vedilo nello showroom di Lugo.`,
     body: `
 <div class="wrap">
@@ -388,7 +392,7 @@ for (const s of SET) {
       ${s.foto.length > 1 ? `<p class="gallery-count" data-gallery-count aria-hidden="true">1 / ${s.foto.length}</p>` : ''}
     </div>
     <div class="buy" data-product="${s.slug}">
-      <span class="eyebrow">Collezione ${esc(s.collezione)}</span>
+      <span class="eyebrow">${esc(etichetta(s))}</span>
       <h1 class="h1">${esc(s.nome)}</h1>
       <p class="buy__price">${prezzo(s.prezzo)}</p>
       <p class="buy__intro">${esc(s.breve)}</p>
@@ -436,7 +440,7 @@ for (const s of SET) {
 
 ${altri.length ? `<section class="section">
   <div class="wrap">
-    <div class="head-row reveal"><h2 class="h2">Altri salotti</h2><a class="link" href="${root}collezioni/">Tutte le collezioni</a></div>
+    <div class="head-row reveal"><h2 class="h2">Scopri anche</h2><a class="link" href="${root}collezioni/">Tutte le collezioni</a></div>
     <div class="sets">${altri.map((x) => setCard(x, root)).join('')}</div>
   </div>
 </section>` : ''}
@@ -505,7 +509,7 @@ page('showroom/', layout({
   <div class="wrap">
     <div class="head-row reveal"><div><span class="eyebrow">Nello showroom</span><h2 class="h2" style="margin-top:var(--s-2)">Non solo salotti.</h2><p class="lead">I reparti del negozio, da scoprire dal vivo.</p></div></div>
     <div class="reparti">
-      ${REPARTI.map((r) => `<figure class="reparto reveal"><img src="../img/${r.foto}.webp" width="700" height="875" alt="${esc(r.alt)}" loading="lazy" decoding="async"><figcaption><h3>${r.nome}</h3><p>${r.riga}</p></figcaption></figure>`).join('')}
+      ${REPARTI.map((r) => `<figure class="reparto reveal"><img src="../img/${r.foto}.webp" width="${r.w || 700}" height="${r.h || 875}" alt="${esc(r.alt)}" loading="lazy" decoding="async"><figcaption><h3>${r.nome}</h3><p>${r.riga}</p></figcaption></figure>`).join('')}
     </div>
   </div>
 </section>`,

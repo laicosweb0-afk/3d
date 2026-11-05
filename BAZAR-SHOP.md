@@ -49,6 +49,13 @@ da scegliere. Il messaggio è in `WHATSAPP_MESSAGGIO` **[TESTO DA CONFERMARE]**.
 
 ## Il catalogo: solo set
 
+Oggi: Salotto Tortora, Salotto Beige, Salotto Nero, Salotto Avorio e tre sale
+da pranzo (Avorio, Nero e Oro, Ovale Blu, con `tipo: 'pranzo'`). **I nomi dei
+prodotti e delle collezioni («Contemporanea») sono descrittivi: da sostituire
+con quelli veri del negozio.** Nelle foto scattate in negozio sono state
+tagliate fuori persone, bandiera e attrezzi; i prodotti non sono ritoccati.
+
+
 Ci sono solo le composizioni **fotografate insieme**: Salotto Tortora e
 Salotto Beige. Le foto dei pezzi singoli restano nella cartella del progetto
 NFC (`bazar/public/foto/`) e non sono in vendita.
