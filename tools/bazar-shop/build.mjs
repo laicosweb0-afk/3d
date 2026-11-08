@@ -415,6 +415,118 @@ ${altri.length ? `<section class="section">
   }));
 }
 
+// «35 KG» — PROTOTIPO della scatola sulla bilancia (non indicizzato, non nel menu)
+{
+  // Prodotti di esempio: devono combaciare con PRODOTTI in assets/pacco.js
+  const DEMO = [
+    ['set-rosso-oro', 'Set bicchieri Rosso e Oro', 'bicchieri'], ['set-verde-oro', 'Set bicchieri Verde e Oro', 'bicchieri'],
+    ['set-mosaico', 'Set bicchieri Mosaico', 'bicchieri'], ['set-nero-greca', 'Set bicchieri Nero e Oro', 'bicchieri'],
+    ['set-multicolore', 'Set bicchieri Multicolore', 'bicchieri'], ['set-calligrafia', 'Set bicchieri Calligrafia', 'bicchieri'],
+    ['set-fascia-oro', 'Set bicchieri Fascia Oro', 'bicchieri'],
+  ];
+  // La scena: scatola aperta sulla bilancia. In apertura è un'illustrazione
+  // fissa (scatola già piena); nel riquadro della bilancia è quella vera.
+  const scena = (illustrazione = false) => `<div class="kg-scene"${illustrazione ? ' style="--quota:.36" aria-hidden="true"' : ' data-scena'}>
+      <div class="kg-box"${illustrazione ? '' : ' data-box'}>
+        <span class="kg-flap kg-flap--l"></span><span class="kg-flap kg-flap--r"></span>
+        <div class="kg-box__back"></div>
+        <div class="kg-box__items"${illustrazione ? ' style="--w:22%"' : ' data-items'}>${illustrazione ? DEMO.map(([id]) => `<img src="../img/pacco/${id}.webp" alt="">`).join('') : ''}</div>
+        <div class="kg-box__front"><span class="kg-label">MAX<br>35 KG</span></div>
+      </div>
+      <div class="kg-scale">
+        <div class="kg-display"${illustrazione ? '' : ' role="status" aria-live="polite"'}><span class="kg-num"${illustrazione ? '' : ' data-kg'}>${illustrazione ? '12,6' : '0,0'}</span><span class="kg-unit">kg</span><span class="kg-of">/ 35</span></div>
+        <div class="kg-meter" aria-hidden="true"><i></i></div>
+      </div>
+    </div>`;
+  const card = ([id, nome, cat], foto = true) => `<article class="kg-card" data-prodotto="${id}">
+      <div class="kg-card__media">${foto ? `<img src="../img/pacco/${id}.webp" alt="${esc(nome)}" loading="lazy" decoding="async">` : '<span>Foto in arrivo</span>'}</div>
+      <div class="kg-card__body">
+        <h3 class="kg-card__name">${esc(nome)}</h3>
+        <p class="kg-card__meta">${cat === 'bicchieri' ? '12 pezzi · 1,8 kg' : cat === 'teiere' ? '1 pezzo · 1,2 kg' : '24 pezzi · 2,6 kg'}</p>
+        <div class="kg-card__foot">
+          <span class="kg-card__price">${foto ? '€ 7' : 'Prezzo in arrivo'}</span>
+          <div class="kg-step"><button type="button" data-meno aria-label="Togli uno">−</button><output data-q>0</output><button type="button" data-piu aria-label="Aggiungi alla scatola">+</button></div>
+        </div>
+      </div>
+    </article>`;
+  page('35kg/', layout({
+    path: '35kg/', root: '../', noindex: true,
+    title: '35 kg — Riempi la scatola | Bazar Marrakech',
+    description: 'Set bicchieri 7 €, spedizione 7 €: un pacco fino a 35 kg da riempire con quello che vuoi.',
+    scripts: '<script src="../assets/pacco.js" defer></script>',
+    body: `
+<p class="proto-note">Prototipo · prodotti, pesi e foto di esempio: verranno sostituiti con quelli veri</p>
+<div data-pacco data-wa="${WHATSAPP}">
+<section class="kg-hero">
+  <p class="kg-hero__eyebrow">Novità · 35 kg</p>
+  <h1 class="kg-hero__title">Set bicchieri <span class="oro">7 €.</span><br>Spedizione <span class="oro">7 €.</span></h1>
+  <p class="kg-hero__sub">Un pacco fino a 35 kg: riempilo con quello che vuoi.</p>
+  <div class="pills"><a class="pill" href="#riempi">Riempi il pacco</a><a class="pill pill--line" href="#come">Come funziona</a></div>
+  <div class="kg-hero__visual">${scena(true)}</div>
+</section>
+
+<section class="kg-shop-wrap" id="riempi">
+  <div class="wrap kg-layout">
+    <aside class="kg-stage" data-stage aria-label="La tua scatola">
+      <p class="kg-stage__title">La tua scatola</p>
+      ${scena()}
+      <p class="kg-status" data-stato-testo>La scatola è vuota. Comincia dai bicchieri.</p>
+      <p class="kg-hint" data-hint></p>
+      <div class="kg-total">
+        <div><span>Prodotti (<span data-pezzi>0</span>)</span><b data-sub>€ 0</b></div>
+        <div><span>Spedizione, fino a 35 kg</span><b>€ 7</b></div>
+        <div class="sum"><span>Totale</span><b data-tot>€ 0</b></div>
+      </div>
+      <div class="pills"><button class="pill pill--line" type="button" data-apri-scatola>Vedi la scatola</button><a class="pill" data-wa target="_blank" rel="noopener">Invia su WhatsApp</a></div>
+    </aside>
+    <div class="kg-shop">
+      <h2 class="kg-shop__title">Scegli cosa metterci.</h2>
+      <div class="kg-cats" role="tablist" aria-label="Categorie">
+        <button type="button" role="tab" aria-selected="true" data-cat="tutto">Tutto</button>
+        <button type="button" role="tab" aria-selected="false" data-cat="bicchieri">Bicchieri</button>
+        <button type="button" role="tab" aria-selected="false" data-cat="teiere">Teiere</button>
+        <button type="button" role="tab" aria-selected="false" data-cat="posate">Posate</button>
+      </div>
+      <div class="kg-grid">
+        ${DEMO.map((d) => card(d)).join('\n        ')}
+        ${card(['teiera', 'Teiera', 'teiere'], false)}
+        ${card(['posate', 'Set posate', 'posate'], false)}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="kg-how" id="come">
+  <div class="wrap">
+    <h2 class="kg-shop__title">Come funziona.</h2>
+    <ol class="kg-steps">
+      <li><h3>Scegli.</h3><p>Bicchieri, teiere, posate: tutto quello che serve in cucina.</p></li>
+      <li><h3>Riempi fino a 35 kg.</h3><p>La bilancia ti dice quanto pesa la scatola e quanto spazio resta.</p></li>
+      <li><h3>Ricevi a casa.</h3><p>La spedizione è sempre 7 €, qualunque cosa ci sia dentro.</p></li>
+    </ol>
+  </div>
+</section>
+
+<div class="kg-sheet" data-sheet hidden>
+  <div class="kg-sheet__bg" data-chiudi-scatola></div>
+  <div class="kg-sheet__panel" role="dialog" aria-modal="true" aria-label="Contenuto della scatola">
+    <h2>La tua scatola</h2>
+    <ul data-elenco></ul>
+    <div class="kg-total" style="max-width:none"><div class="sum"><span><span data-kg>0,0</span> kg / 35</span><b data-tot>€ 0</b></div></div>
+    <div class="pills"><button class="pill pill--line" type="button" data-svuota>Svuota</button><a class="pill" data-wa target="_blank" rel="noopener">Invia su WhatsApp</a><button class="pill pill--line" type="button" data-chiudi-scatola>Chiudi</button></div>
+  </div>
+</div>
+
+<div class="kg-bar" data-barra aria-hidden="true">
+  <span class="kg-bar__ring" aria-hidden="true"></span>
+  <span class="kg-bar__kg"><span data-kg>0,0</span> <small>/ 35 kg</small></span>
+  <span class="kg-bar__tot" data-tot>€ 0</span>
+  <button class="pill" type="button" data-apri-scatola>Scatola</button>
+</div>
+</div>`,
+  }));
+}
+
 // BORSA
 page('borsa/', layout({
   path: 'borsa/', root: '../', noindex: true,

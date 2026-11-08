@@ -634,3 +634,125 @@ details.acc .acc-body { padding: 0 0 1.25rem; font-size: var(--t-small); color: 
   .chips { margin: 0 calc(-1 * var(--gutter)); padding-left: var(--gutter); padding-right: var(--gutter); }
   .prodbar__name { font-size: 1.0625rem; }
 }
+
+/* =========================================================================
+   «35 KG» — LA SCATOLA SULLA BILANCIA (prototipo)
+   ========================================================================= */
+.proto-note { background: #2B2621; color: #E8DCC6; text-align: center; font-size: var(--t-small); padding: .6rem var(--gutter); }
+
+/* Apertura: la novità */
+.kg-hero { background: radial-gradient(120% 70% at 50% 0%, #2A231C 0%, #161412 55%, #111110 100%); color: #F5F2EC; text-align: center;
+  padding: clamp(3.5rem, 3rem + 3vw, 5.5rem) var(--gutter) 0; overflow: hidden; }
+.kg-hero__eyebrow { font-size: clamp(1.0625rem, 1rem + .3vw, 1.3125rem); font-weight: 600; color: var(--champagne); letter-spacing: -.01em; }
+.kg-hero__title { margin-top: .5rem; font-size: clamp(2.75rem, 1.9rem + 4vw, 5.25rem); font-weight: 600; letter-spacing: -.035em; line-height: 1.04; }
+.kg-hero__title .oro { color: #D9BC85; }
+.kg-hero__sub { margin: 1rem auto 0; max-width: 26ch; font-size: clamp(1.1875rem, 1.05rem + .55vw, 1.6875rem); line-height: 1.3; color: rgba(245, 242, 236, .75); text-wrap: balance; }
+.kg-hero .pill { background: #F5F2EC; color: var(--text); }
+.kg-hero .pill--line { background: transparent; color: #F5F2EC; box-shadow: inset 0 0 0 1px #F5F2EC; }
+.kg-hero__visual { margin: clamp(2.5rem, 2rem + 3vw, 4rem) auto 0; width: min(100%, 34rem); }
+
+/* La scena: scatola di cartone aperta appoggiata sulla bilancia */
+.kg-scene { --quota: 0; position: relative; width: min(100%, 26rem); margin: 0 auto; padding-top: 2.5rem; }
+.kg-box { position: relative; width: 82%; margin: 0 auto; aspect-ratio: 1.3 / 1; z-index: 2; }
+.kg-box__back { position: absolute; left: 5%; right: 5%; top: 10%; bottom: 20%; border-radius: 3px; background: linear-gradient(180deg, #8C6744, #A57D55); }
+.kg-flap { position: absolute; top: 2%; width: 44%; height: 24%; background: linear-gradient(180deg, #D6B38A, #C49A6C); border-radius: 2px; box-shadow: inset 0 -1px 0 rgba(0,0,0,.08); }
+.kg-flap--l { left: -8%; transform: perspective(400px) rotateY(28deg) skewY(-14deg); transform-origin: right bottom; }
+.kg-flap--r { right: -8%; transform: perspective(400px) rotateY(-28deg) skewY(14deg); transform-origin: left bottom; }
+/* i set si impilano dal fondo e affiorano dal bordo; più sono, più si rimpiccioliscono (--w da pacco.js) */
+.kg-box__items { position: absolute; left: 8%; right: 8%; bottom: 50%; top: -10%; display: flex; flex-wrap: wrap-reverse; align-content: flex-start; justify-content: center; gap: 3px; overflow: hidden; z-index: 1; }
+.kg-box__items img, .kg-pezzo { width: var(--w, 30%); aspect-ratio: 16 / 10; object-fit: cover; border-radius: 3px; box-shadow: 0 2px 6px rgba(0,0,0,.35); animation: kg-in .45s var(--ease) both; }
+.kg-pezzo { display: grid; place-items: center; background: #EDE6DA; color: var(--text); font-size: .625rem; font-weight: 600; text-align: center; padding: 2px; }
+@keyframes kg-in { from { opacity: 0; transform: translateY(-14px); } }
+.kg-box__front { position: absolute; left: 0; right: 0; bottom: 0; height: 64%; z-index: 3; border-radius: 3px 3px 5px 5px;
+  background: linear-gradient(180deg, #D9B68D 0%, #C89E70 60%, #B88C5E 100%); box-shadow: inset 0 3px 0 rgba(255,255,255,.22), 0 10px 18px rgba(0,0,0,.35); }
+.kg-label { position: absolute; right: 8%; bottom: 14%; padding: .35rem .55rem; background: #F4EFE6; color: #1d1d1f; font-weight: 700; font-size: clamp(.75rem, .65rem + .5vw, 1rem); line-height: 1; letter-spacing: -.01em; text-align: center; border-radius: 2px; transform: rotate(-2deg); }
+/* La bilancia */
+.kg-scale { position: relative; z-index: 1; margin-top: -4px; padding: 1.1rem 1.25rem 1.2rem; border-radius: 18px 18px 22px 22px;
+  background: linear-gradient(180deg, #2B2926 0%, #191816 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 18px 40px rgba(0,0,0,.35); }
+.kg-display { display: flex; align-items: baseline; justify-content: center; gap: .4rem; padding: .7rem 1rem; border-radius: 12px; background: #0B0B0A; box-shadow: inset 0 2px 8px rgba(0,0,0,.8); font-variant-numeric: tabular-nums; }
+.kg-num { font-size: clamp(2.75rem, 2rem + 3vw, 3.75rem); font-weight: 600; letter-spacing: -.03em; line-height: 1; color: #F5F2EC; transition: color .4s; min-width: 4ch; text-align: right; }
+.kg-unit { font-size: 1.25rem; font-weight: 600; color: #F5F2EC; }
+.kg-of { font-size: 1.0625rem; color: rgba(245, 242, 236, .45); }
+.kg-meter { margin-top: .85rem; height: 4px; border-radius: 4px; background: rgba(245, 242, 236, .12); overflow: hidden; }
+.kg-meter i { display: block; height: 100%; width: calc(var(--quota) * 100%); background: #F5F2EC; border-radius: inherit; transition: width .9s var(--ease), background-color .4s; }
+[data-stato='quasi'] .kg-num, [data-stato='piena'] .kg-num { color: #D9BC85; }
+[data-stato='quasi'] .kg-meter i, [data-stato='piena'] .kg-meter i { background: #D9BC85; }
+
+/* La bilancia con i prodotti: due colonne su computer */
+.kg-shop-wrap { background: #fff; padding: clamp(3rem, 2.5rem + 2vw, 4.5rem) 0 var(--section); overflow-x: clip; }
+.kg-scene { overflow-x: clip; padding-left: 4%; padding-right: 4%; }
+.kg-layout { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(2rem, 1rem + 4vw, 5rem); align-items: start; }
+.kg-stage { position: sticky; top: calc(var(--header) + 1.5rem); background: var(--grey-panel); border-radius: 28px; padding: 1.5rem 1.5rem 1.75rem; text-align: center; }
+.kg-stage__title { font-size: 1.3125rem; font-weight: 600; letter-spacing: -.015em; }
+.kg-status { margin-top: 1.25rem; font-size: 1.1875rem; font-weight: 600; letter-spacing: -.015em; }
+.kg-hint { min-height: 1.4em; margin-top: .25rem; font-size: var(--t-small); color: var(--accent-link); }
+.kg-total { display: grid; gap: .35rem; margin: 1rem auto 0; max-width: 20rem; font-size: var(--t-small); color: var(--text-2); }
+.kg-total div { display: flex; justify-content: space-between; }
+.kg-total .sum { padding-top: .5rem; margin-top: .25rem; border-top: 1px solid rgba(29,29,31,.12); color: var(--text); font-size: 1.0625rem; font-weight: 600; }
+.kg-stage .pills { margin-top: 1.25rem; flex-wrap: wrap; }
+.kg-stage .pill[aria-disabled] { opacity: .4; pointer-events: none; }
+.kg-shop__title { font-size: clamp(2rem, 1.55rem + 2.2vw, 3rem); font-weight: 600; letter-spacing: -.03em; line-height: 1.07; }
+.kg-cats { display: flex; gap: .6rem; overflow-x: auto; scrollbar-width: none; margin: 1.25rem 0 1.5rem; padding-bottom: .25rem; }
+.kg-cats::-webkit-scrollbar { display: none; }
+.kg-cats button { flex: none; min-height: 2.75rem; padding: 0 1.15rem; border-radius: 999px; background: var(--grey-panel); font-size: var(--t-cta); font-weight: 600; letter-spacing: -.01em; }
+.kg-cats button[aria-selected='true'] { background: var(--text); color: #fff; }
+.kg-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.kg-card { position: relative; background: var(--tile-white); border-radius: 22px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 0 1px rgba(29,29,31,.06); transition: box-shadow .3s; }
+.kg-card.is-in { box-shadow: 0 0 0 2px var(--text); }
+.kg-card__media { aspect-ratio: 4 / 3; background: var(--tile-light); display: grid; place-items: center; overflow: hidden; }
+.kg-card__media img { width: 100%; height: 100%; object-fit: cover; }
+.kg-card__media span { font-size: var(--t-small); color: var(--text-2); }
+.kg-card__body { padding: .9rem 1rem 1rem; display: grid; gap: .2rem; flex: 1; }
+.kg-card__name { font-size: 1.0625rem; font-weight: 600; letter-spacing: -.015em; line-height: 1.25; }
+.kg-card__meta { font-size: .875rem; color: var(--text-2); }
+.kg-card__foot { margin-top: auto; padding-top: .6rem; display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.kg-card__price { font-size: 1.0625rem; font-weight: 600; }
+.kg-step { display: inline-flex; align-items: center; gap: .15rem; border-radius: 999px; background: var(--grey-panel); }
+.kg-step button { width: 2.5rem; height: 2.5rem; border-radius: 50%; font-size: 1.25rem; line-height: 1; color: var(--text); }
+.kg-step button[data-piu] { background: var(--text); color: #fff; }
+.kg-step button:disabled { opacity: .3; cursor: default; }
+.kg-step output { min-width: 1.4rem; text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+.kg-volo { position: fixed; z-index: 90; object-fit: cover; border-radius: 10px; pointer-events: none; box-shadow: 0 12px 30px rgba(0,0,0,.25); }
+/* Come funziona */
+.kg-how { background: var(--grey-panel); padding: clamp(3.5rem, 3rem + 3vw, 5.5rem) 0; }
+.kg-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.75rem; counter-reset: passo; }
+.kg-steps li { background: #fff; border-radius: 22px; padding: 1.75rem 1.5rem; counter-increment: passo; }
+.kg-steps li::before { content: counter(passo); display: block; font-size: 2.5rem; font-weight: 600; letter-spacing: -.03em; color: var(--champagne); line-height: 1; margin-bottom: .75rem; }
+.kg-steps h3 { font-size: 1.3125rem; font-weight: 600; letter-spacing: -.015em; }
+.kg-steps p { margin-top: .35rem; color: var(--text-2); font-size: var(--t-small); }
+/* Il contenuto della scatola, foglio dal basso */
+.kg-sheet { position: fixed; inset: 0; z-index: 80; }
+.kg-sheet__bg { position: absolute; inset: 0; background: rgba(17,17,16,.45); opacity: 0; transition: opacity .35s; }
+.kg-sheet__panel { position: absolute; left: 0; right: 0; bottom: 0; max-height: 80vh; overflow-y: auto; margin: 0 auto; width: min(100%, 36rem); background: #fff; border-radius: 24px 24px 0 0;
+  padding: 1.5rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform .35s var(--ease); }
+.kg-sheet.is-open .kg-sheet__bg { opacity: 1; }
+.kg-sheet.is-open .kg-sheet__panel { transform: none; }
+.kg-sheet h2 { font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em; }
+.kg-sheet ul { margin-top: 1rem; border-top: 1px solid rgba(29,29,31,.1); }
+.kg-sheet li { display: grid; grid-template-columns: 1fr auto auto; gap: .75rem; align-items: center; padding: .8rem 0; border-bottom: 1px solid rgba(29,29,31,.1); font-size: var(--t-small); }
+.kg-sheet li button { color: var(--accent-link); }
+.kg-sheet li.vuoto { display: block; color: var(--text-2); }
+/* Su iPhone: la bilancia diventa una barra in basso */
+.kg-bar { position: fixed; left: .75rem; right: .75rem; bottom: calc(.75rem + env(safe-area-inset-bottom)); z-index: 60; display: none; align-items: center; gap: .75rem;
+  padding: .6rem .6rem .6rem 1rem; border-radius: 20px; background: rgba(17,17,16,.88); color: #F5F2EC; -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+  transform: translateY(140%); transition: transform .4s var(--ease); }
+.kg-bar.is-on { transform: none; }
+.kg-bar__kg { font-size: 1.25rem; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.kg-bar__kg small { font-size: .875rem; font-weight: 400; color: rgba(245,242,236,.55); }
+.kg-bar__ring { width: 2.25rem; height: 2.25rem; border-radius: 50%; flex: none; background: conic-gradient(#D9BC85 calc(var(--quota) * 360deg), rgba(245,242,236,.15) 0); -webkit-mask: radial-gradient(circle, transparent 55%, #000 56%); mask: radial-gradient(circle, transparent 55%, #000 56%); }
+.kg-bar__tot { margin-left: auto; font-size: .9375rem; color: rgba(245,242,236,.8); }
+.kg-bar .pill { background: #F5F2EC; color: var(--text); min-height: 2.5rem; padding: 0 1rem; }
+@media (max-width: 900px) {
+  .kg-layout { grid-template-columns: minmax(0, 1fr); } /* minmax: la riga delle categorie non allarga la colonna */
+  .kg-stage { position: static; }
+  .kg-steps { grid-template-columns: 1fr; }
+  .kg-bar { display: flex; }
+}
+@media (max-width: 480px) {
+  .kg-grid { gap: .6rem; }
+  .kg-card__body { padding: .75rem .75rem .8rem; }
+  .kg-card__foot { flex-wrap: wrap; row-gap: .4rem; }
+  .kg-step button { width: 2.25rem; height: 2.25rem; }
+  .kg-sheet .pills { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) { .kg-box__items img, .kg-pezzo { animation: none; } }
