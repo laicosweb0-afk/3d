@@ -97,6 +97,37 @@
     }, { threshold: 0.4 }).observe(c);
   });
 
+  /* ---- la novità «35 kg»: popup all'ingresso + pillola fissa ---------- */
+  // Il popup compare una volta per visita (sessionStorage); dopo, la
+  // pillola in basso resta su tutte le pagine per tornare alla novità.
+  const pop = $('[data-promo]'), fab = $('[data-promo-fab]');
+  if (pop && fab) {
+    const VISTO = 'bm.promo.35kg';
+    let visto = false;
+    try { visto = sessionStorage.getItem(VISTO) === '1'; } catch { /* niente */ }
+    const mostraFab = () => fab.classList.add('is-on');
+    let prima = null;
+    const chiudi = () => {
+      pop.classList.remove('is-open');
+      document.body.style.overflow = '';
+      try { sessionStorage.setItem(VISTO, '1'); } catch { /* niente */ }
+      setTimeout(() => { pop.hidden = true; mostraFab(); }, reduce ? 0 : 350);
+      if (prima) prima.focus({ preventScroll: true });
+    };
+    const apri = () => {
+      prima = document.activeElement;
+      pop.hidden = false;
+      document.body.style.overflow = 'hidden';
+      requestAnimationFrame(() => { pop.classList.add('is-open'); $('.pill', pop).focus({ preventScroll: true }); });
+    };
+    $$('[data-promo-chiudi]', pop).forEach((b) => b.addEventListener('click', chiudi));
+    addEventListener('keydown', (e) => { if (e.key === 'Escape' && !pop.hidden) chiudi(); });
+    // chi va alla novità dal popup non lo rivede in questa visita
+    $('a.pill', pop).addEventListener('click', () => { try { sessionStorage.setItem(VISTO, '1'); } catch { /* niente */ } });
+    if (visto) mostraFab();
+    else setTimeout(apri, 900);
+  }
+
   /* ---- aperto / chiuso (ora di Roma) ---------------------------------- */
   function statoNegozio() {
     let g, m;

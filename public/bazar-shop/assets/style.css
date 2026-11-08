@@ -782,5 +782,47 @@ details.acc .acc-body { padding: 0 0 1.25rem; font-size: var(--t-small); color: 
 .kg-bar__ring::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(#D9BC85 calc(var(--quota) * 360deg), rgba(245,242,236,.15) 0);
   -webkit-mask: radial-gradient(circle, transparent 62%, #000 63%); mask: radial-gradient(circle, transparent 62%, #000 63%); }
 .kg-bar__ring img { width: 62%; height: auto; }
+/* Apertura compatta: è una sottopagina del sito, non un altro sito */
+.kg-hero--compatto { padding: 1.25rem 0 clamp(2rem, 1.6rem + 2vw, 3rem); text-align: left; background: #151311; }
+.kg-back { display: inline-block; font-size: var(--t-small); color: rgba(245, 242, 236, .7); margin-bottom: 1.5rem; }
+.kg-back:hover { color: #F5F2EC; }
+.kg-hero--compatto .kg-hero__title { font-size: clamp(2.25rem, 1.7rem + 2.6vw, 3.75rem); max-width: 16ch; margin-left: 0; }
+.kg-hero--compatto .kg-hero__sub { margin: .75rem 0 0; max-width: 40ch; font-size: clamp(1.0625rem, 1rem + .35vw, 1.3125rem); }
+.kg-hero--compatto .kg-hero__sub a { color: #D9BC85; white-space: nowrap; }
+
+/* ---- Popup della novità e pillola fissa ------------------------------ */
+.promo-pop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 1rem; }
+.promo-pop[hidden] { display: none; }
+.promo-pop__bg { position: absolute; inset: 0; background: rgba(17, 17, 16, .55); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); opacity: 0; transition: opacity .45s var(--ease); }
+.promo-pop__card { position: relative; width: min(100%, 26rem); max-height: calc(100svh - 2rem); overflow: auto; border-radius: 28px; background: #151110; color: #F5F2EC;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .45); opacity: 0; transform: translateY(16px) scale(.98); transition: opacity .45s var(--ease), transform .45s var(--ease); }
+.promo-pop.is-open .promo-pop__bg { opacity: 1; }
+.promo-pop.is-open .promo-pop__card { opacity: 1; transform: none; }
+.promo-pop__img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; object-position: center 62%; }
+.promo-pop__copy { padding: 1.25rem 1.5rem 1.75rem; text-align: center; }
+.promo-pop__eyebrow { font-size: 1.0625rem; font-weight: 600; color: var(--champagne); }
+.promo-pop__title { margin-top: .35rem; font-size: clamp(2rem, 1.7rem + 1.4vw, 2.5rem); font-weight: 600; letter-spacing: -.03em; line-height: 1.06; }
+.promo-pop__title span { color: #D9BC85; }
+.promo-pop__sub { margin-top: .6rem; color: rgba(245, 242, 236, .75); font-size: 1.0625rem; line-height: 1.4; }
+.promo-pop .pill { background: #F5F2EC; color: var(--text); }
+.promo-pop .pill--line { background: transparent; color: #F5F2EC; box-shadow: inset 0 0 0 1px rgba(245, 242, 236, .6); }
+.promo-pop__x { position: absolute; top: .75rem; right: .75rem; z-index: 1; width: 2.25rem; height: 2.25rem; border-radius: 50%; background: rgba(17, 17, 16, .6); color: #F5F2EC; font-size: 1.4rem; line-height: 1; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+@media (max-width: 760px) {
+  /* su iPhone sale dal basso, come un foglio */
+  .promo-pop { place-items: end center; padding: 0; }
+  .promo-pop__card { width: 100%; border-radius: 28px 28px 0 0; padding-bottom: env(safe-area-inset-bottom); transform: translateY(100%); }
+}
+.promo-fab { position: fixed; z-index: 55; right: max(1rem, env(safe-area-inset-right)); bottom: calc(1rem + env(safe-area-inset-bottom));
+  display: inline-flex; align-items: center; gap: .6rem; padding: .45rem 1rem .45rem .5rem; border-radius: 999px;
+  background: rgba(21, 17, 16, .9); color: #F5F2EC; -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .25); opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .4s var(--ease), transform .4s var(--ease); }
+.promo-fab.is-on { opacity: 1; transform: none; pointer-events: auto; }
+.promo-fab img { width: 2.25rem; height: auto; }
+.promo-fab span { display: flex; flex-direction: column; font-size: 1rem; font-weight: 600; letter-spacing: -.01em; line-height: 1.1; }
+.promo-fab small { font-size: .6875rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #D9BC85; }
+/* sulle schede prodotto c'è già la barra in basso: la pillola sale sopra */
+.has-sticky-buy .promo-fab { bottom: calc(5.5rem + env(safe-area-inset-bottom)); }
+@media (prefers-reduced-motion: reduce) { .promo-pop__card, .promo-pop__bg, .promo-fab { transition: none; } }
+
 .kg-steps .kg-step--img { padding-bottom: 0; overflow: hidden; display: flex; flex-direction: column; }
 .kg-step--img img { margin: 1.25rem -1.5rem 0; width: calc(100% + 3rem); max-width: none; aspect-ratio: 4 / 3; object-fit: cover; object-position: center 60%; }

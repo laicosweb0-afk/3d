@@ -63,6 +63,25 @@ const jsonLdNegozio = (root) => ({
 });
 
 /* ---- layout ----------------------------------------------------------- */
+/** La novità «35 kg»: popup all'ingresso (una volta per visita) e pillola
+ *  fissa in basso, così resta raggiungibile anche dopo averlo chiuso. */
+function promo(root) {
+  return `<div class="promo-pop" data-promo hidden>
+  <div class="promo-pop__bg" data-promo-chiudi></div>
+  <div class="promo-pop__card" role="dialog" aria-modal="true" aria-labelledby="promo-titolo">
+    <button class="promo-pop__x" type="button" data-promo-chiudi aria-label="Chiudi">×</button>
+    <img class="promo-pop__img" src="${root}img/pacco/scatola-chiusa.webp" width="900" height="1200" alt="" loading="lazy" decoding="async">
+    <div class="promo-pop__copy">
+      <p class="promo-pop__eyebrow">Novità · 35 kg</p>
+      <h2 class="promo-pop__title" id="promo-titolo">Set bicchieri <span>7 €.</span><br>Spedizione <span>7 €.</span></h2>
+      <p class="promo-pop__sub">Un pacco fino a 35 kg: riempilo con quello che vuoi.</p>
+      <div class="pills"><a class="pill" href="${root}35kg/">Riempi il pacco</a><button class="pill pill--line" type="button" data-promo-chiudi>Più tardi</button></div>
+    </div>
+  </div>
+</div>
+<a class="promo-fab" href="${root}35kg/" data-promo-fab aria-label="Novità: il pacco da 35 kg con spedizione a 7 euro"><img src="${root}img/pacco/scatola-icona.webp" width="256" height="171" alt=""><span><small>Novità</small>35 kg</span></a>`;
+}
+
 function layout({ path, title, description, body, root, nav = '', image = 'salotto-completo', jsonLd = null, noindex = false, bodyClass = '', heroOver = false, scripts = '' }) {
   const navLink = (href, label, key) => `<a href="${root}${href}"${nav === key ? ' aria-current="page"' : ''}>${label}</a>`;
   return `<!doctype html>
@@ -111,6 +130,7 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script
 ${body}
 </main>
 ${footer(root)}
+${path === '35kg/' || path === 'borsa/' ? '' : promo(root)}
 <script src="${root}assets/catalogo.js"></script>
 <script src="${root}assets/app.js" defer></script>
 ${scripts}
@@ -456,13 +476,12 @@ ${altri.length ? `<section class="section">
     body: `
 <p class="proto-note">Prototipo · prodotti, pesi e foto di esempio: verranno sostituiti con quelli veri</p>
 <div data-pacco data-wa="${WHATSAPP}">
-<section class="kg-hero">
+<section class="kg-hero kg-hero--compatto"><div class="wrap">
+  <a class="kg-back" href="../">← Bazar Marrakech</a>
   <p class="kg-hero__eyebrow">Novità · 35 kg</p>
-  <h1 class="kg-hero__title">Set bicchieri <span class="oro">7 €.</span><br>Spedizione <span class="oro">7 €.</span></h1>
-  <p class="kg-hero__sub">Un pacco fino a 35 kg: riempilo con quello che vuoi.</p>
-  <div class="pills"><a class="pill" href="#riempi">Riempi il pacco</a><a class="pill pill--line" href="#come">Come funziona</a></div>
-  <div class="kg-hero__visual">${scena(true)}</div>
-</section>
+  <h1 class="kg-hero__title">Set bicchieri <span class="oro">7 €.</span> Spedizione <span class="oro">7 €.</span></h1>
+  <p class="kg-hero__sub">Un pacco fino a 35 kg: riempilo con quello che vuoi. <a href="#come">Come funziona ›</a></p>
+</div></section>
 
 <section class="kg-shop-wrap" id="riempi">
   <div class="wrap kg-layout">
