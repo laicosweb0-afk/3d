@@ -43,36 +43,29 @@
 </nav>
 <main id="main">
 
-<p class="proto-note">Prototipo · prodotti, pesi e foto di esempio: verranno sostituiti con quelli veri</p>
 <div data-pacco data-wa="">
-<section class="kg-hero kg-hero--compatto"><div class="wrap">
-  <a class="kg-back" href="../">← Bazar Marrakech</a>
+<!-- Una sola scena, alla maniera di apple.com: titolo, la scatola sulla
+     bilancia (quella vera, che si riempie), una riga di stato. -->
+<section class="kg-hero">
   <p class="kg-hero__eyebrow">Novità · 35 kg</p>
-  <h1 class="kg-hero__title">Set bicchieri <span class="oro">7 €.</span> Spedizione <span class="oro">7 €.</span></h1>
-  <p class="kg-hero__sub">Un pacco fino a 35 kg: riempilo con quello che vuoi. <a href="#come">Come funziona ›</a></p>
-</div></section>
-
-<section class="kg-shop-wrap" id="riempi">
-  <div class="wrap kg-layout">
-    <aside class="kg-stage" data-stage aria-label="La tua scatola">
-      <p class="kg-stage__title">La tua scatola</p>
-      <div class="kg-scene-wrap"><div class="kg-scene" data-scena data-box>
+  <h1 class="kg-hero__title">Set bicchieri <span class="oro">7 €.</span><br>Spedizione <span class="oro">7 €.</span></h1>
+  <p class="kg-hero__sub">Un pacco fino a 35 kg: riempilo con quello che vuoi.</p>
+  <div class="kg-hero__visual"><div class="kg-scene-wrap"><div class="kg-scene" data-scena data-box>
       <img class="kg-img" src="../img/pacco/scatola-bilancia.webp" width="1200" height="923" alt="Scatola di cartone aperta su una bilancia digitale" loading="lazy" decoding="async">
       <div class="kg-box__items" data-items></div>
       <img class="kg-img kg-img--front" src="../img/pacco/scatola-bilancia.webp" width="1200" height="923" alt="" aria-hidden="true">
       <span class="kg-label" aria-hidden="true">MAX 35 KG</span>
       <div class="kg-display" role="status" aria-live="polite"><span class="kg-num" data-kg>0,0</span><span class="kg-unit">kg</span><span class="kg-of">/ 35</span></div>
     </div>
-    <div class="kg-meter" aria-hidden="true"><i></i></div></div>
-      <p class="kg-status" data-stato-testo>La scatola è vuota. Comincia dai bicchieri.</p>
-      <p class="kg-hint" data-hint></p>
-      <div class="kg-total">
-        <div><span>Prodotti (<span data-pezzi>0</span>)</span><b data-sub>€ 0</b></div>
-        <div><span>Spedizione, fino a 35 kg</span><b>€ 7</b></div>
-        <div class="sum"><span>Totale</span><b data-tot>€ 0</b></div>
-      </div>
-      <div class="pills"><button class="pill pill--line" type="button" data-apri-scatola>Vedi la scatola</button><a class="pill" data-wa target="_blank" rel="noopener">Invia su WhatsApp</a></div>
-    </aside>
+    <div class="kg-meter" aria-hidden="true"><i></i></div></div></div>
+  <p class="kg-status" data-stato-testo>La scatola è vuota. Comincia dai bicchieri.</p>
+  <p class="kg-hint" data-hint></p>
+  <p class="kg-sum">Totale <b data-tot>€ 0</b> <span>· spedizione inclusa</span></p>
+  <div class="pills"><a class="pill" data-wa target="_blank" rel="noopener">Invia su WhatsApp</a><button class="pill pill--line" type="button" data-apri-scatola>Vedi la scatola</button></div>
+</section>
+
+<section class="kg-shop-wrap" id="riempi">
+  <div class="wrap">
     <div class="kg-shop">
       <h2 class="kg-shop__title">Scegli cosa metterci.</h2>
       <div class="kg-cats" role="tablist" aria-label="Categorie">
@@ -182,6 +175,7 @@
       </div>
     </article>
       </div>
+      <p class="kg-note">Prototipo: prodotti, pesi e foto sono di esempio.</p>
     </div>
   </div>
 </section>

@@ -782,6 +782,24 @@ details.acc .acc-body { padding: 0 0 1.25rem; font-size: var(--t-small); color: 
 .kg-bar__ring::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(#D9BC85 calc(var(--quota) * 360deg), rgba(245,242,236,.15) 0);
   -webkit-mask: radial-gradient(circle, transparent 62%, #000 63%); mask: radial-gradient(circle, transparent 62%, #000 63%); }
 .kg-bar__ring img { width: 62%; height: auto; }
+/* Una scena sola: la scatola grande su fondo scuro è la bilancia vera */
+.kg-hero { padding-bottom: clamp(3rem, 2.5rem + 2vw, 4.5rem); }
+.kg-hero .kg-scene-wrap { width: min(100%, 32rem); }
+.kg-hero .kg-meter { background: rgba(245, 242, 236, .14); }
+.kg-hero .kg-status { margin-top: 1.5rem; color: #F5F2EC; }
+.kg-hero .kg-hint { color: #D9BC85; }
+.kg-sum { margin-top: .5rem; font-size: 1.0625rem; color: rgba(245, 242, 236, .7); }
+.kg-sum b { color: #F5F2EC; font-weight: 600; }
+.kg-sum span { font-size: var(--t-small); }
+.kg-hero .pills { margin-top: 1.25rem; }
+.kg-hero .pill[aria-disabled] { opacity: .45; pointer-events: none; }
+.kg-shop { max-width: 64rem; margin: 0 auto; }
+.kg-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 14.5rem), 1fr)); }
+.kg-note { margin-top: 2rem; text-align: center; font-size: var(--t-small); color: var(--text-2); }
+.kg-bar { display: flex; left: 50%; right: auto; width: min(calc(100% - 1.5rem), 30rem); transform: translate(-50%, 140%); }
+.kg-bar.is-on { transform: translate(-50%, 0); }
+@media (max-width: 480px) { .kg-grid { grid-template-columns: 1fr 1fr; } }
+
 /* Apertura compatta: è una sottopagina del sito, non un altro sito */
 .kg-hero--compatto { padding: 1.25rem 0 clamp(2rem, 1.6rem + 2vw, 3rem); text-align: left; background: #151311; }
 .kg-back { display: inline-block; font-size: var(--t-small); color: rgba(245, 242, 236, .7); margin-bottom: 1.5rem; }

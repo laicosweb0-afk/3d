@@ -474,29 +474,22 @@ ${altri.length ? `<section class="section">
     description: 'Set bicchieri 7 €, spedizione 7 €: un pacco fino a 35 kg da riempire con quello che vuoi.',
     scripts: '<script src="../assets/pacco.js" defer></script>',
     body: `
-<p class="proto-note">Prototipo · prodotti, pesi e foto di esempio: verranno sostituiti con quelli veri</p>
 <div data-pacco data-wa="${WHATSAPP}">
-<section class="kg-hero kg-hero--compatto"><div class="wrap">
-  <a class="kg-back" href="../">← Bazar Marrakech</a>
+<!-- Una sola scena, alla maniera di apple.com: titolo, la scatola sulla
+     bilancia (quella vera, che si riempie), una riga di stato. -->
+<section class="kg-hero">
   <p class="kg-hero__eyebrow">Novità · 35 kg</p>
-  <h1 class="kg-hero__title">Set bicchieri <span class="oro">7 €.</span> Spedizione <span class="oro">7 €.</span></h1>
-  <p class="kg-hero__sub">Un pacco fino a 35 kg: riempilo con quello che vuoi. <a href="#come">Come funziona ›</a></p>
-</div></section>
+  <h1 class="kg-hero__title">Set bicchieri <span class="oro">7 €.</span><br>Spedizione <span class="oro">7 €.</span></h1>
+  <p class="kg-hero__sub">Un pacco fino a 35 kg: riempilo con quello che vuoi.</p>
+  <div class="kg-hero__visual">${scena()}</div>
+  <p class="kg-status" data-stato-testo>La scatola è vuota. Comincia dai bicchieri.</p>
+  <p class="kg-hint" data-hint></p>
+  <p class="kg-sum">Totale <b data-tot>€ 0</b> <span>· spedizione inclusa</span></p>
+  <div class="pills"><a class="pill" data-wa target="_blank" rel="noopener">Invia su WhatsApp</a><button class="pill pill--line" type="button" data-apri-scatola>Vedi la scatola</button></div>
+</section>
 
 <section class="kg-shop-wrap" id="riempi">
-  <div class="wrap kg-layout">
-    <aside class="kg-stage" data-stage aria-label="La tua scatola">
-      <p class="kg-stage__title">La tua scatola</p>
-      ${scena()}
-      <p class="kg-status" data-stato-testo>La scatola è vuota. Comincia dai bicchieri.</p>
-      <p class="kg-hint" data-hint></p>
-      <div class="kg-total">
-        <div><span>Prodotti (<span data-pezzi>0</span>)</span><b data-sub>€ 0</b></div>
-        <div><span>Spedizione, fino a 35 kg</span><b>€ 7</b></div>
-        <div class="sum"><span>Totale</span><b data-tot>€ 0</b></div>
-      </div>
-      <div class="pills"><button class="pill pill--line" type="button" data-apri-scatola>Vedi la scatola</button><a class="pill" data-wa target="_blank" rel="noopener">Invia su WhatsApp</a></div>
-    </aside>
+  <div class="wrap">
     <div class="kg-shop">
       <h2 class="kg-shop__title">Scegli cosa metterci.</h2>
       <div class="kg-cats" role="tablist" aria-label="Categorie">
@@ -510,6 +503,7 @@ ${altri.length ? `<section class="section">
         ${card(['teiera', 'Teiera', 'teiere'], false)}
         ${card(['posate', 'Set posate', 'posate'], false)}
       </div>
+      <p class="kg-note">Prototipo: prodotti, pesi e foto sono di esempio.</p>
     </div>
   </div>
 </section>

@@ -161,8 +161,9 @@
   $('[data-svuota]')?.addEventListener('click', () => { const prima = peso(); scatola = {}; aggiorna(prima); });
 
   /* ---- su iPhone: la bilancia diventa una barra in basso quando sparisce */
-  const barra = $('[data-barra]'), stage = $('[data-stage]');
-  if (barra && stage && 'IntersectionObserver' in window) {
+  // (su ogni schermo: quando la scatola esce di vista resta la barra in basso)
+  const barra = $('[data-barra]');
+  if (barra && $('[data-scena]') && 'IntersectionObserver' in window) {
     new IntersectionObserver(([e]) => {
       const on = !e.isIntersecting && e.boundingClientRect.top < 0;
       barra.classList.toggle('is-on', on); barra.setAttribute('aria-hidden', String(!on));
