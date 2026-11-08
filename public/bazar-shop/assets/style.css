@@ -756,3 +756,31 @@ details.acc .acc-body { padding: 0 0 1.25rem; font-size: var(--t-small); color: 
   .kg-sheet .pills { flex-wrap: wrap; }
 }
 @media (prefers-reduced-motion: reduce) { .kg-box__items img, .kg-pezzo { animation: none; } }
+
+/* ---- La scena con le immagini vere: scatola e bilancia (render) -------
+   Tre strati sulla stessa immagine: dietro la scatola intera, poi i
+   prodotti, poi la stessa immagine tagliata dal bordo del lembo anteriore
+   in giù. Le percentuali sono misurate sull'immagine scatola-bilancia.webp. */
+.kg-scene-wrap { width: min(100%, 30rem); margin: 0 auto; }
+.kg-scene { position: relative; width: 100%; margin: 0; padding: 0; overflow: visible; container-type: inline-size; }
+.kg-img { position: relative; z-index: 1; display: block; width: 100%; height: auto; filter: drop-shadow(0 1.5rem 1.5rem rgba(0, 0, 0, .18)); }
+.kg-img--front { position: absolute; inset: 0; z-index: 3; clip-path: inset(35.6% 0 0 0); filter: none; }
+.kg-scene .kg-box__items { left: 18%; right: 18%; top: 0; bottom: 60%; z-index: 2; }
+.kg-scene .kg-box__items img, .kg-scene .kg-pezzo { box-shadow: 0 1px 4px rgba(0, 0, 0, .3); }
+.kg-scene .kg-label { position: absolute; z-index: 4; left: 69%; top: 71.2%; width: 15.4%; height: 7.6%; padding: 0; background: none; border-radius: 0;
+  display: grid; place-items: center; transform: rotate(-8deg); font-size: 2.15cqw; font-weight: 700; letter-spacing: .02em; color: #2A2622; white-space: nowrap; }
+.kg-scene .kg-display { position: absolute; z-index: 4; left: 23.7%; width: 52.6%; top: 89.4%; height: 8.4%; padding: 0; border-radius: 0; background: none; box-shadow: none;
+  display: flex; align-items: center; justify-content: center; gap: 1cqw; }
+.kg-scene .kg-num { font-size: 6cqw; min-width: 0; }
+.kg-scene .kg-unit { font-size: 2.8cqw; }
+.kg-scene .kg-of { font-size: 2.4cqw; }
+.kg-scene-wrap .kg-meter { width: 52.6%; margin: 1rem auto 0; }
+.kg-stage .kg-meter { background: rgba(29, 29, 31, .12); }
+.kg-stage .kg-meter i { background: var(--text); }
+/* l'icona della scatola al centro dell'anello nella barra in basso */
+.kg-bar__ring { position: relative; -webkit-mask: none; mask: none; background: none; display: grid; place-items: center; width: 2.6rem; height: 2.6rem; }
+.kg-bar__ring::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(#D9BC85 calc(var(--quota) * 360deg), rgba(245,242,236,.15) 0);
+  -webkit-mask: radial-gradient(circle, transparent 62%, #000 63%); mask: radial-gradient(circle, transparent 62%, #000 63%); }
+.kg-bar__ring img { width: 62%; height: auto; }
+.kg-steps .kg-step--img { padding-bottom: 0; overflow: hidden; display: flex; flex-direction: column; }
+.kg-step--img img { margin: 1.25rem -1.5rem 0; width: calc(100% + 3rem); max-width: none; aspect-ratio: 4 / 3; object-fit: cover; object-position: center 60%; }

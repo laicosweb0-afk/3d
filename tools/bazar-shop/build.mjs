@@ -426,18 +426,17 @@ ${altri.length ? `<section class="section">
   ];
   // La scena: scatola aperta sulla bilancia. In apertura è un'illustrazione
   // fissa (scatola già piena); nel riquadro della bilancia è quella vera.
-  const scena = (illustrazione = false) => `<div class="kg-scene"${illustrazione ? ' style="--quota:.36" aria-hidden="true"' : ' data-scena'}>
-      <div class="kg-box"${illustrazione ? '' : ' data-box'}>
-        <span class="kg-flap kg-flap--l"></span><span class="kg-flap kg-flap--r"></span>
-        <div class="kg-box__back"></div>
-        <div class="kg-box__items"${illustrazione ? ' style="--w:22%"' : ' data-items'}>${illustrazione ? DEMO.map(([id]) => `<img src="../img/pacco/${id}.webp" alt="">`).join('') : ''}</div>
-        <div class="kg-box__front"><span class="kg-label">MAX<br>35 KG</span></div>
-      </div>
-      <div class="kg-scale">
-        <div class="kg-display"${illustrazione ? '' : ' role="status" aria-live="polite"'}><span class="kg-num"${illustrazione ? '' : ' data-kg'}>${illustrazione ? '12,6' : '0,0'}</span><span class="kg-unit">kg</span><span class="kg-of">/ 35</span></div>
-        <div class="kg-meter" aria-hidden="true"><i></i></div>
-      </div>
-    </div>`;
+  // Tre strati: l'immagine della scatola sulla bilancia; i prodotti; sopra,
+  // la stessa immagine tagliata dal bordo in giù (lembo anteriore + bilancia),
+  // così i set finiscono DENTRO la scatola. Etichetta e display sono testo vero.
+  const scena = (illustrazione = false) => `<div class="kg-scene-wrap"${illustrazione ? ' style="--quota:.36" aria-hidden="true"' : ''}><div class="kg-scene"${illustrazione ? '' : ' data-scena data-box'}>
+      <img class="kg-img" src="../img/pacco/scatola-bilancia.webp" width="1200" height="923" alt="${illustrazione ? '' : 'Scatola di cartone aperta su una bilancia digitale'}"${illustrazione ? ' fetchpriority="high"' : ' loading="lazy" decoding="async"'}>
+      <div class="kg-box__items"${illustrazione ? ' style="--w:22%"' : ' data-items'}>${illustrazione ? DEMO.map(([id]) => `<img src="../img/pacco/${id}.webp" alt="">`).join('') : ''}</div>
+      <img class="kg-img kg-img--front" src="../img/pacco/scatola-bilancia.webp" width="1200" height="923" alt="" aria-hidden="true">
+      <span class="kg-label" aria-hidden="true">MAX 35 KG</span>
+      <div class="kg-display"${illustrazione ? '' : ' role="status" aria-live="polite"'}><span class="kg-num"${illustrazione ? '' : ' data-kg'}>${illustrazione ? '12,6' : '0,0'}</span><span class="kg-unit">kg</span><span class="kg-of">/ 35</span></div>
+    </div>
+    <div class="kg-meter" aria-hidden="true"><i></i></div></div>`;
   const card = ([id, nome, cat], foto = true) => `<article class="kg-card" data-prodotto="${id}">
       <div class="kg-card__media">${foto ? `<img src="../img/pacco/${id}.webp" alt="${esc(nome)}" loading="lazy" decoding="async">` : '<span>Foto in arrivo</span>'}</div>
       <div class="kg-card__body">
@@ -502,7 +501,7 @@ ${altri.length ? `<section class="section">
     <ol class="kg-steps">
       <li><h3>Scegli.</h3><p>Bicchieri, teiere, posate: tutto quello che serve in cucina.</p></li>
       <li><h3>Riempi fino a 35 kg.</h3><p>La bilancia ti dice quanto pesa la scatola e quanto spazio resta.</p></li>
-      <li><h3>Ricevi a casa.</h3><p>La spedizione è sempre 7 €, qualunque cosa ci sia dentro.</p></li>
+      <li class="kg-step--img"><h3>Ricevi a casa.</h3><p>La spedizione è sempre 7 €, qualunque cosa ci sia dentro.</p><img src="../img/pacco/scatola-chiusa.webp" width="900" height="1200" alt="La scatola chiusa e sigillata, pronta per la spedizione" loading="lazy" decoding="async"></li>
     </ol>
   </div>
 </section>
@@ -518,7 +517,7 @@ ${altri.length ? `<section class="section">
 </div>
 
 <div class="kg-bar" data-barra aria-hidden="true">
-  <span class="kg-bar__ring" aria-hidden="true"></span>
+  <span class="kg-bar__ring" aria-hidden="true"><img src="../img/pacco/scatola-icona.webp" width="256" height="171" alt=""></span>
   <span class="kg-bar__kg"><span data-kg>0,0</span> <small>/ 35 kg</small></span>
   <span class="kg-bar__tot" data-tot>€ 0</span>
   <button class="pill" type="button" data-apri-scatola>Scatola</button>
