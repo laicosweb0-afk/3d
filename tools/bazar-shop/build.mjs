@@ -270,6 +270,7 @@ ${carosello({ id: 'divani', titolo: 'Divani e poltrone.', link: { href: 'collezi
   { testo: 'Bergère Blu. Lo schienale alto, le gambe sottili color oro.', img: '<img src="img/studio/poltrona-blu.webp" width="1600" height="2000" alt="Poltrona bergère in velluto blu" loading="lazy" decoding="async">' },
   { testo: 'Poltrona Tonda. Girevole, capitonné tutto intorno.', img: '<img src="img/studio/poltrona-tonda.webp" width="1600" height="2000" alt="Poltrona tonda girevole in velluto tortora" loading="lazy" decoding="async">' },
   { testo: 'Poltrona Nera. Velluto nero, schienale a righe, base girevole.', foto: true, img: '<img src="img/poltrona-nera.webp" width="900" height="1340" alt="Poltrona girevole in velluto nero con schienale a righe" loading="lazy" decoding="async">' },
+  { testo: 'Tavolino ovale. Piano effetto marmo, cassetto in pelle a righe, base color oro.', img: '<img src="img/studio/tavolino-ovale.webp" width="1600" height="1200" alt="Tavolino ovale con piano effetto marmo e base color oro" loading="lazy" decoding="async">' },
   { testo: 'Il dettaglio. Velluto, capitonné e un filo color oro.', foto: true, img: '<img src="img/velluto-dettaglio.webp" width="720" height="900" alt="Il velluto tortora da vicino con il profilo color oro" loading="lazy" decoding="async">' },
 ] })}
 
@@ -278,13 +279,23 @@ ${carosello({ id: 'complementi', titolo: 'Complementi.', link: { href: 'showroom
   { testo: 'Pesci dorati. Ceramica oro lucida e satinata.', img: '<img src="img/studio/pesci.webp" width="1600" height="2000" alt="Scultura di pesci in ceramica color oro" loading="lazy" decoding="async">' },
   { testo: 'Lampada da tavolo. Cristalli e paralume ricamato.', img: '<img src="img/studio/lampada.webp" width="1600" height="2000" alt="Lampada da tavolo con base in cristalli e paralume ricamato" loading="lazy" decoding="async">' },
   { testo: 'Vaso oro. Con il bouquet avorio e oro.', img: '<img src="img/studio/vaso-oro.webp" width="1600" height="2000" alt="Vaso color oro scanalato con bouquet di fiori avorio" loading="lazy" decoding="async">' },
+  { testo: 'Cavallo dorato. Ceramica oro, lucida e satinata.', img: '<img src="img/studio/cavallo.webp" width="1600" height="2000" alt="Scultura di cavallo color oro" loading="lazy" decoding="async">' },
+  { testo: 'Vaso a foglia. Oro, con il bouquet avorio e le piume.', img: '<img src="img/studio/vaso-foglia.webp" width="1600" height="2000" alt="Vaso color oro a forma di foglia con bouquet avorio" loading="lazy" decoding="async">' },
   { testo: 'Vaso bianco. Rose cipria e rami dorati.', img: '<img src="img/studio/vaso-rose.webp" width="1600" height="2000" alt="Vaso bianco a coste con rose color cipria" loading="lazy" decoding="async">' },
 ] })}
 
 ${carosello({ id: 'profumi', titolo: 'Profumi.', link: { href: 'showroom/', label: 'Scoprili in showroom ›' }, grigio: true, schede: [
+  { testo: 'Khamrah Qahwa. Lattafa, eau de parfum 100 ml.', img: '<img src="img/studio/khamrah-qahwa.webp" width="1600" height="2000" alt="Profumo Lattafa Khamrah Qahwa, flacone ambrato con tappo di cristallo" loading="lazy" decoding="async">' },
+  { testo: 'Khamrah Waha. Lattafa, eau de parfum 100 ml.', img: '<img src="img/studio/khamrah-waha.webp" width="1600" height="2000" alt="Profumo Lattafa Khamrah Waha, flacone azzurro" loading="lazy" decoding="async">' },
+  { testo: 'Asad. Lattafa, eau de parfum 100 ml.', img: '<img src="img/studio/asad.webp" width="1600" height="2000" alt="Profumo Lattafa Asad, flacone nero con fascia color oro" loading="lazy" decoding="async">' },
+  { testo: 'Leen. Lattafa Pride, eau de parfum 100 ml. € 30', img: '<img src="img/studio/leen.webp" width="1600" height="2000" alt="Profumo Lattafa Leen, flacone satinato con gabbia color oro" loading="lazy" decoding="async">' },
+  { testo: 'Safwaan. Lattafa, L’Autre Oud, 100 ml.', img: '<img src="img/studio/safwaan.webp" width="1600" height="2000" alt="Profumo Lattafa Safwaan L’Autre Oud, flacone decorato" loading="lazy" decoding="async">' },
+  { testo: 'Mythical Gryphon. French Avenue, con il grifone sul tappo.', img: '<img src="img/studio/mythical-gryphon.webp" width="1600" height="2000" alt="Profumo French Avenue Mythical Gryphon con grifone sul tappo" loading="lazy" decoding="async">' },
+  { testo: 'Cocoa Morado. Flacone viola e oro.', img: '<img src="img/studio/cocoa-morado.webp" width="1600" height="2000" alt="Profumo Cocoa Morado, flacone viola con dettagli oro" loading="lazy" decoding="async">' },
   { testo: 'Anfar Odyssée. Extrait de parfum, 100 ml.', img: '<img src="img/studio/anfar-odyssee.webp" width="1600" height="2000" alt="Profumo Anfar Odyssée, flacone oro e rosso" loading="lazy" decoding="async">' },
   { testo: 'Afnan 9am. Pour femme, eau de parfum 100 ml.', img: '<img src="img/studio/afnan-9am.webp" width="1600" height="2000" alt="Profumo Afnan 9am pour femme, flacone rosa" loading="lazy" decoding="async">' },
   { testo: 'Afnan 9pm. Pour femme, eau de parfum 100 ml.', img: '<img src="img/studio/afnan-9pm.webp" width="1600" height="2000" alt="Profumo Afnan 9pm pour femme, flacone viola" loading="lazy" decoding="async">' },
+  { testo: 'Gemini. Genesis, flacone ottagonale color oro.', foto: true, img: '<img src="img/gemini.webp" width="900" height="1044" alt="Profumo Genesis Gemini, flacone ottagonale color oro" loading="lazy" decoding="async">' },
 ] })}
 
 ${carosello({ id: 'showroom', titolo: 'Dallo showroom.', link: { href: 'showroom/', label: 'Scopri lo showroom ›' }, grigio: true, schede: [
@@ -469,6 +480,8 @@ ${altri.length ? `<section class="section">
     { id: 'vassoio-tondo', nome: 'Vassoio tondo traforato', cat: 'vassoi', meta: 'Color oro, con manici', kg: 2.2, prezzo: null, foto: '../img/studio/vassoio-tondo.webp', box: '../img/pacco/vassoio-tondo-png.webp' },
     { id: 'vassoio-martellato', nome: 'Vassoi martellati, set da 2', cat: 'vassoi', meta: 'Color oro, con manici', kg: 1.6, prezzo: null, foto: '../img/studio/vassoio-martellato.webp', box: '../img/pacco/vassoio-martellato-png.webp' },
     { id: 'vassoio-perline', nome: 'Vassoi con perline, set da 2', cat: 'vassoi', meta: 'Color oro, con manici', kg: 1.8, prezzo: null, foto: '../img/studio/vassoio-perline.webp', box: '../img/pacco/vassoio-perline-png.webp' },
+    { id: 'barattoli-rose', nome: 'Barattoli Rose, set da 7', cat: 'barattoli', meta: 'Ceramica bianca e oro, con supporto', kg: 4.5, prezzo: null, foto: '../img/studio/barattoli-rose.webp', box: '../img/pacco/barattoli-rose-png.webp' },
+    { id: 'barattoli-rosa', nome: 'Barattoli Zucca Rosa, set da 7', cat: 'barattoli', meta: 'Ceramica rosa e oro, con supporto', kg: 4.2, prezzo: null, foto: '../img/studio/barattoli-rosa.webp', box: '../img/pacco/barattoli-rosa-png.webp' },
     { id: 'cloche', nome: 'Piatto con cloche', cat: 'vassoi', meta: 'Acciaio con decori oro', kg: 1.5, prezzo: null, foto: '../img/studio/cloche.webp', box: '../img/pacco/cloche-png.webp' },
   ];
   // La scena: scatola aperta sulla bilancia. In apertura è un'illustrazione
@@ -525,6 +538,7 @@ ${altri.length ? `<section class="section">
         <button type="button" role="tab" aria-selected="false" data-cat="bicchieri">Bicchieri</button>
         <button type="button" role="tab" aria-selected="false" data-cat="tazzine">Tazzine</button>
         <button type="button" role="tab" aria-selected="false" data-cat="vassoi">Vassoi</button>
+        <button type="button" role="tab" aria-selected="false" data-cat="barattoli">Barattoli</button>
       </div>
       <div class="kg-grid">
         ${PACCO.map(card).join('\n        ')}

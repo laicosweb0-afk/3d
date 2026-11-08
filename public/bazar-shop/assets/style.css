@@ -858,3 +858,10 @@ details.acc .acc-body { padding: 0 0 1.25rem; font-size: var(--t-small); color: 
 .kg-bar__tot { white-space: nowrap; }
 /* nelle schede prodotto c'è già la barra in basso: niente pillola della novità */
 .has-sticky-buy .promo-fab { display: none; }
+/* caroselli lunghi su iPhone: puntini più stretti, il play resta nello schermo */
+@media (max-width: 480px) {
+  .carousel__controls { padding: 0 1rem; }
+  .carousel__dots { padding: .6rem .6rem; flex-wrap: nowrap; min-width: 0; }
+  .carousel__dots button { min-width: 1.2rem; }
+  .carousel__dots button[aria-selected='true']::before { width: 1.5rem; }
+}
