@@ -174,6 +174,23 @@ window.BM = {
         "Sedie in velluto blu"
       ],
       "configurazioni": []
+    },
+    {
+      "slug": "sala-pranzo-greca",
+      "nome": "Sala da pranzo Greca",
+      "collezione": "Sale da pranzo",
+      "prezzo": null,
+      "foto": {
+        "file": "studio/sedia-moka",
+        "w": 1600,
+        "h": 2000,
+        "alt": "La sedia trapuntata moka e avorio della Sala da pranzo Greca"
+      },
+      "composizione": [
+        "Tavolo rettangolare avorio con greca e centro effetto marmo nero",
+        "Sei sedie trapuntate moka e avorio"
+      ],
+      "configurazioni": []
     }
   ]
 };

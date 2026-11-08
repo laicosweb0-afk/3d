@@ -18,7 +18,7 @@
   const SPEDIZIONE = 7;    // € a scatola
   const IMG = (n) => `../img/pacco/${n}.webp`;
   // [ESEMPIO] pesi e quantità da sostituire con quelli misurati in negozio
-  const PRODOTTI = [
+  const PRODOTTI = window.PACCO || [
     { id: 'set-rosso-oro', cat: 'bicchieri', nome: 'Set bicchieri Rosso e Oro', pezzi: 12, kg: 1.8, prezzo: 7, foto: IMG('set-rosso-oro') },
     { id: 'set-verde-oro', cat: 'bicchieri', nome: 'Set bicchieri Verde e Oro', pezzi: 12, kg: 1.8, prezzo: 7, foto: IMG('set-verde-oro') },
     { id: 'set-mosaico', cat: 'bicchieri', nome: 'Set bicchieri Mosaico', pezzi: 12, kg: 1.8, prezzo: 7, foto: IMG('set-mosaico') },
@@ -67,7 +67,7 @@
     const n = pezzi();
     items.style.setProperty('--w', n > 12 ? '17%' : n > 6 ? '22%' : '30%');
     items.innerHTML =Object.entries(scatola).flatMap(([id, q]) => Array.from({ length: q }, () => id))
-      .map((id) => { const p = byId(id); return p.foto ? `<img src="${p.foto}" alt="">` : `<span class="kg-pezzo">${p.nome}</span>`; }).join('');
+      .map((id) => { const p = byId(id); return p.box ? `<img src="${p.box}" alt="" class="kg-studio">` : p.foto ? `<img src="${p.foto}" alt="">` : `<span class="kg-pezzo">${p.nome}</span>`; }).join('');
   }
   function aggiorna(precedente) {
     const kg = peso(), quota = kg / MAX;
@@ -75,7 +75,9 @@
     root.style.setProperty('--quota', Math.min(1, quota).toFixed(4));
     root.dataset.stato = kg === 0 ? 'vuota' : quota >= 0.999 ? 'piena' : quota >= 0.8 ? 'quasi' : 'riempimento';
     $$('[data-sub]').forEach((e) => { e.textContent = eur(prodottiEuro()); });
-    $$('[data-tot]').forEach((e) => { e.textContent = eur(prodottiEuro() + (kg ? SPEDIZIONE : 0)); });
+    // con prodotti «su richiesta» nella scatola il totale è indicativo
+    const daConfermare = Object.keys(scatola).some((id) => byId(id).prezzo == null);
+    $$('[data-tot]').forEach((e) => { e.innerHTML = eur(prodottiEuro() + (kg ? SPEDIZIONE : 0)) + (daConfermare ? '<span class="tot-extra"> + su richiesta</span><span class="tot-plus"> +</span>' : ''); });
     $$('[data-pezzi]').forEach((e) => { e.textContent = pezzi(); });
     const resta = MAX - kg;
     const stato = $('[data-stato-testo]');
@@ -83,14 +85,14 @@
       : quota >= 0.999 ? '35 kg. Perfetta.'
       : `Ti restano ${kgTxt(resta)} kg.`;
     // il consiglio «smart»: cosa entra ancora
-    const entra = PRODOTTI.filter((p) => p.prezzo != null && p.kg <= resta + 1e-9).sort((x, y) => y.kg - x.kg)[0];
+    const entra = PRODOTTI.filter((p) => p.cat === 'bicchieri' && p.kg <= resta + 1e-9).sort((x, y) => y.kg - x.kg)[0];
     $('[data-hint]').textContent = kg > 0 && entra ? `Entrano ancora ${Math.floor((resta + 1e-9) / entra.kg)} set come il ${entra.nome.replace('Set bicchieri ', '')}.` : '';
     // schede: quantità e pulsanti
     $$('[data-prodotto]').forEach((c) => {
       const p = byId(c.dataset.prodotto), q = scatola[p.id] || 0;
       $('[data-q]', c).textContent = q;
       c.classList.toggle('is-in', q > 0);
-      $('[data-piu]', c).disabled = p.prezzo == null || p.kg > resta + 1e-9;
+      $('[data-piu]', c).disabled = p.kg > resta + 1e-9;
       $('[data-meno]', c).disabled = q === 0;
     });
     riempiScatola();
@@ -139,7 +141,7 @@
     }).join('') : '<li class="vuoto">La scatola è vuota.</li>';
     $$('[data-togli]').forEach((b) => b.addEventListener('click', () => cambia(b.dataset.togli, -(scatola[b.dataset.togli] || 0))));
     const wa = root.dataset.wa || '';
-    const testo = `Buongiorno! La mia scatola 35 kg:\n${righe.map(([id, q]) => `• ${q} × ${byId(id).nome}`).join('\n')}\nPeso: ${kgTxt(peso())} kg · Prodotti ${eur(prodottiEuro())} + spedizione ${eur(SPEDIZIONE)}`;
+    const testo = `Buongiorno! La mia scatola 35 kg:\n${righe.map(([id, q]) => `• ${q} × ${byId(id).nome}${byId(id).prezzo == null ? ' (prezzo su richiesta)' : ''}`).join('\n')}\nPeso: ${kgTxt(peso())} kg · Prodotti ${eur(prodottiEuro())} + spedizione ${eur(SPEDIZIONE)}`;
     $$('[data-wa]').forEach((a) => { a.href = `https://wa.me/${wa}?text=${encodeURIComponent(testo)}`; a.toggleAttribute('aria-disabled', !righe.length); });
   }
   const apri = () => { sheet.hidden = false; requestAnimationFrame(() => sheet.classList.add('is-open')); document.body.style.overflow = 'hidden'; };

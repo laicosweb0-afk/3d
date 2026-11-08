@@ -269,7 +269,22 @@ ${carosello({ id: 'divani', titolo: 'Divani e poltrone.', link: { href: 'collezi
   { testo: 'Chesterfield Nero. Velluto nero, capitonné, base color oro.', img: '<img src="img/studio/chesterfield-nero.webp" width="1600" height="1200" alt="Divano chesterfield in velluto nero" loading="lazy" decoding="async">' },
   { testo: 'Bergère Blu. Lo schienale alto, le gambe sottili color oro.', img: '<img src="img/studio/poltrona-blu.webp" width="1600" height="2000" alt="Poltrona bergère in velluto blu" loading="lazy" decoding="async">' },
   { testo: 'Poltrona Tonda. Girevole, capitonné tutto intorno.', img: '<img src="img/studio/poltrona-tonda.webp" width="1600" height="2000" alt="Poltrona tonda girevole in velluto tortora" loading="lazy" decoding="async">' },
+  { testo: 'Poltrona Nera. Velluto nero, schienale a righe, base girevole.', foto: true, img: '<img src="img/poltrona-nera.webp" width="900" height="1340" alt="Poltrona girevole in velluto nero con schienale a righe" loading="lazy" decoding="async">' },
   { testo: 'Il dettaglio. Velluto, capitonné e un filo color oro.', foto: true, img: '<img src="img/velluto-dettaglio.webp" width="720" height="900" alt="Il velluto tortora da vicino con il profilo color oro" loading="lazy" decoding="async">' },
+] })}
+
+${carosello({ id: 'complementi', titolo: 'Complementi.', link: { href: 'showroom/', label: 'Vedili in showroom ›' }, schede: [
+  { testo: 'Leopardo. Color oro, tempestato di strass.', img: '<img src="img/studio/leopardo.webp" width="1600" height="1200" alt="Statua di leopardo color oro con strass" loading="lazy" decoding="async">' },
+  { testo: 'Pesci dorati. Ceramica oro lucida e satinata.', img: '<img src="img/studio/pesci.webp" width="1600" height="2000" alt="Scultura di pesci in ceramica color oro" loading="lazy" decoding="async">' },
+  { testo: 'Lampada da tavolo. Cristalli e paralume ricamato.', img: '<img src="img/studio/lampada.webp" width="1600" height="2000" alt="Lampada da tavolo con base in cristalli e paralume ricamato" loading="lazy" decoding="async">' },
+  { testo: 'Vaso oro. Con il bouquet avorio e oro.', img: '<img src="img/studio/vaso-oro.webp" width="1600" height="2000" alt="Vaso color oro scanalato con bouquet di fiori avorio" loading="lazy" decoding="async">' },
+  { testo: 'Vaso bianco. Rose cipria e rami dorati.', img: '<img src="img/studio/vaso-rose.webp" width="1600" height="2000" alt="Vaso bianco a coste con rose color cipria" loading="lazy" decoding="async">' },
+] })}
+
+${carosello({ id: 'profumi', titolo: 'Profumi.', link: { href: 'showroom/', label: 'Scoprili in showroom ›' }, grigio: true, schede: [
+  { testo: 'Anfar Odyssée. Extrait de parfum, 100 ml.', img: '<img src="img/studio/anfar-odyssee.webp" width="1600" height="2000" alt="Profumo Anfar Odyssée, flacone oro e rosso" loading="lazy" decoding="async">' },
+  { testo: 'Afnan 9am. Pour femme, eau de parfum 100 ml.', img: '<img src="img/studio/afnan-9am.webp" width="1600" height="2000" alt="Profumo Afnan 9am pour femme, flacone rosa" loading="lazy" decoding="async">' },
+  { testo: 'Afnan 9pm. Pour femme, eau de parfum 100 ml.', img: '<img src="img/studio/afnan-9pm.webp" width="1600" height="2000" alt="Profumo Afnan 9pm pour femme, flacone viola" loading="lazy" decoding="async">' },
 ] })}
 
 ${carosello({ id: 'showroom', titolo: 'Dallo showroom.', link: { href: 'showroom/', label: 'Scopri lo showroom ›' }, grigio: true, schede: [
@@ -444,6 +459,18 @@ ${altri.length ? `<section class="section">
     ['set-multicolore', 'Set bicchieri Multicolore', 'bicchieri'], ['set-calligrafia', 'Set bicchieri Calligrafia', 'bicchieri'],
     ['set-fascia-oro', 'Set bicchieri Fascia Oro', 'bicchieri'],
   ];
+  /** I prodotti della scatola: un'unica lista, passata anche a pacco.js.
+   *  [ESEMPIO] i pesi vanno sostituiti con quelli misurati in negozio.
+   *  prezzo null = «Su richiesta» (si può comunque mettere nella scatola). */
+  const PACCO = [
+    ...DEMO.map(([id, nome, cat]) => ({ id, nome, cat, meta: '12 pezzi', kg: 1.8, prezzo: 7, foto: `../img/pacco/${id}.webp`, cover: true })),
+    { id: 'tazzine-bianco-oro', nome: 'Set tazzine Bianco e Oro', cat: 'tazzine', meta: '6 tazzine e piattini', kg: 1.6, prezzo: null, foto: '../img/studio/tazzine-bianco-oro.webp', box: '../img/pacco/tazzine-bianco-oro-png.webp' },
+    { id: 'tazzine-nero-greca', nome: 'Set tazzine Nero Greca', cat: 'tazzine', meta: '6 tazzine e piattini', kg: 1.6, prezzo: 35, foto: '../img/studio/tazzine-nero-greca.webp', box: '../img/pacco/tazzine-nero-greca-png.webp' },
+    { id: 'vassoio-tondo', nome: 'Vassoio tondo traforato', cat: 'vassoi', meta: 'Color oro, con manici', kg: 2.2, prezzo: null, foto: '../img/studio/vassoio-tondo.webp', box: '../img/pacco/vassoio-tondo-png.webp' },
+    { id: 'vassoio-martellato', nome: 'Vassoi martellati, set da 2', cat: 'vassoi', meta: 'Color oro, con manici', kg: 1.6, prezzo: null, foto: '../img/studio/vassoio-martellato.webp', box: '../img/pacco/vassoio-martellato-png.webp' },
+    { id: 'vassoio-perline', nome: 'Vassoi con perline, set da 2', cat: 'vassoi', meta: 'Color oro, con manici', kg: 1.8, prezzo: null, foto: '../img/studio/vassoio-perline.webp', box: '../img/pacco/vassoio-perline-png.webp' },
+    { id: 'cloche', nome: 'Piatto con cloche', cat: 'vassoi', meta: 'Acciaio con decori oro', kg: 1.5, prezzo: null, foto: '../img/studio/cloche.webp', box: '../img/pacco/cloche-png.webp' },
+  ];
   // La scena: scatola aperta sulla bilancia. In apertura è un'illustrazione
   // fissa (scatola già piena); nel riquadro della bilancia è quella vera.
   // Tre strati: l'immagine della scatola sulla bilancia; i prodotti; sopra,
@@ -457,13 +484,14 @@ ${altri.length ? `<section class="section">
       <div class="kg-display"${illustrazione ? '' : ' role="status" aria-live="polite"'}><span class="kg-num"${illustrazione ? '' : ' data-kg'}>${illustrazione ? '12,6' : '0,0'}</span><span class="kg-unit">kg</span><span class="kg-of">/ 35</span></div>
     </div>
     <div class="kg-meter" aria-hidden="true"><i></i></div></div>`;
-  const card = ([id, nome, cat], foto = true) => `<article class="kg-card" data-prodotto="${id}">
-      <div class="kg-card__media">${foto ? `<img src="../img/pacco/${id}.webp" alt="${esc(nome)}" loading="lazy" decoding="async">` : '<span>Foto in arrivo</span>'}</div>
+  const kgIt = (n) => n.toLocaleString('it-IT', { minimumFractionDigits: 1 });
+  const card = (p) => `<article class="kg-card" data-prodotto="${p.id}">
+      <div class="kg-card__media${p.cover ? '' : ' kg-card__media--studio'}"><img src="${p.foto}" alt="${esc(p.nome)}" loading="lazy" decoding="async"></div>
       <div class="kg-card__body">
-        <h3 class="kg-card__name">${esc(nome)}</h3>
-        <p class="kg-card__meta">${cat === 'bicchieri' ? '12 pezzi · 1,8 kg' : cat === 'teiere' ? '1 pezzo · 1,2 kg' : '24 pezzi · 2,6 kg'}</p>
+        <h3 class="kg-card__name">${esc(p.nome)}</h3>
+        <p class="kg-card__meta">${esc(p.meta)} · ${kgIt(p.kg)} kg</p>
         <div class="kg-card__foot">
-          <span class="kg-card__price">${foto ? '€ 7' : 'Prezzo in arrivo'}</span>
+          <span class="kg-card__price${p.prezzo == null ? ' kg-card__price--req' : ''}">${p.prezzo == null ? 'Su richiesta' : '€ ' + p.prezzo}</span>
           <div class="kg-step"><button type="button" data-meno aria-label="Togli uno">−</button><output data-q>0</output><button type="button" data-piu aria-label="Aggiungi alla scatola">+</button></div>
         </div>
       </div>
@@ -472,7 +500,7 @@ ${altri.length ? `<section class="section">
     path: '35kg/', root: '../', noindex: true,
     title: '35 kg — Riempi la scatola | Bazar Marrakech',
     description: 'Set bicchieri 7 €, spedizione 7 €: un pacco fino a 35 kg da riempire con quello che vuoi.',
-    scripts: '<script src="../assets/pacco.js" defer></script>',
+    scripts: `<script>window.PACCO = ${JSON.stringify(PACCO.map(({ cover, meta, ...p }) => p))};</script>\n<script src="../assets/pacco.js" defer></script>`,
     body: `
 <div data-pacco data-wa="${WHATSAPP}">
 <!-- Una sola scena, alla maniera di apple.com: titolo, la scatola sulla
@@ -495,13 +523,11 @@ ${altri.length ? `<section class="section">
       <div class="kg-cats" role="tablist" aria-label="Categorie">
         <button type="button" role="tab" aria-selected="true" data-cat="tutto">Tutto</button>
         <button type="button" role="tab" aria-selected="false" data-cat="bicchieri">Bicchieri</button>
-        <button type="button" role="tab" aria-selected="false" data-cat="teiere">Teiere</button>
-        <button type="button" role="tab" aria-selected="false" data-cat="posate">Posate</button>
+        <button type="button" role="tab" aria-selected="false" data-cat="tazzine">Tazzine</button>
+        <button type="button" role="tab" aria-selected="false" data-cat="vassoi">Vassoi</button>
       </div>
       <div class="kg-grid">
-        ${DEMO.map((d) => card(d)).join('\n        ')}
-        ${card(['teiera', 'Teiera', 'teiere'], false)}
-        ${card(['posate', 'Set posate', 'posate'], false)}
+        ${PACCO.map(card).join('\n        ')}
       </div>
       <p class="kg-note">Prototipo: prodotti, pesi e foto sono di esempio.</p>
     </div>

@@ -227,4 +227,28 @@ export const SET = [
       img('pranzo-ovale-blu', 1100, 1069, 'La sala da pranzo Ovale Blu nello showroom'),
     ],
   },
+  {
+    slug: 'sala-pranzo-greca',
+    tipo: 'pranzo',
+    nome: 'Sala da pranzo Greca',
+    collezione: 'Sale da pranzo',
+    stile: 'sale-da-pranzo',
+    colore: { id: 'avorio', nome: 'Avorio', hex: '#ECE4D6' },
+    breve: 'Piano avorio con la greca e il centro effetto marmo nero, sedie trapuntate moka e avorio.',
+    descrizione: [
+      'Il piano avorio è incorniciato da una greca brillante; al centro, un pannello effetto marmo nero con venature bianche.',
+      'Le sedie hanno lo schienale avvolgente: avorio trapuntato davanti, moka trapuntato dietro, gambe nere con puntali color oro.',
+    ],
+    composizioneFoto: ['Tavolo rettangolare avorio con greca e centro effetto marmo nero', 'Sei sedie trapuntate moka e avorio'],
+    finiture: ['Piano avorio con greca', 'Centro effetto marmo nero', 'Sedie in similpelle trapuntata', 'Puntali color oro'],
+    configurazioni: [],
+    misure: [],
+    prezzo: null,
+    copertina: img('studio/sedia-moka', 1600, 2000, 'La sedia trapuntata moka e avorio della Sala da pranzo Greca'),
+    foto: [
+      img('pranzo-moka-scena', 1200, 1072, 'Sala da pranzo Greca nello showroom: tavolo avorio con greca e sei sedie trapuntate'),
+      img('studio/sedia-moka', 1600, 2000, 'La sedia trapuntata moka e avorio, in studio'),
+      img('pranzo-moka-sedia', 900, 1200, 'Lo schienale trapuntato moka con le cuciture a rombi'),
+    ],
+  },
 ];

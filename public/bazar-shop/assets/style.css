@@ -844,3 +844,17 @@ details.acc .acc-body { padding: 0 0 1.25rem; font-size: var(--t-small); color: 
 
 .kg-steps .kg-step--img { padding-bottom: 0; overflow: hidden; display: flex; flex-direction: column; }
 .kg-step--img img { margin: 1.25rem -1.5rem 0; width: calc(100% + 3rem); max-width: none; aspect-ratio: 4 / 3; object-fit: cover; object-position: center 60%; }
+
+/* ---- Prodotti in studio nella pagina 35 kg ---------------------------- */
+.kg-card__media--studio { background: #F3EFE8; }
+.kg-card__media--studio img { object-fit: contain; }
+.kg-card__price--req { font-weight: 500; color: var(--text-2); font-size: .9375rem; }
+.kg-box__items img.kg-studio { object-fit: contain; background: none; box-shadow: none; }
+/* il filtro delle categorie nasconde le schede (display:flex non deve vincere su hidden) */
+.kg-card[hidden] { display: none; }
+.tot-plus { display: none; }
+.kg-bar .tot-extra { display: none; }
+.kg-bar .tot-plus { display: inline; }
+.kg-bar__tot { white-space: nowrap; }
+/* nelle schede prodotto c'è già la barra in basso: niente pillola della novità */
+.has-sticky-buy .promo-fab { display: none; }
