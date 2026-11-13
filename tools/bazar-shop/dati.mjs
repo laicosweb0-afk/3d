@@ -70,6 +70,7 @@ const img = (file, w, h, alt) => ({ file, w, h, alt });
 export const SET = [
   {
     slug: 'salotto-tortora',
+    stato: 'ultimi',
     nome: 'Salotto Tortora',
     collezione: 'Capitonné',
     stile: 'capitonne',
@@ -100,6 +101,7 @@ export const SET = [
   },
   {
     slug: 'salotto-beige',
+    stato: 'ultimi',
     nome: 'Salotto Beige',
     collezione: 'Chesterfield',
     stile: 'chesterfield',
@@ -120,6 +122,7 @@ export const SET = [
   },
   {
     slug: 'salotto-nero',
+    stato: 'ultimi',
     nome: 'Salotto Nero',
     collezione: 'Capitonné',
     stile: 'capitonne',
@@ -147,6 +150,7 @@ export const SET = [
   },
   {
     slug: 'salotto-avorio',
+    stato: 'ultimi',
     nome: 'Salotto Avorio',
     collezione: 'Contemporanea',
     stile: 'contemporanea',
@@ -253,6 +257,7 @@ export const SET = [
   },
   {
     slug: 'salotto-crema',
+    stato: 'disponibile',
     nome: 'Salotto Crema',
     collezione: 'Contemporanea',
     stile: 'contemporanea',
@@ -281,6 +286,7 @@ export const SET = [
   },
   {
     slug: 'salotto-antracite',
+    stato: 'disponibile',
     nome: 'Salotto Antracite',
     collezione: 'Contemporanea',
     stile: 'contemporanea',
@@ -303,6 +309,7 @@ export const SET = [
   },
   {
     slug: 'salotto-grafite',
+    stato: 'disponibile',
     nome: 'Salotto Grafite',
     collezione: 'Contemporanea',
     stile: 'contemporanea',
@@ -325,6 +332,7 @@ export const SET = [
   },
   {
     slug: 'salotto-grigio',
+    stato: 'disponibile',
     nome: 'Salotto Grigio',
     collezione: 'Chesterfield',
     stile: 'chesterfield',
@@ -347,6 +355,7 @@ export const SET = [
   },
   {
     slug: 'salotto-sabbia',
+    stato: 'disponibile',
     nome: 'Salotto Sabbia',
     collezione: 'Capitonné',
     stile: 'capitonne',
@@ -369,6 +378,7 @@ export const SET = [
   },
   {
     slug: 'mobile-tv-camino',
+    stato: 'disponibile',
     tipo: 'complemento',
     nome: 'Mobile TV con camino',
     collezione: 'Complementi d’arredo',

@@ -13,4 +13,10 @@
   const hint = hero.querySelector('.hero-logo__hint');
   const via = () => { if (scrollY > 8) { hint && hint.classList.add('is-hidden'); removeEventListener('scroll', via); } };
   addEventListener('scroll', via, { passive: true });
+  // i salotti nuovi si alternano nell'apertura (fermi con «riduci movimento»)
+  const slides = [...document.querySelectorAll('.hero-slide')];
+  if (slides.length > 1 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    let i = 0;
+    setInterval(() => { slides[i].classList.remove('is-on'); i = (i + 1) % slides.length; slides[i].classList.add('is-on'); }, 4000);
+  }
 })();

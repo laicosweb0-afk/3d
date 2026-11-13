@@ -33,6 +33,9 @@ const REPARTI = [
   { nome: 'Bicchieri da tè', riga: 'Set decorati in oro e colori, nelle loro confezioni.', foto: 'bicchieri-te', alt: 'Set di bicchieri da tè decorati in oro e colori', w: 800, h: 1000 },
 ];
 
+/** Prima i nuovi arrivi disponibili, in fondo gli ultimi pezzi. */
+const ORDINE = (a, b) => ({ disponibile: 0, undefined: 1, ultimi: 2 }[a.stato] - { disponibile: 0, undefined: 1, ultimi: 2 }[b.stato]);
+SET.sort(ORDINE);
 const COLLEZIONI = [...new Map(SET.map((s) => [s.stile, { stile: s.stile, nome: s.collezione, pranzo: s.tipo === 'pranzo', complemento: s.tipo === 'complemento' }])).values()];
 /** L'etichetta sopra il nome: «Collezione Capitonné», oppure «Sala da pranzo». */
 const etichetta = (s) => (s.tipo === 'pranzo' ? 'Sala da pranzo' : s.tipo === 'complemento' ? 'Complemento d’arredo' : `Collezione ${s.collezione}`);
@@ -226,7 +229,7 @@ const setCard = (s, root, { heading = 'h3' } = {}) => `
   <article class="set-card reveal">
     <a class="set-card__media" href="${root}salotti/${s.slug}/" tabindex="-1" aria-hidden="true">${img(root, s.copertina || s.foto[0])}</a>
     <div class="set-card__body">
-      <span class="eyebrow">${esc(etichetta(s))}</span>
+      <span class="eyebrow">${s.stato === 'disponibile' ? '<b class="badge-nuovo">Nuovo arrivo · Disponibile</b>' : s.stato === 'ultimi' ? '<b class="badge-ultimi">Ultimi pezzi</b>' : esc(etichetta(s))}</span>
       <div class="set-card__title"><${heading} class="h3"><a href="${root}salotti/${s.slug}/">${esc(s.nome)}</a></${heading}>${prezzo(s.prezzo)}</div>
       <p>${esc(s.breve)}</p>
       <a class="link" href="${root}salotti/${s.slug}/" aria-label="Scopri: ${esc(s.nome)}">${s.tipo === 'pranzo' ? 'Scopri il tavolo' : s.tipo === 'complemento' ? 'Scopri' : 'Scopri il salotto'}</a>
@@ -257,11 +260,17 @@ const page = (path, html) => pages.push({ path, html });
      salotto nuovo in scena sul nero caldo, con una luce calda dall'alto. -->
 <section class="hero-logo" data-hero aria-labelledby="hero-titolo">
   <img class="hero-logo__mark" src="img/logo.webp" width="884" height="258" alt="Bazar Marrakech" fetchpriority="high">
-  <p class="hero-logo__eyebrow">Nuovi arrivi in showroom</p>
+  <p class="hero-logo__eyebrow">Nuovi arrivi · Disponibili ora</p>
   <h1 class="hero-logo__title" id="hero-titolo">Il tuo salotto ti aspetta.</h1>
   <p class="hero-logo__sub">Salotti, sale da pranzo e complementi in velluto e oro. Showroom a Lugo, consegne in tutta Italia.</p>
-  <div class="pills hero-logo__pills"><a class="pill" href="#salotti">Scopri i salotti</a><a class="pill pill--line" href="showroom/">Vieni in showroom</a></div>
-  <a class="hero-logo__stage" href="salotti/salotto-crema/" aria-label="Scopri il Salotto Crema"><img src="img/studio/salotto-crema-camino-png.webp" alt="Salotto Crema: divani a canne, poltrone, tavolino ovale e mobile TV con camino" fetchpriority="high" decoding="async"></a>
+  <div class="pills hero-logo__pills"><a class="pill" href="#salotti">Vedi i disponibili</a><a class="pill pill--line" href="showroom/">Vieni in showroom</a></div>
+  <div class="hero-logo__stage" data-hero-slides>
+    <a class="hero-slide is-on" href="salotti/salotto-crema/" aria-label="Scopri il Salotto Crema"><img src="img/studio/salotto-crema-camino-png.webp" alt="Salotto Crema" fetchpriority="high" decoding="async"><span class="hero-slide__name">Salotto Crema</span></a>
+    <a class="hero-slide" href="salotti/salotto-grigio/" aria-label="Scopri il Salotto Grigio"><img src="img/studio/salotto-grigio-png.webp" alt="Salotto Grigio" loading="lazy" decoding="async"><span class="hero-slide__name">Salotto Grigio</span></a>
+    <a class="hero-slide" href="salotti/salotto-antracite/" aria-label="Scopri il Salotto Antracite"><img src="img/studio/salotto-antracite-png.webp" alt="Salotto Antracite" loading="lazy" decoding="async"><span class="hero-slide__name">Salotto Antracite</span></a>
+    <a class="hero-slide" href="salotti/salotto-grafite/" aria-label="Scopri il Salotto Grafite"><img src="img/studio/salotto-grafite-png.webp" alt="Salotto Grafite" loading="lazy" decoding="async"><span class="hero-slide__name">Salotto Grafite</span></a>
+    <a class="hero-slide" href="salotti/salotto-sabbia/" aria-label="Scopri il Salotto Sabbia"><img src="img/studio/salotto-sabbia-png.webp" alt="Salotto Sabbia" loading="lazy" decoding="async"><span class="hero-slide__name">Salotto Sabbia</span></a>
+  </div>
 </section>
 
 <!-- Fascia sotto la hero, come la striscia promozionale di apple.com -->
@@ -280,12 +289,11 @@ const page = (path, html) => pages.push({ path, html });
 </nav>
 
 <section class="reparto" id="salotti" aria-labelledby="h-salotti">
-<header class="reparto__head wrap"><h2 class="reparto__title" id="h-salotti">Salotti. <span>Composizioni complete, dal divano al mobile TV.</span></h2></header>
-<div class="tiles">
-${tile({ tema: 'light', nome: 'Salotto Crema', titolo: 'Specchio, oro e il fuoco acceso.', sotto: 'Divani a canne, poltrone avvolgenti, il mobile TV con il camino.', href: 'salotti/salotto-crema/', wa: 'Salotto Crema', media: '<img src="img/studio/salotto-crema-camino.webp" width="1600" height="1200" alt="Salotto Crema con mobile TV e camino" loading="lazy" decoding="async">' })}
-${tile({ tema: 'dark', nome: 'Nuova collezione', titolo: 'Profondo come la notte.', sotto: 'Velluto blu e oro.', href: 'contatti/', label1: 'Chiedi info', href2: 'showroom/', label2: 'Vieni a vederlo', media: '<img class="tile__png" src="img/studio/divano-blu-png.webp" width="1216" height="654" alt="Divano chesterfield in velluto blu con gambe color oro" loading="lazy" decoding="async">' })}
+<header class="reparto__head wrap"><h2 class="reparto__title" id="h-salotti">Disponibili ora. <span>I nuovi arrivi, pronti in showroom.</span></h2></header>
+<div class="wrap shop-grid">
+${SET.filter((x) => x.stato === 'disponibile').map((x) => setCard(x, root)).join('')}
 </div>
-${carosello({ id: 'salotti-tutti', titolo: 'Tutti i salotti.', link: { href: 'collezioni/', label: 'Vedi la collezione ›' }, schede: [['salotto-crema', 'Salotto Crema. Divani a canne, specchio e oro, con il camino.'], ['salotto-grigio', 'Salotto Grigio. Capitonné tutto intorno.'], ['salotto-antracite', 'Salotto Antracite. Canne, capitonné e un filo d’oro.'], ['salotto-grafite', 'Salotto Grafite. In composizione ad angolo.'], ['salotto-sabbia', 'Salotto Sabbia. Tessuti lavorati e marmo bruno.'], ['salotto-tortora', 'Salotto Tortora. Le curve che abbracciano.'], ['salotto-nero', 'Salotto Nero. Velluto nero e profili argento.'], ['salotto-avorio', 'Salotto Avorio. Luce, a canne.'], ['salotto-beige', 'Salotto Beige. Due chesterfield affacciati.']].map(([sl, t]) => { const x = SET.find((y) => y.slug === sl); const c = x.copertina || x.foto[0]; return { testo: t, href: `salotti/${sl}/`, foto: !c.file.startsWith('studio/'), img: `<img src="img/${c.file}.webp" width="${c.w}" height="${c.h}" alt="${esc(c.alt)}" loading="lazy" decoding="async">` }; }) })}
+${carosello({ id: 'ultimi', titolo: 'Ultimi pezzi. <span>Fino a esaurimento.</span>', grigio: true, schede: ['salotto-tortora','salotto-beige','salotto-nero','salotto-avorio'].map((sl) => { const x = SET.find((y) => y.slug === sl); const c = x.copertina || x.foto[0]; return { testo: `${x.nome}. Ultimi pezzi disponibili.`, href: `salotti/${sl}/`, foto: !c.file.startsWith('studio/'), img: `<img src="img/${c.file}.webp" width="${c.w}" height="${c.h}" alt="${esc(c.alt)}" loading="lazy" decoding="async">` }; }) })}
 </section>
 
 <section class="reparto" id="sale-da-pranzo" aria-labelledby="h-pranzo">

@@ -917,3 +917,23 @@ details.acc .acc-body { padding: 0 0 1.25rem; font-size: var(--t-small); color: 
   .hero-logo__stage { margin-top: 1.5rem; padding-top: 0; }
   .hero-logo__stage img { max-height: none; }
 }
+
+/* ---- Disponibili ora: griglia da e-commerce ----------------------------- */
+.shop-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.5rem 1.25rem; padding-top: .5rem; padding-bottom: clamp(3rem, 2.5rem + 2vw, 4.5rem); background: #fff; max-width: none; }
+.shop-grid .set-card__media { border-radius: 22px; background: #F3EFE8; }
+.shop-grid .set-card__media img { aspect-ratio: 4 / 3; object-fit: cover; }
+@media (max-width: 1024px) { .shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .shop-grid { grid-template-columns: 1fr; gap: 2rem; } }
+#salotti { background: #fff; }
+.badge-nuovo, .badge-ultimi { font-weight: 600; letter-spacing: .08em; }
+.badge-nuovo { color: #8A6D3B; }
+.badge-ultimi { color: #9B3B2F; }
+/* ---- apertura: i salotti nuovi che si alternano -------------------------- */
+.hero-logo__stage { position: relative; }
+.hero-slide { display: block; transition: opacity 1s var(--ease); }
+.hero-slide:not(:first-child) { position: absolute; inset: 1.5rem 0 0; }
+.hero-slide:not(.is-on) { opacity: 0; pointer-events: none; }
+.hero-slide img { width: 100%; height: auto; max-height: 36vh; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 2.5rem 2rem rgba(0, 0, 0, .55)); }
+.hero-slide:not(:first-child) img { height: 100%; }
+.hero-slide__name { display: block; margin-top: .75rem; font-size: .875rem; font-weight: 500; color: rgba(245, 242, 236, .7); }
+@media (max-width: 760px) { .hero-slide img { max-height: none; } .hero-slide:not(:first-child) { inset: 0; } }

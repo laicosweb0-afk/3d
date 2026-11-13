@@ -55,11 +55,17 @@
      salotto nuovo in scena sul nero caldo, con una luce calda dall'alto. -->
 <section class="hero-logo" data-hero aria-labelledby="hero-titolo">
   <img class="hero-logo__mark" src="img/logo.webp" width="884" height="258" alt="Bazar Marrakech" fetchpriority="high">
-  <p class="hero-logo__eyebrow">Nuovi arrivi in showroom</p>
+  <p class="hero-logo__eyebrow">Nuovi arrivi · Disponibili ora</p>
   <h1 class="hero-logo__title" id="hero-titolo">Il tuo salotto ti aspetta.</h1>
   <p class="hero-logo__sub">Salotti, sale da pranzo e complementi in velluto e oro. Showroom a Lugo, consegne in tutta Italia.</p>
-  <div class="pills hero-logo__pills"><a class="pill" href="#salotti">Scopri i salotti</a><a class="pill pill--line" href="showroom/">Vieni in showroom</a></div>
-  <a class="hero-logo__stage" href="salotti/salotto-crema/" aria-label="Scopri il Salotto Crema"><img src="img/studio/salotto-crema-camino-png.webp" alt="Salotto Crema: divani a canne, poltrone, tavolino ovale e mobile TV con camino" fetchpriority="high" decoding="async"></a>
+  <div class="pills hero-logo__pills"><a class="pill" href="#salotti">Vedi i disponibili</a><a class="pill pill--line" href="showroom/">Vieni in showroom</a></div>
+  <div class="hero-logo__stage" data-hero-slides>
+    <a class="hero-slide is-on" href="salotti/salotto-crema/" aria-label="Scopri il Salotto Crema"><img src="img/studio/salotto-crema-camino-png.webp" alt="Salotto Crema" fetchpriority="high" decoding="async"><span class="hero-slide__name">Salotto Crema</span></a>
+    <a class="hero-slide" href="salotti/salotto-grigio/" aria-label="Scopri il Salotto Grigio"><img src="img/studio/salotto-grigio-png.webp" alt="Salotto Grigio" loading="lazy" decoding="async"><span class="hero-slide__name">Salotto Grigio</span></a>
+    <a class="hero-slide" href="salotti/salotto-antracite/" aria-label="Scopri il Salotto Antracite"><img src="img/studio/salotto-antracite-png.webp" alt="Salotto Antracite" loading="lazy" decoding="async"><span class="hero-slide__name">Salotto Antracite</span></a>
+    <a class="hero-slide" href="salotti/salotto-grafite/" aria-label="Scopri il Salotto Grafite"><img src="img/studio/salotto-grafite-png.webp" alt="Salotto Grafite" loading="lazy" decoding="async"><span class="hero-slide__name">Salotto Grafite</span></a>
+    <a class="hero-slide" href="salotti/salotto-sabbia/" aria-label="Scopri il Salotto Sabbia"><img src="img/studio/salotto-sabbia-png.webp" alt="Salotto Sabbia" loading="lazy" decoding="async"><span class="hero-slide__name">Salotto Sabbia</span></a>
+  </div>
 </section>
 
 <!-- Fascia sotto la hero, come la striscia promozionale di apple.com -->
@@ -78,42 +84,74 @@
 </nav>
 
 <section class="reparto" id="salotti" aria-labelledby="h-salotti">
-<header class="reparto__head wrap"><h2 class="reparto__title" id="h-salotti">Salotti. <span>Composizioni complete, dal divano al mobile TV.</span></h2></header>
-<div class="tiles">
-<section class="tile tile--light reveal">
-  <div class="tile__copy">
-    <p class="tile__name">Salotto Crema</p>
-    <h2 class="tile__title">Specchio, oro e il fuoco acceso.</h2>
-    <p class="tile__sub">Divani a canne, poltrone avvolgenti, il mobile TV con il camino.</p>
-    <div class="pills"><a class="pill" href="salotti/salotto-crema/">Scopri di più</a><a class="pill pill--line" href="https://wa.me/?text=Buongiorno%2C%20vorrei%20informazioni%20su%20Salotto%20Crema." target="_blank" rel="noopener">Chiedi info</a></div>
-  </div>
-  <div class="tile__media"><img src="img/studio/salotto-crema-camino.webp" width="1600" height="1200" alt="Salotto Crema con mobile TV e camino" loading="lazy" decoding="async"></div>
-</section>
-<section class="tile tile--dark reveal">
-  <div class="tile__copy">
-    <p class="tile__name">Nuova collezione</p>
-    <h2 class="tile__title">Profondo come la notte.</h2>
-    <p class="tile__sub">Velluto blu e oro.</p>
-    <div class="pills"><a class="pill" href="contatti/">Chiedi info</a><a class="pill pill--line" href="showroom/">Vieni a vederlo</a></div>
-  </div>
-  <div class="tile__media"><img class="tile__png" src="img/studio/divano-blu-png.webp" width="1216" height="654" alt="Divano chesterfield in velluto blu con gambe color oro" loading="lazy" decoding="async"></div>
-</section>
+<header class="reparto__head wrap"><h2 class="reparto__title" id="h-salotti">Disponibili ora. <span>I nuovi arrivi, pronti in showroom.</span></h2></header>
+<div class="wrap shop-grid">
+
+  <article class="set-card reveal">
+    <a class="set-card__media" href="salotti/salotto-crema/" tabindex="-1" aria-hidden="true"><img src="img/studio/salotto-crema-camino.webp" width="1600" height="1200" alt="Salotto Crema: divani a canne, poltrone, tavolino ovale e mobile TV con camino" loading="lazy" decoding="async"></a>
+    <div class="set-card__body">
+      <span class="eyebrow"><b class="badge-nuovo">Nuovo arrivo · Disponibile</b></span>
+      <div class="set-card__title"><h3 class="h3"><a href="salotti/salotto-crema/">Salotto Crema</a></h3><span class="price price--req">Prezzo su richiesta</span></div>
+      <p>Divani a canne con le cornici a specchio e oro, poltrone avvolgenti, il mobile TV con il camino.</p>
+      <a class="link" href="salotti/salotto-crema/" aria-label="Scopri: Salotto Crema">Scopri il salotto</a>
+    </div>
+  </article>
+  <article class="set-card reveal">
+    <a class="set-card__media" href="salotti/salotto-antracite/" tabindex="-1" aria-hidden="true"><img src="img/studio/salotto-antracite.webp" width="1600" height="1200" alt="Salotto Antracite: divano a canne con profili oro e due poltrone" loading="lazy" decoding="async"></a>
+    <div class="set-card__body">
+      <span class="eyebrow"><b class="badge-nuovo">Nuovo arrivo · Disponibile</b></span>
+      <div class="set-card__title"><h3 class="h3"><a href="salotti/salotto-antracite/">Salotto Antracite</a></h3><span class="price price--req">Prezzo su richiesta</span></div>
+      <p>Divano a canne con i braccioli capitonné e i profili oro, poltrone avvolgenti sulla base color oro.</p>
+      <a class="link" href="salotti/salotto-antracite/" aria-label="Scopri: Salotto Antracite">Scopri il salotto</a>
+    </div>
+  </article>
+  <article class="set-card reveal">
+    <a class="set-card__media" href="salotti/salotto-grafite/" tabindex="-1" aria-hidden="true"><img src="img/studio/salotto-grafite.webp" width="1600" height="1200" alt="Salotto Grafite: divani ad angolo, due poltrone e tavolino ovale" loading="lazy" decoding="async"></a>
+    <div class="set-card__body">
+      <span class="eyebrow"><b class="badge-nuovo">Nuovo arrivo · Disponibile</b></span>
+      <div class="set-card__title"><h3 class="h3"><a href="salotti/salotto-grafite/">Salotto Grafite</a></h3><span class="price price--req">Prezzo su richiesta</span></div>
+      <p>Divani ad angolo con le cornici a specchio e oro, poltrone con la fascia oro, tavolino ovale chiaro.</p>
+      <a class="link" href="salotti/salotto-grafite/" aria-label="Scopri: Salotto Grafite">Scopri il salotto</a>
+    </div>
+  </article>
+  <article class="set-card reveal">
+    <a class="set-card__media" href="salotti/salotto-grigio/" tabindex="-1" aria-hidden="true"><img src="img/studio/salotto-grigio.webp" width="1600" height="1200" alt="Salotto Grigio: divani e poltrone capitonné, tavolino tondo e mobile TV" loading="lazy" decoding="async"></a>
+    <div class="set-card__body">
+      <span class="eyebrow"><b class="badge-nuovo">Nuovo arrivo · Disponibile</b></span>
+      <div class="set-card__title"><h3 class="h3"><a href="salotti/salotto-grigio/">Salotto Grigio</a></h3><span class="price price--req">Prezzo su richiesta</span></div>
+      <p>Capitonné tutto intorno: due divani, due poltrone, il tavolino tondo nero e il mobile TV effetto marmo.</p>
+      <a class="link" href="salotti/salotto-grigio/" aria-label="Scopri: Salotto Grigio">Scopri il salotto</a>
+    </div>
+  </article>
+  <article class="set-card reveal">
+    <a class="set-card__media" href="salotti/salotto-sabbia/" tabindex="-1" aria-hidden="true"><img src="img/studio/salotto-sabbia.webp" width="1600" height="1200" alt="Salotto Sabbia: divani, poltrone e tavolini effetto marmo bruno" loading="lazy" decoding="async"></a>
+    <div class="set-card__body">
+      <span class="eyebrow"><b class="badge-nuovo">Nuovo arrivo · Disponibile</b></span>
+      <div class="set-card__title"><h3 class="h3"><a href="salotti/salotto-sabbia/">Salotto Sabbia</a></h3><span class="price price--req">Prezzo su richiesta</span></div>
+      <p>Divani a canne e capitonné, poltrone avvolgenti, tavolini effetto marmo bruno con i cassetti decorati.</p>
+      <a class="link" href="salotti/salotto-sabbia/" aria-label="Scopri: Salotto Sabbia">Scopri il salotto</a>
+    </div>
+  </article>
+  <article class="set-card reveal">
+    <a class="set-card__media" href="salotti/mobile-tv-camino/" tabindex="-1" aria-hidden="true"><img src="img/studio/mobile-tv-camino.webp" width="1600" height="1200" alt="Mobile TV con camino elettrico e tavolino ovale effetto marmo" loading="lazy" decoding="async"></a>
+    <div class="set-card__body">
+      <span class="eyebrow"><b class="badge-nuovo">Nuovo arrivo · Disponibile</b></span>
+      <div class="set-card__title"><h3 class="h3"><a href="salotti/mobile-tv-camino/">Mobile TV con camino</a></h3><span class="price price--req">Prezzo su richiesta</span></div>
+      <p>Piano effetto marmo, quattro cassetti in pelle a righe, il camino elettrico al centro, basi color oro.</p>
+      <a class="link" href="salotti/mobile-tv-camino/" aria-label="Scopri: Mobile TV con camino">Scopri</a>
+    </div>
+  </article>
 </div>
-<section class="carousel" data-carousel aria-roledescription="carosello" aria-label="Tutti i salotti.">
-  <div class="carousel__head wrap"><h2 class="carousel__title">Tutti i salotti.</h2><a class="carousel__link" href="collezioni/">Vedi la collezione ›</a></div>
-  <ul class="carousel__track" data-track id="car-salotti-tutti">
-    <li class="card" aria-roledescription="scheda" aria-label="1 di 9"><a class="card__a" href="salotti/salotto-crema/"><p class="card__text"><strong>Salotto Crema.</strong> Divani a canne, specchio e oro, con il camino.</p><div class="card__media"><img src="img/studio/salotto-crema-camino.webp" width="1600" height="1200" alt="Salotto Crema: divani a canne, poltrone, tavolino ovale e mobile TV con camino" loading="lazy" decoding="async"></div></a></li>
-    <li class="card" aria-roledescription="scheda" aria-label="2 di 9"><a class="card__a" href="salotti/salotto-grigio/"><p class="card__text"><strong>Salotto Grigio.</strong> Capitonné tutto intorno.</p><div class="card__media"><img src="img/studio/salotto-grigio.webp" width="1600" height="1200" alt="Salotto Grigio: divani e poltrone capitonné, tavolino tondo e mobile TV" loading="lazy" decoding="async"></div></a></li>
-    <li class="card" aria-roledescription="scheda" aria-label="3 di 9"><a class="card__a" href="salotti/salotto-antracite/"><p class="card__text"><strong>Salotto Antracite.</strong> Canne, capitonné e un filo d’oro.</p><div class="card__media"><img src="img/studio/salotto-antracite.webp" width="1600" height="1200" alt="Salotto Antracite: divano a canne con profili oro e due poltrone" loading="lazy" decoding="async"></div></a></li>
-    <li class="card" aria-roledescription="scheda" aria-label="4 di 9"><a class="card__a" href="salotti/salotto-grafite/"><p class="card__text"><strong>Salotto Grafite.</strong> In composizione ad angolo.</p><div class="card__media"><img src="img/studio/salotto-grafite.webp" width="1600" height="1200" alt="Salotto Grafite: divani ad angolo, due poltrone e tavolino ovale" loading="lazy" decoding="async"></div></a></li>
-    <li class="card" aria-roledescription="scheda" aria-label="5 di 9"><a class="card__a" href="salotti/salotto-sabbia/"><p class="card__text"><strong>Salotto Sabbia.</strong> Tessuti lavorati e marmo bruno.</p><div class="card__media"><img src="img/studio/salotto-sabbia.webp" width="1600" height="1200" alt="Salotto Sabbia: divani, poltrone e tavolini effetto marmo bruno" loading="lazy" decoding="async"></div></a></li>
-    <li class="card" aria-roledescription="scheda" aria-label="6 di 9"><a class="card__a" href="salotti/salotto-tortora/"><p class="card__text"><strong>Salotto Tortora.</strong> Le curve che abbracciano.</p><div class="card__media"><img src="img/studio/salotto-tortora.webp" width="1600" height="1200" alt="Salotto Tortora: divano capitonné, due poltrone tonde e tavolini nesting" loading="lazy" decoding="async"></div></a></li>
-    <li class="card" aria-roledescription="scheda" aria-label="7 di 9"><a class="card__a" href="salotti/salotto-nero/"><p class="card__text"><strong>Salotto Nero.</strong> Velluto nero e profili argento.</p><div class="card__media"><img src="img/studio/salotto-nero-poltrone.webp" width="1600" height="1200" alt="Le poltrone in velluto nero del Salotto Nero" loading="lazy" decoding="async"></div></a></li>
-    <li class="card" aria-roledescription="scheda" aria-label="8 di 9"><a class="card__a" href="salotti/salotto-avorio/"><p class="card__text"><strong>Salotto Avorio.</strong> Luce, a canne.</p><div class="card__media"><img src="img/studio/salotto-avorio-poltrone.webp" width="1600" height="1200" alt="Le due poltrone del Salotto Avorio, tessuto lavorato e base color oro" loading="lazy" decoding="async"></div></a></li>
-    <li class="card card--foto" aria-roledescription="scheda" aria-label="9 di 9"><a class="card__a" href="salotti/salotto-beige/"><p class="card__text"><strong>Salotto Beige.</strong> Due chesterfield affacciati.</p><div class="card__media"><img src="img/divano-beige.webp" width="1000" height="749" alt="Salotto Beige: due divani chesterfield affacciati con tavolino in marmo" loading="lazy" decoding="async"></div></a></li>
+<section class="carousel carousel--grey" data-carousel aria-roledescription="carosello" aria-label="Ultimi pezzi. &lt;span&gt;Fino a esaurimento.&lt;/span&gt;">
+  <div class="carousel__head wrap"><h2 class="carousel__title">Ultimi pezzi. <span>Fino a esaurimento.</span></h2></div>
+  <ul class="carousel__track" data-track id="car-ultimi">
+    <li class="card" aria-roledescription="scheda" aria-label="1 di 4"><a class="card__a" href="salotti/salotto-tortora/"><p class="card__text"><strong>Salotto Tortora.</strong> Ultimi pezzi disponibili.</p><div class="card__media"><img src="img/studio/salotto-tortora.webp" width="1600" height="1200" alt="Salotto Tortora: divano capitonné, due poltrone tonde e tavolini nesting" loading="lazy" decoding="async"></div></a></li>
+    <li class="card card--foto" aria-roledescription="scheda" aria-label="2 di 4"><a class="card__a" href="salotti/salotto-beige/"><p class="card__text"><strong>Salotto Beige.</strong> Ultimi pezzi disponibili.</p><div class="card__media"><img src="img/divano-beige.webp" width="1000" height="749" alt="Salotto Beige: due divani chesterfield affacciati con tavolino in marmo" loading="lazy" decoding="async"></div></a></li>
+    <li class="card" aria-roledescription="scheda" aria-label="3 di 4"><a class="card__a" href="salotti/salotto-nero/"><p class="card__text"><strong>Salotto Nero.</strong> Ultimi pezzi disponibili.</p><div class="card__media"><img src="img/studio/salotto-nero-poltrone.webp" width="1600" height="1200" alt="Le poltrone in velluto nero del Salotto Nero" loading="lazy" decoding="async"></div></a></li>
+    <li class="card" aria-roledescription="scheda" aria-label="4 di 4"><a class="card__a" href="salotti/salotto-avorio/"><p class="card__text"><strong>Salotto Avorio.</strong> Ultimi pezzi disponibili.</p><div class="card__media"><img src="img/studio/salotto-avorio-poltrone.webp" width="1600" height="1200" alt="Le due poltrone del Salotto Avorio, tessuto lavorato e base color oro" loading="lazy" decoding="async"></div></a></li>
   </ul>
   <div class="carousel__controls">
-    <div class="carousel__dots" role="tablist" aria-label="Schede"><button type="button" role="tab" aria-label="Scheda 1" aria-selected="true" data-dot="0"></button><button type="button" role="tab" aria-label="Scheda 2" aria-selected="false" data-dot="1"></button><button type="button" role="tab" aria-label="Scheda 3" aria-selected="false" data-dot="2"></button><button type="button" role="tab" aria-label="Scheda 4" aria-selected="false" data-dot="3"></button><button type="button" role="tab" aria-label="Scheda 5" aria-selected="false" data-dot="4"></button><button type="button" role="tab" aria-label="Scheda 6" aria-selected="false" data-dot="5"></button><button type="button" role="tab" aria-label="Scheda 7" aria-selected="false" data-dot="6"></button><button type="button" role="tab" aria-label="Scheda 8" aria-selected="false" data-dot="7"></button><button type="button" role="tab" aria-label="Scheda 9" aria-selected="false" data-dot="8"></button></div>
+    <div class="carousel__dots" role="tablist" aria-label="Schede"><button type="button" role="tab" aria-label="Scheda 1" aria-selected="true" data-dot="0"></button><button type="button" role="tab" aria-label="Scheda 2" aria-selected="false" data-dot="1"></button><button type="button" role="tab" aria-label="Scheda 3" aria-selected="false" data-dot="2"></button><button type="button" role="tab" aria-label="Scheda 4" aria-selected="false" data-dot="3"></button></div>
     <button class="carousel__play" type="button" data-play aria-label="Metti in pausa" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-pause" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/><path class="i-play" d="M8 5l11 7-11 7z"/></svg></button>
   </div>
 </section>
@@ -243,7 +281,7 @@
       </div>
       <div>
         <h2>Esplora</h2>
-        <ul><li><a href="collezioni/">Collezioni</a></li><li><a href="collezioni/capitonne/">Capitonné</a></li><li><a href="collezioni/chesterfield/">Chesterfield</a></li><li><a href="collezioni/contemporanea/">Contemporanea</a></li><li><a href="collezioni/sale-da-pranzo/">Sale da pranzo</a></li><li><a href="collezioni/complementi/">Complementi d’arredo</a></li><li><a href="borsa/">Borsa</a></li></ul>
+        <ul><li><a href="collezioni/">Collezioni</a></li><li><a href="collezioni/contemporanea/">Contemporanea</a></li><li><a href="collezioni/chesterfield/">Chesterfield</a></li><li><a href="collezioni/capitonne/">Capitonné</a></li><li><a href="collezioni/complementi/">Complementi d’arredo</a></li><li><a href="collezioni/sale-da-pranzo/">Sale da pranzo</a></li><li><a href="borsa/">Borsa</a></li></ul>
       </div>
       <div>
         <h2>Showroom</h2>
