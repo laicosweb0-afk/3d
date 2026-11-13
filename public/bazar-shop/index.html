@@ -51,13 +51,15 @@
 <main id="main">
 
 <script>(function(){var h=location.hash,m=h.match(/^#\/(p|negozio|borsa|showroom)(?:\/([\w-]+))?/);if(!m)return;var t={borsa:'borsa/',showroom:'showroom/',negozio:'collezioni/'}[m[1]];if(m[1]==='p')t=/^salotto-(tortora|beige)$/.test(m[2])?'salotti/'+m[2]+'/':'collezioni/';location.replace(t)})()</script>
-<!-- HERO: calma, alla maniera di Apple. Prima di tutto il marchio, grande e
-     nitido sul nero caldo; scorrendo arrivano subito i salotti. -->
+<!-- HERO, alla maniera di Apple: il marchio, un titolo, due pillole e il
+     salotto nuovo in scena sul nero caldo, con una luce calda dall'alto. -->
 <section class="hero-logo" data-hero aria-labelledby="hero-titolo">
-  <h1 id="hero-titolo" class="sr-only">Bazar Marrakech — salotti e divani, showroom a Lugo</h1>
   <img class="hero-logo__mark" src="img/logo.webp" width="884" height="258" alt="Bazar Marrakech" fetchpriority="high">
-  <p class="hero-logo__line">Il tuo salotto ti aspetta.</p>
-  <a class="hero-logo__hint" href="#salotti" aria-label="Scorri ai salotti"><span>Scorri</span><i aria-hidden="true"></i></a>
+  <p class="hero-logo__eyebrow">Nuovi arrivi in showroom</p>
+  <h1 class="hero-logo__title" id="hero-titolo">Il tuo salotto ti aspetta.</h1>
+  <p class="hero-logo__sub">Salotti, sale da pranzo e complementi in velluto e oro. Showroom a Lugo, consegne in tutta Italia.</p>
+  <div class="pills hero-logo__pills"><a class="pill" href="#salotti">Scopri i salotti</a><a class="pill pill--line" href="showroom/">Vieni in showroom</a></div>
+  <a class="hero-logo__stage" href="salotti/salotto-crema/" aria-label="Scopri il Salotto Crema"><img src="img/studio/salotto-crema-camino-png.webp" alt="Salotto Crema: divani a canne, poltrone, tavolino ovale e mobile TV con camino" fetchpriority="high" decoding="async"></a>
 </section>
 
 <!-- Fascia sotto la hero, come la striscia promozionale di apple.com -->
@@ -65,9 +67,9 @@
 
 <nav class="reparti-nav" aria-label="Reparti">
   <ul class="reparti-nav__list">
-    <li><a href="#salotti"><span class="reparti-nav__img"><img src="img/nuovi/salotto-crema-camino.webp" alt="" loading="lazy" decoding="async"></span>Salotti</a></li>
+    <li><a href="#salotti"><span class="reparti-nav__img"><img src="img/studio/salotto-crema-camino.webp" alt="" loading="lazy" decoding="async"></span>Salotti</a></li>
     <li><a href="#sale-da-pranzo"><span class="reparti-nav__img"><img src="img/studio/pranzo-ovale-blu.webp" alt="" loading="lazy" decoding="async"></span>Sale da pranzo</a></li>
-    <li><a href="#complementi"><span class="reparti-nav__img"><img src="img/nuovi/mobile-tv-camino.webp" alt="" loading="lazy" decoding="async"></span>Complementi</a></li>
+    <li><a href="#complementi"><span class="reparti-nav__img"><img src="img/studio/mobile-tv-camino.webp" alt="" loading="lazy" decoding="async"></span>Complementi</a></li>
     <li><a href="#decorazioni"><span class="reparti-nav__img"><img src="img/studio/leopardo.webp" alt="" loading="lazy" decoding="async"></span>Decorazioni</a></li>
     <li><a href="#profumi"><span class="reparti-nav__img"><img src="img/studio/khamrah-qahwa.webp" alt="" loading="lazy" decoding="async"></span>Profumi</a></li>
     <li><a href="#casa"><span class="reparti-nav__img"><img src="img/pacco/scatola-icona.webp" alt="" loading="lazy" decoding="async"></span>Casa e cucina</a></li>
@@ -78,14 +80,14 @@
 <section class="reparto" id="salotti" aria-labelledby="h-salotti">
 <header class="reparto__head wrap"><h2 class="reparto__title" id="h-salotti">Salotti. <span>Composizioni complete, dal divano al mobile TV.</span></h2></header>
 <div class="tiles">
-<section class="tile tile--light tile--foto reveal">
+<section class="tile tile--light reveal">
   <div class="tile__copy">
     <p class="tile__name">Salotto Crema</p>
     <h2 class="tile__title">Specchio, oro e il fuoco acceso.</h2>
     <p class="tile__sub">Divani a canne, poltrone avvolgenti, il mobile TV con il camino.</p>
     <div class="pills"><a class="pill" href="salotti/salotto-crema/">Scopri di più</a><a class="pill pill--line" href="https://wa.me/?text=Buongiorno%2C%20vorrei%20informazioni%20su%20Salotto%20Crema." target="_blank" rel="noopener">Chiedi info</a></div>
   </div>
-  <div class="tile__media"><img src="img/nuovi/salotto-crema-camino.webp" width="1400" height="1050" alt="Salotto Crema con mobile TV e camino" loading="lazy" decoding="async"></div>
+  <div class="tile__media"><img src="img/studio/salotto-crema-camino.webp" width="1600" height="1200" alt="Salotto Crema con mobile TV e camino" loading="lazy" decoding="async"></div>
 </section>
 <section class="tile tile--dark reveal">
   <div class="tile__copy">
@@ -100,11 +102,11 @@
 <section class="carousel" data-carousel aria-roledescription="carosello" aria-label="Tutti i salotti.">
   <div class="carousel__head wrap"><h2 class="carousel__title">Tutti i salotti.</h2><a class="carousel__link" href="collezioni/">Vedi la collezione ›</a></div>
   <ul class="carousel__track" data-track id="car-salotti-tutti">
-    <li class="card card--foto" aria-roledescription="scheda" aria-label="1 di 9"><a class="card__a" href="salotti/salotto-crema/"><p class="card__text"><strong>Salotto Crema.</strong> Divani a canne, specchio e oro, con il camino.</p><div class="card__media"><img src="img/nuovi/salotto-crema-camino.webp" width="1400" height="1050" alt="Salotto Crema: divani a canne, poltrone, tavolino ovale e mobile TV con camino" loading="lazy" decoding="async"></div></a></li>
-    <li class="card card--foto" aria-roledescription="scheda" aria-label="2 di 9"><a class="card__a" href="salotti/salotto-grigio/"><p class="card__text"><strong>Salotto Grigio.</strong> Capitonné tutto intorno.</p><div class="card__media"><img src="img/nuovi/salotto-grigio.webp" width="1400" height="1078" alt="Salotto Grigio: divani e poltrone capitonné, tavolino tondo e mobile TV" loading="lazy" decoding="async"></div></a></li>
-    <li class="card card--foto" aria-roledescription="scheda" aria-label="3 di 9"><a class="card__a" href="salotti/salotto-antracite/"><p class="card__text"><strong>Salotto Antracite.</strong> Canne, capitonné e un filo d’oro.</p><div class="card__media"><img src="img/nuovi/salotto-antracite.webp" width="1400" height="1154" alt="Salotto Antracite: divano a canne con profili oro e due poltrone" loading="lazy" decoding="async"></div></a></li>
-    <li class="card card--foto" aria-roledescription="scheda" aria-label="4 di 9"><a class="card__a" href="salotti/salotto-grafite/"><p class="card__text"><strong>Salotto Grafite.</strong> In composizione ad angolo.</p><div class="card__media"><img src="img/nuovi/salotto-grafite.webp" width="1400" height="1054" alt="Salotto Grafite: divani ad angolo, due poltrone e tavolino ovale" loading="lazy" decoding="async"></div></a></li>
-    <li class="card card--foto" aria-roledescription="scheda" aria-label="5 di 9"><a class="card__a" href="salotti/salotto-sabbia/"><p class="card__text"><strong>Salotto Sabbia.</strong> Tessuti lavorati e marmo bruno.</p><div class="card__media"><img src="img/nuovi/salotto-sabbia.webp" width="1400" height="1050" alt="Salotto Sabbia: divani, poltrone e tavolini effetto marmo bruno" loading="lazy" decoding="async"></div></a></li>
+    <li class="card" aria-roledescription="scheda" aria-label="1 di 9"><a class="card__a" href="salotti/salotto-crema/"><p class="card__text"><strong>Salotto Crema.</strong> Divani a canne, specchio e oro, con il camino.</p><div class="card__media"><img src="img/studio/salotto-crema-camino.webp" width="1600" height="1200" alt="Salotto Crema: divani a canne, poltrone, tavolino ovale e mobile TV con camino" loading="lazy" decoding="async"></div></a></li>
+    <li class="card" aria-roledescription="scheda" aria-label="2 di 9"><a class="card__a" href="salotti/salotto-grigio/"><p class="card__text"><strong>Salotto Grigio.</strong> Capitonné tutto intorno.</p><div class="card__media"><img src="img/studio/salotto-grigio.webp" width="1600" height="1200" alt="Salotto Grigio: divani e poltrone capitonné, tavolino tondo e mobile TV" loading="lazy" decoding="async"></div></a></li>
+    <li class="card" aria-roledescription="scheda" aria-label="3 di 9"><a class="card__a" href="salotti/salotto-antracite/"><p class="card__text"><strong>Salotto Antracite.</strong> Canne, capitonné e un filo d’oro.</p><div class="card__media"><img src="img/studio/salotto-antracite.webp" width="1600" height="1200" alt="Salotto Antracite: divano a canne con profili oro e due poltrone" loading="lazy" decoding="async"></div></a></li>
+    <li class="card" aria-roledescription="scheda" aria-label="4 di 9"><a class="card__a" href="salotti/salotto-grafite/"><p class="card__text"><strong>Salotto Grafite.</strong> In composizione ad angolo.</p><div class="card__media"><img src="img/studio/salotto-grafite.webp" width="1600" height="1200" alt="Salotto Grafite: divani ad angolo, due poltrone e tavolino ovale" loading="lazy" decoding="async"></div></a></li>
+    <li class="card" aria-roledescription="scheda" aria-label="5 di 9"><a class="card__a" href="salotti/salotto-sabbia/"><p class="card__text"><strong>Salotto Sabbia.</strong> Tessuti lavorati e marmo bruno.</p><div class="card__media"><img src="img/studio/salotto-sabbia.webp" width="1600" height="1200" alt="Salotto Sabbia: divani, poltrone e tavolini effetto marmo bruno" loading="lazy" decoding="async"></div></a></li>
     <li class="card" aria-roledescription="scheda" aria-label="6 di 9"><a class="card__a" href="salotti/salotto-tortora/"><p class="card__text"><strong>Salotto Tortora.</strong> Le curve che abbracciano.</p><div class="card__media"><img src="img/studio/salotto-tortora.webp" width="1600" height="1200" alt="Salotto Tortora: divano capitonné, due poltrone tonde e tavolini nesting" loading="lazy" decoding="async"></div></a></li>
     <li class="card" aria-roledescription="scheda" aria-label="7 di 9"><a class="card__a" href="salotti/salotto-nero/"><p class="card__text"><strong>Salotto Nero.</strong> Velluto nero e profili argento.</p><div class="card__media"><img src="img/studio/salotto-nero-poltrone.webp" width="1600" height="1200" alt="Le poltrone in velluto nero del Salotto Nero" loading="lazy" decoding="async"></div></a></li>
     <li class="card" aria-roledescription="scheda" aria-label="8 di 9"><a class="card__a" href="salotti/salotto-avorio/"><p class="card__text"><strong>Salotto Avorio.</strong> Luce, a canne.</p><div class="card__media"><img src="img/studio/salotto-avorio-poltrone.webp" width="1600" height="1200" alt="Le due poltrone del Salotto Avorio, tessuto lavorato e base color oro" loading="lazy" decoding="async"></div></a></li>
@@ -137,8 +139,8 @@
 <section class="carousel" data-carousel aria-roledescription="carosello" aria-label="Poltrone e complementi.">
   <div class="carousel__head wrap"><h2 class="carousel__title">Poltrone e complementi.</h2><a class="carousel__link" href="collezioni/complementi/">Tutti i complementi ›</a></div>
   <ul class="carousel__track" data-track id="car-complementi">
-    <li class="card card--foto" aria-roledescription="scheda" aria-label="1 di 6"><a class="card__a" href="salotti/mobile-tv-camino/"><p class="card__text"><strong>Mobile TV con camino.</strong> Piano effetto marmo, cassetti in pelle a righe.</p><div class="card__media"><img src="img/nuovi/mobile-tv-camino.webp" width="1400" height="1050" alt="Mobile TV con camino elettrico e tavolino ovale" loading="lazy" decoding="async"></div></a></li>
-    <li class="card card--foto" aria-roledescription="scheda" aria-label="2 di 6"><a class="card__a" href="salotti/mobile-tv-camino/"><p class="card__text"><strong>Tavolino ovale.</strong> Piano effetto marmo, fascia in pelle, base color oro.</p><div class="card__media"><img src="img/nuovi/tavolino-ovale-studio.webp" width="1400" height="1254" alt="Tavolino ovale effetto marmo con base color oro" loading="lazy" decoding="async"></div></a></li>
+    <li class="card" aria-roledescription="scheda" aria-label="1 di 6"><a class="card__a" href="salotti/mobile-tv-camino/"><p class="card__text"><strong>Mobile TV con camino.</strong> Piano effetto marmo, cassetti in pelle a righe.</p><div class="card__media"><img src="img/studio/mobile-tv-camino.webp" width="1600" height="1200" alt="Mobile TV con camino elettrico e tavolino ovale" loading="lazy" decoding="async"></div></a></li>
+    <li class="card" aria-roledescription="scheda" aria-label="2 di 6"><a class="card__a" href="salotti/mobile-tv-camino/"><p class="card__text"><strong>Tavolino ovale.</strong> Piano effetto marmo, fascia in pelle, base color oro.</p><div class="card__media"><img src="img/studio/tavolino-ovale-studio.webp" width="1600" height="1200" alt="Tavolino ovale effetto marmo con base color oro" loading="lazy" decoding="async"></div></a></li>
     <li class="card" aria-roledescription="scheda" aria-label="3 di 6"><p class="card__text"><strong>Chesterfield Nero.</strong> Velluto nero, capitonné, base color oro.</p><div class="card__media"><img src="img/studio/chesterfield-nero.webp" width="1600" height="1200" alt="Divano chesterfield in velluto nero" loading="lazy" decoding="async"></div></li>
     <li class="card" aria-roledescription="scheda" aria-label="4 di 6"><p class="card__text"><strong>Bergère Blu.</strong> Lo schienale alto, le gambe sottili color oro.</p><div class="card__media"><img src="img/studio/poltrona-blu.webp" width="1600" height="2000" alt="Poltrona bergère in velluto blu" loading="lazy" decoding="async"></div></li>
     <li class="card" aria-roledescription="scheda" aria-label="5 di 6"><p class="card__text"><strong>Poltrona Tonda.</strong> Girevole, capitonné tutto intorno.</p><div class="card__media"><img src="img/studio/poltrona-tonda.webp" width="1600" height="2000" alt="Poltrona tonda girevole in velluto tortora" loading="lazy" decoding="async"></div></li>
@@ -269,16 +271,19 @@
   <div class="promo-pop__bg" data-promo-chiudi></div>
   <div class="promo-pop__card" role="dialog" aria-modal="true" aria-labelledby="promo-titolo">
     <button class="promo-pop__x" type="button" data-promo-chiudi aria-label="Chiudi">×</button>
-    <img class="promo-pop__img" src="img/pacco/scatola-chiusa.webp" width="900" height="1200" alt="" loading="lazy" decoding="async">
     <div class="promo-pop__copy">
-      <p class="promo-pop__eyebrow">Novità · 35 kg</p>
-      <h2 class="promo-pop__title" id="promo-titolo">Set bicchieri <span>7 €.</span><br>Spedizione <span>7 €.</span></h2>
-      <p class="promo-pop__sub">Un pacco fino a 35 kg: riempilo con quello che vuoi.</p>
-      <div class="pills"><a class="pill" href="35kg/">Riempi il pacco</a><button class="pill pill--line" type="button" data-promo-chiudi>Più tardi</button></div>
+      <p class="promo-pop__eyebrow">Nuovi arrivi</p>
+      <h2 class="promo-pop__title" id="promo-titolo">È arrivata la nuova merce.</h2>
+      <p class="promo-pop__sub">Cinque nuovi salotti e il mobile TV con il camino: scoprili online o vieni a vederli a Lugo.</p>
+    </div>
+    <ul class="promo-pop__list"><li><a href="salotti/salotto-crema/"><span class="promo-pop__thumb"><img src="img/studio/salotto-crema-camino.webp" alt="" decoding="async"></span>Salotto Crema</a></li><li><a href="salotti/salotto-grigio/"><span class="promo-pop__thumb"><img src="img/studio/salotto-grigio.webp" alt="" decoding="async"></span>Salotto Grigio</a></li><li><a href="salotti/salotto-antracite/"><span class="promo-pop__thumb"><img src="img/studio/salotto-antracite.webp" alt="" decoding="async"></span>Salotto Antracite</a></li><li><a href="salotti/mobile-tv-camino/"><span class="promo-pop__thumb"><img src="img/studio/mobile-tv-camino.webp" alt="" decoding="async"></span>Mobile TV con camino</a></li></ul>
+    <div class="promo-pop__copy promo-pop__copy--foot">
+      <div class="pills"><a class="pill" href="#salotti" data-promo-chiudi-link>Scopri i nuovi arrivi</a><button class="pill pill--line" type="button" data-promo-chiudi>Più tardi</button></div>
+      <a class="promo-pop__extra" href="35kg/">Novità anche in cucina: il pacco da 35 kg, spedizione 7 € ›</a>
     </div>
   </div>
 </div>
-<a class="promo-fab" href="35kg/" data-promo-fab aria-label="Novità: il pacco da 35 kg con spedizione a 7 euro"><img src="img/pacco/scatola-icona.webp" width="256" height="171" alt=""><span><small>Novità</small>35 kg</span></a>
+<a class="promo-fab" href="#salotti" data-promo-fab aria-label="Nuovi arrivi"><img src="img/pacco/scatola-icona.webp" width="256" height="171" alt=""><span><small>Novità</small>Nuovi arrivi</span></a>
 <script src="assets/catalogo.js"></script>
 <script src="assets/app.js" defer></script>
 <script src="assets/hero.js" defer></script>

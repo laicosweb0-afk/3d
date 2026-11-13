@@ -102,7 +102,7 @@
   // pillola in basso resta su tutte le pagine per tornare alla novità.
   const pop = $('[data-promo]'), fab = $('[data-promo-fab]');
   if (pop && fab) {
-    const VISTO = 'bm.promo.35kg';
+    const VISTO = 'bm.promo.nuovi';
     let visto = false;
     try { visto = sessionStorage.getItem(VISTO) === '1'; } catch { /* niente */ }
     const mostraFab = () => fab.classList.add('is-on');
@@ -123,7 +123,7 @@
     $$('[data-promo-chiudi]', pop).forEach((b) => b.addEventListener('click', chiudi));
     addEventListener('keydown', (e) => { if (e.key === 'Escape' && !pop.hidden) chiudi(); });
     // chi va alla novità dal popup non lo rivede in questa visita
-    $('a.pill', pop).addEventListener('click', () => { try { sessionStorage.setItem(VISTO, '1'); } catch { /* niente */ } });
+    $$('a', pop).forEach((l) => l.addEventListener('click', () => { try { sessionStorage.setItem(VISTO, '1'); } catch { /* niente */ } if (l.hasAttribute('data-promo-chiudi-link')) chiudi(); }));
     if (visto) mostraFab();
     else setTimeout(apri, 900);
   }

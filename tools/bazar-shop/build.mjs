@@ -70,16 +70,19 @@ function promo(root) {
   <div class="promo-pop__bg" data-promo-chiudi></div>
   <div class="promo-pop__card" role="dialog" aria-modal="true" aria-labelledby="promo-titolo">
     <button class="promo-pop__x" type="button" data-promo-chiudi aria-label="Chiudi">×</button>
-    <img class="promo-pop__img" src="${root}img/pacco/scatola-chiusa.webp" width="900" height="1200" alt="" loading="lazy" decoding="async">
     <div class="promo-pop__copy">
-      <p class="promo-pop__eyebrow">Novità · 35 kg</p>
-      <h2 class="promo-pop__title" id="promo-titolo">Set bicchieri <span>7 €.</span><br>Spedizione <span>7 €.</span></h2>
-      <p class="promo-pop__sub">Un pacco fino a 35 kg: riempilo con quello che vuoi.</p>
-      <div class="pills"><a class="pill" href="${root}35kg/">Riempi il pacco</a><button class="pill pill--line" type="button" data-promo-chiudi>Più tardi</button></div>
+      <p class="promo-pop__eyebrow">Nuovi arrivi</p>
+      <h2 class="promo-pop__title" id="promo-titolo">È arrivata la nuova merce.</h2>
+      <p class="promo-pop__sub">Cinque nuovi salotti e il mobile TV con il camino: scoprili online o vieni a vederli a Lugo.</p>
+    </div>
+    <ul class="promo-pop__list"><li><a href="${root}salotti/salotto-crema/"><span class="promo-pop__thumb"><img src="${root}img/${SET.find((x) => x.slug === 'salotto-crema').copertina.file}.webp" alt="" decoding="async"></span>Salotto Crema</a></li><li><a href="${root}salotti/salotto-grigio/"><span class="promo-pop__thumb"><img src="${root}img/${SET.find((x) => x.slug === 'salotto-grigio').copertina.file}.webp" alt="" decoding="async"></span>Salotto Grigio</a></li><li><a href="${root}salotti/salotto-antracite/"><span class="promo-pop__thumb"><img src="${root}img/${SET.find((x) => x.slug === 'salotto-antracite').copertina.file}.webp" alt="" decoding="async"></span>Salotto Antracite</a></li><li><a href="${root}salotti/mobile-tv-camino/"><span class="promo-pop__thumb"><img src="${root}img/${SET.find((x) => x.slug === 'mobile-tv-camino').copertina.file}.webp" alt="" decoding="async"></span>Mobile TV con camino</a></li></ul>
+    <div class="promo-pop__copy promo-pop__copy--foot">
+      <div class="pills"><a class="pill" href="${root}#salotti" data-promo-chiudi-link>Scopri i nuovi arrivi</a><button class="pill pill--line" type="button" data-promo-chiudi>Più tardi</button></div>
+      <a class="promo-pop__extra" href="${root}35kg/">Novità anche in cucina: il pacco da 35 kg, spedizione 7 € ›</a>
     </div>
   </div>
 </div>
-<a class="promo-fab" href="${root}35kg/" data-promo-fab aria-label="Novità: il pacco da 35 kg con spedizione a 7 euro"><img src="${root}img/pacco/scatola-icona.webp" width="256" height="171" alt=""><span><small>Novità</small>35 kg</span></a>`;
+<a class="promo-fab" href="${root}#salotti" data-promo-fab aria-label="Nuovi arrivi"><img src="${root}img/pacco/scatola-icona.webp" width="256" height="171" alt=""><span><small>Novità</small>Nuovi arrivi</span></a>`;
 }
 
 function layout({ path, title, description, body, root, nav = '', image = 'salotto-completo', jsonLd = null, noindex = false, bodyClass = '', heroOver = false, scripts = '' }) {
@@ -250,13 +253,15 @@ const page = (path, html) => pages.push({ path, html });
     jsonLd: jsonLdNegozio(root),
     body: `
 <script>(function(){var h=location.hash,m=h.match(/^#\\/(p|negozio|borsa|showroom)(?:\\/([\\w-]+))?/);if(!m)return;var t={borsa:'borsa/',showroom:'showroom/',negozio:'collezioni/'}[m[1]];if(m[1]==='p')t=/^salotto-(tortora|beige)$/.test(m[2])?'salotti/'+m[2]+'/':'collezioni/';location.replace(t)})()</script>
-<!-- HERO: calma, alla maniera di Apple. Prima di tutto il marchio, grande e
-     nitido sul nero caldo; scorrendo arrivano subito i salotti. -->
+<!-- HERO, alla maniera di Apple: il marchio, un titolo, due pillole e il
+     salotto nuovo in scena sul nero caldo, con una luce calda dall'alto. -->
 <section class="hero-logo" data-hero aria-labelledby="hero-titolo">
-  <h1 id="hero-titolo" class="sr-only">Bazar Marrakech — salotti e divani, showroom a Lugo</h1>
   <img class="hero-logo__mark" src="img/logo.webp" width="884" height="258" alt="Bazar Marrakech" fetchpriority="high">
-  <p class="hero-logo__line">Il tuo salotto ti aspetta.</p>
-  <a class="hero-logo__hint" href="#salotti" aria-label="Scorri ai salotti"><span>Scorri</span><i aria-hidden="true"></i></a>
+  <p class="hero-logo__eyebrow">Nuovi arrivi in showroom</p>
+  <h1 class="hero-logo__title" id="hero-titolo">Il tuo salotto ti aspetta.</h1>
+  <p class="hero-logo__sub">Salotti, sale da pranzo e complementi in velluto e oro. Showroom a Lugo, consegne in tutta Italia.</p>
+  <div class="pills hero-logo__pills"><a class="pill" href="#salotti">Scopri i salotti</a><a class="pill pill--line" href="showroom/">Vieni in showroom</a></div>
+  <a class="hero-logo__stage" href="salotti/salotto-crema/" aria-label="Scopri il Salotto Crema"><img src="img/studio/salotto-crema-camino-png.webp" alt="Salotto Crema: divani a canne, poltrone, tavolino ovale e mobile TV con camino" fetchpriority="high" decoding="async"></a>
 </section>
 
 <!-- Fascia sotto la hero, come la striscia promozionale di apple.com -->
@@ -264,9 +269,9 @@ const page = (path, html) => pages.push({ path, html });
 
 <nav class="reparti-nav" aria-label="Reparti">
   <ul class="reparti-nav__list">
-    <li><a href="#salotti"><span class="reparti-nav__img"><img src="img/nuovi/salotto-crema-camino.webp" alt="" loading="lazy" decoding="async"></span>Salotti</a></li>
+    <li><a href="#salotti"><span class="reparti-nav__img"><img src="img/studio/salotto-crema-camino.webp" alt="" loading="lazy" decoding="async"></span>Salotti</a></li>
     <li><a href="#sale-da-pranzo"><span class="reparti-nav__img"><img src="img/studio/pranzo-ovale-blu.webp" alt="" loading="lazy" decoding="async"></span>Sale da pranzo</a></li>
-    <li><a href="#complementi"><span class="reparti-nav__img"><img src="img/nuovi/mobile-tv-camino.webp" alt="" loading="lazy" decoding="async"></span>Complementi</a></li>
+    <li><a href="#complementi"><span class="reparti-nav__img"><img src="img/studio/mobile-tv-camino.webp" alt="" loading="lazy" decoding="async"></span>Complementi</a></li>
     <li><a href="#decorazioni"><span class="reparti-nav__img"><img src="img/studio/leopardo.webp" alt="" loading="lazy" decoding="async"></span>Decorazioni</a></li>
     <li><a href="#profumi"><span class="reparti-nav__img"><img src="img/studio/khamrah-qahwa.webp" alt="" loading="lazy" decoding="async"></span>Profumi</a></li>
     <li><a href="#casa"><span class="reparti-nav__img"><img src="img/pacco/scatola-icona.webp" alt="" loading="lazy" decoding="async"></span>Casa e cucina</a></li>
@@ -277,7 +282,7 @@ const page = (path, html) => pages.push({ path, html });
 <section class="reparto" id="salotti" aria-labelledby="h-salotti">
 <header class="reparto__head wrap"><h2 class="reparto__title" id="h-salotti">Salotti. <span>Composizioni complete, dal divano al mobile TV.</span></h2></header>
 <div class="tiles">
-${tile({ tema: 'light', nome: 'Salotto Crema', titolo: 'Specchio, oro e il fuoco acceso.', sotto: 'Divani a canne, poltrone avvolgenti, il mobile TV con il camino.', href: 'salotti/salotto-crema/', wa: 'Salotto Crema', foto: true, media: '<img src="img/nuovi/salotto-crema-camino.webp" width="1400" height="1050" alt="Salotto Crema con mobile TV e camino" loading="lazy" decoding="async">' })}
+${tile({ tema: 'light', nome: 'Salotto Crema', titolo: 'Specchio, oro e il fuoco acceso.', sotto: 'Divani a canne, poltrone avvolgenti, il mobile TV con il camino.', href: 'salotti/salotto-crema/', wa: 'Salotto Crema', media: '<img src="img/studio/salotto-crema-camino.webp" width="1600" height="1200" alt="Salotto Crema con mobile TV e camino" loading="lazy" decoding="async">' })}
 ${tile({ tema: 'dark', nome: 'Nuova collezione', titolo: 'Profondo come la notte.', sotto: 'Velluto blu e oro.', href: 'contatti/', label1: 'Chiedi info', href2: 'showroom/', label2: 'Vieni a vederlo', media: '<img class="tile__png" src="img/studio/divano-blu-png.webp" width="1216" height="654" alt="Divano chesterfield in velluto blu con gambe color oro" loading="lazy" decoding="async">' })}
 </div>
 ${carosello({ id: 'salotti-tutti', titolo: 'Tutti i salotti.', link: { href: 'collezioni/', label: 'Vedi la collezione ›' }, schede: [['salotto-crema', 'Salotto Crema. Divani a canne, specchio e oro, con il camino.'], ['salotto-grigio', 'Salotto Grigio. Capitonné tutto intorno.'], ['salotto-antracite', 'Salotto Antracite. Canne, capitonné e un filo d’oro.'], ['salotto-grafite', 'Salotto Grafite. In composizione ad angolo.'], ['salotto-sabbia', 'Salotto Sabbia. Tessuti lavorati e marmo bruno.'], ['salotto-tortora', 'Salotto Tortora. Le curve che abbracciano.'], ['salotto-nero', 'Salotto Nero. Velluto nero e profili argento.'], ['salotto-avorio', 'Salotto Avorio. Luce, a canne.'], ['salotto-beige', 'Salotto Beige. Due chesterfield affacciati.']].map(([sl, t]) => { const x = SET.find((y) => y.slug === sl); const c = x.copertina || x.foto[0]; return { testo: t, href: `salotti/${sl}/`, foto: !c.file.startsWith('studio/'), img: `<img src="img/${c.file}.webp" width="${c.w}" height="${c.h}" alt="${esc(c.alt)}" loading="lazy" decoding="async">` }; }) })}
@@ -289,8 +294,8 @@ ${carosello({ id: 'pranzo', titolo: 'Sale da pranzo.', link: { href: 'collezioni
 
 <section class="reparto" id="complementi">
 ${carosello({ id: 'complementi', titolo: 'Poltrone e complementi.', link: { href: 'collezioni/complementi/', label: 'Tutti i complementi ›' }, schede: [
-  { testo: 'Mobile TV con camino. Piano effetto marmo, cassetti in pelle a righe.', href: 'salotti/mobile-tv-camino/', foto: true, img: '<img src="img/nuovi/mobile-tv-camino.webp" width="1400" height="1050" alt="Mobile TV con camino elettrico e tavolino ovale" loading="lazy" decoding="async">' },
-  { testo: 'Tavolino ovale. Piano effetto marmo, fascia in pelle, base color oro.', href: 'salotti/mobile-tv-camino/', foto: true, img: '<img src="img/nuovi/tavolino-ovale-studio.webp" width="1400" height="1254" alt="Tavolino ovale effetto marmo con base color oro" loading="lazy" decoding="async">' },
+  { testo: 'Mobile TV con camino. Piano effetto marmo, cassetti in pelle a righe.', href: 'salotti/mobile-tv-camino/', img: '<img src="img/studio/mobile-tv-camino.webp" width="1600" height="1200" alt="Mobile TV con camino elettrico e tavolino ovale" loading="lazy" decoding="async">' },
+  { testo: 'Tavolino ovale. Piano effetto marmo, fascia in pelle, base color oro.', href: 'salotti/mobile-tv-camino/', img: '<img src="img/studio/tavolino-ovale-studio.webp" width="1600" height="1200" alt="Tavolino ovale effetto marmo con base color oro" loading="lazy" decoding="async">' },
   { testo: 'Chesterfield Nero. Velluto nero, capitonné, base color oro.', img: '<img src="img/studio/chesterfield-nero.webp" width="1600" height="1200" alt="Divano chesterfield in velluto nero" loading="lazy" decoding="async">' },
   { testo: 'Bergère Blu. Lo schienale alto, le gambe sottili color oro.', img: '<img src="img/studio/poltrona-blu.webp" width="1600" height="2000" alt="Poltrona bergère in velluto blu" loading="lazy" decoding="async">' },
   { testo: 'Poltrona Tonda. Girevole, capitonné tutto intorno.', img: '<img src="img/studio/poltrona-tonda.webp" width="1600" height="2000" alt="Poltrona tonda girevole in velluto tortora" loading="lazy" decoding="async">' },

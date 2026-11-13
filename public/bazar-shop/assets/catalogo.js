@@ -198,9 +198,9 @@ window.BM = {
       "collezione": "Contemporanea",
       "prezzo": null,
       "foto": {
-        "file": "nuovi/salotto-crema-camino",
-        "w": 1400,
-        "h": 1050,
+        "file": "studio/salotto-crema-camino",
+        "w": 1600,
+        "h": 1200,
         "alt": "Salotto Crema: divani a canne, poltrone, tavolino ovale e mobile TV con camino"
       },
       "composizione": [
@@ -217,9 +217,9 @@ window.BM = {
       "collezione": "Contemporanea",
       "prezzo": null,
       "foto": {
-        "file": "nuovi/salotto-antracite",
-        "w": 1400,
-        "h": 1154,
+        "file": "studio/salotto-antracite",
+        "w": 1600,
+        "h": 1200,
         "alt": "Salotto Antracite: divano a canne con profili oro e due poltrone"
       },
       "composizione": [
@@ -235,9 +235,9 @@ window.BM = {
       "collezione": "Contemporanea",
       "prezzo": null,
       "foto": {
-        "file": "nuovi/salotto-grafite",
-        "w": 1400,
-        "h": 1054,
+        "file": "studio/salotto-grafite",
+        "w": 1600,
+        "h": 1200,
         "alt": "Salotto Grafite: divani ad angolo, due poltrone e tavolino ovale"
       },
       "composizione": [
@@ -253,9 +253,9 @@ window.BM = {
       "collezione": "Chesterfield",
       "prezzo": null,
       "foto": {
-        "file": "nuovi/salotto-grigio",
-        "w": 1400,
-        "h": 1078,
+        "file": "studio/salotto-grigio",
+        "w": 1600,
+        "h": 1200,
         "alt": "Salotto Grigio: divani e poltrone capitonné, tavolino tondo e mobile TV"
       },
       "composizione": [
@@ -272,9 +272,9 @@ window.BM = {
       "collezione": "Capitonné",
       "prezzo": null,
       "foto": {
-        "file": "nuovi/salotto-sabbia",
-        "w": 1400,
-        "h": 1050,
+        "file": "studio/salotto-sabbia",
+        "w": 1600,
+        "h": 1200,
         "alt": "Salotto Sabbia: divani, poltrone e tavolini effetto marmo bruno"
       },
       "composizione": [
@@ -291,9 +291,9 @@ window.BM = {
       "collezione": "Complementi d’arredo",
       "prezzo": null,
       "foto": {
-        "file": "nuovi/mobile-tv-camino",
-        "w": 1400,
-        "h": 1050,
+        "file": "studio/mobile-tv-camino",
+        "w": 1600,
+        "h": 1200,
         "alt": "Mobile TV con camino elettrico e tavolino ovale effetto marmo"
       },
       "composizione": [

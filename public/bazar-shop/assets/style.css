@@ -177,9 +177,19 @@ body:has(.mobile-nav.is-open) .header--over { background: var(--ink); }
   display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
   padding: calc(var(--header) + env(safe-area-inset-top)) var(--gutter) calc(5.5rem + env(safe-area-inset-bottom));
 }
-.hero-logo__mark { width: min(36rem, 78vw); height: auto; animation: logo-in 1.8s var(--ease) .15s both; }
-.hero-logo__line { margin-top: clamp(2rem, 1.5rem + 2vw, 3rem); font-family: var(--font); font-size: var(--t-lead); font-weight: 500; letter-spacing: -.015em; color: rgba(245, 242, 236, .78);
-  animation: fade-in 1.4s var(--ease) .9s both; }
+.hero-logo { justify-content: flex-start; padding-top: calc(var(--header) + env(safe-area-inset-top) + clamp(1.5rem, 1rem + 3vh, 3.5rem)); padding-bottom: 0; overflow: hidden;
+  background: radial-gradient(70% 55% at 50% 78%, rgba(217, 188, 133, .16), rgba(217, 188, 133, 0) 70%), var(--ink); }
+.hero-logo__mark { width: min(19rem, 58vw); height: auto; animation: logo-in 1.6s var(--ease) .1s both; }
+.hero-logo__eyebrow { margin-top: clamp(1.5rem, 1rem + 2vh, 2.5rem); font-size: 1.0625rem; font-weight: 600; letter-spacing: -.01em; color: #D9BC85; animation: fade-in 1s var(--ease) .5s both; }
+.hero-logo__title { margin-top: .35rem; font-size: clamp(2.6rem, 1.8rem + 3.6vw, 5rem); font-weight: 600; letter-spacing: -.035em; line-height: 1.04; color: #F5F2EC; max-width: 14ch; text-wrap: balance; animation: fade-in 1s var(--ease) .6s both; }
+.hero-logo__sub { margin-top: .9rem; max-width: 34rem; font-size: clamp(1.0625rem, 1rem + .35vw, 1.3125rem); line-height: 1.4; color: rgba(245, 242, 236, .72); text-wrap: balance; animation: fade-in 1s var(--ease) .7s both; }
+.hero-logo__pills { margin-top: 1.5rem; animation: fade-in 1s var(--ease) .8s both; }
+.hero-logo__pills .pill { background: #F5F2EC; color: var(--text); }
+.hero-logo__pills .pill--line { background: transparent; color: #F5F2EC; box-shadow: inset 0 0 0 1px rgba(245, 242, 236, .6); }
+.hero-logo__stage { display: block; width: min(100%, 64rem); margin-top: auto; padding-top: 1.5rem; animation: stage-in 1.4s var(--ease) .5s both; }
+.hero-logo__stage img { width: 100%; height: auto; max-height: 36vh; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 2.5rem 2rem rgba(0, 0, 0, .55)); }
+@keyframes stage-in { from { opacity: 0; transform: translateY(24px); } }
+.hero-logo__line { display: none; }
 .hero-logo__hint { position: absolute; left: 50%; bottom: calc(1.75rem + env(safe-area-inset-bottom)); transform: translateX(-50%);
   display: flex; flex-direction: column; align-items: center; gap: .6rem; padding: .5rem;
   font-size: .6875rem; letter-spacing: .24em; text-transform: uppercase; color: rgba(245, 242, 236, .6);
@@ -812,7 +822,7 @@ details.acc .acc-body { padding: 0 0 1.25rem; font-size: var(--t-small); color: 
 .promo-pop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 1rem; }
 .promo-pop[hidden] { display: none; }
 .promo-pop__bg { position: absolute; inset: 0; background: rgba(17, 17, 16, .55); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); opacity: 0; transition: opacity .45s var(--ease); }
-.promo-pop__card { position: relative; width: min(100%, 26rem); max-height: calc(100svh - 2rem); overflow: auto; border-radius: 28px; background: #151110; color: #F5F2EC;
+.promo-pop__card { position: relative; width: min(100%, 36rem); max-height: calc(100svh - 2rem); overflow: auto; border-radius: 28px; background: #151110; color: #F5F2EC;
   box-shadow: 0 30px 80px rgba(0, 0, 0, .45); opacity: 0; transform: translateY(16px) scale(.98); transition: opacity .45s var(--ease), transform .45s var(--ease); }
 .promo-pop.is-open .promo-pop__bg { opacity: 1; }
 .promo-pop.is-open .promo-pop__card { opacity: 1; transform: none; }
@@ -888,3 +898,22 @@ details.acc .acc-body { padding: 0 0 1.25rem; font-size: var(--t-small); color: 
 .card__a { display: flex; flex-direction: column; height: 100%; color: inherit; }
 .card__a:hover .card__media img { transform: scale(1.03); }
 .card__media img { transition: transform .8s var(--ease); }
+
+/* ---- Popup «Nuovi arrivi» ----------------------------------------------- */
+.promo-pop__copy { padding-top: 2rem; }
+.promo-pop__copy--foot { padding-top: .5rem; }
+.promo-pop__list { display: grid; grid-template-columns: repeat(4, 1fr); gap: .6rem; padding: .25rem 1.25rem; }
+.promo-pop__list a { display: flex; flex-direction: column; gap: .45rem; font-size: .8125rem; font-weight: 500; line-height: 1.25; text-align: center; color: #F5F2EC; }
+.promo-pop__thumb { display: block; aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #F3EFE8; }
+.promo-pop__thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease); }
+.promo-pop__list a:hover img { transform: scale(1.05); }
+.promo-pop__extra { display: block; margin-top: 1.1rem; font-size: .875rem; color: #D9BC85; }
+.promo-pop__extra:hover { text-decoration: underline; text-underline-offset: .2em; }
+@media (max-width: 480px) { .promo-pop__list { grid-template-columns: repeat(2, 1fr); gap: .75rem; } }
+
+@media (max-width: 760px) {
+  /* su iPhone il salotto segue subito le pillole, senza vuoto */
+  .hero-logo { min-height: auto; padding-bottom: 2.5rem; }
+  .hero-logo__stage { margin-top: 1.5rem; padding-top: 0; }
+  .hero-logo__stage img { max-height: none; }
+}
