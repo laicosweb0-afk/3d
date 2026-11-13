@@ -191,6 +191,116 @@ window.BM = {
         "Sei sedie trapuntate moka e avorio"
       ],
       "configurazioni": []
+    },
+    {
+      "slug": "salotto-crema",
+      "nome": "Salotto Crema",
+      "collezione": "Contemporanea",
+      "prezzo": null,
+      "foto": {
+        "file": "nuovi/salotto-crema-camino",
+        "w": 1400,
+        "h": 1050,
+        "alt": "Salotto Crema: divani a canne, poltrone, tavolino ovale e mobile TV con camino"
+      },
+      "composizione": [
+        "Due divani con schienale a canne",
+        "Due poltrone avvolgenti",
+        "Tavolino ovale effetto marmo",
+        "Mobile TV con camino elettrico"
+      ],
+      "configurazioni": []
+    },
+    {
+      "slug": "salotto-antracite",
+      "nome": "Salotto Antracite",
+      "collezione": "Contemporanea",
+      "prezzo": null,
+      "foto": {
+        "file": "nuovi/salotto-antracite",
+        "w": 1400,
+        "h": 1154,
+        "alt": "Salotto Antracite: divano a canne con profili oro e due poltrone"
+      },
+      "composizione": [
+        "Divano a canne con braccioli capitonné",
+        "Divano capitonné",
+        "Due poltrone avvolgenti"
+      ],
+      "configurazioni": []
+    },
+    {
+      "slug": "salotto-grafite",
+      "nome": "Salotto Grafite",
+      "collezione": "Contemporanea",
+      "prezzo": null,
+      "foto": {
+        "file": "nuovi/salotto-grafite",
+        "w": 1400,
+        "h": 1054,
+        "alt": "Salotto Grafite: divani ad angolo, due poltrone e tavolino ovale"
+      },
+      "composizione": [
+        "Divani in composizione ad angolo",
+        "Due poltrone avvolgenti",
+        "Tavolino ovale chiaro"
+      ],
+      "configurazioni": []
+    },
+    {
+      "slug": "salotto-grigio",
+      "nome": "Salotto Grigio",
+      "collezione": "Chesterfield",
+      "prezzo": null,
+      "foto": {
+        "file": "nuovi/salotto-grigio",
+        "w": 1400,
+        "h": 1078,
+        "alt": "Salotto Grigio: divani e poltrone capitonné, tavolino tondo e mobile TV"
+      },
+      "composizione": [
+        "Due divani capitonné",
+        "Due poltrone capitonné",
+        "Tavolino tondo nero",
+        "Mobile TV effetto marmo bianco"
+      ],
+      "configurazioni": []
+    },
+    {
+      "slug": "salotto-sabbia",
+      "nome": "Salotto Sabbia",
+      "collezione": "Capitonné",
+      "prezzo": null,
+      "foto": {
+        "file": "nuovi/salotto-sabbia",
+        "w": 1400,
+        "h": 1050,
+        "alt": "Salotto Sabbia: divani, poltrone e tavolini effetto marmo bruno"
+      },
+      "composizione": [
+        "Divano a canne",
+        "Divano capitonné",
+        "Due poltrone avvolgenti",
+        "Due tavolini con cassetti"
+      ],
+      "configurazioni": []
+    },
+    {
+      "slug": "mobile-tv-camino",
+      "nome": "Mobile TV con camino",
+      "collezione": "Complementi d’arredo",
+      "prezzo": null,
+      "foto": {
+        "file": "nuovi/mobile-tv-camino",
+        "w": 1400,
+        "h": 1050,
+        "alt": "Mobile TV con camino elettrico e tavolino ovale effetto marmo"
+      },
+      "composizione": [
+        "Mobile TV con camino elettrico",
+        "Tavolino ovale abbinato"
+      ],
+      "configurazioni": []
     }
   ]
 };
