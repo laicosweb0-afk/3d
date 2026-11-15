@@ -84,7 +84,7 @@ function promo(root) {
     </div>
   </div>
 </div>
-<a class="promo-fab" href="${root}#salotti" data-promo-fab aria-label="Nuovi arrivi"><img src="${root}img/pacco/scatola-icona.webp" width="256" height="171" alt=""><span><small>Novità</small>Nuovi arrivi</span></a>`;
+<a class="promo-fab" href="${root}#salotti" data-promo-fab aria-label="Nuovi arrivi"><img src="${root}img/studio/salotto-crema-camino-png.webp" width="1408" height="620" alt=""><span><small>Novità</small>Nuovi arrivi</span></a>`;
 }
 
 function layout({ path, title, description, body, root, nav = '', image = 'salotto-completo', jsonLd = null, noindex = false, bodyClass = '', heroOver = false, scripts = '' }) {
