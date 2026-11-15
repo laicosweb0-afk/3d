@@ -253,24 +253,17 @@ const SALAH = NEGOZIO.telefoni.find((t) => t.nome === 'Salah') || NEGOZIO.telefo
  *  da solo l'anteprima con la foto (og:image della scheda). */
 const waPreventivo = (s) => waLink(`Ciao Salah! Vorrei un preventivo per: ${s.nome} (${s.colore.nome}), con la spedizione.\n${BASE_URL}salotti/${s.slug}/`);
 const waArticolo = (nome, pagina) => waLink(`Ciao Salah! Vorrei informazioni e un preventivo per: ${nome}.\n${BASE_URL}${pagina}`);
-// RIGA CATEGORIE in stile Apple Store: prodotti scontornati, una riga da scorrere
+// CATEGORIE per tipo di prodotto: tutti i divani in un posto, le decorazioni in un altro…
 const CATEGORIE = [
-  ['salotti', 'collezioni/', 'Salotti', (x) => !x.tipo],
-  ['capitonne', 'collezioni/capitonne/', 'Capitonné', (x) => x.stile === 'capitonne'],
-  ['chesterfield', 'collezioni/chesterfield/', 'Chesterfield', (x) => x.stile === 'chesterfield'],
-  ['contemporanea', 'collezioni/contemporanea/', 'Contemporanei', (x) => x.stile === 'contemporanea'],
-  ['sale-da-pranzo', 'collezioni/sale-da-pranzo/', 'Sale da pranzo', (x) => x.tipo === 'pranzo'],
-  ['complementi', 'collezioni/complementi/', 'Complementi', (x) => x.tipo === 'complemento'],
-  ['decorazioni', 'decorazioni/', 'Decorazioni', () => false],
-  ['profumi', 'profumi/', 'Profumi', () => false],
+  ['salotti', 'collezioni/', 'Salotti', 'Divani, poltrone e composizioni'],
+  ['sale-da-pranzo', 'collezioni/sale-da-pranzo/', 'Sale da pranzo', 'Tavoli e sedie'],
+  ['complementi', 'collezioni/complementi/', 'Complementi', 'Mobili TV, tavolini, poltrone'],
+  ['decorazioni', 'decorazioni/', 'Decorazioni', 'Sculture, vasi, lampade'],
+  ['profumi', 'profumi/', 'Profumi', 'Fragranze orientali'],
 ];
-function catRow(root, attivo) {
-  return `<nav class="crow" aria-label="Categorie"><ul class="crow__list">${CATEGORIE.map(([k, h, n, f]) => {
-    return `<li><a class="crow__item" href="${root}${h}"${k === attivo ? ' aria-current="page"' : ''}><span class="crow__img"><img src="${root}img/cat/${k}.webp" width="600" height="400" alt="" loading="lazy" decoding="async"></span><span class="crow__name">${n}</span></a></li>`;
-  }).join('')}</ul></nav>`;
+function catGrid(root) {
+  return `<div class="cgrid">${CATEGORIE.map(([k, h, n, d], i) => `<a class="ctile${i === 0 ? ' ctile--main' : ''}" href="${root}${h}"><span class="ctile__img"><img src="${root}img/cat/${k}.webp" width="600" height="400" alt="" loading="lazy" decoding="async"></span><span class="ctile__txt"><span class="ctile__name">${n}</span><span class="ctile__desc">${d}</span></span></a>`).join('')}</div>`;
 }
-
-
 const categoriaDi = (s) => (s.tipo === 'pranzo' ? ['collezioni/sale-da-pranzo/', 'Sale da pranzo'] : s.tipo === 'complemento' ? ['collezioni/complementi/', 'Complementi'] : ['collezioni/', 'Salotti']);
 
 /** Scheda prodotto della griglia: foto, etichetta, nome, colore, prezzo, «Chiedi preventivo». */
@@ -368,7 +361,7 @@ const page = (path, html) => pages.push({ path, html });
 
 <section class="shop-sec shop-sec--cats" id="categorie" aria-labelledby="h-cat"><div class="wrap">
   <h2 class="shop-sec__title" id="h-cat">Acquista per categoria.</h2>
-  ${catRow('', '')}
+  ${catGrid('')}
 </div></section>
 
 <section class="shop-sec" id="salotti" aria-labelledby="h-nuovi"><div class="wrap">
@@ -414,7 +407,6 @@ function catalogo({ root, path, title, h1, lead, lista, crumbs, nav, extra = [],
     <h1 class="shop-head__title">${h1}</h1>
     <p class="shop-head__lead">${lead}</p>
   </header>
-  ${catRow(root, cat)}
   ${bar}
   <div class="pgrid" data-catalog>${schede.map((p) => pcard(p, root)).join('')}</div>
   <p class="shop-note">Non trovi quello che cerchi? <a href="${waLink('Ciao Salah! Cerco un salotto: mi aiuti a scegliere?')}" target="_blank" rel="noopener">Scrivi a Salah su WhatsApp ›</a></p>
@@ -434,7 +426,7 @@ for (const c of COLLEZIONI) {
     h1: c.pranzo ? 'Sale da pranzo' : c.complemento ? 'Complementi' : `Collezione ${c.nome}`,
     lead: c.pranzo ? 'Tavoli effetto marmo e sedie in velluto, con i dettagli color oro.' : c.complemento ? 'Mobili TV, tavolini e poltrone che completano il salotto.' : `I salotti della collezione ${c.nome}.`,
     lista: SET.filter((s) => s.stile === c.stile), cat: c.stile, extra: c.complemento ? ARTICOLI.complementi : [],
-    crumbs: `<li><a href="../../">Home</a></li><li><a href="../">Salotti</a></li><li aria-current="page">${c.pranzo ? 'Sale da pranzo' : c.complemento ? 'Complementi' : c.nome}</li>`,
+    crumbs: c.pranzo || c.complemento ? `<li><a href="../../">Home</a></li><li aria-current="page">${c.pranzo ? 'Sale da pranzo' : 'Complementi'}</li>` : `<li><a href="../../">Home</a></li><li><a href="../">Salotti</a></li><li aria-current="page">${c.nome}</li>`,
   }));
 }
 for (const [slug, h1, lead] of [['decorazioni', 'Decorazioni', 'Sculture, vasi e lampade color oro che danno carattere al salotto.'], ['profumi', 'Profumi', 'Fragranze arabe e orientali, da scoprire anche in showroom.']]) {

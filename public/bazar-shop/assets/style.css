@@ -1042,21 +1042,24 @@ details.acc .acc-body { padding: 0 0 1.25rem; font-size: var(--t-small); color: 
 .pcard__media img, .cat__img img, .gal__track img, .gal__thumbs img { object-fit: cover; }
 .gal__thumbs button { padding: 0; width: 5.25rem; height: 3.95rem; }
 
-/* RIGA CATEGORIE — stile Apple Store: prodotti scontornati, si scorre col dito */
-.shop-sec--cats { padding: clamp(2rem, 1.6rem + 1.6vw, 3rem) 0 clamp(1rem, .8rem + 1vw, 2rem); }
-.shop-sec--cats .shop-sec__title { margin-bottom: 1rem; }
-.crow { margin: 0 calc(-1 * var(--gutter)); }
-.crow__list { display: flex; gap: clamp(.5rem, .3rem + 1vw, 1.5rem); overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none;
-  padding: .5rem var(--gutter) 1rem; scroll-padding-inline: var(--gutter); }
-.crow__list::-webkit-scrollbar { display: none; }
-.crow__list li { flex: none; scroll-snap-align: start; }
-.crow__item { display: flex; flex-direction: column; align-items: center; width: clamp(6.5rem, 5.5rem + 4vw, 9.5rem); text-align: center; color: var(--text); }
-.crow__img { width: 100%; aspect-ratio: 3 / 2; display: block; transition: transform .4s var(--ease); }
-.crow__img img { width: 100%; height: 100%; object-fit: contain; }
-.crow__item:hover .crow__img { transform: translateY(-3px); }
-.crow__name { margin-top: .5rem; font-size: .875rem; font-weight: 500; letter-spacing: -.01em; line-height: 1.2; }
-.crow__new { margin-top: .15rem; font-size: .6875rem; font-weight: 600; color: #B07A1F; }
-.crow__item[aria-current='page'] .crow__name { font-weight: 600; }
-.crow__item[aria-current='page'] .crow__name::after { content: ''; display: block; height: 2px; margin: .3rem auto 0; width: 1.5rem; border-radius: 2px; background: var(--text); }
-@media (min-width: 1100px) { .crow { margin: 0; } .crow__list { padding-inline: 0; overflow: visible; } .crow__list li { flex: 1 1 0; min-width: 0; } .crow__item { width: auto; } }
-.shop-page .crow { margin-bottom: .25rem; }
+/* CATEGORIE per tipo di prodotto — riquadri ordinati, Salotti in evidenza */
+.shop-sec--cats { padding: clamp(2.5rem, 2rem + 2vw, 4rem) 0 clamp(1rem, .8rem + 1vw, 2rem); }
+.shop-sec--cats .shop-sec__title { margin-bottom: 1.5rem; }
+.cgrid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1rem; }
+.ctile { display: flex; flex-direction: column; border-radius: 18px; background: #F3EFE8; color: var(--text); overflow: hidden; transition: background-color .3s; }
+.ctile:hover { background: #EDE7DC; }
+.ctile__img { display: block; aspect-ratio: 3 / 2; padding: 10% 10% 0; }
+.ctile__img img { width: 100%; height: 100%; object-fit: contain; transition: transform .5s var(--ease); }
+.ctile:hover .ctile__img img { transform: scale(1.04); }
+.ctile__txt { display: flex; flex-direction: column; gap: .15rem; padding: .9rem 1.1rem 1.1rem; }
+.ctile__name { font-size: 1.0625rem; font-weight: 600; letter-spacing: -.015em; }
+.ctile__desc { font-size: .8125rem; color: var(--text-2); line-height: 1.3; }
+@media (max-width: 900px) {
+  .cgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+  .ctile--main { grid-column: 1 / -1; flex-direction: row; align-items: center; }
+  .ctile--main .ctile__img { flex: 1.3; padding: 5% 0 5% 5%; }
+  .ctile--main .ctile__txt { flex: 1; }
+  .ctile--main .ctile__name { font-size: 1.25rem; }
+  .ctile__txt { padding: .75rem .9rem .9rem; }
+  .ctile__name { font-size: 1rem; }
+}
