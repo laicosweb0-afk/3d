@@ -9,14 +9,14 @@
  * nessuna libreria, nessuna build lato client. Ogni pagina ha un indirizzo
  * leggibile (/salotti/salotto-tortora/) che funziona anche senza JavaScript.
  */
-import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { NEGOZIO, ORARI, SET, LEGALI, WEB3FORMS_KEY, WHATSAPP, WHATSAPP_MESSAGGIO } from './dati.mjs';
 
 const OUT = join(dirname(fileURLToPath(import.meta.url)), '../../public/bazar-shop');
 /** Indirizzo pubblico attuale (anteprima). Da cambiare quando c'è il dominio. */
-const BASE_URL = 'https://laicosweb0-afk.github.io/3d/bazar-shop/';
+const BASE_URL = 'https://bazar-marrakech-anteprima.vercel.app/';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const tel = (n) => 'tel:+39' + n.replace(/\D/g, '');
@@ -81,7 +81,6 @@ function promo(root) {
     <ul class="promo-pop__list"><li><a href="${root}salotti/salotto-crema/"><span class="promo-pop__thumb"><img src="${root}img/${SET.find((x) => x.slug === 'salotto-crema').copertina.file}.webp" alt="" decoding="async"></span>Salotto Crema</a></li><li><a href="${root}salotti/salotto-grigio/"><span class="promo-pop__thumb"><img src="${root}img/${SET.find((x) => x.slug === 'salotto-grigio').copertina.file}.webp" alt="" decoding="async"></span>Salotto Grigio</a></li><li><a href="${root}salotti/salotto-antracite/"><span class="promo-pop__thumb"><img src="${root}img/${SET.find((x) => x.slug === 'salotto-antracite').copertina.file}.webp" alt="" decoding="async"></span>Salotto Antracite</a></li><li><a href="${root}salotti/mobile-tv-camino/"><span class="promo-pop__thumb"><img src="${root}img/${SET.find((x) => x.slug === 'mobile-tv-camino').copertina.file}.webp" alt="" decoding="async"></span>Mobile TV con camino</a></li></ul>
     <div class="promo-pop__copy promo-pop__copy--foot">
       <div class="pills"><a class="pill" href="${root}#salotti" data-promo-chiudi-link>Scopri i nuovi arrivi</a><button class="pill pill--line" type="button" data-promo-chiudi>Più tardi</button></div>
-      <a class="promo-pop__extra" href="${root}35kg/">Novità anche in cucina: il pacco da 35 kg, spedizione 7 € ›</a>
     </div>
   </div>
 </div>
@@ -103,7 +102,7 @@ ${noindex ? '<meta name="robots" content="noindex">\n' : ''}<meta name="theme-co
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:url" content="${BASE_URL}${path}">
-<meta property="og:image" content="${BASE_URL}img/${image}.webp">
+<meta property="og:image" content="${BASE_URL}img/${/\.(jpg|png|webp)$/.test(image) ? image : image + '.webp'}">
 <meta property="og:locale" content="it_IT">
 <link rel="icon" href="${root}img/icon.png">
 <link rel="apple-touch-icon" href="${root}img/icon.png">
@@ -119,10 +118,10 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script
     <nav class="nav" aria-label="Principale">
       ${navLink('collezioni/', 'Salotti', 'collezioni')}
       <a href="${root}collezioni/sale-da-pranzo/">Sale da pranzo</a>
-      <a href="${root}#profumi">Profumi</a>
-      <a href="${root}35kg/">35 kg</a>
+      <a href="${root}collezioni/complementi/">Complementi</a>
+      ${navLink('decorazioni/', 'Decorazioni', 'decorazioni')}
+      ${navLink('profumi/', 'Profumi', 'profumi')}
       ${navLink('showroom/', 'Showroom', 'showroom')}
-      ${navLink('contatti/', 'Contatti', 'contatti')}
     </nav>
     <a class="wa-link" href="${waLink(WHATSAPP_MESSAGGIO)}" target="_blank" rel="noopener" aria-label="Scrivici su WhatsApp: informazioni o visita in showroom">${ICON_WA}<span class="wa-word">WhatsApp</span></a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Apri il menu" data-menu>${ICON_MENU}</button>
@@ -132,11 +131,10 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script
   <a href="${root}collezioni/">Salotti</a>
   <a href="${root}collezioni/sale-da-pranzo/">Sale da pranzo</a>
   <a href="${root}collezioni/complementi/">Complementi</a>
-  <a href="${root}#profumi">Profumi</a>
-  <a href="${root}35kg/">35 kg</a>
+  <a href="${root}decorazioni/">Decorazioni</a>
+  <a href="${root}profumi/">Profumi</a>
   <a href="${root}showroom/">Showroom</a>
   <a href="${root}contatti/">Contatti</a>
-  <a href="${root}borsa/">Borsa</a>
   <p>${esc(indirizzo)}</p>
 </nav>
 <main id="main">
@@ -163,7 +161,7 @@ function footer(root) {
       </div>
       <div>
         <h2>Esplora</h2>
-        <ul><li><a href="${root}collezioni/">Collezioni</a></li>${COLLEZIONI.map((c) => `<li><a href="${root}collezioni/${c.stile}/">${c.nome}</a></li>`).join('')}<li><a href="${root}borsa/">Borsa</a></li></ul>
+        <ul><li><a href="${root}collezioni/">Collezioni</a></li>${COLLEZIONI.map((c) => `<li><a href="${root}collezioni/${c.stile}/">${c.nome}</a></li>`).join('')}<li><a href="${root}decorazioni/">Decorazioni</a></li><li><a href="${root}profumi/">Profumi</a></li></ul>
       </div>
       <div>
         <h2>Showroom</h2>
@@ -241,6 +239,80 @@ const orariList = () => `<dl class="info-list" data-hours>
 </dl>`;
 
 /* ---- pagine ----------------------------------------------------------- */
+
+/* ---- E-COMMERCE: schede prodotto, griglie, preventivo su WhatsApp -------- */
+/** Le foto ritagliate strette sul prodotto (img/prodotto/): lo sfondo è alto
+ *  quanto il pezzo. Per le foto ambientate resta la foto intera. */
+const PRODOTTO = new Set(readdirSync(join(OUT, 'img/prodotto')).map((f) => f.replace(/\.webp$/, '')));
+const prodImg = (f) => {
+  const n = f.file.startsWith('studio/') ? f.file.slice(7) : f.file;
+  return PRODOTTO.has(n) ? { ...f, file: `prodotto/${n}`, studio: true } : { ...f, studio: false };
+};
+const SALAH = NEGOZIO.telefoni.find((t) => t.nome === 'Salah') || NEGOZIO.telefoni[0];
+/** Il messaggio per Salah: nome, colore e il link del prodotto. WhatsApp mostra
+ *  da solo l'anteprima con la foto (og:image della scheda). */
+const waPreventivo = (s) => waLink(`Ciao Salah! Vorrei un preventivo per: ${s.nome} (${s.colore.nome}), con la spedizione.\n${BASE_URL}salotti/${s.slug}/`);
+const waArticolo = (nome, pagina) => waLink(`Ciao Salah! Vorrei informazioni e un preventivo per: ${nome}.\n${BASE_URL}${pagina}`);
+const categoriaDi = (s) => (s.tipo === 'pranzo' ? ['collezioni/sale-da-pranzo/', 'Sale da pranzo'] : s.tipo === 'complemento' ? ['collezioni/complementi/', 'Complementi'] : ['collezioni/', 'Salotti']);
+
+/** Scheda prodotto della griglia: foto, etichetta, nome, colore, prezzo, «Chiedi preventivo». */
+function pcard(p, root) {
+  const media = `<img src="${root}img/${p.img.file}.webp" alt="${esc(p.img.alt || p.nome)}" loading="lazy" decoding="async">`;
+  const cls = `pcard__media${p.img.studio ? '' : ' pcard__media--foto'}`;
+  return `<article class="pcard" data-tags="${p.tags || ''}">
+  ${p.href ? `<a class="${cls}" href="${p.href}" tabindex="-1" aria-hidden="true">${media}</a>` : `<div class="${cls}">${media}</div>`}
+  <div class="pcard__body">
+    ${p.badge ? `<p class="pcard__badge pcard__badge--${p.badgeTipo}">${p.badge}</p>` : ''}
+    <h3 class="pcard__name">${p.href ? `<a href="${p.href}">${esc(p.nome)}</a>` : esc(p.nome)}</h3>
+    <p class="pcard__meta">${p.meta}</p>
+    <p class="pcard__price">${p.prezzo ? eur(p.prezzo) : 'Prezzo su richiesta'}</p>
+    <a class="pcard__cta" href="${p.wa}" target="_blank" rel="noopener">${ICON_WA}<span>Chiedi preventivo</span></a>
+  </div>
+</article>`;
+}
+const setP = (s, root) => ({
+  nome: s.nome, href: `${root}salotti/${s.slug}/`, img: prodImg(s.copertina || s.foto[0]),
+  badge: s.stato === 'disponibile' ? 'Nuovo arrivo' : s.stato === 'ultimi' ? 'Ultimi pezzi' : '', badgeTipo: s.stato,
+  meta: `<i class="swatch" style="background:${s.colore.hex}"></i>${esc(s.colore.nome)} · ${esc(s.tipo === 'pranzo' ? 'Sala da pranzo' : s.tipo === 'complemento' ? 'Complemento' : s.collezione)}`,
+  tags: `${s.colore.id} ${s.stato || ''}`, wa: waPreventivo(s), prezzo: s.prezzo,
+});
+/** Gli articoli che non hanno una scheda propria (decorazioni, profumi, poltrone singole). */
+const artP = (a, root, pagina) => ({
+  nome: a.nome, img: prodImg({ file: a.file, alt: a.nome }), meta: esc(a.riga), tags: a.tag || '',
+  wa: waArticolo(a.nome, pagina), prezzo: a.prezzo,
+});
+const ARTICOLI = {
+  decorazioni: [
+    { nome: 'Leopardo dorato', riga: 'Color oro, tempestato di strass', file: 'studio/leopardo' },
+    { nome: 'Cavallo dorato', riga: 'Ceramica oro lucida e satinata', file: 'studio/cavallo' },
+    { nome: 'Pesci dorati', riga: 'Ceramica oro lucida e satinata', file: 'studio/pesci' },
+    { nome: 'Lampada da tavolo', riga: 'Cristalli e paralume ricamato', file: 'studio/lampada' },
+    { nome: 'Vaso a foglia', riga: 'Oro, con il bouquet avorio', file: 'studio/vaso-foglia' },
+    { nome: 'Vaso oro', riga: 'Scanalato, con il bouquet avorio', file: 'studio/vaso-oro' },
+    { nome: 'Vaso bianco', riga: 'Rose cipria e rami dorati', file: 'studio/vaso-rose' },
+  ],
+  profumi: [
+    { nome: 'Khamrah Qahwa', riga: 'Lattafa · eau de parfum 100 ml', file: 'studio/khamrah-qahwa' },
+    { nome: 'Khamrah Waha', riga: 'Lattafa · eau de parfum 100 ml', file: 'studio/khamrah-waha' },
+    { nome: 'Asad', riga: 'Lattafa · eau de parfum 100 ml', file: 'studio/asad' },
+    { nome: 'Leen', riga: 'Lattafa Pride · eau de parfum 100 ml', file: 'studio/leen', prezzo: 30 },
+    { nome: 'Safwaan', riga: 'Lattafa · L’Autre Oud 100 ml', file: 'studio/safwaan' },
+    { nome: 'Mythical Gryphon', riga: 'French Avenue', file: 'studio/mythical-gryphon' },
+    { nome: 'Cocoa Morado', riga: 'Flacone viola e oro', file: 'studio/cocoa-morado' },
+    { nome: 'Gemini', riga: 'Genesis · flacone ottagonale', file: 'gemini' },
+    { nome: 'Anfar Odyssée', riga: 'Extrait de parfum 100 ml', file: 'studio/anfar-odyssee' },
+    { nome: 'Afnan 9am', riga: 'Pour femme · eau de parfum 100 ml', file: 'studio/afnan-9am' },
+    { nome: 'Afnan 9pm', riga: 'Pour femme · eau de parfum 100 ml', file: 'studio/afnan-9pm' },
+  ],
+  complementi: [
+    { nome: 'Tavolino ovale', riga: 'Piano effetto marmo, base color oro', file: 'studio/tavolino-ovale' },
+    { nome: 'Chesterfield Nero', riga: 'Velluto nero, capitonné, base oro', file: 'studio/chesterfield-nero' },
+    { nome: 'Bergère Blu', riga: 'Velluto blu, gambe color oro', file: 'studio/poltrona-blu' },
+    { nome: 'Poltrona Tonda', riga: 'Girevole, velluto tortora', file: 'studio/poltrona-tonda' },
+    { nome: 'Poltrona Nera', riga: 'Velluto nero, base girevole', file: 'poltrona-nera' },
+  ],
+};
+
 const pages = [];
 const page = (path, html) => pages.push({ path, html });
 
@@ -273,237 +345,143 @@ const page = (path, html) => pages.push({ path, html });
   </div>
 </section>
 
-<!-- Fascia sotto la hero, come la striscia promozionale di apple.com -->
+<!-- Fascia sotto la hero -->
 <p class="promo">Showroom a Lugo, consegne in tutta Italia. <a href="showroom/">Orari e indicazioni ›</a></p>
 
-<nav class="reparti-nav" aria-label="Reparti">
-  <ul class="reparti-nav__list">
-    <li><a href="#salotti"><span class="reparti-nav__img"><img src="img/studio/salotto-crema-camino.webp" alt="" loading="lazy" decoding="async"></span>Salotti</a></li>
-    <li><a href="#sale-da-pranzo"><span class="reparti-nav__img"><img src="img/studio/pranzo-ovale-blu.webp" alt="" loading="lazy" decoding="async"></span>Sale da pranzo</a></li>
-    <li><a href="#complementi"><span class="reparti-nav__img"><img src="img/studio/mobile-tv-camino.webp" alt="" loading="lazy" decoding="async"></span>Complementi</a></li>
-    <li><a href="#decorazioni"><span class="reparti-nav__img"><img src="img/studio/leopardo.webp" alt="" loading="lazy" decoding="async"></span>Decorazioni</a></li>
-    <li><a href="#profumi"><span class="reparti-nav__img"><img src="img/studio/khamrah-qahwa.webp" alt="" loading="lazy" decoding="async"></span>Profumi</a></li>
-    <li><a href="#casa"><span class="reparti-nav__img"><img src="img/pacco/scatola-icona.webp" alt="" loading="lazy" decoding="async"></span>Casa e cucina</a></li>
-    <li><a href="#showroom"><span class="reparti-nav__img"><img src="img/showroom-salotto-bianco.webp" alt="" loading="lazy" decoding="async"></span>Showroom</a></li>
-  </ul>
-</nav>
+<section class="shop-sec" id="categorie" aria-labelledby="h-cat"><div class="wrap">
+  <div class="shop-sec__head"><h2 class="shop-sec__title" id="h-cat">Acquista per categoria.</h2></div>
+  <div class="cats">
+    ${[
+      ['collezioni/', 'Salotti', 'prodotto/salotto-crema-camino', SET.filter((s) => !s.tipo).length],
+      ['collezioni/sale-da-pranzo/', 'Sale da pranzo', 'prodotto/pranzo-ovale-blu', SET.filter((s) => s.tipo === 'pranzo').length],
+      ['collezioni/complementi/', 'Complementi', 'prodotto/mobile-tv-camino', SET.filter((s) => s.tipo === 'complemento').length + ARTICOLI.complementi.length],
+      ['decorazioni/', 'Decorazioni', 'prodotto/leopardo', ARTICOLI.decorazioni.length],
+      ['profumi/', 'Profumi', 'prodotto/khamrah-qahwa', ARTICOLI.profumi.length],
+      ['showroom/', 'Showroom', 'showroom-salotto-bianco', 0],
+    ].map(([h, n, f, k]) => `<a class="cat${f.startsWith('prodotto/') ? '' : ' cat--foto'}" href="${h}"><span class="cat__img"><img src="img/${f}.webp" alt="" loading="lazy" decoding="async"></span><span class="cat__name">${n}</span>${k ? `<span class="cat__n">${k} prodotti</span>` : '<span class="cat__n">Via Fratelli Zucchini 5, Lugo</span>'}</a>`).join('')}
+  </div>
+</div></section>
 
-<section class="reparto" id="salotti" aria-labelledby="h-salotti">
-<header class="reparto__head wrap"><h2 class="reparto__title" id="h-salotti">Disponibili ora. <span>I nuovi arrivi, pronti in showroom.</span></h2></header>
-<div class="wrap shop-grid">
-${SET.filter((x) => x.stato === 'disponibile').map((x) => setCard(x, root)).join('')}
-</div>
-${carosello({ id: 'ultimi', titolo: 'Ultimi pezzi. <span>Fino a esaurimento.</span>', grigio: true, schede: ['salotto-tortora','salotto-beige','salotto-nero','salotto-avorio'].map((sl) => { const x = SET.find((y) => y.slug === sl); const c = x.copertina || x.foto[0]; return { testo: `${x.nome}. Ultimi pezzi disponibili.`, href: `salotti/${sl}/`, foto: !c.file.startsWith('studio/'), img: `<img src="img/${c.file}.webp" width="${c.w}" height="${c.h}" alt="${esc(c.alt)}" loading="lazy" decoding="async">` }; }) })}
-</section>
+<section class="shop-sec" id="salotti" aria-labelledby="h-nuovi"><div class="wrap">
+  <div class="shop-sec__head"><h2 class="shop-sec__title" id="h-nuovi">Nuovi arrivi. <span>Disponibili ora.</span></h2><a class="shop-sec__link" href="collezioni/">Tutti i salotti ›</a></div>
+  <div class="pgrid">${SET.filter((s) => s.stato === 'disponibile').map((s) => pcard(setP(s, root), root)).join('')}</div>
+</div></section>
 
-<section class="reparto" id="sale-da-pranzo" aria-labelledby="h-pranzo">
-${carosello({ id: 'pranzo', titolo: 'Sale da pranzo.', link: { href: 'collezioni/sale-da-pranzo/', label: 'Tutte le sale da pranzo ›' }, grigio: true, schede: [['sala-pranzo-greca', 'Sala da pranzo Greca. Avorio, marmo nero, sedie moka.'], ['sala-pranzo-ovale-blu', 'Ovale Blu. Marmo nero e velluto blu.'], ['sala-pranzo-nero-oro', 'Nero e Oro. Base a canne color oro.'], ['sala-pranzo-avorio', 'Avorio. La greca e il centro effetto marmo.']].map(([sl, t]) => { const x = SET.find((y) => y.slug === sl); const c = x.copertina || x.foto[0]; return { testo: t, href: `salotti/${sl}/`, foto: !c.file.startsWith('studio/'), img: `<img src="img/${c.file}.webp" width="${c.w}" height="${c.h}" alt="${esc(c.alt)}" loading="lazy" decoding="async">` }; }) })}
-</section>
+<section class="shop-sec shop-sec--grey" aria-labelledby="h-ultimi"><div class="wrap">
+  <div class="shop-sec__head"><h2 class="shop-sec__title" id="h-ultimi">Ultimi pezzi. <span>Fino a esaurimento.</span></h2></div>
+  <div class="pgrid">${SET.filter((s) => s.stato === 'ultimi').map((s) => pcard(setP(s, root), root)).join('')}</div>
+</div></section>
 
-<section class="reparto" id="complementi">
-${carosello({ id: 'complementi', titolo: 'Poltrone e complementi.', link: { href: 'collezioni/complementi/', label: 'Tutti i complementi ›' }, schede: [
-  { testo: 'Mobile TV con camino. Piano effetto marmo, cassetti in pelle a righe.', href: 'salotti/mobile-tv-camino/', img: '<img src="img/studio/mobile-tv-camino.webp" width="1600" height="1200" alt="Mobile TV con camino elettrico e tavolino ovale" loading="lazy" decoding="async">' },
-  { testo: 'Tavolino ovale. Piano effetto marmo, fascia in pelle, base color oro.', href: 'salotti/mobile-tv-camino/', img: '<img src="img/studio/tavolino-ovale-studio.webp" width="1600" height="1200" alt="Tavolino ovale effetto marmo con base color oro" loading="lazy" decoding="async">' },
-  { testo: 'Chesterfield Nero. Velluto nero, capitonné, base color oro.', img: '<img src="img/studio/chesterfield-nero.webp" width="1600" height="1200" alt="Divano chesterfield in velluto nero" loading="lazy" decoding="async">' },
-  { testo: 'Bergère Blu. Lo schienale alto, le gambe sottili color oro.', img: '<img src="img/studio/poltrona-blu.webp" width="1600" height="2000" alt="Poltrona bergère in velluto blu" loading="lazy" decoding="async">' },
-  { testo: 'Poltrona Tonda. Girevole, capitonné tutto intorno.', img: '<img src="img/studio/poltrona-tonda.webp" width="1600" height="2000" alt="Poltrona tonda girevole in velluto tortora" loading="lazy" decoding="async">' },
-  { testo: 'Poltrona Nera. Velluto nero, schienale a righe, base girevole.', foto: true, img: '<img src="img/poltrona-nera.webp" width="900" height="1340" alt="Poltrona girevole in velluto nero con schienale a righe" loading="lazy" decoding="async">' },
-] })}
-</section>
-
-<section class="reparto" id="decorazioni">
-${carosello({ id: 'decorazioni', titolo: 'Decorazioni.', link: { href: 'showroom/', label: 'Vedili in showroom ›' }, schede: [
-  { testo: 'Leopardo. Color oro, tempestato di strass.', img: '<img src="img/studio/leopardo.webp" width="1600" height="1200" alt="Statua di leopardo color oro con strass" loading="lazy" decoding="async">' },
-  { testo: 'Pesci dorati. Ceramica oro lucida e satinata.', img: '<img src="img/studio/pesci.webp" width="1600" height="2000" alt="Scultura di pesci in ceramica color oro" loading="lazy" decoding="async">' },
-  { testo: 'Lampada da tavolo. Cristalli e paralume ricamato.', img: '<img src="img/studio/lampada.webp" width="1600" height="2000" alt="Lampada da tavolo con base in cristalli e paralume ricamato" loading="lazy" decoding="async">' },
-  { testo: 'Vaso oro. Con il bouquet avorio e oro.', img: '<img src="img/studio/vaso-oro.webp" width="1600" height="2000" alt="Vaso color oro scanalato con bouquet di fiori avorio" loading="lazy" decoding="async">' },
-  { testo: 'Cavallo dorato. Ceramica oro, lucida e satinata.', img: '<img src="img/studio/cavallo.webp" width="1600" height="2000" alt="Scultura di cavallo color oro" loading="lazy" decoding="async">' },
-  { testo: 'Vaso a foglia. Oro, con il bouquet avorio e le piume.', img: '<img src="img/studio/vaso-foglia.webp" width="1600" height="2000" alt="Vaso color oro a forma di foglia con bouquet avorio" loading="lazy" decoding="async">' },
-  { testo: 'Vaso bianco. Rose cipria e rami dorati.', img: '<img src="img/studio/vaso-rose.webp" width="1600" height="2000" alt="Vaso bianco a coste con rose color cipria" loading="lazy" decoding="async">' },
-] })}
-</section>
-
-<section class="reparto" id="profumi">
-${carosello({ id: 'profumi', titolo: 'Profumi.', link: { href: 'showroom/', label: 'Scoprili in showroom ›' }, grigio: true, schede: [
-  { testo: 'Khamrah Qahwa. Lattafa, eau de parfum 100 ml.', img: '<img src="img/studio/khamrah-qahwa.webp" width="1600" height="2000" alt="Profumo Lattafa Khamrah Qahwa, flacone ambrato con tappo di cristallo" loading="lazy" decoding="async">' },
-  { testo: 'Khamrah Waha. Lattafa, eau de parfum 100 ml.', img: '<img src="img/studio/khamrah-waha.webp" width="1600" height="2000" alt="Profumo Lattafa Khamrah Waha, flacone azzurro" loading="lazy" decoding="async">' },
-  { testo: 'Asad. Lattafa, eau de parfum 100 ml.', img: '<img src="img/studio/asad.webp" width="1600" height="2000" alt="Profumo Lattafa Asad, flacone nero con fascia color oro" loading="lazy" decoding="async">' },
-  { testo: 'Leen. Lattafa Pride, eau de parfum 100 ml. € 30', img: '<img src="img/studio/leen.webp" width="1600" height="2000" alt="Profumo Lattafa Leen, flacone satinato con gabbia color oro" loading="lazy" decoding="async">' },
-  { testo: 'Safwaan. Lattafa, L’Autre Oud, 100 ml.', img: '<img src="img/studio/safwaan.webp" width="1600" height="2000" alt="Profumo Lattafa Safwaan L’Autre Oud, flacone decorato" loading="lazy" decoding="async">' },
-  { testo: 'Mythical Gryphon. French Avenue, con il grifone sul tappo.', img: '<img src="img/studio/mythical-gryphon.webp" width="1600" height="2000" alt="Profumo French Avenue Mythical Gryphon con grifone sul tappo" loading="lazy" decoding="async">' },
-  { testo: 'Cocoa Morado. Flacone viola e oro.', img: '<img src="img/studio/cocoa-morado.webp" width="1600" height="2000" alt="Profumo Cocoa Morado, flacone viola con dettagli oro" loading="lazy" decoding="async">' },
-  { testo: 'Anfar Odyssée. Extrait de parfum, 100 ml.', img: '<img src="img/studio/anfar-odyssee.webp" width="1600" height="2000" alt="Profumo Anfar Odyssée, flacone oro e rosso" loading="lazy" decoding="async">' },
-  { testo: 'Afnan 9am. Pour femme, eau de parfum 100 ml.', img: '<img src="img/studio/afnan-9am.webp" width="1600" height="2000" alt="Profumo Afnan 9am pour femme, flacone rosa" loading="lazy" decoding="async">' },
-  { testo: 'Afnan 9pm. Pour femme, eau de parfum 100 ml.', img: '<img src="img/studio/afnan-9pm.webp" width="1600" height="2000" alt="Profumo Afnan 9pm pour femme, flacone viola" loading="lazy" decoding="async">' },
-  { testo: 'Gemini. Genesis, flacone ottagonale color oro.', foto: true, img: '<img src="img/gemini.webp" width="900" height="1044" alt="Profumo Genesis Gemini, flacone ottagonale color oro" loading="lazy" decoding="async">' },
-] })}
-</section>
-
-<section class="reparto" id="casa">
-${tile({ tema: 'dark', nome: 'Casa e cucina · Novità', titolo: '35 kg. Spedizione 7 €.', sotto: 'Bicchieri, tazzine, vassoi e barattoli: riempi il pacco con quello che vuoi.', href: '35kg/', label1: 'Riempi il pacco', href2: '35kg/#come', label2: 'Come funziona', foto: true, media: '<img src="img/pacco/scatola-chiusa.webp" width="900" height="1200" alt="La scatola da 35 kg chiusa sulla bilancia" loading="lazy" decoding="async">' })}
-</section>
-
-<section class="reparto" id="showroom">
-${carosello({ id: 'showroom', titolo: 'Dallo showroom.', link: { href: 'showroom/', label: 'Scopri lo showroom ›' }, grigio: true, schede: [
-  { testo: 'Lo showroom di Lugo. Salotti da vedere, toccare, provare.', foto: true, img: '<img src="img/showroom-salotto-bianco.webp" width="1100" height="1303" alt="Lo showroom: salotto bianco con profili oro e mobile con camino" loading="lazy" decoding="async">' },
-  { testo: 'Tappeti. Disegni geometrici, effetto marmo, fili d’oro.', foto: true, img: '<img src="img/reparto-tappeti.webp" width="700" height="875" alt="Tappeti arrotolati con disegni geometrici e dettagli oro" loading="lazy" decoding="async">' },
-  { testo: 'Profumi e casalinghi. Fragranze e oggetti per la casa.', foto: true, img: '<img src="img/reparto-profumi.webp" width="700" height="874" alt="Profumi in esposizione" loading="lazy" decoding="async">' },
-  { testo: 'Bicchieri da tè. Set decorati in oro e colori.', foto: true, img: '<img src="img/bicchieri-te.webp" width="800" height="1000" alt="Set di bicchieri da tè decorati" loading="lazy" decoding="async">' },
-  { testo: 'Complementi. Gli oggetti che danno carattere.', foto: true, img: '<img src="img/reparto-complementi.webp" width="700" height="875" alt="Pavone decorativo dorato" loading="lazy" decoding="async">' },
-] })}
-
-<section class="tile tile--dark tile--info">
+<section class="tile tile--dark tile--info" id="showroom">
   <div class="tile__copy">
     <p class="tile__name">Showroom · Lugo</p>
-    <h2 class="tile__title">Il tuo prossimo salotto ti aspetta.</h2>
+    <h2 class="tile__title">Vieni a vederli dal vivo.</h2>
     <p class="tile__sub">${esc(indirizzo)}</p>
     <p class="status" data-status data-open="true" hidden></p>
-    <div class="pills"><a class="pill" href="${NEGOZIO.mappa}" target="_blank" rel="noopener">Indicazioni</a><a class="pill pill--line" href="showroom/">Orari e contatti</a></div>
+    <div class="pills"><a class="pill" href="${NEGOZIO.mappa}" target="_blank" rel="noopener">Indicazioni</a><a class="pill pill--line" href="${tel(SALAH.numero)}">Chiama ${SALAH.nome}</a></div>
   </div>
-</section>
 </section>`,
   }));
 }
 
-// COLLEZIONI + CATEGORIE
-function catalogo({ root, path, title, h1, lead, lista, crumbs, nav }) {
-  const filtri = SET.length >= 4; // con pochi set i filtri non servono: compaiono da soli
-  const toolbar = filtri ? `
-    <div class="toolbar" data-catalog-tools>
-      <div class="filters" role="group" aria-label="Filtra per colore">
-        <button class="filter" type="button" aria-pressed="true" data-filter="">Tutti i colori</button>
-        ${[...new Map(lista.map((s) => [s.colore.id, s.colore])).values()].map((c) => `<button class="filter" type="button" aria-pressed="false" data-filter="${c.id}">${c.nome}</button>`).join('')}
-      </div>
-      <label class="sort">Ordina <select data-sort>
-        <option value="">Consigliati</option>
-        ${lista.some((s) => s.prezzo != null) ? '<option value="asc">Prezzo crescente</option><option value="desc">Prezzo decrescente</option>' : ''}
-      </select></label>
-    </div>` : '';
+// COLLEZIONI + CATEGORIE: la griglia di un negozio, con i filtri a pillola
+function catalogo({ root, path, title, h1, lead, lista, crumbs, nav, extra = [], pagina, filtri = true }) {
+  const schede = [...lista.map((s) => setP(s, root)), ...extra.map((a) => artP(a, root, pagina || path))];
+  const colori = [...new Map(lista.map((s) => [s.colore.id, s.colore])).values()];
+  const stati = [['disponibile', 'Nuovi arrivi'], ['ultimi', 'Ultimi pezzi']].filter(([k]) => lista.some((s) => s.stato === k));
+  const bar = filtri && (colori.length > 1 || stati.length) ? `
+  <div class="pfilters" role="group" aria-label="Filtra">
+    <button class="pfilter" type="button" aria-pressed="true" data-filter="">Tutti <span>${schede.length}</span></button>
+    ${stati.map(([k, n]) => `<button class="pfilter" type="button" aria-pressed="false" data-filter="${k}">${n}</button>`).join('')}
+    ${colori.length > 1 ? colori.map((c) => `<button class="pfilter" type="button" aria-pressed="false" data-filter="${c.id}"><i class="swatch" style="background:${c.hex}"></i>${c.nome}</button>`).join('') : ''}
+  </div>` : '';
   return layout({
-    path, root, title, nav,
-    description: lead,
+    path, root, title, nav, description: lead,
     body: `
-<div class="wrap">
-  <header class="page-head">
+<div class="wrap shop-page">
+  <header class="shop-head">
     <ol class="crumbs">${crumbs}</ol>
-    <h1 class="h1">${h1}</h1>
-    <p class="lead">${lead}</p>
+    <h1 class="shop-head__title">${h1}</h1>
+    <p class="shop-head__lead">${lead}</p>
   </header>
-  ${toolbar}
-  <div class="sets" data-catalog>${lista.map((s) => setCard(s, root, { heading: 'h2' }).replace('<article class="set-card reveal"', `<article class="set-card reveal" data-colore="${s.colore.id}" data-prezzo="${s.prezzo ?? ''}"`)).join('')}</div>
-  <div class="note reveal">
-    <p class="muted">Il catalogo online si sta ampliando. Per conoscere tutte le composizioni disponibili, contattaci o vieni a trovarci nello showroom di Lugo.</p>
-    <a class="link" href="${root}contatti/">Contattaci</a>
-  </div>
-</div>
-<div style="height:var(--section)"></div>`,
+  ${bar}
+  <div class="pgrid" data-catalog>${schede.map((p) => pcard(p, root)).join('')}</div>
+  <p class="shop-note">Non trovi quello che cerchi? <a href="${waLink('Ciao Salah! Cerco un salotto: mi aiuti a scegliere?')}" target="_blank" rel="noopener">Scrivi a Salah su WhatsApp ›</a></p>
+</div>`,
   });
 }
 page('collezioni/', catalogo({
   root: '../', path: 'collezioni/', nav: 'collezioni',
-  title: 'Collezioni — Salotti completi | Bazar Marrakech',
-  h1: 'Collezioni', lead: 'Salotti completi, sale da pranzo e complementi d’arredo: ogni composizione pensata come un insieme.',
-  lista: SET, crumbs: '<li><a href="../">Home</a></li><li aria-current="page">Collezioni</li>',
+  title: 'Salotti — Divani e composizioni | Bazar Marrakech',
+  h1: 'Salotti', lead: 'Divani, poltrone e composizioni complete. Prezzo e spedizione su richiesta: chiedi il preventivo a Salah su WhatsApp.',
+  lista: SET.filter((s) => !s.tipo), crumbs: '<li><a href="../">Home</a></li><li aria-current="page">Salotti</li>',
 }));
 for (const c of COLLEZIONI) {
   page(`collezioni/${c.stile}/`, catalogo({
     root: '../../', path: `collezioni/${c.stile}/`, nav: 'collezioni',
     title: c.pranzo ? 'Sale da pranzo — Tavoli e sedie | Bazar Marrakech' : c.complemento ? 'Complementi d’arredo | Bazar Marrakech' : `Collezione ${c.nome} — Salotti | Bazar Marrakech`,
-    h1: c.pranzo ? 'Sale da pranzo' : c.complemento ? 'Complementi d’arredo' : `Collezione ${c.nome}`,
-    lead: c.pranzo ? 'Tavoli e sedie in velluto, con i dettagli color oro.' : c.complemento ? 'Mobili TV, tavolini e i pezzi che completano il salotto.' : `I salotti della collezione ${c.nome}.`,
-    lista: SET.filter((s) => s.stile === c.stile),
-    crumbs: `<li><a href="../../">Home</a></li><li><a href="../">Collezioni</a></li><li aria-current="page">${c.nome}</li>`,
+    h1: c.pranzo ? 'Sale da pranzo' : c.complemento ? 'Complementi' : `Collezione ${c.nome}`,
+    lead: c.pranzo ? 'Tavoli effetto marmo e sedie in velluto, con i dettagli color oro.' : c.complemento ? 'Mobili TV, tavolini e poltrone che completano il salotto.' : `I salotti della collezione ${c.nome}.`,
+    lista: SET.filter((s) => s.stile === c.stile), extra: c.complemento ? ARTICOLI.complementi : [],
+    crumbs: `<li><a href="../../">Home</a></li><li><a href="../">Salotti</a></li><li aria-current="page">${c.pranzo ? 'Sale da pranzo' : c.complemento ? 'Complementi' : c.nome}</li>`,
+  }));
+}
+for (const [slug, h1, lead] of [['decorazioni', 'Decorazioni', 'Sculture, vasi e lampade color oro che danno carattere al salotto.'], ['profumi', 'Profumi', 'Fragranze arabe e orientali, da scoprire anche in showroom.']]) {
+  page(`${slug}/`, catalogo({
+    root: '../', path: `${slug}/`, nav: slug, title: `${h1} | Bazar Marrakech`, h1, lead,
+    lista: [], extra: ARTICOLI[slug], filtri: false, crumbs: `<li><a href="../">Home</a></li><li aria-current="page">${h1}</li>`,
   }));
 }
 
-// PRODOTTI
+// PRODOTTI: la scheda di un e-commerce, con il preventivo su WhatsApp
 for (const s of SET) {
   const root = '../../';
   const altri = [...SET.filter((x) => x.slug !== s.slug && x.tipo === s.tipo), ...SET.filter((x) => x.slug !== s.slug && x.tipo !== s.tipo)].slice(0, 4);
-  const dettaglio = s.foto.find((f) => f.file === 'velluto-dettaglio') || s.foto[s.foto.length - 1];
-  // Visore alla maniera di apple.com: una foto grande alla volta (si scorre di
-  // lato col dito) e sotto le pillole per sceglierla.
-  const nomi = s.foto.map((f) => (f.file.startsWith('studio/') ? 'In studio' : /dettaglio/.test(f.file) ? 'Dettaglio' : 'Nello showroom'));
-  const etichette = nomi.map((n, i) => { const k = nomi.slice(0, i + 1).filter((x) => x === n).length; return k > 1 ? `${n} ${k}` : n; });
-  const galleria = s.foto.map((f, i) => `<li${i ? ' aria-hidden="true"' : ''}>${img(root, f, { eager: i === 0 })}</li>`).join('');
-  const pillole = s.foto.length > 1 ? `<div class="chips" role="tablist" aria-label="Scegli la foto">${etichette.map((l, i) => `<button type="button" role="tab" class="chip" aria-selected="${i === 0}" data-chip="${i}"><span class="chip__plus" aria-hidden="true">+</span>${l}</button>`).join('')}</div>` : '';
-  const waProdotto = waLink(`Buongiorno, vorrei informazioni su ${s.nome}.`);
+  const foto = s.foto.map(prodImg);
+  const wa = waPreventivo(s);
+  const [catHref, catNome] = categoriaDi(s);
+  const badge = s.stato === 'disponibile' ? '<p class="pcard__badge pcard__badge--disponibile">Nuovo arrivo · Disponibile</p>' : s.stato === 'ultimi' ? '<p class="pcard__badge pcard__badge--ultimi">Ultimi pezzi</p>' : '';
   page(`salotti/${s.slug}/`, layout({
-    path: `salotti/${s.slug}/`, root, nav: 'collezioni', image: s.foto[0].file, bodyClass: 'has-sticky-buy',
-    title: `${s.nome} — ${etichetta(s)} | Bazar Marrakech`,
-    description: `${s.nome}: ${s.breve} Richiedi il salotto online o vedilo nello showroom di Lugo.`,
+    path: `salotti/${s.slug}/`, root, nav: 'collezioni', image: `og/${s.slug}.jpg`, bodyClass: 'has-sticky-buy',
+    title: `${s.nome} — ${catNome} | Bazar Marrakech`,
+    description: `${s.nome}: ${s.breve} Prezzo e spedizione su richiesta.`,
     body: `
 <div class="wrap">
-  <nav class="page-head" style="padding-bottom:var(--s-4)" aria-label="Percorso">
-    <ol class="crumbs"><li><a href="${root}">Home</a></li><li><a href="${root}collezioni/">Collezioni</a></li><li><a href="${root}collezioni/${s.stile}/">${esc(s.collezione)}</a></li><li aria-current="page">${esc(s.nome)}</li></ol>
-  </nav>
-  <div class="prodbar" data-prodbar aria-hidden="true">
-    <span class="prodbar__name">${esc(s.nome)}</span>
-    <a class="pill pill--line pill--sm" href="${waProdotto}" target="_blank" rel="noopener" tabindex="-1">Chiedi</a>
-    <a class="pill pill--sm" href="#acquista" data-prodbar-buy tabindex="-1">Richiedi</a>
-  </div>
-  <div class="pdp">
-    <div class="viewer-wrap">
-      <div class="viewer"><ul class="viewer__track" data-viewer aria-label="Foto del ${esc(s.nome)}">${galleria}</ul></div>
-      ${pillole}
+  <nav class="pdp-crumbs" aria-label="Percorso"><ol class="crumbs"><li><a href="${root}">Home</a></li><li><a href="${root}${catHref}">${catNome}</a></li><li aria-current="page">${esc(s.nome)}</li></ol></nav>
+  <div class="pdp2">
+    <div class="gal">
+      <div class="gal__main">
+        <ul class="gal__track" data-viewer aria-label="Foto del ${esc(s.nome)}">${foto.map((f, i) => `<li class="${f.studio ? 'is-studio' : 'is-foto'}"><img src="${root}img/${f.file}.webp" alt="${esc(f.alt)}"${i ? ' loading="lazy"' : ' fetchpriority="high"'} decoding="async"></li>`).join('')}</ul>
+        ${foto.length > 1 ? `<button class="gal__arrow gal__arrow--prev" type="button" data-freccia="-1" aria-label="Foto precedente">‹</button><button class="gal__arrow gal__arrow--next" type="button" data-freccia="1" aria-label="Foto successiva">›</button><span class="gal__count" data-count>1 / ${foto.length}</span>` : ''}
+      </div>
+      ${foto.length > 1 ? `<div class="gal__thumbs">${foto.map((f, i) => `<button type="button" class="${f.studio ? 'is-studio' : 'is-foto'}" data-dot-foto="${i}" aria-current="${i === 0}" aria-label="Foto ${i + 1}"><img src="${root}img/${f.file}.webp" alt="" loading="lazy" decoding="async"></button>`).join('')}</div>` : ''}
     </div>
-    <div class="buy" data-product="${s.slug}">
-      <span class="eyebrow">${esc(etichetta(s))}</span>
-      <h1 class="h1">${esc(s.nome)}</h1>
-      <p class="buy__price">${prezzo(s.prezzo)}</p>
-      <p class="buy__intro">${esc(s.breve)}</p>
-
-      <div class="buy__block">
-        <p class="buy__label">Composizione in foto</p>
-        <ul class="ticks">${s.composizioneFoto.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
-        ${s.configurazioni.length ? '' : '<p class="buy__hint">La composizione definitiva e gli elementi inclusi si confermano con il negozio.</p>'}
+    <div class="pinfo" data-pdp>
+      ${badge}
+      <h1 class="pinfo__name">${esc(s.nome)}</h1>
+      <p class="pinfo__price">${s.prezzo ? eur(s.prezzo) : 'Prezzo su richiesta'}</p>
+      <p class="pinfo__intro">${esc(s.breve)}</p>
+      <p class="pinfo__color"><span>Colore</span><i class="swatch" style="background:${s.colore.hex}"></i>${esc(s.colore.nome)}</p>
+      <div class="pinfo__cta" data-buy-main>
+        <a class="btn-wa" href="${wa}" target="_blank" rel="noopener">${ICON_WA}<span>Chiedi preventivo</span></a>
+        <a class="btn-sec" href="${tel(SALAH.numero)}">Chiama ${SALAH.nome} · ${SALAH.numero}</a>
+        <p class="pinfo__hint">Si apre WhatsApp con il messaggio già pronto per ${SALAH.nome}: ti risponde con prezzo, disponibilità e costo della spedizione in tutta Italia.</p>
       </div>
-      ${s.configurazioni.length ? `
-      <fieldset class="buy__block" style="border:0;border-top:1px solid var(--line)">
-        <legend class="buy__label">Configurazione</legend>
-        <div class="options">${s.configurazioni.map((c, i) => `<label class="option"><input type="radio" name="config" value="${esc(c.nome)}"${i ? '' : ' checked'}> <span>${esc(c.nome)}</span>${c.prezzo != null ? `<span class="price" style="margin-left:auto">${eur(c.prezzo)}</span>` : ''}</label>`).join('')}</div>
-      </fieldset>` : ''}
-      ${s.misure.length ? `<div class="buy__block"><p class="buy__label">Dimensioni</p><dl class="info-list">${s.misure.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl></div>` : ''}
-      <div class="buy__block">
-        <p class="buy__label">Finiture</p>
-        <ul class="ticks">${s.finiture.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
-      </div>
-      <div class="buy__block" data-buy-main id="acquista">
-        <div class="qty-row">
-          <div class="qty" role="group" aria-label="Quantità"><button type="button" data-qty="-1" aria-label="Diminuisci">−</button><output data-qty-value aria-live="polite">1</output><button type="button" data-qty="1" aria-label="Aumenta">+</button></div>
-          <button class="btn" type="button" data-add>Aggiungi alla borsa</button>
-        </div>
-        <p class="buy__hint" data-add-status role="status"></p>
-        <p class="buy__hint">Nessun pagamento online. Dopo la richiesta ti contattiamo per confermare disponibilità, prezzo definitivo e consegna.</p>
-      </div>
-      <details class="acc"><summary>Come funziona la richiesta d’ordine</summary><div class="acc-body">Aggiungi il salotto alla borsa e lasciaci i tuoi recapiti. Ricevi un codice di richiesta: il nostro team verifica i dettagli e ti ricontatta. La richiesta non è un acquisto e non comporta alcun pagamento.</div></details>
-      <details class="acc"><summary>Consegna</summary><div class="acc-body">Consegniamo in tutta Italia. Tempi e costi vengono comunicati dal negozio insieme alla conferma.</div></details>
-      <details class="acc"><summary>Vedilo dal vivo</summary><div class="acc-body">${esc(indirizzo)}. ${ORARI.map((o) => `${o.etichetta}: ${fasce(o)}`).join('. ')}. <a class="textlink" href="${NEGOZIO.mappa}" target="_blank" rel="noopener">Indicazioni</a></div></details>
+      <details class="acc" open><summary>Composizione in foto</summary><div class="acc-body"><ul class="ticks">${s.composizioneFoto.map((c) => `<li>${esc(c)}</li>`).join('')}</ul></div></details>
+      <details class="acc"><summary>Finiture</summary><div class="acc-body"><ul class="ticks">${s.finiture.map((f) => `<li>${esc(f)}</li>`).join('')}</ul></div></details>
+      <details class="acc"><summary>Descrizione</summary><div class="acc-body">${s.descrizione.map((p) => `<p>${esc(p)}</p>`).join('')}</div></details>
+      <details class="acc"><summary>Spedizione</summary><div class="acc-body">Consegniamo in tutta Italia. Il costo dipende dalla destinazione: chiedilo nel preventivo.</div></details>
+      <details class="acc"><summary>Vedilo in showroom</summary><div class="acc-body">${esc(indirizzo)}. ${ORARI.map((o) => `${o.etichetta}: ${fasce(o)}`).join('. ')}. <a class="textlink" href="${NEGOZIO.mappa}" target="_blank" rel="noopener">Indicazioni</a></div></details>
     </div>
   </div>
 </div>
-
-<section class="section section--beige">
-  <div class="wrap story">
-    <div class="story__text reveal">
-      <span class="eyebrow">Da vicino</span>
-      <h2 class="h2">${esc(s.nome)}</h2>
-      <div class="prose muted">${s.descrizione.map((p) => `<p>${esc(p)}</p>`).join('')}</div>
-    </div>
-    <div class="story__media reveal">${img(root, dettaglio)}</div>
-  </div>
-</section>
-
-${altri.length ? `<section class="section">
-  <div class="wrap">
-    <div class="head-row reveal"><h2 class="h2">Scopri anche</h2><a class="link" href="${root}collezioni/">Tutte le collezioni</a></div>
-    <div class="sets">${altri.map((x) => setCard(x, root)).join('')}</div>
-  </div>
-</section>` : ''}
-
+<section class="shop-sec shop-sec--grey"><div class="wrap">
+  <div class="shop-sec__head"><h2 class="shop-sec__title">Potrebbe piacerti anche.</h2><a class="shop-sec__link" href="${root}${catHref}">Vedi tutti ›</a></div>
+  <div class="pgrid">${altri.map((x) => pcard(setP(x, root), root)).join('')}</div>
+</div></section>
 <div class="sticky-buy" data-sticky-buy aria-hidden="true">
-  <div class="sticky-buy__info"><strong>${esc(s.nome)}</strong><span>${s.prezzo == null ? 'Prezzo su richiesta' : eur(s.prezzo)}</span></div>
-  <button class="pill" type="button" data-add-sticky tabindex="-1">Aggiungi</button>
+  <div class="sticky-buy__info"><strong>${esc(s.nome)}</strong><span>${s.prezzo ? eur(s.prezzo) : 'Prezzo su richiesta'}</span></div>
+  <a class="pill pill--wa" href="${wa}" target="_blank" rel="noopener" tabindex="-1">Chiedi preventivo</a>
 </div>`,
   }));
 }
@@ -745,7 +723,7 @@ for (const l of LEGALI) {
 }
 
 /* ---- scrittura -------------------------------------------------------- */
-const vecchie = ['collezioni', 'salotti', 'borsa', 'showroom', 'contatti', ...LEGALI.map((l) => l.slug)];
+const vecchie = ['collezioni', 'salotti', 'borsa', 'decorazioni', 'profumi', 'showroom', 'contatti', ...LEGALI.map((l) => l.slug)];
 for (const d of vecchie) if (existsSync(join(OUT, d))) rmSync(join(OUT, d), { recursive: true });
 for (const p of pages) {
   const file = join(OUT, p.path, 'index.html');

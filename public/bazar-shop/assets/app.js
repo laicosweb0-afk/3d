@@ -144,77 +144,40 @@
   }
   $$('[data-status]').forEach((el) => { const s = statoNegozio(); el.textContent = s.testo; el.dataset.open = String(s.aperto); el.hidden = false; });
 
-  /* ---- catalogo: filtri e ordinamento (solo se presenti) --------------- */
+  /* ---- catalogo: filtri a pillola (nuovi arrivi, ultimi pezzi, colori) - */
   const cat = $('[data-catalog]');
-  if (cat && $('[data-catalog-tools]')) {
-    const originale = $$('.set-card', cat);
-    let colore = '', ordine = '';
-    const applica = () => {
-      let l = originale.filter((c) => !colore || c.dataset.colore === colore);
-      if (ordine) l = [...l].sort((a, b) => { const pa = a.dataset.prezzo === '' ? Infinity : +a.dataset.prezzo, pb = b.dataset.prezzo === '' ? Infinity : +b.dataset.prezzo; return ordine === 'asc' ? pa - pb : (pb === Infinity ? -Infinity : pb) - (pa === Infinity ? -Infinity : pa); });
-      originale.forEach((c) => { c.hidden = !l.includes(c); });
-      l.forEach((c) => cat.appendChild(c));
-    };
+  if (cat) {
+    const schede = $$('.pcard', cat);
     $$('[data-filter]').forEach((b) => b.addEventListener('click', () => {
-      colore = b.dataset.filter; $$('[data-filter]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); applica();
+      const f = b.dataset.filter;
+      $$('[data-filter]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      schede.forEach((c) => { c.hidden = !!f && !(c.dataset.tags || '').split(' ').includes(f); });
     }));
-    $('[data-sort]')?.addEventListener('change', (e) => { ordine = e.target.value; applica(); });
   }
 
-  /* ---- pagina prodotto ------------------------------------------------- */
-  const buy = $('[data-product]');
-  if (buy) {
-    const slug = buy.dataset.product;
-    const out = $('[data-qty-value]', buy);
-    let q = 1;
-    $$('[data-qty]', buy).forEach((b) => b.addEventListener('click', () => { q = Math.max(1, Math.min(20, q + +b.dataset.qty)); out.textContent = q; }));
-    const stato = $('[data-add-status]', buy);
-    const add = () => {
-      const config = $('input[name="config"]:checked', buy)?.value || '';
-      aggiungi(slug, q, config);
-      stato.innerHTML = `Aggiunto alla borsa. <a class="textlink" href="${ROOT}borsa/">Vai alla borsa</a>`;
-    };
-    $('[data-add]', buy).addEventListener('click', add);
-    const sticky = $('[data-sticky-buy]');
-    if (sticky) {
-      $('[data-add-sticky]', sticky).addEventListener('click', () => { add(); stato.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); });
-      const main = $('[data-buy-main]', buy);
-      const io = new IntersectionObserver(([e]) => {
+  /* ---- scheda prodotto: galleria da scorrere, miniature, barra in basso - */
+  const pdp = $('[data-pdp]');
+  if (pdp) {
+    const track = $('[data-viewer]'), mini = $$('[data-dot-foto]'), count = $('[data-count]');
+    if (track) {
+      const n = track.children.length;
+      const qui = () => Math.round(track.scrollLeft / track.clientWidth);
+      const vai = (i) => track.scrollTo({ left: Math.max(0, Math.min(n - 1, i)) * track.clientWidth, behavior: reduce ? 'auto' : 'smooth' });
+      const segna = (i) => { mini.forEach((m, j) => m.setAttribute('aria-current', String(i === j))); if (count) count.textContent = `${i + 1} / ${n}`; };
+      let t;
+      track.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(() => segna(qui()), 60); }, { passive: true });
+      mini.forEach((m) => m.addEventListener('click', () => vai(+m.dataset.dotFoto)));
+      $$('[data-freccia]').forEach((b) => b.addEventListener('click', () => vai(qui() + +b.dataset.freccia)));
+      addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') vai(qui() + 1); if (e.key === 'ArrowLeft') vai(qui() - 1); });
+    }
+    const sticky = $('[data-sticky-buy]'), main = $('[data-buy-main]');
+    if (sticky && main) {
+      new IntersectionObserver(([e]) => {
         const on = !e.isIntersecting && e.boundingClientRect.top < 0;
         sticky.classList.toggle('is-on', on);
         sticky.setAttribute('aria-hidden', String(!on));
-        $('[data-add-sticky]', sticky).tabIndex = on ? 0 : -1;
-      });
-      io.observe(main);
-    }
-    /* visore delle foto: le pillole sotto scelgono la foto, il dito la scorre */
-    const viewer = $('[data-viewer]'), chips = $$('[data-chip]');
-    if (viewer && chips.length) {
-      const items = [...viewer.children];
-      const scegli = (i) => {
-        chips.forEach((c, j) => c.setAttribute('aria-selected', String(i === j)));
-        items.forEach((li, j) => li.setAttribute('aria-hidden', String(i !== j)));
-        chips[i].scrollIntoView({ block: 'nearest', inline: 'center', behavior: reduce ? 'auto' : 'smooth' });
-      };
-      chips.forEach((c) => c.addEventListener('click', () => {
-        viewer.scrollTo({ left: +c.dataset.chip * viewer.clientWidth, behavior: reduce ? 'auto' : 'smooth' });
-      }));
-      let t;
-      viewer.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(() => scegli(Math.round(viewer.scrollLeft / viewer.clientWidth)), 80); }, { passive: true });
-    }
-    /* barra prodotto a pillola: compare quando il titolo esce dallo schermo */
-    const bar = $('[data-prodbar]'), titoloProdotto = $('h1', buy);
-    if (bar && titoloProdotto) {
-      new IntersectionObserver(([e]) => {
-        const on = !e.isIntersecting && e.boundingClientRect.top < 0;
-        bar.classList.toggle('is-on', on);
-        bar.setAttribute('aria-hidden', String(!on));
-        $$('a', bar).forEach((a) => { a.tabIndex = on ? 0 : -1; });
-      }).observe(titoloProdotto);
-      $('[data-prodbar-buy]', bar).addEventListener('click', (e) => {
-        e.preventDefault();
-        $('#acquista').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
-      });
+        $$('a', sticky).forEach((a) => { a.tabIndex = on ? 0 : -1; });
+      }).observe(main);
     }
   }
 

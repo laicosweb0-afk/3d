@@ -51,7 +51,7 @@ window.BM = {
     }
   ],
   "web3formsKey": "",
-  "whatsapp": "",
+  "whatsapp": "393890127054",
   "set": [
     {
       "slug": "salotto-crema",

@@ -47,7 +47,7 @@ export const WEB3FORMS_KEY = '';
 
 /** Numero WhatsApp ufficiale, con prefisso e senza spazi (es. '393890127054').
  *  Vuoto = nessun pulsante WhatsApp. */
-export const WHATSAPP = ''; // [NUMERO WHATSAPP DA CONFERMARE]
+export const WHATSAPP = '393890127054'; // Salah, 389 012 7054 // [NUMERO WHATSAPP DA CONFERMARE]
 
 /** Il messaggio già scritto del pulsante WhatsApp nell'header. [TESTO DA CONFERMARE] */
 export const WHATSAPP_MESSAGGIO = 'Buongiorno, vorrei informazioni sui vostri salotti e prenotare una visita allo showroom di Lugo.';
